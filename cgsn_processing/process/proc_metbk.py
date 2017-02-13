@@ -7,12 +7,11 @@
 @brief Creates a NetCDF dataset for the METBK from JSON formatted source data
 """
 import gsw
-import numpy as np
 import os
-import pandas as pd
 
 from pyaxiom.netcdf.sensors import TimeSeries
 from cgsn_processing.process.common import inputs, json2df
+from cgsn_processing.process.configs.attr_metbk import METBK
 
 
 def main():
@@ -26,14 +25,20 @@ def main():
     lat = args.latitude
     lng = args.longitude
     
-    # load the json data file and return a panda dataframe
+    # load the json data file and return a panda data frame
     df = json2df(infile)
-    df['time'] = pd.to_datetime(df.time, unit='s')
-    df['depth'] = 3.0
-    df.index = df['time']
-    
+
+    # set depths for various sensors
+    df['depth'] = 0.0
+    df['depth_wnd'] = -3.0
+    df['depth_bpr'] = -3.0
+    df['depth_irr'] = -3.0
+    df['depth_prc'] = -3.0
+    df['depth_rh'] = -3.0
+    df['depth_ct'] = 1.25
+
     # calculate the practical salinity of the surface seawater from the temperature and conductivity measurements
-    df['psu'] = gsw.SP_from_C(df['sea_surface_conductivity'] * 10., df['sea_surface_temperature'], 0.0)
+    df['psu'] = gsw.SP_from_C(df['sea_surface_conductivity'] * 10.0, df['sea_surface_temperature'], 0.0)
     # calculate the in-situ density of the surface seawater from the absolute salinity and conservative temperature
     SA = gsw.SA_from_SP(df['psu'], 0.0, lng, lat)                   # absolute salinity
     CT = gsw.CT_from_t(SA, df['sea_surface_temperature'], 0.0)      # conservative temperature
@@ -62,22 +67,21 @@ def main():
             times=df.time.values.astype(np.int64) // 10**9,
             verticals=df.depth.values,
             output_filename=outfile,
-            vertical_positive='up')
+            vertical_positive='down')
     
     # create the NetCDF file
     df.columns.tolist()
     for c in df.columns:
-        if c in ts._nc.variables:
-            print("Skipping '{}' (already in file)".format(c))
-            continue
-        if c in ['time', 'lat', 'lon', 'depth']: 
+        if c in ['time', 'lat', 'lon', 'depth']:
             print("Skipping axis '{}' (already in file)".format(c))
             continue
-        if 'object' in df[c].dtype.name: 
+        if 'object' in df[c].dtype.name:
             print("Skipping object {}".format(c))
             continue
         print("Adding {}".format(c))
-        ts.add_variable(c, df[c].values)
+        ts.add_variable(c, df[c].values, attributes=METBK[c])
+
+    ts._nc.close()
 
 if __name__ == '__main__':
     main()
