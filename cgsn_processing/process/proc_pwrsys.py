@@ -1,0 +1,73 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+@package cgsn_processing.process.proc_metbk
+@file cgsn_processing/process/proc_metbk.py
+@author Christopher Wingard
+@brief Creates a NetCDF dataset for the METBK from JSON formatted source data
+"""
+import numpy as np
+import os
+import pandas as pd
+
+from pyaxiom.netcdf.sensors import TimeSeries
+from cgsn_processing.process.common import inputs, json2df
+
+
+def main():
+    # load  the input arguments
+    args = inputs()
+    infile = os.path.abspath(args.infile)
+    outfile = os.path.abspath(args.outfile)
+    platform = args.platform
+    deployment = args.deployment
+    outdir = '/webdata/cgsn/data/erddap/' + platform + '/' + deployment + '/buoy/pwrsys'
+    lat = args.latitude
+    lng = args.longitude
+
+    # load the json data file and return a panda dataframe
+    df = json2df(infile)
+    df['time'] = pd.to_datetime(df.time, unit='s')
+    df.index = df['time']
+
+    # Setup the global attributes for the NetCDF file and create the NetCDF
+    # timeseries object
+    global_attributes = {
+        'institution': 'Ocean Observatories Initiative CGSN',
+        'title': 'Mooring Power System Controller (PSC) Status Data',
+        'summary': (
+            'Measures the status of the mooring power system controller, encompassing the '
+            'batteries, recharging sources (wind and solar), and outputs'
+        ),
+        'creator_name': 'Christopher Wingard',
+        'creator_email': 'cwingard@coas.oregonstate.edu',
+        'creator_url': 'http://oceanobservatories.org'
+    }
+    ts = TimeSeries(
+        output_directory=outdir,
+        latitude=lat,
+        longitude=lng,
+        station_name=platform,
+        global_attributes=global_attributes,
+        times=df.time.values.astype(np.int64) // 10 ** 9,
+        verticals=-3.0,
+        output_filename=outfile,
+        vertical_positive='down')
+
+    # create the NetCDF file
+    df.columns.tolist()
+    for c in df.columns:
+        if c in ts._nc.variables:
+            # print("Skipping '{}' (already in file)".format(c))
+            continue
+        if c in ['time', 'lat', 'lon', 'depth']:
+            # print("Skipping axis '{}' (already in file)".format(c))
+            continue
+        if 'object' in df[c].dtype.name:
+            # print("Skipping object {}".format(c))
+            continue
+        # print("Adding {}".format(c))
+        ts.add_variable(c, df[c].values)
+
+if __name__ == '__main__':
+    main()
