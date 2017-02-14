@@ -8,11 +8,16 @@
 """
 
 METBK = {
+    'dcl_date_time_string': {
+        'long_name': 'DCL Date and Time Stamp',
+        'standard_name': 'dcl_date_time_string',
+        'units': '1',
+    },
     'barometric_pressure': {
         'long_name': 'Barometric Pressure',
         'standard_name': 'barometric_pressure',
         'units': 'mbar',
-        'coordinates': 'time longitude latitude depth_bpr',
+        'coordinates': 'time depth_bpr longitude latitude',
         'sensor_mount': 'mounted on mooring tower',
         'valid_min': '0',
         'valid_max': '2000'
@@ -21,7 +26,7 @@ METBK = {
         'long_name': 'Relative Humidity',
         'standard_name': 'relative_humidity',
         'units': '1',
-        'coordinates': 'time longitude latitude depth_rh',
+        'coordinates': 'time depth_rh longitude latitude',
         'sensor_mount': 'mounted on mooring tower',
         'valid_min': '0',
         'valid_max': '100'
@@ -30,7 +35,7 @@ METBK = {
         'long_name': 'Air Temperature',
         'standard_name': 'air_temperature',
         'units': 'degree_Celcius',
-        'coordinates': 'time longitude latitude depth_rh',
+        'coordinates': 'time depth_rh longitude latitude',
         'sensor_mount': 'mounted on mooring tower',
         'valid_min': '-5',
         'valid_max': '30'
@@ -39,7 +44,7 @@ METBK = {
         'long_name': 'Longwave Irradiance',
         'standard_name': 'longwave_irradiance',
         'units': 'W m-2',
-        'coordinates': 'time longitude latitude depth_irr',
+        'coordinates': 'time depth_irr longitude latitude',
         'sensor_mount': 'mounted on mooring tower',
         'valid_min': '0',
         'valid_max': '1000'
@@ -48,7 +53,7 @@ METBK = {
         'long_name': 'Precipitation Level',
         'standard_name': 'precipitation_level',
         'units': 'mm',
-        'coordinates': 'time longitude latitude depth_prc',
+        'coordinates': 'time depth_prc longitude latitude',
         'sensor_mount': 'mounted on mooring tower',
         'valid_min': '0',
         'valid_max': '100'
@@ -57,7 +62,7 @@ METBK = {
         'long_name': 'Sea Surface Temperature',
         'standard_name': 'sea_surface_temperature',
         'units': 'degree_Celcius',
-        'coordinates': 'time longitude latitude depth_ct',
+        'coordinates': 'time depth_ct longitude latitude',
         'sensor_mount': 'mounted on mooring subsurface bridle',
         'valid_min': '0',
         'valid_max': '30'
@@ -66,7 +71,7 @@ METBK = {
         'long_name': 'Sea Surface Conductivity',
         'standard_name': 'sea_surface_conductivity',
         'units': 'S m-1',
-        'coordinates': 'time longitude latitude depth_ct',
+        'coordinates': 'time depth_ct longitude latitude',
         'sensor_mount': 'mounted on mooring subsurface bridle',
         'valid_min': '0',
         'valid_max': '5'
@@ -75,7 +80,7 @@ METBK = {
         'long_name': 'Shortwave Irradiance',
         'standard_name': 'shortwave_irradiance',
         'units': 'W m-2',
-        'coordinates': 'time longitude latitude depth_irr',
+        'coordinates': 'time depth_irr longitude latitude',
         'sensor_mount': 'mounted on mooring tower',
         'valid_min': '0',
         'valid_max': '1000'
@@ -84,7 +89,7 @@ METBK = {
         'long_name': 'Eastward Wind Velocity',
         'standard_name': 'eastward_wind_velocity',
         'units': 'm s-1',
-        'coordinates': 'time longitude latitude depth_wnd',
+        'coordinates': 'time depth_wnd longitude latitude',
         'sensor_mount': 'mounted on mooring tower',
         'valid_min': '-100',
         'valid_max': '100'
@@ -93,7 +98,7 @@ METBK = {
         'long_name': 'Northward Wind Velocity',
         'standard_name': 'northward_wind_velocity',
         'units': 'm s-1',
-        'coordinates': 'time longitude latitude depth_wnd',
+        'coordinates': 'time depth_wnd longitude latitude',
         'sensor_mount': 'mounted on mooring tower',
         'valid_min': '-100',
         'valid_max': '100'
@@ -102,7 +107,7 @@ METBK = {
         'long_name': 'Practical Salinity',
         'standard_name': 'sea_water_salinity',
         'units': '1',
-        'coordinates': 'time longitude latitude depth_ct',
+        'coordinates': 'time depth_ct longitude latitude',
         'sensor_mount': 'mounted on mooring subsurface bridle',
         'valid_min': '0',
         'valid_max': '40'
@@ -111,7 +116,7 @@ METBK = {
         'long_name': 'In-Situ Seawater Density',
         'standard_name': 'sea_water_density',
         'units': 'kg m-3',
-        'coordinates': 'time longitude latitude depth_ct',
+        'coordinates': 'time depth_ct longitude latitude',
         'sensor_mount': 'mounted on mooring subsurface bridle',
         'valid_min': '0',
         'valid_max': '30'
@@ -120,7 +125,9 @@ METBK = {
         'long_name': 'Sensor Height',
         'standard_name': 'height_of_sensor_above_water',
         'units': 'm',
-        'coordinates': 'time',
+        'coordinates': '',
+        'axis': 'Z',
+        'positive': 'up',
         'valid_min': '-10000',
         'valid_max': '1000'
     },
@@ -128,15 +135,19 @@ METBK = {
         'long_name': 'Sensor Height',
         'standard_name': 'height_of_sensor_above_water',
         'units': 'm',
-        'coordinates': 'time',
+        'coordinates': '',
+        'axis': 'Z',
+        'positive': 'up',
         'valid_min': '-10000',
         'valid_max': '1000'
     },
     'depth_prc': {
         'long_name': 'Sensor Height',
         'standard_name': 'height_of_sensor_above_water',
+        'coordinates': '',
         'units': 'm',
-        'coordinates': 'time',
+        'axis': 'Z',
+        'positive': 'up',
         'valid_min': '-10000',
         'valid_max': '1000'
     },
@@ -144,7 +155,9 @@ METBK = {
         'long_name': 'Sensor Height',
         'standard_name': 'height_of_sensor_above_water',
         'units': 'm',
-        'coordinates': 'time',
+        'coordinates': '',
+        'axis': 'Z',
+        'positive': 'up',
         'valid_min': '-10000',
         'valid_max': '1000'
     },
@@ -152,7 +165,9 @@ METBK = {
         'long_name': 'Sensor Height',
         'standard_name': 'height_of_sensor_above_water',
         'units': 'm',
-        'coordinates': 'time',
+        'coordinates': '',
+        'axis': 'Z',
+        'positive': 'up',
         'valid_min': '-10000',
         'valid_max': '1000'
     },
@@ -160,7 +175,9 @@ METBK = {
         'long_name': 'Sensor Depth',
         'standard_name': 'depth_of_sensor_below_water',
         'units': 'm',
-        'coordinates': 'time',
+        'coordinates': '',
+        'axis': 'Z',
+        'positive': 'down',
         'valid_min': '-10000',
         'valid_max': '1000'
     }
