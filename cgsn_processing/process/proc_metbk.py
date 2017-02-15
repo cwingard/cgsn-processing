@@ -57,7 +57,7 @@ def main():
 
     # create/open the netCDF file and set the global attributes and parameters
     ts = TimeSeries(
-            output_directory=outdir,
+            output_directory=outpath,
             latitude=lat,
             longitude=lng,
             station_name=platform,

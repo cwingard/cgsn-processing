@@ -18,17 +18,20 @@ PLATFORM=${1,,}
 DEPLOY=${2^^}
 LAT=$3; LNG=$4
 PWRSYS=${5,,}
-FILE=`/bin/basename $6`
+FILE=`/bin/basename $6`;
 
 # Set the default directory paths and input/output sources
-BIN="/home/cgsnmo/dev/cgsn-parsers/cgsn_parsers/process"
+BIN="/home/cgsnmo/dev/cgsn-processing/cgsn_processing/process"
 PYTHON="/home/cgsnmo/anaconda3/envs/py27/bin/python"
 
-DATA="/webdata/cgsn/data/proc"
+DATA="/webdata/cgsn/data"
 IN="$DATA/proc/$PLATFORM/$DEPLOY/$PWRSYS/$FILE"
 OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$PWRSYS/${FILE%.json}.nc"
+if [ ! -d `/usr/bin/dirname $OUT` ]; then
+    mkdir -p `/usr/bin/dirname $OUT`
+fi
 
 # Process the file
 if [ -e $IN ]; then
-    $PYTHON -m $BIN/proc_pwrsys --p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG i $IN -o $OUT
+    $PYTHON -m $BIN/proc_pwrsys -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -i $IN -o $OUT
 fi

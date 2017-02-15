@@ -29,9 +29,12 @@ FILE=`/bin/basename $7`
 BIN="/home/cgsnmo/dev/cgsn-processing/cgsn_processing/process"
 PYTHON="/home/cgsnmo/anaconda3/envs/py27/bin/python"
 
-DATA="/webdata/cgsn/data/proc"
+DATA="/webdata/cgsn/data"
 IN="$DATA/proc/$PLATFORM/$DEPLOY/$OPTAA/$FILE"
 OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$OPTAA/${FILE%.json}.nc"
+if [ ! -d `/usr/bin/dirname $OUT` ]; then
+    mkdir -p `/usr/bin/dirname $OUT`
+fi
 
 COEFF="$PROC/$PLATFORM/$DEPLOY/$OPTAA/$CFILE.coeff"
 URL="https://github.com/ooi-integration/asset-management/raw/master/calibration/$UID.csv"

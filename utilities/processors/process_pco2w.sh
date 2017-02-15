@@ -24,12 +24,15 @@ CFILE=`/bin/basename $UID`
 FILE=`/bin/basename $7`
 
 # Set the default directory paths and input/output sources
-BIN="/home/cgsnmo/dev/cgsn-parsers/cgsn_parsers/process"
+BIN="/home/cgsnmo/dev/cgsn-processing/cgsn_processing/process"
 PYTHON="/home/cgsnmo/anaconda3/envs/py27/bin/python"
 
-DATA="/webdata/cgsn/data/proc"
+DATA="/webdata/cgsn/data"
 IN="$DATA/proc/$PLATFORM/$DEPLOY/$PCO2W/$FILE"
 OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$PCO2W/${FILE%.json}.nc"
+if [ ! -d `/usr/bin/dirname $OUT` ]; then
+    mkdir -p `/usr/bin/dirname $OUT`
+fi
 
 COEFF="$DATA/erddap/$PLATFORM/$DEPLOY/$PCO2W/$CFILE.coeff"
 BLANK="$DATA/erddap/$PLATFORM/$DEPLOY/$PCO2W/$CFILE.blank"

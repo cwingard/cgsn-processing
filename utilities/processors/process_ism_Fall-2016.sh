@@ -23,25 +23,27 @@ PROCESS="/home/cgsnmo/dev/cgsn-parsers/utilities/processors"
 case "$PLATFORM" in
     "ce01issm"  )
         MFN_FLAG=1
-        $LAT=44.00000
-        $LNG=124.00000         
+        $LAT=44.66003
+        $LNG=-124.09512
         declare -a OPTAA1=("None" "None")
         declare -a PCO2W1=("pco2w1" "PCO2WB/CGINS-PCO2WB-C0084__20160930")
-        declare -a PHSEN1=("phsen1" "None")
+        declare -a PHSEN1=("phsen1" "7")
 
         declare -a OPTAA2=("None" "None")
         declare -a PCO2W2=("pco2w2" "PCO2WB/CGINS-PCO2WB-C0053__20160930")
-        declare -a PHSEN2=("phsen2" "None")
+        declare -a PHSEN2=("phsen2" "25")
         ;;
     "ce06issm" )
         MFN_FLAG=1
+        $LAT=47.13328
+        $LNG=-124.27125
         declare -a OPTAA1=("optaa1" "OPTAAD/CGINS-OPTAAD-00136__20160927")
         declare -a PCO2W1=("pco2w1" "PCO2WB/CGINS-PCO2WB-C0085__20160927")
-        declare -a PHSEN1=("phsen1" "None")
+        declare -a PHSEN1=("phsen1" "7")
 
         declare -a OPTAA2=("None" "None")
         declare -a PCO2W2=("pco2w2" "PCO2WB/CGINS-PCO2WB-C0081__20160927")
-        declare -a PHSEN2=("None" "None")
+        declare -a PHSEN2=("None" "29")
         ;;
     * )
         echo "Unknown platform, please check the name again"
@@ -58,16 +60,16 @@ esac
 #--> CTDBP + DOSTA
 #--> FLORT
 #--> NUTNR
-for optaa in $PROC/$PLATFORM/$DEPLOY/nsif/optaa/$FNAME*.${OPTAA1[0]}.json; do
-    if [ -e $optaa ]; then
-        SIZE=`du -k "$optaa" | cut -f1`
-        if [ $SIZE > 0 ]; then
-            $PROCESS/process_optaa.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/optaa" ${OPTAA1[1]} $optaa
-        fi
-    fi
-done
-$PROCESS/process_pco2w.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/pco2w" ${PCO2W1[1]} $FNAME.${PCO2W1[0]}.json
-$PROCESS/process_phsen.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/phsen" $FNAME.${PHSEN1[0]}.json
+#for optaa in $PROC/$PLATFORM/$DEPLOY/nsif/optaa/$FNAME*.${OPTAA1[0]}.json; do
+#    if [ -e $optaa ]; then
+#        SIZE=`du -k "$optaa" | cut -f1`
+#        if [ $SIZE > 0 ]; then
+#            $PROCESS/process_optaa.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/optaa" ${OPTAA1[1]} $optaa
+#        fi
+#    fi
+#done
+#$PROCESS/process_pco2w.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/pco2w" ${PCO2W1[1]} $FNAME.${PCO2W1[0]}.json
+$PROCESS/process_phsen.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/phsen" ${PHSEN1[1]} $FNAME.${PHSEN1[0]}.json
 #--> SPKIR
 #--> VELPT
 
@@ -76,16 +78,16 @@ if [ $MFN_FLAG == 1 ]; then
     #--> ADCPT
     #--> CTDBP + DOSTA
     #--> CAMDS
-    for optaa in $PROC/$PLATFORM/$DEPLOY/mfn/optaa/$FNAME*.${OPTAA2[0]}.json; do
-        if [ -e $optaa ]; then
-            SIZE=`du -k "$optaa" | cut -f1`
-            if [ $SIZE > 0 ]; then
-                $PROCESS/process_optaa.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/optaa" ${OPTAA2[1]} $optaa
-            fi
-        fi
-    done
-    $PROCESS/process_pco2w.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/pco2w" ${PCO2W2[1]} $FNAME.${PCO2W2[0]}.json
-    $PROCESS/process_phsen.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/phsen" $FNAME.${PHSEN2[0]}.json
+#    for optaa in $PROC/$PLATFORM/$DEPLOY/mfn/optaa/$FNAME*.${OPTAA2[0]}.json; do
+#        if [ -e $optaa ]; then
+#            SIZE=`du -k "$optaa" | cut -f1`
+#            if [ $SIZE > 0 ]; then
+#                $PROCESS/process_optaa.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/optaa" ${OPTAA2[1]} $optaa
+#            fi
+#        fi
+#    done
+#    $PROCESS/process_pco2w.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/pco2w" ${PCO2W2[1]} $FNAME.${PCO2W2[0]}.json
+    $PROCESS/process_phsen.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/phsen" ${PHSEN1[1]} $FNAME.${PHSEN2[0]}.json
     #--> PRESF
     #--> VEL3D
     #--> ZPLSC

@@ -21,12 +21,15 @@ METBK=${5,,}
 FILE=`/bin/basename $6`
 
 # Set the default directory paths and input/output sources
-BIN="/home/cgsnmo/dev/cgsn-parsers/cgsn_parsers/process"
+BIN="/home/cgsnmo/dev/cgsn-processing/cgsn_processing/process"
 PYTHON="/home/cgsnmo/anaconda3/envs/py27/bin/python"
 
-DATA="/webdata/cgsn/data/proc"
+DATA="/webdata/cgsn/data"
 IN="$DATA/proc/$PLATFORM/$DEPLOY/$METBK/$FILE"
 OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$METBK/${FILE%.json}.nc"
+if [ ! -d `/usr/bin/dirname $OUT` ]; then
+    mkdir -p `/usr/bin/dirname $OUT`
+fi
 
 # Process the file
 if [ -e $IN ]; then
