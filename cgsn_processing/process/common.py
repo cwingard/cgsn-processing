@@ -47,6 +47,13 @@ class Coefficients(object):
             pickle.dump(self.coeffs, f)
 
 
+def hex2int(hstr):
+    """
+    Convert an error flag value represented as a hex string to an integer
+    """
+    return int(hstr, 16)
+
+
 def json2df(infile):
     """
     Read in a JSON formatted data file and return the results as a panda dataframe.
