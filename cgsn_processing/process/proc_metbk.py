@@ -1,0 +1,119 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+@package cgsn_processing.process.proc_metbk
+@file cgsn_processing/process/proc_metbk.py
+@author Christopher Wingard
+@brief Creates a NetCDF dataset for the METBK from JSON formatted source data
+"""
+import gsw
+import numpy as np
+import os
+import re
+
+from pyaxiom.netcdf.sensors import TimeSeries
+
+from cgsn_processing.process.common import inputs, json2df
+from cgsn_processing.process.configs.attr_metbk import METBK
+
+
+def main():
+    # load  the input arguments
+    args = inputs()
+    infile = os.path.abspath(args.infile)
+    outpath, outfile = os.path.split(args.outfile)
+    platform = args.platform
+    deployment = args.deployment
+    lat = args.latitude
+    lng = args.longitude
+    
+    # load the json data file and return a panda data frame
+    df = json2df(infile)
+    df['depth'] = 0.0       # default depth, will update for sensors below
+
+    # calculate the practical salinity of the surface seawater from the temperature and conductivity measurements
+    df['psu'] = gsw.SP_from_C(df['sea_surface_conductivity'] * 10.0, df['sea_surface_temperature'], 0.0)
+    # calculate the in-situ density of the surface seawater from the absolute salinity and conservative temperature
+    sa = gsw.SA_from_SP(df['psu'], 0.0, lng, lat)                   # absolute salinity
+    ct = gsw.CT_from_t(sa, df['sea_surface_temperature'], 0.0)      # conservative temperature
+    df['rho'] = gsw.rho(sa, ct, 0.0)
+
+    # Setup the global attributes for the NetCDF file and create the NetCDF timeseries object
+    global_attributes = {
+        'title': 'Bulk Meteorological (METBK) Measurements',
+        'summary': (
+            'Measures surface meteorology and provides the data required to compute '
+            'air-sea fluxes of heat, freshwater, and momentum.'
+        ),
+        'project': 'Ocean Observatories Initiative',
+        'institution': 'Coastal and Global Scales Nodes, (CGSN)',
+        'acknowledgement': 'National Science Foundation',
+        'references': 'http://oceanobservatories.org',
+        'creator_name': 'Christopher Wingard',
+        'creator_email': 'cwingard@coas.oregonstate.edu',
+        'creator_url': 'http://oceanobservatories.org',
+        'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
+    }
+
+    # create/open the netCDF file and set the global attributes and parameters
+    ts = TimeSeries(
+            output_directory=outpath,
+            latitude=lat,
+            longitude=lng,
+            station_name=platform,
+            global_attributes=global_attributes,
+            times=df.time.values.astype(np.float) * 10**-9,
+            verticals=df.depth.values,
+            output_filename=outfile,
+            vertical_positive='down')
+
+    # add the met sensor altitudes as variables
+    nc = ts._nc     # create a netCDF4 object from the TimeSeries object
+    # depth of the METBK-CT sensor
+    d = nc.createVariable('z_ct', 'f4')
+    d.setncatts(METBK['z_ct'])
+    d[:] = 1.366
+    # altitude of the METBK-BPR sensor
+    d = nc.createVariable('z_bpr', 'f4')
+    d.setncatts(METBK['z_bpr'])
+    d[:] = -4.065
+    # altitude of the METBK-IRR sensors (LWR and SWR)
+    d = nc.createVariable('z_irr', 'f4')
+    d.setncatts(METBK['z_irr'])
+    d[:] = -4.320
+    # altitude of the METBK-PRC sensor
+    d = nc.createVariable('z_prc', 'f4')
+    d.setncatts(METBK['z_prc'])
+    d[:] = -4.100
+    # altitude of the METBK-RH sensor
+    d = nc.createVariable('z_rh', 'f4')
+    d.setncatts(METBK['z_rh'])
+    d[:] = -4.255
+    # altitude of the METBK-WND sensor
+    d = nc.createVariable('z_wnd', 'f4')
+    d.setncatts(METBK['z_wnd'])
+    d[:] = -4.740
+
+    # add the data from the data frame and set the attributes
+    for c in df.columns:
+        # skip the coordinate variables, if present, already added above via TimeSeries
+        if c in ['time', 'lat', 'lon', 'depth']:
+            # print("Skipping axis '{}' (already in file)".format(c))
+            continue
+
+        # create the netCDF.Variable object for the parameter 
+        if c == 'dcl_date_time_string':
+            d = nc.createVariable(c, 'S23', ('time',))
+        else:
+            d = nc.createVariable(c, np.dtype(df[c].dtype), ('time',))
+
+        # assign the values and the attributes
+        d.setncatts(METBK[c])
+        d[:] = df[c].values
+
+    # synchronize the data with the netCDF file and close it
+    nc.sync()
+    nc.close()
+
+if __name__ == '__main__':
+    main()
