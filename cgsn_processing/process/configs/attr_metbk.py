@@ -6,7 +6,14 @@
 @author Christopher Wingard
 @brief Attributes for the METBK variables
 """
+
 METBK = {
+    'deployment': {
+        'long_name': 'Deployment Index',
+        'standard_name': 'deployment_index',
+        'units': '1',
+        'coordinates': ''
+    },
     'dcl_date_time_string': {
         'long_name': 'DCL Date and Time Stamp',
         'standard_name': 'dcl_date_time_string',
@@ -25,7 +32,7 @@ METBK = {
     'relative_humidity': {
         'long_name': 'Relative Humidity',
         'standard_name': 'relative_humidity',
-        'units': '1',
+        'units': 'percent',
         'coordinates': 'time z_rh longitude latitude',
         'sensor_mount': 'mounted on mooring tower',
         'valid_min': '0',
@@ -127,7 +134,6 @@ METBK = {
         'units': 'm',
         'coordinates': '',
         'axis': 'Z',
-        'positive': 'down',
         'valid_min': '-10000',
         'valid_max': '1000'
     },
@@ -137,7 +143,6 @@ METBK = {
         'units': 'm',
         'coordinates': '',
         'axis': 'Z',
-        'positive': 'down',
         'valid_min': '-10000',
         'valid_max': '1000'
     },
@@ -147,7 +152,6 @@ METBK = {
         'units': 'm',
         'coordinates': '',
         'axis': 'Z',
-        'positive': 'down',
         'valid_min': '-10000',
         'valid_max': '1000'
     },
@@ -157,7 +161,6 @@ METBK = {
         'coordinates': '',
         'units': 'm',
         'axis': 'Z',
-        'positive': 'down',
         'valid_min': '-10000',
         'valid_max': '1000'
     },
@@ -166,7 +169,6 @@ METBK = {
         'standard_name': 'altitude_of_sensor_above_water',
         'units': 'm',
         'coordinates': '',
-        'axis': 'Z',
         'positive': 'down',
         'valid_min': '-10000',
         'valid_max': '1000'
@@ -177,7 +179,6 @@ METBK = {
         'units': 'm',
         'coordinates': '',
         'axis': 'Z',
-        'positive': 'down',
         'valid_min': '-10000',
         'valid_max': '1000'
     }

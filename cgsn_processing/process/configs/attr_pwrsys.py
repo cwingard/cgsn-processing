@@ -39,12 +39,8 @@ PWRSYS = {
         'long_name': 'Override Flag',
         'standard_name': 'override_flag',
         'units': '1',
-        'flag_masks': (
-            ''
-        ),
-        'flag_meanings': (
-            ''
-        )
+        'flag_masks': '0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024',
+        'flag_meanings': 'no_override wt1 wt2 pv1 pv2 pv3 pv4 fc1 fc2 300v_control 300v_reset external_power'
     },
     'error_flag1': {
         'long_name': 'Error Flag 1',
@@ -131,7 +127,7 @@ PWRSYS = {
         'standard_name': 'solar_panel_1_state',
         'units': '1',
         'flag_masks': '0, 1',
-        'flag_meanings': 'Disabled Enabled'
+        'flag_meanings': 'disabled enabled'
     },
     'solar_panel1_voltage': {
         'long_name': 'Solar Panel 1 Voltage',
@@ -148,7 +144,7 @@ PWRSYS = {
         'standard_name': 'solar_panel_2_state',
         'units': '1',
         'flag_masks': '0, 1',
-        'flag_meanings': 'Disabled Enabled'
+        'flag_meanings': 'disabled enabled'
     },
     'solar_panel2_voltage': {
         'long_name': 'Solar Panel 2 Voltage',
@@ -165,7 +161,7 @@ PWRSYS = {
         'standard_name': 'solar_panel_3_state',
         'units': '1',
         'flag_masks': '0, 1',
-        'flag_meanings': 'Disabled Enabled'
+        'flag_meanings': 'disabled enabled'
     },
     'solar_panel3_voltage': {
         'long_name': 'Solar Panel 3 Voltage',
@@ -182,7 +178,7 @@ PWRSYS = {
         'standard_name': 'solar_panel_4_state',
         'units': '1',
         'flag_masks': '0, 1',
-        'flag_meanings': 'Disabled Enabled'
+        'flag_meanings': 'disabled enabled'
     },
     'solar_panel4_voltage': {
         'long_name': 'Solar Panel 4 Voltage',
@@ -199,7 +195,7 @@ PWRSYS = {
         'standard_name': 'wind_turbine_1_state',
         'units': '1',
         'flag_masks': '0, 1',
-        'flag_meanings': 'Disabled Enabled'
+        'flag_meanings': 'disabled enabled'
     },
     'wind_turbine1_voltage': {
         'long_name': 'Wind Turbine 1 Voltage',
@@ -216,7 +212,7 @@ PWRSYS = {
         'standard_name': 'wind_turbine_2_state',
         'units': '1',
         'flag_masks': '0, 1',
-        'flag_meanings': 'Disabled Enabled'
+        'flag_meanings': 'disabled enabled'
     },
     'wind_turbine2_voltage': {
         'long_name': 'Wind Turbine 2 Voltage',
@@ -233,7 +229,7 @@ PWRSYS = {
         'standard_name': 'fuel_cell_1_state',
         'units': '1',
         'flag_masks': '0, 1',
-        'flag_meanings': 'Disabled Enabled'
+        'flag_meanings': 'disabled enabled'
     },
     'fuel_cell1_voltage': {
         'long_name': 'Fuel Cell 1 Voltage',
@@ -250,7 +246,7 @@ PWRSYS = {
         'standard_name': 'fuel_cell_2_state',
         'units': '1',
         'flag_masks': '0, 1',
-        'flag_meanings': 'Disabled Enabled'
+        'flag_meanings': 'disabled enabled'
     },
     'fuel_cell2_voltage': {
         'long_name': 'Fuel Cell 2 Voltage',
@@ -355,7 +351,9 @@ PWRSYS = {
     'seawater_ground_state': {
         'long_name': 'Sea Water Ground State',
         'standard_name': 'seawater_ground_state',
-        'units': '1'
+        'units': '1',
+        'flag_masks': '0',
+        'flag_meanings': 'undefined'
     },
     'seawater_ground_positve': {
         'long_name': 'Sea Water Ground Positive',
@@ -372,7 +370,7 @@ PWRSYS = {
         'standard_name': 'cvt_state',
         'units': '1',
         'flag_masks': '0, 1',
-        'flag_meanings': 'Disabled Enabled'
+        'flag_meanings': 'disabled enabled'
     },
     'cvt_voltage': {
         'long_name': 'CVT Voltage',
@@ -389,7 +387,7 @@ PWRSYS = {
         'standard_name': 'cvt_interlock',
         'units': '1',
         'flag_masks': '0, 1',
-        'flag_meanings': 'Disabled Enabled'
+        'flag_meanings': 'disabled enabled'
     },
     'cvt_temperature': {
         'long_name': 'CVT Temperature',

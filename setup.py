@@ -29,6 +29,7 @@ setup(name='cgsn_processing',
             'scipy >= 0.15.1',
             'munch >= 2.1.0',
             'gsw >= 3.0.3',
+            'pytz',
             'pyaxiom'
       ],
       include_package_data=True,

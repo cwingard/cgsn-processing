@@ -55,7 +55,6 @@ def main():
         'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
     }
 
-    # create/open the netCDF file and set the global attributes and parameters
     ts = TimeSeries(
             output_directory=outpath,
             latitude=lat,
@@ -67,8 +66,15 @@ def main():
             output_filename=outfile,
             vertical_positive='down')
 
-    # add the met sensor altitudes as variables
+    # add the data from the data frame and set the attributes
     nc = ts._nc     # create a netCDF4 object from the TimeSeries object
+
+    # add the deployment index
+    d = nc.createVariable('deployment', 'i2')
+    d.setncatts(METBK['deployment'])
+    d[:] = int(re.sub('\D', '', deployment))
+
+    # add the met sensor altitudes as variables
     # depth of the METBK-CT sensor
     d = nc.createVariable('z_ct', 'f4')
     d.setncatts(METBK['z_ct'])
@@ -101,15 +107,14 @@ def main():
             # print("Skipping axis '{}' (already in file)".format(c))
             continue
 
-        # create the netCDF.Variable object for the parameter 
+        # create the netCDF.Variable object for the date/time string
         if c == 'dcl_date_time_string':
             d = nc.createVariable(c, 'S23', ('time',))
+            d.setncatts(METBK[c])
+            d[:] = df[c].values
         else:
-            d = nc.createVariable(c, np.dtype(df[c].dtype), ('time',))
-
-        # assign the values and the attributes
-        d.setncatts(METBK[c])
-        d[:] = df[c].values
+            # use the TimeSeries object to add the variables
+            ts.add_variable(c, df[c].values, fillvalue=-999999999, attributes=METBK[c])
 
     # synchronize the data with the netCDF file and close it
     nc.sync()
