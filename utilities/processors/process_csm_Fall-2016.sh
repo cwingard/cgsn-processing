@@ -65,7 +65,7 @@ esac
 # Buoy
 $PROCESS/process_pwrsys.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/pwrsys" $FNAME.pwrsys.json
 
-$PROCESS/process_metbk.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/metbk" $FNAME.metbk.json
+#$PROCESS/process_metbk.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/metbk" $FNAME.metbk.json
 #--> MOPAK
 #--> PCO2A
 #--> VELPT
@@ -85,12 +85,12 @@ $PROCESS/process_metbk.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/metbk" $FNAME.metbk.
 #        fi
 #    fi
 #done
-#$PROCESS/process_phsen.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/phsen" ${PHSEN1[1]} $FNAME.${PHSEN1[0]}.json
+$PROCESS/process_phsen.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/phsen" ${PHSEN1[1]} $FNAME.${PHSEN1[0]}.json
 #--> SPKIR
 #--> UCSPP (acoustic modem communications with uCSPP)
 #--> VELPT
 
-#if [ $MFN_FLAG == 1 ]; then
+if [ $MFN_FLAG == 1 ]; then
     # MFN
     #--> ADCPT
     #--> CTDBP + DOSTA
@@ -104,8 +104,8 @@ $PROCESS/process_metbk.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/metbk" $FNAME.metbk.
 #        fi
 #    done
 #    $PROCESS/process_pco2w.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/pco2w" ${PCO2W[1]} $FNAME.${PCO2W[0]}.json
-#    $PROCESS/process_phsen.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/phsen" ${PHSEN1[1]} $FNAME.${PHSEN2[0]}.json
+    $PROCESS/process_phsen.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/phsen" ${PHSEN1[1]} $FNAME.${PHSEN2[0]}.json
     #--> PRESF
     #--> VEL3D
     #--> ZPLSC
-#fi
+fi

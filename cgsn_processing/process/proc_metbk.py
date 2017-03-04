@@ -30,6 +30,7 @@ def main():
     # load the json data file and return a panda data frame
     df = json2df(infile)
     df['depth'] = 0.0       # default depth, will update for sensors below
+    df['deploy_id'] = deployment
 
     # calculate the practical salinity of the surface seawater from the temperature and conductivity measurements
     df['psu'] = gsw.SP_from_C(df['sea_surface_conductivity'] * 10.0, df['sea_surface_temperature'], 0.0)
@@ -69,11 +70,6 @@ def main():
     # add the data from the data frame and set the attributes
     nc = ts._nc     # create a netCDF4 object from the TimeSeries object
 
-    # add the deployment index
-    d = nc.createVariable('deployment', 'i2')
-    d.setncatts(METBK['deployment'])
-    d[:] = int(re.sub('\D', '', deployment))
-
     # add the met sensor altitudes as variables
     # depth of the METBK-CT sensor
     d = nc.createVariable('z_ct', 'f4')
@@ -110,6 +106,10 @@ def main():
         # create the netCDF.Variable object for the date/time string
         if c == 'dcl_date_time_string':
             d = nc.createVariable(c, 'S23', ('time',))
+            d.setncatts(METBK[c])
+            d[:] = df[c].values
+        elif c == 'deploy_id':
+            d = nc.createVariable(c, 'S6', ('time',))
             d.setncatts(METBK[c])
             d[:] = df[c].values
         else:

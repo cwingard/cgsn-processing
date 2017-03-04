@@ -6,19 +6,52 @@
 @author Christopher Wingard
 @brief Attributes for the METBK variables
 """
+import numpy as np
+
 PHSEN = {
-    'deployment': {
-        'long_name': 'Deployment Index',
-        'standard_name': 'deployment_index',
+    'deploy_id': {
+        'long_name': 'Deployment ID',
+        'standard_name': 'deployment_id',
         'units': '1',
-        'coordinates': 'time longitude latitude',
-        '_FillValue': '-999999999'
+        'coordinates': 'time z longitude latitude',
+        'grid_mapping': 'crs',
+        'platform': 'platform',
+        'ancillary_variables': 'platform',
+        'coverage_content_type': 'physicalMeasurement'
     },
     'dcl_date_time_string': {
         'long_name': 'DCL Date and Time Stamp',
         'standard_name': 'dcl_date_time_string',
         'units': '1',
         'coordinates': 'time z longitude latitude',
+        'grid_mapping': 'crs',
+        'platform': 'platform',
+        'ancillary_variables': 'platform',
+        'coverage_content_type': 'physicalMeasurement'
+    },
+    'reference_measurements': {
+        'long_name': 'Reference Measurements Array',
+        'standard_name': 'reference_measurements',
+        'units': 'counts',
+        'coordinates': 'time z longitude latitude',
+        'fill_value': np.int32(-999999999),
+        'missing_value': np.int32(-999999999),
+        'grid_mapping': 'crs',
+        'platform': 'platform',
+        'ancillary_variables': 'platform',
+        'coverage_content_type': 'physicalMeasurement'
+    },
+    'light_measurements': {
+        'long_name': 'Light Measurements Array',
+        'standard_name': 'light_measurements',
+        'units': 'counts',
+        'coordinates': 'time z longitude latitude',
+        'fill_value': np.int32(-999999999),
+        'missing_value': np.int32(-999999999),
+        'grid_mapping': 'crs',
+        'platform': 'platform',
+        'ancillary_variables': 'platform',
+        'coverage_content_type': 'physicalMeasurement'
     },
     'record_length': {
         'long_name': 'Record Length',
@@ -39,20 +72,6 @@ PHSEN = {
         'long_name': 'Temperature Start',
         'standard_name': 'seawater_temperature',
         'units': 'degree_Celcius'
-    },
-    'reference_measurements': {
-        'long_name': 'Reference Measurements Array',
-        'standard_name': 'reference_measurements',
-        'units': 'counts',
-        'coordinates': 'time z longitude latitude',
-        '_FillValue': '-999999999'
-    },
-    'light_measurements': {
-        'long_name': 'Light Measurements Array',
-        'standard_name': 'light_measurements',
-        'units': 'counts',
-        'coordinates': 'time z longitude latitude',
-        '_FillValue': '-999999999'
     },
     'voltage_battery': {
         'long_name': 'Battery Voltage',

@@ -29,6 +29,7 @@ def main():
     # load the json data file and return a panda dataframe
     df = json2df(infile)
     df['depth'] = 0.0
+    df['deploy_id'] = deployment
 
     # convert the error flags to integers from the ASCIIHEX strings
     df.error_flag1 = df.error_flag1.apply(hex2int)
@@ -66,11 +67,6 @@ def main():
     # add the data from the data frame and set the attributes
     nc = ts._nc     # create a netCDF4 object from the TimeSeries object
 
-    # add the deployment index (dimensionless)
-    d = nc.createVariable('deployment', 'i2')
-    d.setncatts(PWRSYS['deployment'])
-    d[:] = int(re.sub('\D', '', deployment))
-
     for c in df.columns:
         # skip the coordinate variables, if present, already added above via TimeSeries
         if c in ['time', 'lat', 'lon', 'depth']:
@@ -80,6 +76,10 @@ def main():
         # create the netCDF.Variable object for the date/time string
         if c == 'dcl_date_time_string':
             d = nc.createVariable(c, 'S23', ('time',))
+            d.setncatts(PWRSYS[c])
+            d[:] = df[c].values
+        elif c == 'deploy_id':
+            d = nc.createVariable(c, 'S6', ('time',))
             d.setncatts(PWRSYS[c])
             d[:] = df[c].values
         else:

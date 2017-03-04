@@ -29,16 +29,17 @@ def main():
     deployment = args.deployment
     lat = args.latitude
     lng = args.longitude
-    depth = args.switch.astype(np.float)    # utilize the switch option to set the deployment depth
+    depth = np.float(args.switch)    # utilize the switch option to set the deployment depth
 
     # load the json data file and return a panda data frame
     df = json2df(infile)
-    if not df:
+    if df.empty:
         # there was no data in this file, ending early
         return None
 
-    # set the depth
+    # set the depth and deployment id
     df['depth'] = depth
+    df['deploy_id'] = deployment
 
     # convert the raw battery voltage and thermistor values from counts
     # to V and degC, respectively
@@ -69,8 +70,8 @@ def main():
     salinity = np.ones(nrec) * 33.0
 
     # calculate the pH (with some cursing and grumbling about the Object dtype pandas use for arrays)
-    refnc = np.vstack(df['reference_measurements'].values).astype(np.int)
-    light = np.vstack(df['light_measurements'].values).astype(np.int)
+    refnc = np.array(np.vstack(df['reference_measurements'].values), dtype='int32')
+    light = np.array(np.vstack(df['light_measurements'].values), dtype='int32')
     df['pH'] = ph_calc_phwater(refnc, light, therm, ea434, eb434, ea578, eb578, slope, offset, salinity)
 
     # Setup the global attributes for the NetCDF file and create the NetCDF TimeSeries object
@@ -101,11 +102,6 @@ def main():
 
     nc = ts._nc     # create a netCDF4 object from the TimeSeries object
 
-    # add the deployment index (dimensionless)
-    d = nc.createVariable('deployment', 'i2')
-    d.setncatts(PHSEN['deployment'])
-    d[:] = int(re.sub('\D', '', deployment))
-
     # create new dimensions for the light and reference arrays
     nc.createDimension('light', size=92)
     nc.createDimension('refnc', size=16)
@@ -120,6 +116,10 @@ def main():
         # create the netCDF.Variable object for the date/time string
         if c == 'dcl_date_time_string':
             d = nc.createVariable(c, 'S23', ('time',))
+            d.setncatts(PHSEN[c])
+            d[:] = df[c].values
+        elif c == 'deploy_id':
+            d = nc.createVariable(c, 'S6', ('time',))
             d.setncatts(PHSEN[c])
             d[:] = df[c].values
         elif c == 'light_measurements':

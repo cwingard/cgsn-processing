@@ -61,7 +61,7 @@ def json2df(infile):
     with open(infile) as jf:
         df = pd.DataFrame(json.load(jf))
         if df.empty:
-            return None
+            return df
 
         df['time'] = pd.to_datetime(df.time, unit='s')
         df.index = df['time']
