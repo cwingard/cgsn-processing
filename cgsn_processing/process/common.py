@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import argparse
-import cPickle as pickle
+import cPickle
 import json
 import pandas as pd
 
@@ -34,7 +34,7 @@ class Coefficients(object):
         """
         # load the cPickled blanks dictionary
         with open(self.coeff_file, 'rb') as f:
-            coeffs = pickle.load(f)
+            coeffs = cPickle.load(f)
 
         self.coeffs = coeffs
 
@@ -44,7 +44,26 @@ class Coefficients(object):
         """
         # save the cPickled blanks dictionary
         with open(self.coeff_file, 'wb') as f:
-            pickle.dump(self.coeffs, f)
+            cPickle.dump(self.coeffs, f)
+
+
+class Error(Exception):
+    """Base class for exceptions in this module."""
+    pass
+
+
+class InputError(Error):
+    """
+    Exception raised for errors in the input.
+
+    Attributes:
+        expression -- input expression in which the error occurred
+        message -- explanation of the error
+    """
+
+    def __init__(self, expression, message):
+        self.expression = expression
+        self.message = message
 
 
 def hex2int(hstr):

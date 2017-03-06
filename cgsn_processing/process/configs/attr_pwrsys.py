@@ -13,7 +13,7 @@ PWRSYS = {
         'long_name': 'Deployment ID',
         'standard_name': 'deployment_id',
         'units': '1',
-        'coordinates': 'time z longitude latitude',
+        'coordinates': 'time z latitude longitude',
         'grid_mapping': 'crs',
         'platform': 'platform',
         'ancillary_variables': 'platform',
@@ -23,7 +23,7 @@ PWRSYS = {
         'long_name': 'DCL Date and Time Stamp',
         'standard_name': 'dcl_date_time_string',
         'units': '1',
-        'coordinates': 'time z longitude latitude',
+        'coordinates': 'time z latitude longitude',
         'grid_mapping': 'crs',
         'platform': 'platform',
         'ancillary_variables': 'platform',
@@ -48,16 +48,16 @@ PWRSYS = {
         'long_name': 'Override Flag',
         'standard_name': 'override_flag',
         'units': '1',
-        'flag_masks': np.uint32([0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]),
+        'flag_masks': np.int32([0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]),
         'flag_meanings': 'no_override wt1 wt2 pv1 pv2 pv3 pv4 fc1 fc2 300v_control 300v_reset external_power'
     },
     'error_flag1': {
         'long_name': 'Error Flag 1',
         'standard_name': 'error_flag_1',
         'units': '1',
-        'flag_masks': np.uint32([0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536,
-            131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864,
-            134217728, 268435456, 536870912, 1073741824, 2147483648]),
+        'flag_masks': np.int32([0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536,
+                                131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864,
+                                134217728, 268435456, 536870912, 1073741824, 2147483648]),
         'flag_meanings': (
             'no_error '
             'battery1_of_string1_overtemp '
@@ -98,8 +98,8 @@ PWRSYS = {
         'long_name': 'Error Flag 2',
         'standard_name': 'error_flag_2',
         'units': '1',
-        'flag_masks': np.uint32([0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536,
-            131072, 262144, 524288, 1048576, 2097152, 4194304]),
+        'flag_masks': np.int32([0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536,
+                                131072, 262144, 524288, 1048576, 2097152, 4194304]),
         'flag_meanings': (
             'no_error '
             '24v_buoy_power_sensor_fault '
@@ -131,7 +131,7 @@ PWRSYS = {
         'long_name': 'Solar Panel 1 State',
         'standard_name': 'solar_panel_1_state',
         'units': '1',
-        'flag_masks': np.uint32([0, 1]),
+        'flag_values': np.int32([0, 1]),
         'flag_meanings': 'disabled enabled'
     },
     'solar_panel1_voltage': {
@@ -148,7 +148,7 @@ PWRSYS = {
         'long_name': 'Solar Panel 2 State',
         'standard_name': 'solar_panel_2_state',
         'units': '1',
-        'flag_masks': np.uint32([0, 1]),
+        'flag_values': np.int32([0, 1]),
         'flag_meanings': 'disabled enabled'
     },
     'solar_panel2_voltage': {
@@ -165,7 +165,7 @@ PWRSYS = {
         'long_name': 'Solar Panel 3 State',
         'standard_name': 'solar_panel_3_state',
         'units': '1',
-        'flag_masks': np.uint32([0, 1]),
+        'flag_values': np.int32([0, 1]),
         'flag_meanings': 'disabled enabled'
     },
     'solar_panel3_voltage': {
@@ -182,7 +182,7 @@ PWRSYS = {
         'long_name': 'Solar Panel 4 State',
         'standard_name': 'solar_panel_4_state',
         'units': '1',
-        'flag_masks': np.uint32([0, 1]),
+        'flag_values': np.int32([0, 1]),
         'flag_meanings': 'disabled enabled'
     },
     'solar_panel4_voltage': {
@@ -199,7 +199,7 @@ PWRSYS = {
         'long_name': 'Wind Turbine 1 State',
         'standard_name': 'wind_turbine_1_state',
         'units': '1',
-        'flag_masks': np.uint32([0, 1]),
+        'flag_values': np.int32([0, 1]),
         'flag_meanings': 'disabled enabled'
     },
     'wind_turbine1_voltage': {
@@ -216,7 +216,7 @@ PWRSYS = {
         'long_name': 'Wind Turbine 2 State',
         'standard_name': 'wind_turbine_2_state',
         'units': '1',
-        'flag_masks': np.uint32([0, 1]),
+        'flag_values': np.int32([0, 1]),
         'flag_meanings': 'disabled enabled'
     },
     'wind_turbine2_voltage': {
@@ -233,7 +233,7 @@ PWRSYS = {
         'long_name': 'Fuel Cell 1 State',
         'standard_name': 'fuel_cell_1_state',
         'units': '1',
-        'flag_masks': np.uint32([0, 1]),
+        'flag_values': np.int32([0, 1]),
         'flag_meanings': 'disabled enabled'
     },
     'fuel_cell1_voltage': {
@@ -250,7 +250,7 @@ PWRSYS = {
         'long_name': 'Fuel Cell 2 State',
         'standard_name': 'fuel_cell_2_state',
         'units': '1',
-        'flag_masks': np.uint32([0, 1]),
+        'flag_values': np.int32([0, 1]),
         'flag_meanings': 'disabled enabled'
     },
     'fuel_cell2_voltage': {
@@ -305,7 +305,7 @@ PWRSYS = {
     },
     'battery_bank3_current': {
         'long_name': 'Battery Bank 3 Current',
-        'standard_name': '',
+        'standard_name': 'battery_bank_3_current',
         'units': 'mA'
     },
     'battery_bank4_temperature': {
@@ -356,9 +356,7 @@ PWRSYS = {
     'seawater_ground_state': {
         'long_name': 'Sea Water Ground State',
         'standard_name': 'seawater_ground_state',
-        'units': '1',
-        'flag_masks': '0',
-        'flag_meanings': 'undefined'
+        'units': '1'
     },
     'seawater_ground_positve': {
         'long_name': 'Sea Water Ground Positive',
@@ -374,7 +372,7 @@ PWRSYS = {
         'long_name': 'CVT State',
         'standard_name': 'cvt_state',
         'units': '1',
-        'flag_masks': np.uint32([0, 1]),
+        'flag_values': np.int32([0, 1]),
         'flag_meanings': 'disabled enabled'
     },
     'cvt_voltage': {
@@ -391,7 +389,7 @@ PWRSYS = {
         'long_name': 'CVT Interlock',
         'standard_name': 'cvt_interlock',
         'units': '1',
-        'flag_masks': np.uint32([0, 1]),
+        'flag_values': np.int32([0, 1]),
         'flag_meanings': 'disabled enabled'
     },
     'cvt_temperature': {
@@ -404,8 +402,8 @@ PWRSYS = {
         'standard_name': 'error_flag_3',
         'units': '1',
         'flag_masks': np.int32([0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536,
-            131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864,
-            134217728, 268435456, 536870912, 1073741824, 2147483648]),
+                                131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864,
+                                134217728, 268435456, 536870912, 1073741824, 2147483648]),
         'flag_meanings': (
             'no_error '
             'cvt_board_temp_over_100C '

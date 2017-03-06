@@ -11,7 +11,7 @@ if [ $# -ne 7 ]; then
     echo "$0: required inputs are the platform and deployment names, the PHSEN"
     echo "directory name, and the name of the file to process."
     echo ""
-    echo "     example: $0 ce02shsm D00004 nsif/phsen 20161012.phsen.json"
+    echo "     example: $0 ce02shsm D00004 nsif/phsen 7 20161012.phsen.json"
     exit 1
 fi
 PLATFORM=${1,,}
@@ -34,5 +34,5 @@ fi
 
 # Process the file
 if [ -e $IN ]; then
-    $PYTHON -m $BIN/proc_phsen -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -i $IN -o $OUT -s $DEPTH
+    $PYTHON -m $BIN/proc_phsen -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -s $DEPTH -i $IN -o $OUT
 fi
