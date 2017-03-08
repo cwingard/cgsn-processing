@@ -29,9 +29,9 @@ PHSEN = {
         'ancillary_variables': 'platform',
         'coverage_content_type': 'physicalMeasurement'
     },
-    'reference_measurements': {
-        'long_name': 'Reference Measurements Array',
-        'standard_name': 'reference_measurements',
+    'blank_refrnc_434': {
+        'long_name': 'DI Blank Reference Intensity 434 nm',
+        'standard_name': 'blank_reference_434',
         'units': 'counts',
         'coordinates': 'time z longitude latitude',
         'fill_value': np.int32(-999999999),
@@ -41,9 +41,81 @@ PHSEN = {
         'ancillary_variables': 'platform',
         'coverage_content_type': 'physicalMeasurement'
     },
-    'light_measurements': {
-        'long_name': 'Light Measurements Array',
-        'standard_name': 'light_measurements',
+    'blank_signal_434': {
+        'long_name': 'DI Blank Signal Intensity 434 nm',
+        'standard_name': 'blank_signal_434',
+        'units': 'counts',
+        'coordinates': 'time z longitude latitude',
+        'fill_value': np.int32(-999999999),
+        'missing_value': np.int32(-999999999),
+        'grid_mapping': 'crs',
+        'platform': 'platform',
+        'ancillary_variables': 'platform',
+        'coverage_content_type': 'physicalMeasurement'
+    },
+    'blank_refrnc_578': {
+        'long_name': 'DI Blank Reference Intensity 578 nm',
+        'standard_name': 'blank_reference_578',
+        'units': 'counts',
+        'coordinates': 'time z longitude latitude',
+        'fill_value': np.int32(-999999999),
+        'missing_value': np.int32(-999999999),
+        'grid_mapping': 'crs',
+        'platform': 'platform',
+        'ancillary_variables': 'platform',
+        'coverage_content_type': 'physicalMeasurement'
+    },
+    'blank_signal_578': {
+        'long_name': 'DI Blank Reference Intensity 578 nm',
+        'standard_name': 'blank_signal_578',
+        'units': 'counts',
+        'coordinates': 'time z longitude latitude',
+        'fill_value': np.int32(-999999999),
+        'missing_value': np.int32(-999999999),
+        'grid_mapping': 'crs',
+        'platform': 'platform',
+        'ancillary_variables': 'platform',
+        'coverage_content_type': 'physicalMeasurement'
+    },
+    'reference_434': {
+        'long_name': 'Reference Intensity 434 nm',
+        'standard_name': 'reference_434',
+        'units': 'counts',
+        'coordinates': 'time z longitude latitude',
+        'fill_value': np.int32(-999999999),
+        'missing_value': np.int32(-999999999),
+        'grid_mapping': 'crs',
+        'platform': 'platform',
+        'ancillary_variables': 'platform',
+        'coverage_content_type': 'physicalMeasurement'
+    },
+    'signal_434': {
+        'long_name': 'Signal Intensity 434 nm',
+        'standard_name': 'signal_434',
+        'units': 'counts',
+        'coordinates': 'time z longitude latitude',
+        'fill_value': np.int32(-999999999),
+        'missing_value': np.int32(-999999999),
+        'grid_mapping': 'crs',
+        'platform': 'platform',
+        'ancillary_variables': 'platform',
+        'coverage_content_type': 'physicalMeasurement'
+    },
+    'reference_578': {
+        'long_name': 'Reference Intensity 578 nm',
+        'standard_name': 'reference_578',
+        'units': 'counts',
+        'coordinates': 'time z longitude latitude',
+        'fill_value': np.int32(-999999999),
+        'missing_value': np.int32(-999999999),
+        'grid_mapping': 'crs',
+        'platform': 'platform',
+        'ancillary_variables': 'platform',
+        'coverage_content_type': 'physicalMeasurement'
+    },
+    'signal_578': {
+        'long_name': 'Signal Intensity 578 nm',
+        'standard_name': 'signal_578',
         'units': 'counts',
         'coordinates': 'time z longitude latitude',
         'fill_value': np.int32(-999999999),

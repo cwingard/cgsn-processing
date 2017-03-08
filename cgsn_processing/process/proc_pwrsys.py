@@ -82,6 +82,10 @@ def main():
             d = nc.createVariable(c, 'S6', ('time',))
             d.setncatts(PWRSYS[c])
             d[:] = df[c].values
+        elif c in ['override_flag', 'error_flag1', 'error_flag2', 'error_flag3']:
+            d = nc.createVariable(c, 'i8', ('time',))
+            d.setncatts(PWRSYS[c])
+            d[:] = df[c].values
         else:
             # use the TimeSeries object to add the variables
             ts.add_variable(c, df[c].values, fillvalue=-999999999, attributes=PWRSYS[c])

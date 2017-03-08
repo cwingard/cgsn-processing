@@ -74,6 +74,22 @@ def main():
     light = np.array(np.vstack(df['light_measurements'].values), dtype='int32')
     df['pH'] = ph_calc_phwater(refnc, light, therm, ea434, eb434, ea578, eb578, slope, offset, salinity)
 
+    # now we need to reset the light and reference arrays to variables that are more meaningful and useful
+    refnc = np.atleast_3d(refnc)      # 4 sets of 4 seawater plus DI measurements (blanks)
+    refnc = np.reshape(refnc, (nrec, 4, 4))
+    fill = np.ones((nrec, 19)) * -999999999
+    df['blank_refrnc_434'] = np.concatenate((refnc[:, :, 0], fill), axis=1).tolist()  # DI blank reference, 434 nm
+    df['blank_signal_434'] = np.concatenate((refnc[:, :, 1], fill), axis=1).tolist()  # DI blank signal, 434 nm
+    df['blank_refrnc_578'] = np.concatenate((refnc[:, :, 2], fill), axis=1).tolist()  # DI blank reference, 578 nm
+    df['blank_signal_578'] = np.concatenate((refnc[:, :, 3], fill), axis=1).tolist()  # DI blank signal, 578 nm
+
+    light = np.atleast_3d(light)
+    light = np.reshape(light, (nrec, 23, 4))
+    df['reference_434'] = light[:, :, 0].tolist()   # reference signal, 434 nm
+    df['signal_434'] = light[:, :, 1].tolist()   # signal intensity, 434 nm (PH434SI_L0)
+    df['reference_578'] = light[:, :, 2].tolist()   # reference signal, 578 nm
+    df['signal_578'] = light[:, :, 3].tolist()   # signal intensity, 578 nm (PH578SI_L0)
+
     # Setup the global attributes for the NetCDF file and create the NetCDF TimeSeries object
     global_attributes = {
         'title': 'Seawater pH from PHSEN',
@@ -102,9 +118,9 @@ def main():
 
     nc = ts._nc     # create a netCDF4 object from the TimeSeries object
 
-    # create new dimensions for the light and reference arrays
-    nc.createDimension('light', size=92)
-    nc.createDimension('refnc', size=16)
+    # create a new dimension for the 23 measurements in the 4 light arrays (will use fill values to pad out the
+    # reference arrays to have a single common dimension
+    nc.createDimension('array', size=23)
 
     # add the data from the data frame and set the attributes
     for c in df.columns:
@@ -113,7 +129,11 @@ def main():
             # print("Skipping axis '{}' (already in file)".format(c))
             continue
 
-        # create the netCDF.Variable object for the date/time string
+        if c in ['light_measurements', 'reference_measurements']:
+            # print("Skipping '{}' (will be represented by more meaningful variables)".format(c))
+            continue
+
+        # create the netCDF.Variable object for the date/time and deploy_id strings
         if c == 'dcl_date_time_string':
             d = nc.createVariable(c, 'S23', ('time',))
             d.setncatts(PHSEN[c])
@@ -122,14 +142,12 @@ def main():
             d = nc.createVariable(c, 'S6', ('time',))
             d.setncatts(PHSEN[c])
             d[:] = df[c].values
-        elif c == 'light_measurements':
-            d = nc.createVariable(c, 'i', ('time', 'light',))
+        # create the netCDF.Variable object for the blank and measurement arrays
+        elif c in ['blank_refrnc_434', 'blank_signal_434', 'blank_refrnc_578', 'blank_signal_578',
+                   'reference_434', 'signal_434', 'reference_578', 'signal_578']:
+            d = nc.createVariable(c, 'i', ('time', 'array',))
             d.setncatts(PHSEN[c])
-            d[:] = light
-        elif c == 'reference_measurements':
-            d = nc.createVariable(c, 'i', ('time', 'refnc',))
-            d.setncatts(PHSEN[c])
-            d[:] = refnc
+            d[:] = np.array(np.vstack(df[c].values), dtype='int32')
         else:
             # use the TimeSeries object to add the variables
             ts.add_variable(c, df[c].values, fillvalue=-999999999, attributes=PHSEN[c])

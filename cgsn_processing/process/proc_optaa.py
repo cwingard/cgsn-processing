@@ -13,9 +13,12 @@ import os
 import pandas as pd
 import re
 import requests
-import scipy.interpolate as sci
+
+from pyaxiom.netcdf.sensors import TimeSeries
 
 from cgsn_processing.process.common import Coefficients, inputs, json2df
+from cgsn_processing.process.configs.attr_optaa import OPTAA
+
 from ion_functions.data.opt_functions import opt_internal_temp, opt_external_temp
 from ion_functions.data.opt_functions import opt_pressure, opt_pd_calc, opt_tempsal_corr
 
@@ -155,7 +158,7 @@ def apply_dev(optaa, coeffs):
 
     # calculate pressure, if sensor is equipped
     if np.all(coeffs['pressure_coeff'] == 0):
-        # do not use None, which will cause sio.savemat to croak.
+        # no pressure sensor, ignoring.
         optaa['pressure'] = np.NaN * np.array(optaa.pressure_raw)
     else:
         offset = coeffs['pressure_coeff'][0]
@@ -178,11 +181,11 @@ def apply_dev(optaa, coeffs):
     
     for ii in range(npackets):
         # calculate the uncorrected optical absorption coefficient [m^-1]
-        apd[ii, :], _ = opt_pd_calc(a_ref[ii, :], a_sig[ii, :], coeffs['a_offsets'], 
-            temp[ii], coeffs['temp_bins'], coeffs['ta_array'])
+        apd[ii, :], _ = opt_pd_calc(a_ref[ii, :], a_sig[ii, :], coeffs['a_offsets'], optaa['internal_temp'].values[ii],
+                                    coeffs['temp_bins'], coeffs['ta_array'])
         # calculate the uncorrected optical attenuation coefficient [m^-1]
-        cpd[ii, :], _ = opt_pd_calc(c_ref[ii, :], c_sig[ii, :], coeffs['c_offsets'], 
-            temp[ii], coeffs['temp_bins'], coeffs['tc_array'])
+        cpd[ii, :], _ = opt_pd_calc(c_ref[ii, :], c_sig[ii, :], coeffs['c_offsets'], optaa['internal_temp'].values[ii],
+                                    coeffs['temp_bins'], coeffs['tc_array'])
     
     # save the results back to the dictionary and add the beam attenuation and absorbance wavelengths to the data.
     optaa['apd'] = apd.tolist()
@@ -334,6 +337,71 @@ def main():
     df = apply_dev(df, dev.coeffs)
     df = apply_tscorr(df, dev.coeffs)
     df = apply_scatcorr(df, dev.coeffs)
+
+    # Setup the global attributes for the NetCDF file and create the NetCDF TimeSeries object
+    global_attributes = {
+        'title': 'Optical Absorbance and Attenuation from OPTAA',
+        'summary': (
+            'Measures the absorabance and attenuation of particulate and dissolved matter from the WET Labs AC-S.'
+        ),
+        'project': 'Ocean Observatories Initiative',
+        'institution': 'Coastal and Global Scales Nodes, (CGSN)',
+        'acknowledgement': 'National Science Foundation',
+        'references': 'http://oceanobservatories.org',
+        'creator_name': 'Christopher Wingard',
+        'creator_email': 'cwingard@coas.oregonstate.edu',
+        'creator_url': 'http://oceanobservatories.org',
+        'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
+    }
+    ts = TimeSeries(
+        output_directory=outpath,
+        latitude=lat,
+        longitude=lng,
+        station_name=platform,
+        global_attributes=global_attributes,
+        times=df.time.values.astype(np.int64) * 10**-9,
+        verticals=df.depth.values,
+        output_filename=outfile,
+        vertical_positive='down')
+
+    nc = ts._nc     # create a netCDF4 object from the TimeSeries object
+
+    # create a new dimension for the wavelength array
+    nc.createDimension('wvlngths', size=df.num_wavelengths[0])
+
+    # add the data from the data frame and set the attributes
+    for c in df.columns:
+        # skip the coordinate variables, if present, already added above via TimeSeries
+        if c in ['time', 'lat', 'lon', 'depth']:
+            # print("Skipping axis '{}' (already in file)".format(c))
+            continue
+
+        # create the netCDF.Variable object for the date/time string
+        if c == 'dcl_date_time_string':
+            d = nc.createVariable(c, 'S23', ('time',))
+            d.setncatts(OPTAA[c])
+            d[:] = df[c].values
+        elif c == 'deploy_id':
+            d = nc.createVariable(c, 'S6', ('time',))
+            d.setncatts(OPTAA[c])
+            d[:] = df[c].values
+        elif c in ['a_pd', 'a_pd_ts', 'a_pd_ts_s', 'c_pd', 'c_pd_ts', 'a_signal_raw', 'a_reference_raw', 
+                   'c_siganl_raw', 'c_reference_raw', 'a_wavelengths', 'c_wavelenghts']:
+            if isinstance(np.dtype(df[c].values), (int, long)):
+                d = nc.createVariable(c, 'i4', ('time', 'wvlngths',))
+                data = np.array(np.vstack(df['c'].values), dtype='int32')
+            else:
+                d = nc.createVariable(c, 'f4', ('time', 'wvlngths',))
+                data = np.array(np.vstack(df['c'].values), dtype='float')
+            d.setncatts(OPTAA[c])
+            d[:] = data
+        else:
+            # use the TimeSeries object to add the variables
+            ts.add_variable(c, df[c].values, fillvalue=-999999999, attributes=OPTAA[c])
+
+    # synchronize the data with the netCDF file and close it
+    nc.sync()
+    nc.close()
 
 if __name__ == '__main__':
     main()
