@@ -104,11 +104,11 @@ def json2netcdf(json_path, out_basepath, lat=0., lon=0.):
 
     cdf = massage_dataframe(dfs['cdata'])
     out_path = '{}-cdata.nc'.format(out_basepath)
-    ADataTimeseries.from_dataframe(cdf, out_path)
+    CDataTimeseries.from_dataframe(cdf, out_path)
 
     edf = massage_dataframe(dfs['edata'])
     out_path = '{}-edata.nc'.format(out_basepath)
-    ADataTimeseries.from_dataframe(edf, out_path)
+    EDataTimeseries.from_dataframe(edf, out_path)
 
 def main():
     # load  the input arguments
