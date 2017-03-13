@@ -6,6 +6,7 @@
 @author Joe Futrelle
 @brief Attributes for the MMP variables
 """
+
 MMP = {
     'z': {
         'long_name': 'depth',
@@ -25,6 +26,11 @@ MMP = {
         'long_name': 'sea pressure',
         'standard_name': 'sea_water_pressure_due_to_sea_water',
         'units': 'mbar'
+    },
+    'temperature': {
+        'long_name': 'temperature',
+        'standard_name': 'sea_water_temperature',
+        'units': 'degree_Celsius'
     }
 }
 
