@@ -9,6 +9,7 @@
 import os
 import json
 import datetime
+import re
 
 import numpy as np
 import pandas as pd
@@ -71,7 +72,7 @@ def json2dataframes(j, lat=0.):
         'edata': edata
     }
     
-def json2netcdf(json_path, out_basepath, lat=0., lon=0.):
+def json2netcdf(json_path, out_basepath, lat=0., lon=0., platform='', deployment=''):
     out_basename, _ = os.path.splitext(out_basepath)
     
     with open(json_path) as fin:
@@ -93,10 +94,15 @@ def json2netcdf(json_path, out_basepath, lat=0., lon=0.):
                 df[col] = df[col].astype(np.int32)
         return df
 
+    shared_attrs = MMP
+    shared_attrs['global'] = dict_update(shared_attrs['global'], {
+        'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
+    })
+
     def write_netcdf(key, attrs):
         df = massage_dataframe(dfs[key])
         out_path = '{}-{}.nc'.format(out_basepath, key)
-        attrs = dict_update(MMP, attrs)
+        attrs = dict_update(shared_attrs, attrs)
         OMTs.from_dataframe(df, out_path, attributes=attrs)
 
     write_netcdf('adata', MMP_ADATA)
@@ -114,7 +120,7 @@ def main():
     lat = args.latitude
     lon = args.longitude
 
-    json2netcdf(infile, out_basepath, lat=lat, lon=lon)
+    json2netcdf(infile, out_basepath, lat=lat, lon=lon, platform=platform, deployment=deployment)
     
 if __name__ == '__main__':
     main()
