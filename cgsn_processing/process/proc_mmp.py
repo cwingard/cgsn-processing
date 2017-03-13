@@ -23,10 +23,10 @@ from cgsn_processing.process.configs.attr_mmp import MMP, MMP_ADATA, MMP_CDATA, 
 def json2dataframes(j, lat=0.):
     # split adata "beams" into multiple columns
     adata = j['adata']
-    adata['beams1'] = [b[1] for b in adata['beams']]
-    adata['beams2'] = [b[2] for b in adata['beams']]
-    adata['beams3'] = [b[3] for b in adata['beams']]
-    adata['beams4'] = [b[4] for b in adata['beams']]
+    adata['beam1'] = [b[1] for b in adata['beams']]
+    adata['beam2'] = [b[2] for b in adata['beams']]
+    adata['beam3'] = [b[3] for b in adata['beams']]
+    adata['beam4'] = [b[4] for b in adata['beams']]
     adata['beams'] = [b[0] for b in adata['beams']]
 
     # convert to time-indexed dataframes
