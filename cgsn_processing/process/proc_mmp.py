@@ -20,8 +20,6 @@ from gsw import z_from_p
 from cgsn_processing.process.common import inputs
 from cgsn_processing.process.configs.attr_mmp import MMP, MMP_ADATA, MMP_CDATA, MMP_EDATA
 
-from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries
-
 def json2dataframes(j, lat=0.):
     # split adata "beams" into multiple columns
     adata = j['adata']
