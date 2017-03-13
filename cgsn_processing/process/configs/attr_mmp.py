@@ -9,7 +9,7 @@
 
 MMP = {
     'z': {
-        'long_name': 'Depth',
+        'long_name': 'Sensor Depth',
         'standard_name': 'depth_of_sensor_below_water',
         'units': 'm',
         'positive': 'down',
