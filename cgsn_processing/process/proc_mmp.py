@@ -79,7 +79,7 @@ def json2netcdf(json_path, out_basepath, lat=0., lon=0.):
     with open(json_path) as fin:
         j = json.load(fin)
 
-    dfs = json2dataframes(j)
+    dfs = json2dataframes(j, lat=lat)
 
     def massage_dataframe(df):
         df['y'] = lat
