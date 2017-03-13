@@ -94,21 +94,16 @@ def json2netcdf(json_path, out_basepath, lat=0., lon=0.):
             if df[col].dtype == np.int64:
                 df[col] = df[col].astype(np.int32)
         return df
-    
-    adf = massage_dataframe(dfs['adata'])
-    out_path = '{}-adata.nc'.format(out_basepath)
-    attrs = dict_update(MMP, MMP_ADATA)
-    OMTs.from_dataframe(adf, out_path, attributes=attrs)
 
-    cdf = massage_dataframe(dfs['cdata'])
-    out_path = '{}-cdata.nc'.format(out_basepath)
-    attrs = dict_update(MMP, MMP_CDATA)
-    OMTs.from_dataframe(cdf, out_path, attributes=attrs)
+    def write_netcdf(key, attrs):
+        df = massage_dataframe(dfs[key])
+        out_path = '{}-{}.nc'.format(out_basepath, key)
+        attrs = dict_update(MMP, attrs)
+        OMTs.from_dataframe(df, out_path, attributes=attrs)
 
-    edf = massage_dataframe(dfs['edata'])
-    out_path = '{}-edata.nc'.format(out_basepath)
-    attrs = dict_update(MMP, MMP_EDATA)
-    OMTs.from_dataframe(edf, out_path, attributes=attrs)
+    write_netcdf('adata', MMP_ADATA)
+    write_netcdf('cdata', MMP_CDATA)
+    write_netcdf('edata', MMP_EDATA)
 
 def main():
     # load  the input arguments
