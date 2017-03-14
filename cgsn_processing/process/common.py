@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import argparse
-import cPickle
+import pickle
 import json
 import pandas as pd
 
@@ -34,7 +34,7 @@ class Coefficients(object):
         """
         # load the cPickled blanks dictionary
         with open(self.coeff_file, 'rb') as f:
-            coeffs = cPickle.load(f)
+            coeffs = pickle.load(f)
 
         self.coeffs = coeffs
 
@@ -44,7 +44,7 @@ class Coefficients(object):
         """
         # save the cPickled blanks dictionary
         with open(self.coeff_file, 'wb') as f:
-            cPickle.dump(self.coeffs, f)
+            pickle.dump(self.coeffs, f)
 
 
 class Error(Exception):
