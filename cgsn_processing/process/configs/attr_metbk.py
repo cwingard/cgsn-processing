@@ -6,12 +6,27 @@
 @author Christopher Wingard
 @brief Attributes for the METBK variables
 """
+
 METBK = {
+    'deploy_id': {
+        'long_name': 'Deployment ID',
+        'standard_name': 'deployment_id',
+        'units': '1',
+        'coordinates': 'time z longitude latitude',
+        'grid_mapping': 'crs',
+        'platform': 'platform',
+        'ancillary_variables': 'platform',
+        'coverage_content_type': 'physicalMeasurement'
+    },
     'dcl_date_time_string': {
         'long_name': 'DCL Date and Time Stamp',
         'standard_name': 'dcl_date_time_string',
         'units': '1',
-        'coordinates': 'time z longitude latitude'
+        'coordinates': 'time z longitude latitude',
+        'grid_mapping': 'crs',
+        'platform': 'platform',
+        'ancillary_variables': 'platform',
+        'coverage_content_type': 'physicalMeasurement'
     },
     'barometric_pressure': {
         'long_name': 'Barometric Pressure',
@@ -25,7 +40,7 @@ METBK = {
     'relative_humidity': {
         'long_name': 'Relative Humidity',
         'standard_name': 'relative_humidity',
-        'units': '1',
+        'units': 'percent',
         'coordinates': 'time z_rh longitude latitude',
         'sensor_mount': 'mounted on mooring tower',
         'valid_min': '0',
@@ -127,7 +142,6 @@ METBK = {
         'units': 'm',
         'coordinates': '',
         'axis': 'Z',
-        'positive': 'down',
         'valid_min': '-10000',
         'valid_max': '1000'
     },
@@ -137,7 +151,6 @@ METBK = {
         'units': 'm',
         'coordinates': '',
         'axis': 'Z',
-        'positive': 'down',
         'valid_min': '-10000',
         'valid_max': '1000'
     },
@@ -147,7 +160,6 @@ METBK = {
         'units': 'm',
         'coordinates': '',
         'axis': 'Z',
-        'positive': 'down',
         'valid_min': '-10000',
         'valid_max': '1000'
     },
@@ -157,7 +169,6 @@ METBK = {
         'coordinates': '',
         'units': 'm',
         'axis': 'Z',
-        'positive': 'down',
         'valid_min': '-10000',
         'valid_max': '1000'
     },
@@ -166,7 +177,6 @@ METBK = {
         'standard_name': 'altitude_of_sensor_above_water',
         'units': 'm',
         'coordinates': '',
-        'axis': 'Z',
         'positive': 'down',
         'valid_min': '-10000',
         'valid_max': '1000'
@@ -177,7 +187,6 @@ METBK = {
         'units': 'm',
         'coordinates': '',
         'axis': 'Z',
-        'positive': 'down',
         'valid_min': '-10000',
         'valid_max': '1000'
     }

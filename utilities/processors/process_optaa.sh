@@ -9,7 +9,7 @@
 # C. Wingard 2017-01-23
 
 # Parse the command line inputs
-if [ $# -ne 7 ]; then
+if [ $# -ne 8 ]; then
     echo "$0: required inputs are the platform and deployment names, the OPTAA"
     echo "directory name, the UID name of the stored factory calibration data,"
     echo "and the name of the file to process."
@@ -21,9 +21,10 @@ PLATFORM=${1,,}
 DEPLOY=${2^^}
 LAT=$3; LNG=$4
 OPTAA=${5,,}
-UID=${6^^}
+DEPTH=$6
+UID=${7^^}
 CFILE=`/bin/basename $UID`
-FILE=`/bin/basename $7`
+FILE=`/bin/basename $8`
 
 # Set the default directory paths and input/output sources
 BIN="/home/cgsnmo/dev/cgsn-processing/cgsn_processing/process"
@@ -41,5 +42,5 @@ URL="https://github.com/ooi-integration/asset-management/raw/master/calibration/
 
 # Process the file (if it hasn't already been done)
 if [ -e $IN ] && [ ! -e $OUT ]; then
-    $PYTHON -m $BIN/proc_optaa -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -i $IN -o $OUT -cf $COEFF -u $URL
+    $PYTHON -m $BIN/proc_optaa -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -s $DEPTH -i $IN -o $OUT -cf $COEFF -u $URL
 fi

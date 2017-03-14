@@ -12,12 +12,12 @@ import re
 
 from pyaxiom.netcdf.sensors import TimeSeries
 
-from cgsn_processing.process.common import inputs, json2df
+from cgsn_processing.process.common import hex2int, inputs, json2df
 from cgsn_processing.process.configs.attr_pwrsys import PWRSYS
 
 
 def main():
-    # load  the input arguments
+    # load the input arguments
     args = inputs()
     infile = os.path.abspath(args.infile)
     outpath, outfile = os.path.split(args.outfile)
@@ -29,6 +29,13 @@ def main():
     # load the json data file and return a panda dataframe
     df = json2df(infile)
     df['depth'] = 0.0
+    df['deploy_id'] = deployment
+
+    # convert the error flags to integers from the ASCIIHEX strings
+    df.error_flag1 = df.error_flag1.apply(hex2int)
+    df.error_flag2 = df.error_flag2.apply(hex2int)
+    df.error_flag3 = df.error_flag3.apply(hex2int)
+    df.override_flag = df.override_flag.apply(hex2int)
 
     # Setup the global attributes for the NetCDF file and create the NetCDF timeseries object
     global_attributes = {
@@ -59,29 +66,29 @@ def main():
 
     # add the data from the data frame and set the attributes
     nc = ts._nc     # create a netCDF4 object from the TimeSeries object
+
     for c in df.columns:
         # skip the coordinate variables, if present, already added above via TimeSeries
         if c in ['time', 'lat', 'lon', 'depth']:
             # print("Skipping axis '{}' (already in file)".format(c))
             continue
 
-        # create the netCDF.Variable object for the parameter
+        # create the netCDF.Variable object for the date/time string
         if c == 'dcl_date_time_string':
             d = nc.createVariable(c, 'S23', ('time',))
-        elif c == 'error_flag1':
-            d = nc.createVariable(c, 'S8', ('time',))
-        elif c == 'error_flag2':
-            d = nc.createVariable(c, 'S8', ('time',))
-        elif c == 'error_flag3':
-            d = nc.createVariable(c, 'S8', ('time',))
-        elif c == 'override_flag':
-            d = nc.createVariable(c, 'S4', ('time',))
+            d.setncatts(PWRSYS[c])
+            d[:] = df[c].values
+        elif c == 'deploy_id':
+            d = nc.createVariable(c, 'S6', ('time',))
+            d.setncatts(PWRSYS[c])
+            d[:] = df[c].values
+        elif c in ['override_flag', 'error_flag1', 'error_flag2', 'error_flag3']:
+            d = nc.createVariable(c, 'i8', ('time',))
+            d.setncatts(PWRSYS[c])
+            d[:] = df[c].values
         else:
-            d = nc.createVariable(c, np.dtype(df[c].dtype), ('time',))
-
-        # assign the values and the attributes
-        d.setncatts(PWRSYS[c])
-        d[:] = df[c].values
+            # use the TimeSeries object to add the variables
+            ts.add_variable(c, df[c].values, fillvalue=-999999999, attributes=PWRSYS[c])
 
     # synchronize the data with the netCDF file and close it
     nc.sync()

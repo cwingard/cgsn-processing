@@ -1,41 +1,39 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
+"""
 @package cgsn_parsers.process.proc_pco2w
 @file cgsn_parsers/process/proc_pco2w.py
 @author Christopher Wingard
 @brief Calculate the pCO2 of water from the SAMI2-pCO2 (PCO2W) instrument
-'''
-import cPickle as pickle
-import json
+"""
+import cPickle
 import numpy as np
 import os
-import pandas as pd
 
 from datetime import datetime, timedelta
-from munch import Munch
 from pytz import timezone
 
-from cgsn_processing.process.common import Coefficients, inputs
+from cgsn_processing.process.common import Coefficients, inputs, json2df
 from ion_functions.data.co2_functions import pco2_blank, pco2_pco2wat
 from ion_functions.data.ph_functions import ph_thermistor, ph_battery
 
+
 class Blanks(object):
-    '''
-    Serialized object used to store the PCO2W absorbance blanks used in the 
-    calculations of the pCO2 of seawater from a Sunburst Sensors, SAMI2-pCO2
-    '''
+    """
+    Serialized object used to store the PCO2W absorbance blanks used in the calculations of the pCO2 of seawater from
+    a Sunburst Sensors, SAMI2-pCO2
+    """
     def __init__(self, blnkfile, blank_434, blank_620):
         # initialize the information needed to define the blanks cPickle file
         # and the blanks        
-        self.blnkfile = blnkfile;
+        self.blnkfile = blnkfile
         self.blank_434 = blank_434
         self.blank_620 = blank_620
     
     def load_blanks(self):
         # load the cPickled blanks dictionary
         with open(self.blnkfile, 'rb') as f:
-            blank = pickle.load(f)
+            blank = cPickle.load(f)
 
         # assign the blanks
         self.blank_434 = blank['434']
@@ -43,43 +41,45 @@ class Blanks(object):
         
     def save_blanks(self):
         # create the blanks dictionary        
-        blank = {}
-        blank['434'] = self.blank_434
-        blank['620'] = self.blank_620
-        
+        blank = {
+            '434': self.blank_434,
+            '620': self.blank_620
+        }
+
         # save the cPickled blanks dictionary
         with open(self.blnkfile, 'wb') as f:
-            pickle.dump(blank, f)
+            cPickle.dump(blank, f)
 
             
 class Calibrations(Coefficients):
     def __init__(self, coeff_file, csv_url=None):
-        '''
-        Loads the calibration coefficients for a unit. Values come from either
-        a serialized object created per instrument and deployment (calibration 
-        coefficients do not change in the middle of a deployment), or from 
-        parsed CSV files maintained on GitHub by the OOI CI team.
-        '''        
+        """
+        A serialized object created per instrument and deployment (calibration coefficients do not change in the
+        middle of a deployment), or from parsed CSV files maintained on GitHub by the OOI CI team.
+        """
         # assign the inputs
         Coefficients.__init__(self, coeff_file)
         self.csv_url = csv_url
 
     def read_csv(self, csv_url):
-        '''
-        Reads the values from the CSV file already parsed and stored on Github.
-        Note, the formatting of those files puts some constraints on this 
-        process. If someone has a cleaner method, I'm all in favor...
-        '''
+        """
+        Reads the values from the CSV file already parsed and stored on Github. Note, the formatting of those files
+        puts some constraints on this process. If someone has a cleaner method, I'm all in favor...
+        """
         # create the device file dictionary and assign values
         coeffs = {}
         
         # read in the calibration data
         data = pd.read_csv(csv_url, usecols=[0,1,2])
         for idx, row in data.iterrows():
-            if row[1] == 'CC_cala': coeffs['cala'] = np.float(row[2])
-            if row[1] == 'CC_calb': coeffs['calb'] = np.float(row[2])
-            if row[1] == 'CC_calc': coeffs['calc'] = np.float(row[2])
-            if row[1] == 'CC_calt': coeffs['calt'] = np.float(row[2])
+            if row[1] == 'CC_cala':
+                coeffs['cala'] = np.float(row[2])
+            if row[1] == 'CC_calb':
+                coeffs['calb'] = np.float(row[2])
+            if row[1] == 'CC_calc':
+                coeffs['calc'] = np.float(row[2])
+            if row[1] == 'CC_calt':
+                coeffs['calt'] = np.float(row[2])
 
         # serial number, stripping off all but the numbers
         coeffs['serial_number'] = data.serial[0]
