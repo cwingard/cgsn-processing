@@ -120,7 +120,10 @@ def main():
 
     # create a new dimension for the 23 measurements in the 4 light arrays (will use fill values to pad out the
     # reference arrays to have a single common dimension
-    nc.createDimension('array', size=23)
+    nc.createDimension('measurements', size=23)
+    d = nc.createVariable('measurements', 'i', ('measurements',))
+    d.setncatts(PHSEN['measurements'])
+    d[:] = np.arange(0, 23).tolist()
 
     # add the data from the data frame and set the attributes
     for c in df.columns:
@@ -145,7 +148,7 @@ def main():
         # create the netCDF.Variable object for the blank and measurement arrays
         elif c in ['blank_refrnc_434', 'blank_signal_434', 'blank_refrnc_578', 'blank_signal_578',
                    'reference_434', 'signal_434', 'reference_578', 'signal_578']:
-            d = nc.createVariable(c, 'i', ('time', 'array',))
+            d = nc.createVariable(c, 'i', ('time', 'measurements',))
             d.setncatts(PHSEN[c])
             d[:] = np.array(np.vstack(df[c].values), dtype='int32')
         else:

@@ -14,7 +14,7 @@ if [ $# -ne 8 ]; then
     echo "directory name, the UID name of the stored factory calibration data,"
     echo "and the name of the file to process."
     echo ""
-    echo "     example: $0 ce02shsm D00004 nsif/optaa OPTAAD/CGINS-OPTAAD-00208__20160921 20161012_233000.optaa.json"
+    echo "     example: $0 ce02shsm D00004 nsif/optaa 7 OPTAAD/CGINS-OPTAAD-00208__20160921 20161012_233000.optaa.json"
     exit 1
 fi
 PLATFORM=${1,,}
@@ -37,7 +37,7 @@ if [ ! -d `/usr/bin/dirname $OUT` ]; then
     mkdir -p `/usr/bin/dirname $OUT`
 fi
 
-COEFF="$PROC/$PLATFORM/$DEPLOY/$OPTAA/$CFILE.coeff"
+COEFF="$DATA/proc/$PLATFORM/$DEPLOY/$OPTAA/$CFILE.coeff"
 URL="https://github.com/ooi-integration/asset-management/raw/master/calibration/$UID.csv"
 
 # Process the file (if it hasn't already been done)

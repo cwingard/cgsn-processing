@@ -190,8 +190,6 @@ def apply_dev(optaa, coeffs):
     # save the results back to the dictionary and add the beam attenuation and absorbance wavelengths to the data.
     optaa['apd'] = apd.tolist()
     optaa['cpd'] = cpd.tolist()
-    optaa['a_wavelengths'] = (np.tile(coeffs['a_wavelengths'], (npackets, 1))).tolist()
-    optaa['c_wavelengths'] = (np.tile(coeffs['c_wavelengths'], (npackets, 1))).tolist()
 
     # return the optaa dictionary with the factory calibrations applied
     return optaa
@@ -366,8 +364,19 @@ def main():
 
     nc = ts._nc     # create a netCDF4 object from the TimeSeries object
 
-    # create a new dimension for the wavelength array
-    nc.createDimension('wvlngths', size=df.num_wavelengths[0])
+    # create a new dimension for the wavelength array, padded out to a size of 100 to account for the variable number
+    # of wavelengths and then create arrays for the the 'a' and 'c'-channel wavelengths
+    nc.createDimension('a_wavelengths', size=100)
+    nc.createDimension('c_wavelengths', size=100)
+    npad = 100 - dev.coeffs['num_wavelengths']
+    fill = np.ones(npad) * -999999999.
+
+    d = nc.createVariable('a_wavelengths', 'f', ('a_wavelengths',))
+    d.setncatts(OPTAA['a_wavelengths'])
+    d[:] = np.concatenate((dev.coeffs['a_wavelengths'], fill)).tolist()
+    d = nc.createVariable('c_wavelengths', 'f', ('c_wavelengths',))
+    d.setncatts(OPTAA['c_wavelengths'])
+    d[:] = np.concatenate((dev.coeffs['c_wavelengths'], fill)).tolist()
 
     # add the data from the data frame and set the attributes
     for c in df.columns:
@@ -385,18 +394,27 @@ def main():
             d = nc.createVariable(c, 'S6', ('time',))
             d.setncatts(OPTAA[c])
             d[:] = df[c].values
-        elif c in ['a_pd', 'a_pd_ts', 'a_pd_ts_s', 'c_pd', 'c_pd_ts', 'a_signal_raw', 'a_reference_raw', 
-                   'c_siganl_raw', 'c_reference_raw', 'a_wavelengths', 'c_wavelenghts']:
-            if isinstance(np.dtype(df[c].values), (int, long)):
-                d = nc.createVariable(c, 'i4', ('time', 'wvlngths',))
-                data = np.array(np.vstack(df['c'].values), dtype='int32')
+        elif c in ['apd', 'apd_ts', 'apd_ts_s', 'cpd', 'cpd_ts',
+                   'a_signal_raw', 'a_reference_raw',
+                   'c_signal_raw', 'c_reference_raw']:
+            # first determine the data type and create accordingly
+            if c in ['a_signal_raw', 'a_reference_raw']:
+                d = nc.createVariable(c, 'i4', ('time', 'a_wavelengths',))
+                data = np.array(np.vstack(df[c].values), dtype='int32')
+            elif c in ['c_signal_raw', 'c_reference_raw']:
+                d = nc.createVariable(c, 'i4', ('time', 'c_wavelengths',))
+                data = np.array(np.vstack(df[c].values), dtype='int32')
+            elif c in ['apd', 'apd_ts', 'apd_ts_s']:
+                d = nc.createVariable(c, 'f', ('time', 'a_wavelengths',))
+                data = np.array(np.vstack(df[c].values), dtype='float32')
             else:
-                d = nc.createVariable(c, 'f4', ('time', 'wvlngths',))
-                data = np.array(np.vstack(df['c'].values), dtype='float')
+                d = nc.createVariable(c, 'f', ('time', 'c_wavelengths',))
+                data = np.array(np.vstack(df[c].values), dtype='float32')
+            # and now assign the data, padding out to 100 wavelengths
             d.setncatts(OPTAA[c])
-            d[:] = data
+            d[:] = np.concatenate((data, np.tile(fill, (len(df.time), 1))), axis=1)
         else:
-            # use the TimeSeries object to add the variables
+            # use the TimeSeries object to add the remaining variables
             ts.add_variable(c, df[c].values, fillvalue=-999999999, attributes=OPTAA[c])
 
     # synchronize the data with the netCDF file and close it

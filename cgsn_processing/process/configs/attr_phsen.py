@@ -29,6 +29,11 @@ PHSEN = {
         'ancillary_variables': 'platform',
         'coverage_content_type': 'physicalMeasurement'
     },
+    'measurements': {
+        'long_name': 'Measurements Array',
+        'standard_name': 'measurements',
+        'units': '1',
+    },
     'blank_refrnc_434': {
         'long_name': 'DI Blank Reference Intensity 434 nm',
         'standard_name': 'blank_reference_434',
