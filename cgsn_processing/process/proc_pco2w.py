@@ -6,7 +6,7 @@
 @author Christopher Wingard
 @brief Calculate the pCO2 of water from the SAMI2-pCO2 (PCO2W) instrument
 """
-import cPickle
+import pickle
 import numpy as np
 import os
 
@@ -33,7 +33,7 @@ class Blanks(object):
     def load_blanks(self):
         # load the cPickled blanks dictionary
         with open(self.blnkfile, 'rb') as f:
-            blank = cPickle.load(f)
+            blank = pickle.load(f)
 
         # assign the blanks
         self.blank_434 = blank['434']
@@ -48,7 +48,7 @@ class Blanks(object):
 
         # save the cPickled blanks dictionary
         with open(self.blnkfile, 'wb') as f:
-            cPickle.dump(blank, f)
+            pickle.dump(blank, f)
 
             
 class Calibrations(Coefficients):
