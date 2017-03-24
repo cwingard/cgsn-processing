@@ -13,6 +13,8 @@ import re
 from pyaxiom.netcdf.sensors import TimeSeries
 
 from cgsn_processing.process.common import hex2int, inputs, json2df
+from cgsn_processing.process.error_flags import PwrsysOverrideFlag, PwrsysErrorFlag1, PwrsysErrorFlag2, \
+    PwrsysErrorFlag3, derive_multi_flags
 from cgsn_processing.process.configs.attr_pwrsys import PWRSYS
 
 
@@ -31,11 +33,13 @@ def main():
     df['depth'] = 0.0
     df['deploy_id'] = deployment
 
-    # convert the error flags to integers from the ASCIIHEX strings
-    df.error_flag1 = df.error_flag1.apply(hex2int)
-    df.error_flag2 = df.error_flag2.apply(hex2int)
-    df.error_flag3 = df.error_flag3.apply(hex2int)
-    df.override_flag = df.override_flag.apply(hex2int)
+    # set an empty error flag variable
+    ef = []
+    # iterate through the rows
+    for row in df.itertuples():
+        ef.append(derive_multi_flags(PwrsysErrorFlag1, int(row.error_flag1, 16)))
+    # assign the error flags
+    df[name] = ef
 
     # Setup the global attributes for the NetCDF file and create the NetCDF timeseries object
     global_attributes = {
