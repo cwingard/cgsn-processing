@@ -8,10 +8,10 @@
 
 # Parse the command line inputs
 if [ $# -ne 6 ]; then
-    echo "$0: required inputs are the platform and deployment names, the METBK"
+    echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the METBK"
     echo " directory name, and the name of the file to process."
     echo ""
-    echo "     example: $0 ce02shsm D00004 buoy/metbk 20161012.metbk.json"
+    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 buoy/metbk 20161012.metbk.json"
     exit 1
 fi
 PLATFORM=${1,,}
@@ -33,5 +33,6 @@ fi
 
 # Process the file
 if [ -e $IN ]; then
-    $PYTHON -m $BIN/proc_metbk -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -i $IN -o $OUT
+    cd /home/cgsnmo/dev/cgsn-processing
+    $PYTHON -m cgsn_processing.process.proc_metbk -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -i $IN -o $OUT
 fi

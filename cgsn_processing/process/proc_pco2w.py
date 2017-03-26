@@ -14,8 +14,8 @@ from datetime import datetime, timedelta
 from pytz import timezone
 
 from cgsn_processing.process.common import Coefficients, inputs, json2df
-from ion_functions.data.co2_functions import pco2_blank, pco2_pco2wat
-from ion_functions.data.ph_functions import ph_thermistor, ph_battery
+from pyseas.data.co2_functions import pco2_blank, pco2_pco2wat
+from pyseas.data.ph_functions import ph_thermistor, ph_battery
 
 
 class Blanks(object):
@@ -86,6 +86,7 @@ class Calibrations(Coefficients):
 
         # save the resulting dictionary
         self.coeffs = coeffs
+
 
 def main():
     # load  the input arguments
@@ -187,7 +188,6 @@ def main():
 
             blank434.append(blank.blank_434)
             blank620.append(blank.blank_620)
-
 
     # save the resulting data to a json formatted file
     pco2w.pCO2 = pCO2

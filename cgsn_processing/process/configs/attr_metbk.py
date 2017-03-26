@@ -49,7 +49,7 @@ METBK = {
     'air_temperature': {
         'long_name': 'Air Temperature',
         'standard_name': 'air_temperature',
-        'units': 'degree_Celcius',
+        'units': 'degree_Celsius',
         'coordinates': 'time z_rh longitude latitude',
         'sensor_mount': 'mounted on mooring tower',
         'valid_min': '-5',
@@ -76,7 +76,7 @@ METBK = {
     'sea_surface_temperature': {
         'long_name': 'Sea Surface Temperature',
         'standard_name': 'sea_surface_temperature',
-        'units': 'degree_Celcius',
+        'units': 'degree_Celsius',
         'coordinates': 'time z_ct longitude latitude',
         'sensor_mount': 'mounted on mooring subsurface bridle',
         'valid_min': '0',

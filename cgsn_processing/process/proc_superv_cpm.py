@@ -12,7 +12,8 @@ import re
 
 from pyaxiom.netcdf.sensors import TimeSeries
 
-from cgsn_processing.process.common import hex2int, inputs, json2df
+from cgsn_processing.process.common import inputs, json2df
+from cgsn_processing.process.error_flags import SupervErrorFlagCPM, derive_multi_flags
 from cgsn_processing.process.configs.attr_superv_cpm import SUPERV
 
 
@@ -31,18 +32,15 @@ def main():
     df['depth'] = 0.0
     df['deploy_id'] = deployment
 
-    # convert the error flags to integers from the ASCIIHEX strings
-    df.error_flag1 = df.error_flag1.apply(hex2int)
-    df.error_flag2 = df.error_flag2.apply(hex2int)
-    df.error_flag3 = df.error_flag3.apply(hex2int)
-    df.override_flag = df.override_flag.apply(hex2int)
+    # convert the error flag strings to named variables
+    df = derive_multi_flags(SupervErrorFlagCPM, 'error_flags', df)
 
     # Setup the global attributes for the NetCDF file and create the NetCDF timeseries object
     global_attributes = {
-        'title': 'Mooring Power System Controller (PSC) Status Data',
+        'title': 'Mooring CPM Supervisor Data',
         'summary': (
-            'Measures the status of the mooring power system controller, encompassing the '
-            'batteries, recharging sources (wind and solar), and outputs.'
+            'Measures the status of the CPM, encompassing voltages, current draws, leak detects and the state of'
+            'attached communication and logging devices.'
         ),
         'project': 'Ocean Observatories Initiative',
         'institution': 'Coastal and Global Scales Nodes, (CGSN)',
@@ -74,21 +72,17 @@ def main():
             continue
 
         # create the netCDF.Variable object for the date/time string
-        if c == 'dcl_date_time_string':
+        if c == 'cpm_date_time_string':
             d = nc.createVariable(c, 'S23', ('time',))
-            d.setncatts(superv_cpm[c])
+            d.setncatts(SUPERV[c])
             d[:] = df[c].values
         elif c == 'deploy_id':
             d = nc.createVariable(c, 'S6', ('time',))
-            d.setncatts(superv_cpm[c])
-            d[:] = df[c].values
-        elif c in ['override_flag', 'error_flag1', 'error_flag2', 'error_flag3']:
-            d = nc.createVariable(c, 'i8', ('time',))
-            d.setncatts(superv_cpm[c])
+            d.setncatts(SUPERV[c])
             d[:] = df[c].values
         else:
             # use the TimeSeries object to add the variables
-            ts.add_variable(c, df[c].values, fillvalue=-999999999, attributes=superv_cpm[c])
+            ts.add_variable(c, df[c].values, fillvalue=-999999999, attributes=SUPERV[c])
 
     # synchronize the data with the netCDF file and close it
     nc.sync()

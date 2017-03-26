@@ -17,7 +17,7 @@ from pytz import timezone
 from cgsn_processing.process.common import inputs, json2df
 from cgsn_processing.process.configs.attr_phsen import PHSEN
 
-from ion_functions.data.ph_functions import ph_battery, ph_thermistor, ph_calc_phwater
+from pyseas.data.ph_functions import ph_battery, ph_thermistor, ph_calc_phwater
 
 
 def main():

@@ -52,7 +52,7 @@ OPTAA = {
     'external_temp': {
         'long_name': 'In-Situ Temperature',
         'standard_name': 'seawater_temperature',
-        'units': 'degree_Celcius',
+        'units': 'degree_Celsius',
     },
     'internal_temp_raw': {
         'long_name': 'Raw Internal Temperature',
@@ -62,7 +62,7 @@ OPTAA = {
     'internal_temp': {
         'long_name': 'Instrument Temperature',
         'standard_name': 'instrument_temperature',
-        'units': 'degree_Celcius',
+        'units': 'degree_Celsius',
     },
     'c_reference_dark': {
         'long_name': 'C Channel Dark Reference',

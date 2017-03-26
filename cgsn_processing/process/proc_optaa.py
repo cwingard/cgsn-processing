@@ -19,8 +19,8 @@ from pyaxiom.netcdf.sensors import TimeSeries
 from cgsn_processing.process.common import Coefficients, inputs, json2df
 from cgsn_processing.process.configs.attr_optaa import OPTAA
 
-from ion_functions.data.opt_functions import opt_internal_temp, opt_external_temp
-from ion_functions.data.opt_functions import opt_pressure, opt_pd_calc, opt_tempsal_corr
+from pyseas.data.opt_functions import opt_internal_temp, opt_external_temp
+from pyseas.data.opt_functions import opt_pressure, opt_pd_calc, opt_tempsal_corr
 
 
 class Calibrations(Coefficients):
@@ -42,7 +42,7 @@ class Calibrations(Coefficients):
         Reads the values from an ac-s device file into a python dictionary.
         """
         # read in the device file
-        with open(dev_file, 'rb') as f:
+        with open(dev_file, 'r') as f:
             data = f.readlines()
     
         # create the coefficients dictionary and assign values, first from the header portion of the device file
@@ -118,7 +118,7 @@ class Calibrations(Coefficients):
                 coeffs['temp_calibration'] = np.float(row[2])
 
         # serial number, stripping off all but the numbers
-        coeffs['serial_number'] = np.int(re.sub('[^0-9]','', hdr.serial[0]))
+        coeffs['serial_number'] = np.int(re.sub('[^0-9]', '',  hdr.serial[0]))
         # number of wavelengths
         coeffs['num_wavelengths'] = len(coeffs['a_wavelengths'])
         # number of internal temperature compensation bins
@@ -132,11 +132,11 @@ class Calibrations(Coefficients):
         tc_array = []
 
         tcc = requests.get(tcc_url)
-        for line in tcc.content.splitlines():
+        for line in tcc.content.decode('utf-8').splitlines():
             tc_array.append(np.array(line.split(',')).astype(np.float))
 
         tca = requests.get(tca_url)
-        for line in tca.content.splitlines():
+        for line in tca.content.decode('utf-8').splitlines():
             ta_array.append(np.array(line.split(',')).astype(np.float))
 
         coeffs['tc_array'] = np.array(tc_array)
@@ -329,9 +329,7 @@ def main():
     if dev.coeffs['num_wavelengths'] != df.num_wavelengths[0]:
         raise Exception('Number of wavelengths mismatch between ac-s data and the device file.')
 
-    # there is some monkey business imposed by having to go from json and list
-    # formatting to numpy arrays and back to lists. There may be better ways of
-    # doing this...
+    # apply the device file and calculate the temperature, salinity and scatter corrections
     df = apply_dev(df, dev.coeffs)
     df = apply_tscorr(df, dev.coeffs)
     df = apply_scatcorr(df, dev.coeffs)

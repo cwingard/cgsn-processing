@@ -148,7 +148,7 @@ PHSEN = {
     'thermistor_start': {
         'long_name': 'Temperature Start',
         'standard_name': 'seawater_temperature',
-        'units': 'degree_Celcius'
+        'units': 'degree_Celsius'
     },
     'voltage_battery': {
         'long_name': 'Battery Voltage',
@@ -158,7 +158,7 @@ PHSEN = {
     'thermistor_end': {
         'long_name': 'Temperature End',
         'standard_name': 'seawater_temperature',
-        'units': 'degree_Celcius'
+        'units': 'degree_Celsius'
     },
     'time_offset': {
         'long_name': 'Internal Clock Offset',
