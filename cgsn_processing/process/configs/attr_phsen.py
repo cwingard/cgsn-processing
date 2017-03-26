@@ -29,6 +29,11 @@ PHSEN = {
         'ancillary_variables': 'platform',
         'coverage_content_type': 'physicalMeasurement'
     },
+    'measurements': {
+        'long_name': 'Measurements Array',
+        'standard_name': 'measurements',
+        'units': '1',
+    },
     'blank_refrnc_434': {
         'long_name': 'DI Blank Reference Intensity 434 nm',
         'standard_name': 'blank_reference_434',
@@ -143,7 +148,7 @@ PHSEN = {
     'thermistor_start': {
         'long_name': 'Temperature Start',
         'standard_name': 'seawater_temperature',
-        'units': 'degree_Celcius'
+        'units': 'degree_Celsius'
     },
     'voltage_battery': {
         'long_name': 'Battery Voltage',
@@ -153,7 +158,7 @@ PHSEN = {
     'thermistor_end': {
         'long_name': 'Temperature End',
         'standard_name': 'seawater_temperature',
-        'units': 'degree_Celcius'
+        'units': 'degree_Celsius'
     },
     'time_offset': {
         'long_name': 'Internal Clock Offset',

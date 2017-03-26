@@ -6,7 +6,7 @@
 @author Christopher Wingard
 @brief Calculate the pCO2 of water from the SAMI2-pCO2 (PCO2W) instrument
 """
-import cPickle
+import pickle
 import numpy as np
 import os
 
@@ -14,8 +14,8 @@ from datetime import datetime, timedelta
 from pytz import timezone
 
 from cgsn_processing.process.common import Coefficients, inputs, json2df
-from ion_functions.data.co2_functions import pco2_blank, pco2_pco2wat
-from ion_functions.data.ph_functions import ph_thermistor, ph_battery
+from pyseas.data.co2_functions import pco2_blank, pco2_pco2wat
+from pyseas.data.ph_functions import ph_thermistor, ph_battery
 
 
 class Blanks(object):
@@ -33,7 +33,7 @@ class Blanks(object):
     def load_blanks(self):
         # load the cPickled blanks dictionary
         with open(self.blnkfile, 'rb') as f:
-            blank = cPickle.load(f)
+            blank = pickle.load(f)
 
         # assign the blanks
         self.blank_434 = blank['434']
@@ -48,7 +48,7 @@ class Blanks(object):
 
         # save the cPickled blanks dictionary
         with open(self.blnkfile, 'wb') as f:
-            cPickle.dump(blank, f)
+            pickle.dump(blank, f)
 
             
 class Calibrations(Coefficients):
@@ -86,6 +86,7 @@ class Calibrations(Coefficients):
 
         # save the resulting dictionary
         self.coeffs = coeffs
+
 
 def main():
     # load  the input arguments
@@ -187,7 +188,6 @@ def main():
 
             blank434.append(blank.blank_434)
             blank620.append(blank.blank_620)
-
 
     # save the resulting data to a json formatted file
     pco2w.pCO2 = pCO2

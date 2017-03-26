@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-@package cgsn_processing.process.proc_pwrsys
-@file cgsn_processing/process/proc_pwrsys.py
+@package cgsn_processing.process.proc_superv_cpm
+@file cgsn_processing/process/proc_superv_cpm.py
 @author Christopher Wingard
-@brief Creates a NetCDF dataset for the PWRSYS from JSON formatted source data
+@brief Creates a NetCDF dataset for the CPM Supervisor from JSON formatted source data
 """
 import numpy as np
 import os
@@ -13,9 +13,8 @@ import re
 from pyaxiom.netcdf.sensors import TimeSeries
 
 from cgsn_processing.process.common import inputs, json2df
-from cgsn_processing.process.error_flags import PwrsysOverrideFlag, PwrsysErrorFlag1, PwrsysErrorFlag2, \
-    PwrsysErrorFlag3, derive_multi_flags
-from cgsn_processing.process.configs.attr_pwrsys import PWRSYS
+from cgsn_processing.process.error_flags import SupervErrorFlagCPM, derive_multi_flags
+from cgsn_processing.process.configs.attr_superv_cpm import SUPERV
 
 
 def main():
@@ -34,17 +33,14 @@ def main():
     df['deploy_id'] = deployment
 
     # convert the error flag strings to named variables
-    df = derive_multi_flags(PwrsysErrorFlag1, 'error_flag1', df)
-    df = derive_multi_flags(PwrsysErrorFlag2, 'error_flag2', df)
-    df = derive_multi_flags(PwrsysErrorFlag3, 'error_flag3', df)
-    df = derive_multi_flags(PwrsysOverrideFlag, 'override_flag', df)
+    df = derive_multi_flags(SupervErrorFlagCPM, 'error_flags', df)
 
     # Setup the global attributes for the NetCDF file and create the NetCDF timeseries object
     global_attributes = {
-        'title': 'Mooring Power System Controller (PSC) Status Data',
+        'title': 'Mooring CPM Supervisor Data',
         'summary': (
-            'Measures the status of the mooring power system controller, encompassing the '
-            'batteries, recharging sources (wind and solar), and outputs.'
+            'Measures the status of the CPM, encompassing voltages, current draws, leak detects and the state of'
+            'attached communication and logging devices.'
         ),
         'project': 'Ocean Observatories Initiative',
         'institution': 'Coastal and Global Scales Nodes, (CGSN)',
@@ -76,21 +72,17 @@ def main():
             continue
 
         # create the netCDF.Variable object for the date/time string
-        if c == 'dcl_date_time_string':
+        if c == 'cpm_date_time_string':
             d = nc.createVariable(c, 'S23', ('time',))
-            d.setncatts(PWRSYS[c])
+            d.setncatts(SUPERV[c])
             d[:] = df[c].values
         elif c == 'deploy_id':
             d = nc.createVariable(c, 'S6', ('time',))
-            d.setncatts(PWRSYS[c])
-            d[:] = df[c].values
-        elif c in ['override_flag', 'error_flag1', 'error_flag2', 'error_flag3']:
-            d = nc.createVariable(c, 'S8', ('time',))
-            d.setncatts(PWRSYS[c])
+            d.setncatts(SUPERV[c])
             d[:] = df[c].values
         else:
             # use the TimeSeries object to add the variables
-            ts.add_variable(c, df[c].values, fillvalue=-999999999, attributes=PWRSYS[c])
+            ts.add_variable(c, df[c].values, fillvalue=-999999999, attributes=SUPERV[c])
 
     # synchronize the data with the netCDF file and close it
     nc.sync()

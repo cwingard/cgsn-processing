@@ -8,10 +8,10 @@
 
 # Parse the command line inputs
 if [ $# -ne 7 ]; then
-    echo "$0: required inputs are the platform and deployment names, the PHSEN"
+    echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the PHSEN"
     echo "directory name, and the name of the file to process."
     echo ""
-    echo "     example: $0 ce02shsm D00004 nsif/phsen 7 20161012.phsen.json"
+    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 nsif/phsen 7 20161012.phsen.json"
     exit 1
 fi
 PLATFORM=${1,,}
@@ -22,8 +22,7 @@ DEPTH=$6
 FILE=`/bin/basename $7`
 
 # Set the default directory paths and input/output sources
-BIN="/home/cgsnmo/dev/cgsn-processing/cgsn_processing/process"
-PYTHON="/home/cgsnmo/anaconda3/envs/py27/bin/python"
+PYTHON="/home/cgsnmo/anaconda3/envs/ooi/bin/python"
 
 DATA="/webdata/cgsn/data"
 IN="$DATA/proc/$PLATFORM/$DEPLOY/$PHSEN/$FILE"
@@ -34,5 +33,6 @@ fi
 
 # Process the file
 if [ -e $IN ]; then
-    $PYTHON -m $BIN/proc_phsen -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -s $DEPTH -i $IN -o $OUT
+    cd /home/cgsnmo/dev/cgsn-processing
+    $PYTHON -m cgsn_processing.process.proc_phsen -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -s $DEPTH -i $IN -o $OUT
 fi
