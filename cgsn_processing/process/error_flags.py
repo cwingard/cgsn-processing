@@ -26,7 +26,7 @@ class SupervErrorFlagCPM(IntEnum):
     efc_gps_pps_fault = 0x00000400
     efc_wake_from_unknown_source = 0x00000800
     efc_no_psc_data = 0x00001000
-    efc_efc_psc_main_v_and_main_v_disagree = 0x00002000
+    efc_psc_main_v_and_main_v_disagree = 0x00002000
     efc_psc_main_c_and_main_c_disagree = 0x00004000
     efc_no_cpm_heartbeat = 0x00008000
     efc_heartbeat_threshold_exceeded_power_cycling_cpm = 0x00010000

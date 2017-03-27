@@ -33,7 +33,7 @@ class Coefficients(object):
         """
         Obtain the calibration data for this instrument from the serialized data object.
         """
-        # load the cPickled blanks dictionary
+        # load the pickled blanks dictionary
         with open(self.coeff_file, 'rb') as f:
             coeffs = pickle.load(f)
 
@@ -43,7 +43,7 @@ class Coefficients(object):
         """
         Save the calibration data for this instrument as a serialized data object.
         """
-        # save the cPickled blanks dictionary
+        # save the pickled blanks dictionary
         with open(self.coeff_file, 'wb') as f:
             pickle.dump(self.coeffs, f)
 
