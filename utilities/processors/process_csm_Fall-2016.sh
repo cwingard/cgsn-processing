@@ -25,6 +25,7 @@ case "$PLATFORM" in
         MFN_FLAG=0
         LAT="44.63893"
         LNG="-124.30379"
+        declare -a FLORT=("FLORTD/CGINS_FLORTD_00000__00000000")
         declare -a OPTAA1=("optaa" "OPTAAD/CGINS-OPTAAD-00168__20160926")
         declare -a PHSEN1=("phsen")
         ;;
@@ -32,6 +33,7 @@ case "$PLATFORM" in
         MFN_FLAG=0
         LAT="44.38357"
         LNG="-124.95499"
+        declare -a FLORT=("FLORTD/CGINS_FLORTD_00000__00000000")
         declare -a OPTAA1=("optaa" "OPTAAD/CGINS-OPTAAD-00258__20161001")
         declare -a PHSEN1=("phsen")
         ;;
@@ -40,6 +42,7 @@ case "$PLATFORM" in
         MFN_DEPTH=87
         LAT="46.98589"
         LNG="-124.56490"
+        declare -a FLORT=("FLORTD/CGINS_FLORTD_00000__00000000")
         declare -a OPTAA1=("optaa1" "OPTAAD/CGINS-OPTAAD-00208__20160921")
         declare -a PHSEN1=("phsen1")
         
@@ -52,6 +55,7 @@ case "$PLATFORM" in
         MFN_DEPTH=542
         LAT="46.85025"
         LNG="-124.97030"
+        declare -a FLORT=("FLORTD/CGINS_FLORTD_00000__00000000")
         declare -a OPTAA1=("optaa1" "OPTAAD/CGINS-OPTAAD-00124__20160920")
         declare -a PHSEN1=("phsen1")
 
@@ -97,7 +101,7 @@ $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/superv/dcl27" $
 #--> ADCPT
 #--> CTDBP
 #--> DOSTA
-#--> FLORT
+$PROCESS/process_flort.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/optaa" 7 ${FLORT[0]} $FNAME.flort.json
 #--> NUTNR
 for optaa in $PROC/$PLATFORM/$DEPLOY/nsif/optaa/$FNAME*.${OPTAA1[0]}.json; do
     if [ -e $optaa ]; then
