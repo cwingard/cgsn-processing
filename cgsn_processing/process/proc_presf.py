@@ -17,21 +17,11 @@ import pandas as pd
 from pocean.utils import dict_update
 from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMTs
 
-from cgsn_processing.process.common import inputs
+from cgsn_processing.process.common import inputs, json2df
 from cgsn_processing.process.configs.attr_presf import PRESF
 
-def json2dataframe(j):
-    j['time'] = [datetime.datetime.utcfromtimestamp(u) for u in j['time']]
-
-    df = pd.DataFrame(j)
-    
-    return df
-    
 def json2netcdf(json_path, netcdf_path, lat=0., lon=0., platform='', deployment=''):
-    with open(json_path) as fin:
-        j = json.load(fin)
-
-    df = json2dataframe(j)
+    df = json2df(json_path)
 
     df['y'] = lat
     df['x'] = lon
