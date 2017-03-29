@@ -87,6 +87,21 @@ def json2df(infile):
         return df
 
 
+def json_sub2df(infile, sub):
+    """
+    Read in a JSON formatted data file, pull out the subarray and return the results as a panda dataframe.
+    """
+    with open(infile) as jf:
+        data = json.load(jf)
+        df = pd.DataFrame(data[sub])
+        if df.empty:
+            return df
+
+        df['time'] = pd.to_datetime(df.time, unit='s')
+        df.index = df['time']
+        return df
+
+
 def inputs():
     """
     Sets the main input arguments for the processor. At the least, the input and output files need to be specified,
