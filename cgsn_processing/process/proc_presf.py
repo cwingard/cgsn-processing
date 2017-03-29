@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-@package cgsn_processing.process.proc_mmp
-@file cgsn_processing/process/proc_mmp.py
+@package cgsn_processing.process.proc_presf
+@file cgsn_processing/process/proc_presf.py
 @author Joe Futrelle
-@brief Creates a NetCDF dataset for the MMP from JSON formatted source data
+@brief Creates a NetCDF dataset for PRESF from JSON formatted source data
 """
 import os
 import json
