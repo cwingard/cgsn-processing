@@ -4,6 +4,7 @@ import argparse
 import pickle
 import json
 import pandas as pd
+import numpy as np
 
 # Create a Global dictionary with Basic Information about the moorings
 BUOYS = {
@@ -100,6 +101,30 @@ def json_sub2df(infile, sub):
         df['time'] = pd.to_datetime(df.time, unit='s')
         df.index = df['time']
         return df
+
+
+def df2omtdf(df, lat=0., lon=0., depth=0., time_var='time'):
+    """
+    Modifies a dataframe to be suitable for use with the from_dataframe
+    method of pocean's OrthogonalMultidimensionalTimeseries
+    """
+    # rename time var to "t"
+    df['t'] = df.pop(time_var)
+
+    # fill lat/lon/depth values
+    df['y'] = lat
+    df['x'] = lon
+    df['z'] = depth
+
+    # just one station
+    df['station'] = 0
+
+    # convert all int64s to int32s
+    for col in df.columns:
+        if df[col].dtype == np.int64:
+            df[col] = df[col].astype(np.int32)
+
+    return df
 
 
 def inputs():
