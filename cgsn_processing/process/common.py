@@ -125,6 +125,7 @@ def inputs():
     parser.add_argument("-d", "--deployment", dest="deployment", type=str, required=True)
     parser.add_argument("-lt", "--latitude", dest="latitude", type=float, required=True)
     parser.add_argument("-lg", "--longitude", dest="longitude", type=float, required=True)
+    parser.add_argument("-dp", "--depth", dest="depth", type=float, required=True)
     
     parser.add_argument("-cf", "--coeff_file", dest="coeff_file", type=str, required=False)
     parser.add_argument("-df", "--devfile", dest="devfile", type=str, required=False)

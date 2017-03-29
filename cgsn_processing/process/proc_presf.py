@@ -20,12 +20,13 @@ from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMT
 from cgsn_processing.process.common import inputs, json2df
 from cgsn_processing.process.configs.attr_presf import PRESF
 
-def json2netcdf(json_path, netcdf_path, lat=0., lon=0., platform='', deployment=''):
+def json2netcdf(json_path, netcdf_path, lat=0., lon=0., depth=0., platform='', deployment=''):
     df = json2df(json_path)
 
     df['y'] = lat
     df['x'] = lon
-    df['z'] = 0
+    df['z'] = depth
+    df['depth'] = depth
     df['station'] = 0
     df['t'] = df.pop('time')
     # convert all int64s to int32s
@@ -49,8 +50,9 @@ def main():
     deployment = args.deployment
     lat = args.latitude
     lon = args.longitude
+    depth = args.depth
 
-    json2netcdf(infile, outfile, lat=lat, lon=lon, platform=platform, deployment=deployment)
+    json2netcdf(infile, outfile, lat=lat, lon=lon, depth=depth, platform=platform, deployment=deployment)
     
 if __name__ == '__main__':
     main()
