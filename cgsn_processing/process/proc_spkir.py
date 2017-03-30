@@ -36,7 +36,7 @@ def json2dataframe(j):
 
     return pd.DataFrame(j)
     
-def json2netcdf(json_path, netcdf_path, lat=0., lon=0., depth=7.0, platform='', deployment=''):
+def json2netcdf(json_path, netcdf_path, lat=0., lon=0., depth=0., platform='', deployment=''):
     with open(json_path) as fin:
         j = json.load(fin)
 
@@ -61,7 +61,8 @@ def main():
     deployment = args.deployment
     lat = args.latitude
     lon = args.longitude
-    depth = args.depth
+    # ignore depth arg
+    depth = 7.0
 
     json2netcdf(infile, outfile, lat=lat, lon=lon, depth=depth, platform=platform, deployment=deployment)
     
