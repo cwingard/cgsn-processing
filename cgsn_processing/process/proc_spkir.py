@@ -17,7 +17,7 @@ import pandas as pd
 from pocean.utils import dict_update
 from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMTs
 
-from cgsn_processing.process.common import inputs
+from cgsn_processing.process.common import inputs, json2df, df2omtdf
 from cgsn_processing.process.configs.attr_spkir import SPKIR
 
 def json2dataframe(j):
@@ -36,23 +36,14 @@ def json2dataframe(j):
 
     return pd.DataFrame(j)
     
-def json2netcdf(json_path, netcdf_path, lat=0., lon=0., platform='', deployment=''):
+def json2netcdf(json_path, netcdf_path, lat=0., lon=0., depth=7.0, platform='', deployment=''):
     with open(json_path) as fin:
         j = json.load(fin)
 
     df = json2dataframe(j)
 
-    # massage dataframe for pocean
-    df['y'] = lat
-    df['x'] = lon
-    df['z'] = 0
-    df['station'] = 0
-    df['t'] = df.pop('time')
-    # convert all int64s to int32s
-    for col in df.columns:
-        if df[col].dtype == np.int64:
-            df[col] = df[col].astype(np.int32)
-
+    df = df2omtdf(df, lat, lon, depth)
+    
     attrs = SPKIR
     attrs['global'] = dict_update(attrs['global'], {
         'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
@@ -69,8 +60,9 @@ def main():
     deployment = args.deployment
     lat = args.latitude
     lon = args.longitude
+    depth = args.depth
 
-    json2netcdf(infile, outfile, lat=lat, lon=lon, platform=platform, deployment=deployment)
+    json2netcdf(infile, outfile, lat=lat, lon=lon, depth=depth, platform=platform, deployment=deployment)
     
 if __name__ == '__main__':
     main()
