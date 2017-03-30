@@ -4,6 +4,7 @@ import argparse
 import pickle
 import json
 import pandas as pd
+import numpy as np
 
 # Create a Global dictionary with Basic Information about the moorings
 BUOYS = {
@@ -102,6 +103,30 @@ def json_sub2df(infile, sub):
         return df
 
 
+def df2omtdf(df, lat=0., lon=0., depth=0., time_var='time'):
+    """
+    Modifies a dataframe to be suitable for use with the from_dataframe
+    method of pocean's OrthogonalMultidimensionalTimeseries
+    """
+    # rename time var to "t"
+    df['t'] = df.pop(time_var)
+
+    # fill lat/lon/depth values
+    df['y'] = lat
+    df['x'] = lon
+    df['z'] = depth
+
+    # just one station
+    df['station'] = 0
+
+    # convert all int64s to int32s
+    for col in df.columns:
+        if df[col].dtype == np.int64:
+            df[col] = df[col].astype(np.int32)
+
+    return df
+
+
 def inputs():
     """
     Sets the main input arguments for the processor. At the least, the input and output files need to be specified,
@@ -125,6 +150,7 @@ def inputs():
     parser.add_argument("-d", "--deployment", dest="deployment", type=str, required=True)
     parser.add_argument("-lt", "--latitude", dest="latitude", type=float, required=True)
     parser.add_argument("-lg", "--longitude", dest="longitude", type=float, required=True)
+    parser.add_argument("-dp", "--depth", dest="depth", type=float, required=True)
     
     parser.add_argument("-cf", "--coeff_file", dest="coeff_file", type=str, required=False)
     parser.add_argument("-df", "--devfile", dest="devfile", type=str, required=False)
