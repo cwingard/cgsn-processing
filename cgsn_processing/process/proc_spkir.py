@@ -17,33 +17,16 @@ import pandas as pd
 from pocean.utils import dict_update
 from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMTs
 
-from cgsn_processing.process.common import inputs, json2df, df2omtdf
+from cgsn_processing.process.common import inputs, json2df, df2omtdf, split_column
 from cgsn_processing.process.configs.attr_spkir import SPKIR
 
-def json2dataframe(j):
-    # split channels
-    j['raw_channel1'] = [cs[0] for cs in j['raw_channels']]
-    j['raw_channel2'] = [cs[1] for cs in j['raw_channels']]
-    j['raw_channel3'] = [cs[2] for cs in j['raw_channels']]
-    j['raw_channel4'] = [cs[3] for cs in j['raw_channels']]
-    j['raw_channel5'] = [cs[4] for cs in j['raw_channels']]
-    j['raw_channel6'] = [cs[5] for cs in j['raw_channels']]
-    j['raw_channel7'] = [cs[6] for cs in j['raw_channels']]
-    del j['raw_channels']
-
-    # convert time to datetime
-    j['time'] = [datetime.datetime.utcfromtimestamp(u) for u in j['time']]
-
-    return pd.DataFrame(j)
-    
 def json2netcdf(json_path, netcdf_path, lat=0., lon=0., depth=0., platform='', deployment=''):
-    with open(json_path) as fin:
-        j = json.load(fin)
+    df = json2df(json_path)
 
-    df = json2dataframe(j)
-
-    df = df2omtdf(df, lat, lon, depth)
+    split_column(df, 'raw_channels', 7, singular='raw_channel')
     df['depth'] = depth
+    
+    df = df2omtdf(df, lat, lon, depth)
 
     attrs = SPKIR
     attrs['global'] = dict_update(attrs['global'], {
