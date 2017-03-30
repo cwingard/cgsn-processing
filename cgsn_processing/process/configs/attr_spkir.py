@@ -21,5 +21,14 @@ SPKIR = {
     },
     'internal_temperature': {
         'units': 'degree_Celsius'
-    }
+    },
+    'depth': {
+        'long_name': 'Sensor Depth',
+        'standard_name': 'depth_of_sensor_below_water',
+        'units': 'm',
+        'positive': 'down',
+        'axis': 'Z',
+        'valid_min': '-10000',
+        'valid_max': '1000',
+    },
 }

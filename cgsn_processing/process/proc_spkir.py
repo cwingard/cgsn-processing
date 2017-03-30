@@ -43,6 +43,7 @@ def json2netcdf(json_path, netcdf_path, lat=0., lon=0., depth=7.0, platform='', 
     df = json2dataframe(j)
 
     df = df2omtdf(df, lat, lon, depth)
+    df['depth'] = depth
 
     attrs = SPKIR
     attrs['global'] = dict_update(attrs['global'], {
