@@ -127,7 +127,7 @@ def df2omtdf(df, lat=0., lon=0., depth=0., time_var='time'):
     return df
 
 
-def split_column(df, colname, n, singular=None):
+def split_column(df, colname, n=None, singular=None, names=None):
     """
     Convert col = [[a, b, c], [d, e, f]]
     into
@@ -135,12 +135,16 @@ def split_column(df, colname, n, singular=None):
     col2 = [b, e]
     col3 = [c, f]
     """
-    if singular is None:
-        singular = colname
-    for i in range(n):
-        name = '{}{}'.format(singular, i+1)
+    if names is None:
+        if singular is None:
+            singular = colname
+        names = ['{}{}'.format(singular, i+1) for i in range(n)]
+    else:
+        n = len(names)
+    for i, name in zip(range(n), names):
         df[name] = [v[i] for v in df[colname]]
     df.pop(colname)
+    return df
 
 
 def inputs():
