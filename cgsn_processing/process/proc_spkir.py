@@ -20,23 +20,9 @@ from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMT
 from cgsn_processing.process.common import inputs, json2df, df2omtdf, split_column
 from cgsn_processing.process.configs.attr_spkir import SPKIR
 
-def json2netcdf(json_path, netcdf_path, lat=0., lon=0., depth=0., platform='', deployment=''):
-    df = json2df(json_path)
-
-    split_column(df, 'raw_channels', 7, singular='raw_channel')
-    df['depth'] = depth
-    
-    df = df2omtdf(df, lat, lon, depth)
-
-    attrs = SPKIR
-    attrs['global'] = dict_update(attrs['global'], {
-        'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
-    })
-
-    OMTs.from_dataframe(df, netcdf_path, attributes=attrs)
 
 def main():
-    # load  the input arguments
+    # load the input arguments
     args = inputs()
     infile = os.path.abspath(args.infile)
     outfile = os.path.abspath(args.outfile)
@@ -44,10 +30,27 @@ def main():
     deployment = args.deployment
     lat = args.latitude
     lon = args.longitude
-    # ignore depth arg
-    depth = 7.0
 
-    json2netcdf(infile, outfile, lat=lat, lon=lon, depth=depth, platform=platform, deployment=deployment)
-    
+    # load the json data file and return a panda dataframe, adding a default depth and the deployment ID
+    df = json2df(infile)
+    df['depth'] = 7.0
+    df['deploy_id'] = deployment
+
+    # TODO: Add code to convert spectral irradiance values from counts to uE/m^2/s via pyseas (opt_functions)
+
+    # convert the 7 spectral irradiance values from an array to singular values
+    split_column(df, 'raw_channels', 7, singular='raw_channel')
+
+    # convert the dataframe to a format suitable for the pocean OMTs
+    df = df2omtdf(df, lat, lon, 7.0)
+
+    # add to the global attributes for the SPKIR
+    attrs = SPKIR
+    attrs['global'] = dict_update(attrs['global'], {
+        'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
+    })
+
+    OMTs.from_dataframe(df, outfile, attributes=attrs)
+
 if __name__ == '__main__':
     main()

@@ -9,8 +9,8 @@
 
 SPKIR = {
     'global': {
-        'title': '(title goes here)',
-        'summary': '(summary goes here)',
+        'title': 'Downwelling Spectral Irradiance at 7 meters',
+        'summary': 'Downwelling spectral irradiance measured over 7 wavelengths at 7 meter depth',
         'project': 'Ocean Observatories Initiative',
         'institution': 'Coastal and Global Scales Nodes, (CGSN)',
         'acknowledgement': 'National Science Foundation',
@@ -19,8 +19,15 @@ SPKIR = {
         'creator_email': 'cwingard@coas.oregonstate.edu',
         'creator_url': 'http://oceanobservatories.org',
     },
-    'internal_temperature': {
-        'units': 'degree_Celsius'
+    'deploy_id': {
+        'long_name': 'Deployment ID',
+        'standard_name': 'deployment_id',
+        'units': '1',
+    },
+    'dcl_date_time_string': {
+        'long_name': 'DCL Date and Time Stamp',
+        'standard_name': 'dcl_date_time_string',
+        'units': '1',
     },
     'depth': {
         'long_name': 'Sensor Depth',
@@ -31,4 +38,40 @@ SPKIR = {
         'valid_min': '-10000',
         'valid_max': '1000',
     },
+    'serial_number': {},
+    'timer': {},
+    'sample_delay': {},
+    'raw_channel1': {
+        'units': 'counts'
+    },
+    'raw_channel2': {
+        'units': 'counts'
+    },
+    'raw_channel3': {
+        'units': 'counts'
+    },
+    'raw_channel4': {
+        'units': 'counts'
+    },
+    'raw_channel5': {
+        'units': 'counts'
+    },
+    'raw_channel6': {
+        'units': 'counts'
+    },
+    'raw_channel7': {
+        'units': 'counts'
+    },
+    'input_voltage': {
+        'units': 'Volts'
+    },
+    'analog_rail_voltage': {
+        'units': 'Volts'
+    },
+    'frame_counter': {
+        'units': '1'
+    },
+    'internal_temperature': {
+        'units': 'degree_Celsius'
+    }
 }

@@ -23,15 +23,15 @@ from pyseas.data.flo_functions import flo_scale_and_offset
 class Calibrations(Coefficients):
     def __init__(self, coeff_file, csv_url=None):
         """
-        Loads the OPTAA factory calibration coefficients for a unit. Values come from either a serialized object
+        Loads the FLORT factory calibration coefficients for a unit. Values come from either a serialized object
         created per instrument and deployment (calibration coefficients do not change in the middle of a deployment),
-        from the factory supplied device file, or from parsed CSV files maintained on GitHub by the OOI CI team.
+        or from parsed CSV files maintained on GitHub by the OOI CI team.
         """
         # assign the inputs
         Coefficients.__init__(self, coeff_file)
         self.csv_url = csv_url
 
-    def read_devurls(self, csv_url):
+    def read_csv(self, csv_url):
         """
         Reads the values from an ECO Triplet (aka FLORT) device file already parsed and stored on
         Github as a CSV files. Note, the formatting of those files puts some constraints on this process. 
@@ -80,7 +80,7 @@ def main():
     deployment = args.deployment
     lat = args.latitude
     lng = args.longitude
-    depth = np.float(args.switch)
+    depth = args.depth
 
     coeff_file = os.path.abspath(args.coeff_file)
     dev = Calibrations(coeff_file)  # initialize calibration class
@@ -92,7 +92,7 @@ def main():
     elif args.csvurl:
         # load from the CI hosted CSV files
         csv_url = args.csvurl
-        dev.read_devurls(csv_url)
+        dev.read_csv(csv_url)
         dev.save_coeffs()
     else:
         raise Exception('A source for the FLORT calibration coefficients could not be found')
@@ -149,6 +149,10 @@ def main():
         # create the netCDF.Variable object for the date/time string
         if c == 'dcl_date_time_string':
             d = nc.createVariable(c, 'S23', ('time',))
+            d.setncatts(FLORT[c])
+            d[:] = df[c].values
+        elif c == 'flort_date_time_string':
+            d = nc.createVariable(c, 'S17', ('time',))
             d.setncatts(FLORT[c])
             d[:] = df[c].values
         elif c == 'deploy_id':
