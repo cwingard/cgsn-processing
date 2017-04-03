@@ -127,6 +127,26 @@ def df2omtdf(df, lat=0., lon=0., depth=0., time_var='time'):
     return df
 
 
+def split_column(df, colname, n=None, singular=None, names=None):
+    """
+    Convert col = [[a, b, c], [d, e, f]]
+    into
+    col1 = [a, d]
+    col2 = [b, e]
+    col3 = [c, f]
+    """
+    if names is None:
+        if singular is None:
+            singular = colname
+        names = ['{}{}'.format(singular, i+1) for i in range(n)]
+    else:
+        n = len(names)
+    for i, name in zip(range(n), names):
+        df[name] = [v[i] for v in df[colname]]
+    df.pop(colname)
+    return df
+
+
 def inputs():
     """
     Sets the main input arguments for the processor. At the least, the input and output files need to be specified,
