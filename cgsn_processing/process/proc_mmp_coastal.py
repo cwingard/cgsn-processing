@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 @package cgsn_processing.process.proc_mmp
-@file cgsn_processing/process/proc_mmp.py
+@file cgsn_processing/process/proc_mmp_coastal.py
 @author Joe Futrelle
 @brief Creates a NetCDF dataset for the MMP from JSON formatted source data
 """
@@ -20,6 +20,7 @@ from gsw import z_from_p
 
 from cgsn_processing.process.common import inputs
 from cgsn_processing.process.configs.attr_mmp import MMP, MMP_ADATA, MMP_CDATA, MMP_EDATA
+
 
 def json2dataframes(j, lat=0.):
     # split adata "beams" into multiple columns
@@ -71,7 +72,8 @@ def json2dataframes(j, lat=0.):
         'cdata': cdata,
         'edata': edata
     }
-    
+
+
 def json2netcdf(json_path, out_basepath, lat=0., lon=0., platform='', deployment=''):
     out_basename, _ = os.path.splitext(out_basepath)
     
@@ -85,7 +87,7 @@ def json2netcdf(json_path, out_basepath, lat=0., lon=0., platform='', deployment
         df['x'] = lon
         # in the timeseries representation, there's one z per station
         # this will be fixed when using the profile representation
-        df['z'] =  j['profile']['start_depth']
+        df['z'] = j['profile']['start_depth']
         df['station'] = 0
         df['t'] = df.pop('time')
         # convert all int64s to int32s
@@ -108,6 +110,7 @@ def json2netcdf(json_path, out_basepath, lat=0., lon=0., platform='', deployment
     write_netcdf('adata', MMP_ADATA)
     write_netcdf('cdata', MMP_CDATA)
     write_netcdf('edata', MMP_EDATA)
+
 
 def main():
     # load  the input arguments

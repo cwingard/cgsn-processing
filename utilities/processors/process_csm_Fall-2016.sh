@@ -25,6 +25,7 @@ case "$PLATFORM" in
         MFN_FLAG=0
         LAT="44.63893"
         LNG="-124.30379"
+        declare -a FLORT=("FLORTD/CGINS_FLORTD_00000__00000000")
         declare -a OPTAA1=("optaa" "OPTAAD/CGINS-OPTAAD-00168__20160926")
         declare -a PHSEN1=("phsen")
         ;;
@@ -32,6 +33,7 @@ case "$PLATFORM" in
         MFN_FLAG=0
         LAT="44.38357"
         LNG="-124.95499"
+        declare -a FLORT=("FLORTD/CGINS_FLORTD_00000__00000000")
         declare -a OPTAA1=("optaa" "OPTAAD/CGINS-OPTAAD-00258__20161001")
         declare -a PHSEN1=("phsen")
         ;;
@@ -40,6 +42,7 @@ case "$PLATFORM" in
         MFN_DEPTH=87
         LAT="46.98589"
         LNG="-124.56490"
+        declare -a FLORT=("FLORTD/CGINS_FLORTD_00000__00000000")
         declare -a OPTAA1=("optaa1" "OPTAAD/CGINS-OPTAAD-00208__20160921")
         declare -a PHSEN1=("phsen1")
         
@@ -52,6 +55,7 @@ case "$PLATFORM" in
         MFN_DEPTH=542
         LAT="46.85025"
         LNG="-124.97030"
+        declare -a FLORT=("FLORTD/CGINS_FLORTD_00000__00000000")
         declare -a OPTAA1=("optaa1" "OPTAAD/CGINS-OPTAAD-00124__20160920")
         declare -a PHSEN1=("phsen1")
 
@@ -69,33 +73,35 @@ $PROCESS/process_gps.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/gps" $FNAME.gps.json
 $PROCESS/process_hydgn.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/hydgn" $FNAME.hyd1.json
 $PROCESS/process_hydgn.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/hydgn" $FNAME.hyd2.json
 for mopak in $PROC/$PLATFORM/$DEPLOY/buoy/mopak/$FNAME*.mopak.json; do
-    if [ -e $optaa ]; then
+    if [ -e $mopak ]; then
         SIZE=`du -k "$mopak" | cut -f1`
         if [ $SIZE > 0 ]; then
-            $PROCESS/process_mopak.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/mopak" $optaa
+            $PROCESS/process_mopak.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/mopak" $mopak
         fi
     fi
 done
 $PROCESS/process_pwrsys.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/pwrsys" $FNAME.pwrsys.json
-$PROCESS/process_superv_cpm.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/superv/cpm1" $FNAME.pwrsys.json
+$PROCESS/process_superv_cpm.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/superv/cpm1" $FNAME.superv.json
 $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/superv/dcl11" $FNAME.superv.json
 $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/superv/dcl12" $FNAME.superv.json
 
-$PROCESS/process_fdchp.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/fdchp" $FNAME.fdchp.json
+if [ $PLATFORM = "ce02shsm" ]; then
+    $PROCESS/process_fdchp.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/fdchp" $FNAME.fdchp.json
+fi
 $PROCESS/process_metbk.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/metbk" $FNAME.metbk.json
 $PROCESS/process_pco2a.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/pco2a" $FNAME.pco2a.json
 $PROCESS/process_velpt.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/velpt" 1 $FNAME.velpt1.json
 $PROCESS/process_wavss.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/wavss" $FNAME.wavss.json
 
 # NSIF
-$PROCESS/process_superv_cpm.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/superv/cpm2" $FNAME.pwrsys.json
+$PROCESS/process_superv_cpm.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/superv/cpm2" $FNAME.superv.json
 $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/superv/dcl26" $FNAME.superv.json
 $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/superv/dcl27" $FNAME.superv.json
 
 #--> ADCPT
 #--> CTDBP
 #--> DOSTA
-#--> FLORT
+$PROCESS/process_flort.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/optaa" 7 ${FLORT[0]} $FNAME.flort.json
 #--> NUTNR
 for optaa in $PROC/$PLATFORM/$DEPLOY/nsif/optaa/$FNAME*.${OPTAA1[0]}.json; do
     if [ -e $optaa ]; then
@@ -112,7 +118,7 @@ $PROCESS/process_velpt.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/velpt" 7 $FNAME.velp
 
 if [ $MFN_FLAG == 1 ]; then
     # MFN
-    $PROCESS/process_superv_cpm.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/superv/cpm3" $FNAME.pwrsys.json
+    $PROCESS/process_superv_cpm.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/superv/cpm3" $FNAME.superv.json
     $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/superv/dcl35" $FNAME.superv.json
     $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/superv/dcl37" $FNAME.superv.json
 

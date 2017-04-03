@@ -17,8 +17,8 @@ fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
 LAT=$3; LNG=$4
-DEPTH=$5
-VELPT=${6,,}
+VELPT=${5,,}
+DEPTH=$6
 FILE=`/bin/basename $7`
 
 # Set the default directory paths and input/output sources
