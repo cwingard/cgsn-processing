@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-@package cgsn_processing.process.configs.attr_hydgn
-@file cgsn_processing/process/configs/attr_hydgn.py
+@package cgsn_processing.process.configs.attr_ctdbp
+@file cgsn_processing/process/configs/attr_ctdbp.py
 @author Christopher Wingard
-@brief Attributes for the hydrogen gas variables
+@brief Attributes for the CTDBP variables
 """
-HYDGN = {
+CTDBP = {
     'deploy_id': {
         'long_name': 'Deployment ID',
         'standard_name': 'deployment_id',
@@ -57,5 +57,19 @@ HYDGN = {
     },
     'raw_cdom': {
         'units': 'counts'
+    },
+    'psu': {
+        'long_name': 'Practical Salinity',
+        'standard_name': 'sea_water_salinity',
+        'units': '1',
+        'valid_min': '0',
+        'valid_max': '40'
+    },
+    'rho': {
+        'long_name': 'In-Situ Seawater Density',
+        'standard_name': 'sea_water_density',
+        'units': 'kg m-3',
+        'valid_min': '0',
+        'valid_max': '35'
     }
 }

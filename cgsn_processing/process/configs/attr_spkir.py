@@ -62,6 +62,27 @@ SPKIR = {
     'raw_channel7': {
         'units': 'counts'
     },
+    'irradiance1': {
+        'units': 'microW cm-2 nm-1'
+    },
+    'irradiance2': {
+        'units': 'microW cm-2 nm-1'
+    },
+    'irradiance3': {
+        'units': 'microW cm-2 nm-1'
+    },
+    'irradiance4': {
+        'units': 'microW cm-2 nm-1'
+    },
+    'irradiance5': {
+        'units': 'microW cm-2 nm-1'
+    },
+    'irradiance6': {
+        'units': 'microW cm-2 nm-1'
+    },
+    'irradiance7': {
+        'units': 'microW cm-2 nm-1'
+    },
     'input_voltage': {
         'units': 'Volts'
     },

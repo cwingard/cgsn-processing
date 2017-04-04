@@ -10,7 +10,7 @@ import numpy as np
 import os
 import re
 
-from gsw import z_from_p, SP_from_C, SA_from_SP, CT_from_t, rho
+from gsw import SP_from_C, SA_from_SP, CT_from_t, rho
 from pyaxiom.netcdf.sensors import TimeSeries
 
 from cgsn_processing.process.common import inputs, json2df
@@ -37,7 +37,7 @@ def main():
     df['psu'] = SP_from_C(df['conductivity'] * 10.0, df['temperature'], df['pressure'])
     # calculate the in-situ density of the seawater from the absolute salinity and conservative temperature
     sa = SA_from_SP(df['psu'], df['pressure'], lng, lat)                 # absolute salinity
-    ct = CT_from_t(sa, df['sea_surface_temperature'], df['pressure'])    # conservative temperature
+    ct = CT_from_t(sa, df['temperature'], df['pressure'])    # conservative temperature
     df['rho'] = rho(sa, ct, df['pressure'])                              # density
 
     # TODO: If CTD with attached FLORT, add code to convert raw counts to scientific units

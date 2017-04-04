@@ -6,7 +6,6 @@
 @author Christopher Wingard
 @brief Creates a NetCDF dataset for the FLORT from JSON formatted source data
 """
-import json
 import numpy as np
 import os
 import pandas as pd
@@ -45,27 +44,27 @@ class Calibrations(Coefficients):
         for idx, row in cal.iterrows():
             # scale and offset correction factors
             if row[1] == 'CC_dark_counts_cdom':
-                coeffs['dark_cdom'] = json.loads(row[2])
+                coeffs['dark_cdom'] = row[2]
             if row[1] == 'CC_scale_factor_cdom':
-                coeffs['scale_cdom'] = json.loads(row[2])
+                coeffs['scale_cdom'] = row[2]
 
-            if row[1] == 'CC_dark_counts_chorophyll_a':
-                coeffs['dark_chla'] = json.loads(row[2])
-            if row[1] == 'CC_scale_factor_chorophyll_a':
-                coeffs['scale_chla'] = json.loads(row[2])
+            if row[1] == 'CC_dark_counts_chlorophyll_a':
+                coeffs['dark_chla'] = row[2]
+            if row[1] == 'CC_scale_factor_chlorophyll_a':
+                coeffs['scale_chla'] = row[2]
 
             if row[1] == 'CC_dark_counts_volume_scatter':
-                coeffs['dark_beta'] = json.loads(row[2])
+                coeffs['dark_beta'] = row[2]
             if row[1] == 'CC_scale_factor_volume_scatter':
-                coeffs['scale_beta'] = json.loads(row[2])
+                coeffs['scale_beta'] = row[2]
 
             # optical backscatter correction factors
             if row[1] == 'CC_angular_resolution':
-                coeffs['chi_factor'] = json.loads(row[2])
+                coeffs['chi_factor'] = row[2]
             if row[1] == 'CC_measurement_wavelength':
-                coeffs['wavelength'] = json.loads(row[2])
+                coeffs['wavelength'] = row[2]
             if row[1] == 'CC_scattering_angle':
-                coeffs['scatter_angle'] = json.loads(row[2])
+                coeffs['scatter_angle'] = row[2]
 
         # save the resulting dictionary
         self.coeffs = coeffs

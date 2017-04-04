@@ -14,7 +14,7 @@ from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMT
 
 from cgsn_processing.process.common import inputs, json2df, df2omtdf
 from cgsn_processing.process.configs.attr_presf import PRESF
-from pyseas.data.sfl_functions import sfl_sflpres_rtime
+#from pyseas.data.sfl_functions import sfl_sflpres_rtime
 
 
 def main():
@@ -25,7 +25,7 @@ def main():
     platform = args.platform
     deployment = args.deployment
     lat = args.latitude
-    lon = args.longitude
+    lng = args.longitude
     depth = args.depth
 
     # load the json data file and return a panda dataframe, adding a deployment depth and ID
@@ -33,11 +33,12 @@ def main():
     df['depth'] = depth
     df['deploy_id'] = deployment
 
+    # TODO: Will require a fix to the WMM code before this can be implemented
     # convert the absolute (hydrostatic + atmospheric) pressure measurement from psi to dbar
-    df['seafloor_pressure'] = sfl_sflpres_rtime(df['absolute_pressure'])
+    # df['seafloor_pressure'] = sfl_sflpres_rtime(df['absolute_pressure'])
 
     # convert the dataframe to a format suitable for the pocean OMTs
-    df = df2omtdf(df, lat, lon, depth)
+    df = df2omtdf(df, lat, lng, depth)
 
     # add to the global attributes for the PRESF
     attrs = PRESF
@@ -45,7 +46,8 @@ def main():
         'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
     })
 
-    OMTs.from_dataframe(df, outfile, attributes=attrs)
+    nc = OMTs.from_dataframe(df, outfile, attributes=attrs)
+    nc.close()
     
 if __name__ == '__main__':
     main()

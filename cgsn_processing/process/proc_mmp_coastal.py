@@ -85,6 +85,7 @@ def json2netcdf(json_path, out_basepath, lat=0., lon=0., platform='', deployment
     def massage_dataframe(df):
         df['y'] = lat
         df['x'] = lon
+        df['profile_id'] = j['profile']['profile_id']
         # in the timeseries representation, there's one z per station
         # this will be fixed when using the profile representation
         df['z'] = j['profile']['start_depth']
@@ -105,7 +106,8 @@ def json2netcdf(json_path, out_basepath, lat=0., lon=0., platform='', deployment
         df = massage_dataframe(dfs[key])
         out_path = '{}-{}.nc'.format(out_basepath, key)
         attrs = dict_update(shared_attrs, attrs)
-        OMTs.from_dataframe(df, out_path, attributes=attrs)
+        nc = OMTs.from_dataframe(df, out_path, attributes=attrs)
+        nc.close()
 
     write_netcdf('adata', MMP_ADATA)
     write_netcdf('cdata', MMP_CDATA)

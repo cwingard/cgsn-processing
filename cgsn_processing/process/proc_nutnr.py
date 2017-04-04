@@ -63,9 +63,9 @@ def main():
     nc = ts._nc     # create a netCDF4 object from the TimeSeries object
 
     # create a new dimension for the channel measurements array
-    nc.createDimension('channels', size=256)
-    d = nc.createVariable('channels', 'i1', ('channels',))
-    d[:] = np.arange(0, 256)
+    nc.createDimension('channels', size=257)
+    d = nc.createVariable('channels', 'i2', ('channels',))
+    d[:] = np.arange(0, 257)
 
     for c in df.columns:
         # skip the coordinate variables, if present, already added above via TimeSeries
@@ -74,7 +74,7 @@ def main():
             continue
 
         # create the netCDF.Variable object for the date/time string
-        if c == 'date_time_string':
+        if c in['date_string', 'date_time_string']:
             d = nc.createVariable(c, 'S23', ('time',))
             d.setncatts(NUTNR[c])
             d[:] = df[c].values
@@ -83,9 +83,9 @@ def main():
             d.setncatts(NUTNR[c])
             d[:] = df[c].values
         elif c == 'channel_measurements':
-            d = nc.createVariable(c, 'f', ('time', 'channels',))
+            d = nc.createVariable(c, 'i4', ('time', 'channels',))
             d.setncatts(NUTNR[c])
-            d[:] = np.array(np.vstack(df[c].values), dtype='float32')
+            d[:] = np.array(np.vstack(df[c].values), dtype='int32')
         else:
             # use the TimeSeries object to add the variables
             ts.add_variable(c, df[c].values, fillvalue=-999999999, attributes=NUTNR[c])
