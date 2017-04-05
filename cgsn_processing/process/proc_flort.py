@@ -79,7 +79,6 @@ def main():
     deployment = args.deployment
     lat = args.latitude
     lng = args.longitude
-    depth = args.depth
 
     coeff_file = os.path.abspath(args.coeff_file)
     dev = Calibrations(coeff_file)  # initialize calibration class
@@ -98,7 +97,11 @@ def main():
 
     # load the json data file and return a panda data frame
     df = json2df(infile)
-    df['depth'] = depth
+    if df.empty:
+        # there was no data in this file, ending early
+        return None
+
+    df['depth'] = 7.0
     df['deploy_id'] = deployment
 
     # Apply the scale and offset correction factors from the factory calibration coefficients

@@ -26,11 +26,11 @@ case "$PLATFORM" in
         MFN_DEPTH=25
         LAT=44.66003
         LNG=-124.09512
-        declare -a FLORT=("FLORTD/CGINS_FLORTD_01121__20160930")
+        declare -a FLORT=("FLORTD/CGINS-FLORTD-01121__20160930")
         declare -a OPTAA1=("None" "None")
         declare -a PCO2W1=("pco2w1" "PCO2WB/CGINS-PCO2WB-C0084__20160930")
         declare -a PHSEN1=("phsen1")
-        declare -s SPKIR=("SPKIRB/CGINS_SPKIRB_00296__20160930")
+        declare -a SPKIR=("SPKIRB/CGINS-SPKIRB-00296__20160930")
 
         declare -a OPTAA2=("None" "None")
         declare -a PCO2W2=("pco2w2" "PCO2WB/CGINS-PCO2WB-C0053__20160930")
@@ -41,11 +41,11 @@ case "$PLATFORM" in
         MFN_DEPTH=29
         LAT=47.13328
         LNG=-124.27125
-        declare -a FLORT=("FLORTD/CGINS_FLORTD_01154__20160927")
+        declare -a FLORT=("FLORTD/CGINS-FLORTD-01154__20160927")
         declare -a OPTAA1=("optaa1" "OPTAAD/CGINS-OPTAAD-00136__20160927")
         declare -a PCO2W1=("pco2w1" "PCO2WB/CGINS-PCO2WB-C0085__20160927")
         declare -a PHSEN1=("phsen1")
-        declare -s SPKIR=("SPKIRB/CGINS_SPKIRB_00294__20160927")
+        declare -a SPKIR=("SPKIRB/CGINS-SPKIRB-00294__20160927")
 
         declare -a OPTAA2=("None" "None")
         declare -a PCO2W2=("pco2w2" "PCO2WB/CGINS-PCO2WB-C0081__20160927")
@@ -76,8 +76,8 @@ $PROCESS/process_velpt.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/velpt" 1 $FNAME.velp
 $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/superv/dcl16" $FNAME.superv.json
 
 $PROCESS/process_ctdbp.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/ctdbp" 7 $FNAME.ctdbp1.json
-$PROCESS/process_spkir.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/flort" ${FLORT[0]} $FNAME.flort.json
-$PROCESS/process_spkir.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/nutnr" $FNAME.nutnr.json
+$PROCESS/process_flort.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/flort" ${FLORT[0]} $FNAME.flort.json
+$PROCESS/process_nutnr.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/nutnr" $FNAME.nutnr.json
 for optaa in $PROC/$PLATFORM/$DEPLOY/nsif/optaa/$FNAME*.${OPTAA1[0]}.json; do
     if [ -e $optaa ]; then
         SIZE=`du -k "$optaa" | cut -f1`

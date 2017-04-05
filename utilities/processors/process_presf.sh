@@ -11,7 +11,7 @@ if [ $# -ne 7 ]; then
     echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the PRESF"
     echo " directory name, the deployment depth and the name of the file to process."
     echo ""
-    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 buoy/presf 82 20161012.presf.json"
+    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 mfn/presf 82 20161012.presf.json"
     exit 1
 fi
 PLATFORM=${1,,}

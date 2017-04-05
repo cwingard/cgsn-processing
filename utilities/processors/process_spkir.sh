@@ -9,21 +9,20 @@
 # C. Wingard 2017-01-23
 
 # Parse the command line inputs
-if [ $# -ne 8 ]; then
+if [ $# -ne 7 ]; then
     echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the SPKIR"
     echo "directory name, the UID name of the stored factory calibration data, and the name of the file to process."
     echo ""
-    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 nsif/spkir 7 SPKIRB/CGINS-SPKIRB-00242__20160926 20161012.spkir.json"
+    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 nsif/spkir SPKIRB/CGINS-SPKIRB-00242__20160926 20161012.spkir.json"
     exit 1
 fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
 LAT=$3; LNG=$4
 SPKIR=${5,,}
-DEPTH=$6
-UID=${7^^}
+UID=${6^^}
 CFILE=`/bin/basename $UID`
-FILE=`/bin/basename $8`
+FILE=`/bin/basename $7`
 
 # Set the default directory paths and input/output sources
 PYTHON="/home/cgsnmo/anaconda3/envs/ooi/bin/python"
@@ -41,5 +40,5 @@ URL="https://raw.githubusercontent.com/ooi-integration/asset-management/master/c
 # Process the file (if it hasn't already been done)
 if [ -e $IN ] && [ ! -e $OUT ]; then
     cd /home/cgsnmo/dev/cgsn-processing
-    $PYTHON -m cgsn_processing.process.proc_spkir -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -dp $DEPTH -i $IN -o $OUT -cf $COEFF -u $URL
+    $PYTHON -m cgsn_processing.process.proc_spkir -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -i $IN -o $OUT -cf $COEFF -u $URL
 fi

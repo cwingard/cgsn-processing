@@ -26,20 +26,22 @@ case "$PLATFORM" in
         LAT="44.63893"
         LNG="-124.30379"
         declare -a CTDBP1=("ctdbp")
-        declare -a FLORT=("FLORTD/CGINS_FLORTD_01153__20160926")
+        declare -a DOSTA1=("dosta")
+        declare -a FLORT=("FLORTD/CGINS-FLORTD-01153__20160926")
         declare -a OPTAA1=("optaa" "OPTAAD/CGINS-OPTAAD-00168__20160926")
         declare -a PHSEN1=("phsen")
-        declare -s SPKIR=("SPKIRB/CGINS_SPKIRB_00242__20160926")
+        declare -a SPKIR=("SPKIRB/CGINS-SPKIRB-00242__20160926")
         ;;
     "ce04ossm" )
         MFN_FLAG=0
         LAT="44.38357"
         LNG="-124.95499"
         declare -a CTDBP1=("ctdbp")
-        declare -a FLORT=("FLORTD/CGINS_FLORTD_01303__20161001")
+        declare -a DOSTA1=("dosta")
+        declare -a FLORT=("FLORTD/CGINS-FLORTD-01303__20161001")
         declare -a OPTAA1=("optaa" "OPTAAD/CGINS-OPTAAD-00258__20161001")
         declare -a PHSEN1=("phsen")
-        declare -s SPKIR=("SPKIRB/CGINS_SPKIRB_00249__20161001")
+        declare -a SPKIR=("SPKIRB/CGINS-SPKIRB-00249__20161001")
         ;;
     "ce07shsm"  )
         MFN_FLAG=1
@@ -47,10 +49,11 @@ case "$PLATFORM" in
         LAT="46.98589"
         LNG="-124.56490"
         declare -a CTDBP1=("ctdbp1")
-        declare -a FLORT=("FLORTD/CGINS_FLORTD_00996__20160921")
+        declare -a DOSTA1=("dosta")
+        declare -a FLORT=("FLORTD/CGINS-FLORTD-00996__20160921")
         declare -a OPTAA1=("optaa1" "OPTAAD/CGINS-OPTAAD-00208__20160921")
         declare -a PHSEN1=("phsen1")
-        declare -s SPKIR=("SPKIRB/CGINS_SPKIRB_00254__20160921")
+        declare -a SPKIR=("SPKIRB/CGINS-SPKIRB-00254__20160921")
 
         declare -a OPTAA2=("None" "None")
         declare -a PCO2W=("pco2w" "PCO2WB/CGINS-PCO2WB-C0082__20160921")
@@ -62,10 +65,11 @@ case "$PLATFORM" in
         LAT="46.85025"
         LNG="-124.97030"
         declare -a CTDBP1=("ctdbp1")
-        declare -a FLORT=("FLORTD/CGINS_FLORTD_01291__20160920")
+        declare -a DOSTA1=("dosta")
+        declare -a FLORT=("FLORTD/CGINS-FLORTD-01291__20160920")
         declare -a OPTAA1=("optaa1" "OPTAAD/CGINS-OPTAAD-00124__20160920")
         declare -a PHSEN1=("phsen1")
-        declare -s SPKIR=("SPKIRB/CGINS_SPKIRB_00243__20160920")
+        declare -a SPKIR=("SPKIRB/CGINS-SPKIRB-00243__20160920")
 
         declare -a OPTAA2=("optaa2" "OPTAAC/CGINS-OPTAAC-00266__20160920")
         declare -a PCO2W=("pco2w" "PCO2WB/CGINS-PCO2WB-C0062__20160920")
@@ -109,8 +113,8 @@ $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/superv/dcl27" $
 #--> ADCPT
 $PROCESS/process_ctdbp.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/ctdbp" 7 $FNAME.${CTDBP1[0]}.json
 $PROCESS/process_dosta.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/dosta" 7 $FNAME.${DOSTA1[0]}.json
-$PROCESS/process_flort.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/flort" 7 ${FLORT[0]} $FNAME.flort.json
-$PROCESS/process_flort.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/nutnr" 7 $FNAME.nutnr.json
+$PROCESS/process_flort.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/flort" ${FLORT[0]} $FNAME.flort.json
+$PROCESS/process_nutnr.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/nutnr" $FNAME.nutnr.json
 for optaa in $PROC/$PLATFORM/$DEPLOY/nsif/optaa/$FNAME*.${OPTAA1[0]}.json; do
     if [ -e $optaa ]; then
         SIZE=`du -k "$optaa" | cut -f1`
@@ -120,7 +124,7 @@ for optaa in $PROC/$PLATFORM/$DEPLOY/nsif/optaa/$FNAME*.${OPTAA1[0]}.json; do
     fi
 done
 $PROCESS/process_phsen.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/phsen" 7 $FNAME.${PHSEN1[0]}.json
-$PROCESS/process_flort.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/spkir" 7 ${SPKIR[0]} $FNAME.spkir.json
+$PROCESS/process_spkir.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/spkir" ${SPKIR[0]} $FNAME.spkir.json
 #--> UCSPP (acoustic modem communications with uCSPP)
 $PROCESS/process_velpt.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/velpt" 7 $FNAME.velpt2.json
 
