@@ -21,9 +21,9 @@ MMP=${5,,}
 FILE=`/bin/basename $6`
 
 # Set the default directory paths and input/output sources
-PYTHON="/home/cgsnmo/anaconda3/envs/ooi/bin/python"
+PYTHON="/home/ooiuser/bin/conda/bin/python"
 
-DATA="/webdata/cgsn/data"
+DATA="/home/ooiuser/data"
 IN="$DATA/proc/$PLATFORM/$DEPLOY/$MMP/$FILE"
 OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$MMP/${FILE%.json}.nc"
 if [ ! -d `/usr/bin/dirname $OUT` ]; then
@@ -32,6 +32,6 @@ fi
 
 # Process the profile dataset
 if [ -e $IN ] && [ ! -e ${OUT%.nc}-edata.nc ]; then
-    cd /home/cgsnmo/dev/cgsn-processing
+    cd /home/ooiuser/code/cgsn-processing
     $PYTHON -m cgsn_processing.process.proc_mmp_coastal -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -i $IN -o $OUT
 fi

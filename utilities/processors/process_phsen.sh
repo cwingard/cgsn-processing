@@ -22,9 +22,9 @@ DEPTH=$6
 FILE=`/bin/basename $7`
 
 # Set the default directory paths and input/output sources
-PYTHON="/home/cgsnmo/anaconda3/envs/ooi/bin/python"
+PYTHON="/home/ooiuser/bin/conda/bin/python"
 
-DATA="/webdata/cgsn/data"
+DATA="/home/ooiuser/data"
 IN="$DATA/proc/$PLATFORM/$DEPLOY/$PHSEN/$FILE"
 OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$PHSEN/${FILE%.json}.nc"
 if [ ! -d `/usr/bin/dirname $OUT` ]; then
@@ -33,6 +33,6 @@ fi
 
 # Process the file
 if [ -e $IN ]; then
-    cd /home/cgsnmo/dev/cgsn-processing
+    cd /home/ooiuser/code/cgsn-processing
     $PYTHON -m cgsn_processing.process.proc_phsen -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -s $DEPTH -i $IN -o $OUT
 fi

@@ -16,8 +16,8 @@ DEPLOY=${2^^}
 TIME="-$3 day"
 FNAME=`/bin/date -u +%Y%m%d --date="$TIME"`
 
-PROC="/webdata/cgsn/data/proc"
-PROCESS="/home/cgsnmo/dev/cgsn-processing/utilities/processors"
+PROC="/home/ooiuser/data/proc"
+PROCESS="/home/ooiuser/code/cgsn-processing/utilities/processors"
 
 # Set some instrument names and processing flags based on the platform name
 case "$PLATFORM" in

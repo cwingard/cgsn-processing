@@ -25,9 +25,9 @@ CFILE=`/bin/basename $UID`
 FILE=`/bin/basename $7`
 
 # Set the default directory paths and input/output sources
-PYTHON="/home/cgsnmo/anaconda3/envs/ooi/bin/python"
+PYTHON="/home/ooiuser/bin/conda/bin/python"
 
-DATA="/webdata/cgsn/data"
+DATA="/home/ooiuser/data"
 IN="$DATA/proc/$PLATFORM/$DEPLOY/$FLORT/$FILE"
 OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$FLORT/${FILE%.json}.nc"
 if [ ! -d `/usr/bin/dirname $OUT` ]; then
@@ -39,6 +39,6 @@ URL="https://raw.githubusercontent.com/ooi-integration/asset-management/master/c
 
 # Process the file (if it hasn't already been done)
 if [ -e $IN ] && [ ! -e $OUT ]; then
-    cd /home/cgsnmo/dev/cgsn-processing
+    cd /home/ooiuser/code/cgsn-processing
     $PYTHON -m cgsn_processing.process.proc_flort -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -i $IN -o $OUT -cf $COEFF -u $URL
 fi
