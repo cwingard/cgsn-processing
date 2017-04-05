@@ -35,7 +35,9 @@ def json2dataframes(j, lat=0.):
     
     def from_xdata(j):
         df = pd.DataFrame(j)
-        df.index = [datetime.datetime.utcfromtimestamp(u) for u in df.time]
+        df['time'] = pd.to_datetime(df.time, unit='s')
+        df.index = df['time']
+
         # convert int64s to int32s
         for col in df.columns:
             if df[col].dtype == np.int64:

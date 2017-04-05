@@ -22,7 +22,7 @@ DEPTH=$6
 FILE=`/bin/basename $7`
 
 # Set the default directory paths and input/output sources
-PYTHON="/home/ooiuser/bin/conda/bin/python"
+PYTHON="/home/ooiuser/bin/conda/bin/python3"
 
 DATA="/home/ooiuser/data"
 IN="$DATA/proc/$PLATFORM/$DEPLOY/$PRESF/$FILE"
