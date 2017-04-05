@@ -4,7 +4,7 @@
 @package cgsn_processing.process.configs.attr_dosta
 @file cgsn_processing/process/configs/attr_dosta.py
 @author Christopher Wingard
-@brief Attributes for the hydrogen gas variables
+@brief Attributes for the dissolved oxygen (DOSTA) sensor
 """
 DOSTA = {
     'deploy_id': {

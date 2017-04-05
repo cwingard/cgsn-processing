@@ -10,7 +10,7 @@
 PRESF = {
     'global': {
         'title': 'Seafloor Pressure',
-        'summary': 'Seafloor pressure integrated over 60 minutes showing tidal influenced',
+        'summary': 'Seafloor pressure integrated over 60 minutes showing tidal signature',
         'project': 'Ocean Observatories Initiative',
         'institution': 'Coastal and Global Scales Nodes, (CGSN)',
         'acknowledgement': 'National Science Foundation',
