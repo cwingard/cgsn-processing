@@ -13,9 +13,7 @@ if [ $# -ne 8 ]; then
     echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the OPTAA"
     echo "directory name, the UID name of the stored factory calibration data, and the name of the file to process."
     echo ""
-    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 nsif/optaa 7 OPTAAD/CGINS-OPTAAD-00208__20160921
-    20161012_233000.optaa
-    .json"
+    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 nsif/optaa 7 OPTAAD/CGINS-OPTAAD-00208__20160926 20161012_233000.optaa.json"
     exit 1
 fi
 PLATFORM=${1,,}
@@ -28,9 +26,9 @@ CFILE=`/bin/basename $UID`
 FILE=`/bin/basename $8`
 
 # Set the default directory paths and input/output sources
-PYTHON="/home/cgsnmo/anaconda3/envs/ooi/bin/python"
+PYTHON="/home/ooiuser/bin/conda/bin/python3"
 
-DATA="/webdata/cgsn/data"
+DATA="/home/ooiuser/data"
 IN="$DATA/proc/$PLATFORM/$DEPLOY/$OPTAA/$FILE"
 OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$OPTAA/${FILE%.json}.nc"
 if [ ! -d `/usr/bin/dirname $OUT` ]; then
@@ -38,10 +36,10 @@ if [ ! -d `/usr/bin/dirname $OUT` ]; then
 fi
 
 COEFF="$DATA/proc/$PLATFORM/$DEPLOY/$OPTAA/$CFILE.coeff"
-URL="https://github.com/ooi-integration/asset-management/raw/master/calibration/$UID.csv"
+URL="https://raw.githubusercontent.com/ooi-integration/asset-management/master/calibration/$UID.csv"
 
 # Process the file (if it hasn't already been done)
 if [ -e $IN ] && [ ! -e $OUT ]; then
-    cd /home/cgsnmo/dev/cgsn-processing
-    $PYTHON -m cgsn_processing.process.proc_optaa -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -s $DEPTH -i $IN -o $OUT -cf $COEFF -u $URL
+    cd /home/ooiuser/code/cgsn-processing
+    $PYTHON -m cgsn_processing.process.proc_optaa -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -dp $DEPTH -i $IN -o $OUT -cf $COEFF -u $URL
 fi

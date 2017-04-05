@@ -9,8 +9,8 @@
 
 MMP = {
     'global': {
-        'title': '(title goes here)',
-        'summary': '(summary goes here)',
+        'title': 'McLane Moored Profiler Data',
+        'summary': 'Datasets from the McLane Moored Profiler (MMP).',
         'project': 'Ocean Observatories Initiative',
         'institution': 'Coastal and Global Scales Nodes, (CGSN)',
         'acknowledgement': 'National Science Foundation',
@@ -40,7 +40,7 @@ MMP = {
     'pressure': {
         'long_name': 'Sea Water Pressure',
         'standard_name': 'sea_water_pressure_due_to_sea_water',
-        'units': 'mbar'
+        'units': 'dbar'
     },
     'temperature': {
         'long_name': 'Sea Water Temperature',

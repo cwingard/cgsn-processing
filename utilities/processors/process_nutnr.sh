@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Read the parsed DCL SUPERV data files from the Endurance Surface Moorings and
+# Read the parsed NUTNR data files from the Endurance Surface Moorings and
 # create processed datasets available in NetCDF formatted files for further
 # processing and review.
 #
@@ -8,24 +8,24 @@
 
 # Parse the command line inputs
 if [ $# -ne 6 ]; then
-    echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the DCL SUPERV"
+    echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the NUTNR"
     echo " directory name, and the name of the file to process."
     echo ""
-    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 buoy/superv/dcl1 20161012.superv.json"
+    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 nsif/nutnr 20161012.nutnr.json"
     exit 1
 fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
 LAT=$3; LNG=$4
-SUPERV=${5,,}
+NUTNR=${5,,}
 FILE=`/bin/basename $6`
 
 # Set the default directory paths and input/output sources
 PYTHON="/home/ooiuser/bin/conda/bin/python3"
 
 DATA="/home/ooiuser/data"
-IN="$DATA/proc/$PLATFORM/$DEPLOY/$SUPERV/$FILE"
-OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$SUPERV/${FILE%.json}.nc"
+IN="$DATA/proc/$PLATFORM/$DEPLOY/$NUTNR/$FILE"
+OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$NUTNR/${FILE%.json}.nc"
 if [ ! -d `/usr/bin/dirname $OUT` ]; then
     mkdir -p `/usr/bin/dirname $OUT`
 fi
@@ -33,5 +33,5 @@ fi
 # Process the file
 if [ -e $IN ]; then
     cd /home/ooiuser/code/cgsn-processing
-    $PYTHON -m cgsn_processing.process.proc_superv_dcl -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -i $IN -o $OUT
+    $PYTHON -m cgsn_processing.process.proc_nutnr -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -i $IN -o $OUT
 fi

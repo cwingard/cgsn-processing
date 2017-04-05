@@ -6,7 +6,6 @@
 @author Christopher Wingard
 @brief Creates a NetCDF dataset for the FLORT from JSON formatted source data
 """
-import json
 import numpy as np
 import os
 import pandas as pd
@@ -23,15 +22,15 @@ from pyseas.data.flo_functions import flo_scale_and_offset
 class Calibrations(Coefficients):
     def __init__(self, coeff_file, csv_url=None):
         """
-        Loads the OPTAA factory calibration coefficients for a unit. Values come from either a serialized object
+        Loads the FLORT factory calibration coefficients for a unit. Values come from either a serialized object
         created per instrument and deployment (calibration coefficients do not change in the middle of a deployment),
-        from the factory supplied device file, or from parsed CSV files maintained on GitHub by the OOI CI team.
+        or from parsed CSV files maintained on GitHub by the OOI CI team.
         """
         # assign the inputs
         Coefficients.__init__(self, coeff_file)
         self.csv_url = csv_url
 
-    def read_devurls(self, csv_url):
+    def read_csv(self, csv_url):
         """
         Reads the values from an ECO Triplet (aka FLORT) device file already parsed and stored on
         Github as a CSV files. Note, the formatting of those files puts some constraints on this process. 
@@ -45,27 +44,27 @@ class Calibrations(Coefficients):
         for idx, row in cal.iterrows():
             # scale and offset correction factors
             if row[1] == 'CC_dark_counts_cdom':
-                coeffs['dark_cdom'] = json.loads(row[2])
+                coeffs['dark_cdom'] = row[2]
             if row[1] == 'CC_scale_factor_cdom':
-                coeffs['scale_cdom'] = json.loads(row[2])
+                coeffs['scale_cdom'] = row[2]
 
-            if row[1] == 'CC_dark_counts_chorophyll_a':
-                coeffs['dark_chla'] = json.loads(row[2])
-            if row[1] == 'CC_scale_factor_chorophyll_a':
-                coeffs['scale_chla'] = json.loads(row[2])
+            if row[1] == 'CC_dark_counts_chlorophyll_a':
+                coeffs['dark_chla'] = row[2]
+            if row[1] == 'CC_scale_factor_chlorophyll_a':
+                coeffs['scale_chla'] = row[2]
 
             if row[1] == 'CC_dark_counts_volume_scatter':
-                coeffs['dark_beta'] = json.loads(row[2])
+                coeffs['dark_beta'] = row[2]
             if row[1] == 'CC_scale_factor_volume_scatter':
-                coeffs['scale_beta'] = json.loads(row[2])
+                coeffs['scale_beta'] = row[2]
 
             # optical backscatter correction factors
             if row[1] == 'CC_angular_resolution':
-                coeffs['chi_factor'] = json.loads(row[2])
+                coeffs['chi_factor'] = row[2]
             if row[1] == 'CC_measurement_wavelength':
-                coeffs['wavelength'] = json.loads(row[2])
+                coeffs['wavelength'] = row[2]
             if row[1] == 'CC_scattering_angle':
-                coeffs['scatter_angle'] = json.loads(row[2])
+                coeffs['scatter_angle'] = row[2]
 
         # save the resulting dictionary
         self.coeffs = coeffs
@@ -80,7 +79,6 @@ def main():
     deployment = args.deployment
     lat = args.latitude
     lng = args.longitude
-    depth = np.float(args.switch)
 
     coeff_file = os.path.abspath(args.coeff_file)
     dev = Calibrations(coeff_file)  # initialize calibration class
@@ -92,14 +90,18 @@ def main():
     elif args.csvurl:
         # load from the CI hosted CSV files
         csv_url = args.csvurl
-        dev.read_devurls(csv_url)
+        dev.read_csv(csv_url)
         dev.save_coeffs()
     else:
         raise Exception('A source for the FLORT calibration coefficients could not be found')
 
     # load the json data file and return a panda data frame
     df = json2df(infile)
-    df['depth'] = depth
+    if df.empty:
+        # there was no data in this file, ending early
+        return None
+
+    df['depth'] = 7.0
     df['deploy_id'] = deployment
 
     # Apply the scale and offset correction factors from the factory calibration coefficients
@@ -149,6 +151,10 @@ def main():
         # create the netCDF.Variable object for the date/time string
         if c == 'dcl_date_time_string':
             d = nc.createVariable(c, 'S23', ('time',))
+            d.setncatts(FLORT[c])
+            d[:] = df[c].values
+        elif c == 'flort_date_time_string':
+            d = nc.createVariable(c, 'S17', ('time',))
             d.setncatts(FLORT[c])
             d[:] = df[c].values
         elif c == 'deploy_id':

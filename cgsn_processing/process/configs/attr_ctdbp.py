@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-@package cgsn_processing.process.configs.attr_flort
-@file cgsn_processing/process/configs/attr_flort.py
+@package cgsn_processing.process.configs.attr_ctdbp
+@file cgsn_processing/process/configs/attr_ctdbp.py
 @author Christopher Wingard
-@brief Attributes for the FLORT variables
+@brief Attributes for the CTDBP variables
 """
-
-FLORT = {
+CTDBP = {
     'deploy_id': {
         'long_name': 'Deployment ID',
         'standard_name': 'deployment_id',
@@ -28,9 +27,9 @@ FLORT = {
         'ancillary_variables': 'platform',
         'coverage_content_type': 'physicalMeasurement'
     },
-    'flort_date_time_string':{
-        'long_name': 'FLORT Date and Time Stamp',
-        'standard_name': 'flort_date_time_string',
+    'ctd_date_time_string': {
+        'long_name': 'CTD Date and Time Stamp',
+        'standard_name': 'ctd_date_time_string',
         'units': '1',
         'coordinates': 'time z longitude latitude',
         'grid_mapping': 'crs',
@@ -38,28 +37,39 @@ FLORT = {
         'ancillary_variables': 'platform',
         'coverage_content_type': 'physicalMeasurement'
     },
-    'measurement_wavelength_beta': {},
-    'raw_signal_beta': {
+    'temperature': {
+        'units': 'degrees_Celsius'
+    },
+    'conductivity': {
+        'units': 'S/m'
+    },
+    'pressure': {
+        'units': 'dbar'
+    },
+    'oxygen_concentration': {
+        'units': 'mL/L'
+    },
+    'raw_backscatter': {
         'units': 'counts'
     },
-    'measurement_wavelength_chl': {},
-    'raw_signal_chl': {
+    'raw_chlorophyll': {
         'units': 'counts'
     },
-    'measurement_wavelength_cdom': {},
-    'raw_signal_cdom': {
+    'raw_cdom': {
         'units': 'counts'
     },
-    'raw_internal_temp': {
-        'units': 'counts'
+    'psu': {
+        'long_name': 'Practical Salinity',
+        'standard_name': 'sea_water_salinity',
+        'units': '1',
+        'valid_min': '0',
+        'valid_max': '40'
     },
-    'estimated_chlorophyll': {
-        'units': 'mg L-1'
-    },
-    'fluorometric_cdom': {
-        'units': 'ppm'
-    },
-    'beta_700': {
-        'units': 'm-1 sr-1'
+    'rho': {
+        'long_name': 'In-Situ Seawater Density',
+        'standard_name': 'sea_water_density',
+        'units': 'kg m-3',
+        'valid_min': '0',
+        'valid_max': '35'
     }
 }
