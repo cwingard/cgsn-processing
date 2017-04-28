@@ -78,7 +78,7 @@ def main():
     platform = args.platform
     deployment = args.deployment
     lat = args.latitude
-    lng = args.longitude
+    lon = args.longitude
 
     coeff_file = os.path.abspath(args.coeff_file)
     dev = Calibrations(coeff_file)  # initialize calibration class
@@ -130,7 +130,7 @@ def main():
     ts = TimeSeries(
             output_directory=outpath,
             latitude=lat,
-            longitude=lng,
+            longitude=lon,
             station_name=platform,
             global_attributes=global_attributes,
             times=df.time.values.astype(np.float) * 10**-9,

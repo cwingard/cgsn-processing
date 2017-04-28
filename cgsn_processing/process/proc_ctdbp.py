@@ -25,7 +25,7 @@ def main():
     platform = args.platform
     deployment = args.deployment
     lat = args.latitude
-    lng = args.longitude
+    lon = args.longitude
     depth = args.depth
 
     # load the json data file and return a panda dataframe
@@ -40,7 +40,7 @@ def main():
     # calculate the practical salinity of the seawater from the temperature and conductivity measurements
     df['psu'] = SP_from_C(df['conductivity'] * 10.0, df['temperature'], df['pressure'])
     # calculate the in-situ density of the seawater from the absolute salinity and conservative temperature
-    sa = SA_from_SP(df['psu'], df['pressure'], lng, lat)                 # absolute salinity
+    sa = SA_from_SP(df['psu'], df['pressure'], lon, lat)                 # absolute salinity
     ct = CT_from_t(sa, df['temperature'], df['pressure'])    # conservative temperature
     df['rho'] = rho(sa, ct, df['pressure'])                              # density
 
@@ -64,7 +64,7 @@ def main():
     ts = TimeSeries(
         output_directory=outpath,
         latitude=lat,
-        longitude=lng,
+        longitude=lon,
         station_name=platform,
         global_attributes=global_attributes,
         times=df.time.values.astype(np.int64) * 10**-9,

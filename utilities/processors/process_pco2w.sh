@@ -9,7 +9,7 @@
 # Parse the command line inputs
 if [ $# -ne 7 ]; then
     echo "$0: required inputs are the platform and deployment names, the PCO2W"
-    echo "directory name, the UID name of the stored factory calibration data,"
+    echo "directory name, the UNIQUE_ID name of the stored factory calibration data,"
     echo "and the name of the file to process."
     echo ""
     echo "     example: $0 ce07shsm D00004 mfn/pco2w PCO2WB/CGINS-PCO2WB-C0082__20160921 20161012.pco2w.json"
@@ -19,8 +19,8 @@ PLATFORM=${1,,}
 DEPLOY=${2^^}
 LAT=$3; LNG=$4
 PCO2W=${5,,}
-UID=${6^^}
-CFILE=`/bin/basename $UID`
+UNIQUE_ID=${6^^}
+CFILE=`/bin/basename $UNIQUE_ID`
 FILE=`/bin/basename $7`
 
 # Set the default directory paths and input/output sources
@@ -36,7 +36,7 @@ fi
 
 COEFF="$DATA/erddap/$PLATFORM/$DEPLOY/$PCO2W/$CFILE.coeff"
 BLANK="$DATA/erddap/$PLATFORM/$DEPLOY/$PCO2W/$CFILE.blank"
-URL="https://github.com/ooi-integration/asset-management/raw/master/calibration/$UID.csv"
+URL="https://github.com/ooi-integration/asset-management/raw/master/calibration/$UNIQUE_ID.csv"
 
 # Process the file
 if [ -e $IN ]; then

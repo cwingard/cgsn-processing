@@ -29,7 +29,7 @@ GPS = {
         'coverage_content_type': 'physicalMeasurement'
     },
     'lat': {},
-    'lng': {},
+    'lon': {},
     'speed_over_ground': {},
     'course_over_ground': {},
     'fix_quality': {},

@@ -24,7 +24,7 @@ def main():
     platform = args.platform
     deployment = args.deployment
     lat = args.latitude
-    lng = args.longitude
+    lon = args.longitude
 
     # load the json data file and return a panda dataframe
     df = json2df(infile)
@@ -33,7 +33,7 @@ def main():
 
     # rename the latitude and longitude columns to avoid conflicts with NetCDF timeseries coordinate variables of the
     # same name
-    df.rename(columns={'latitude': 'lat', 'longitude': 'lng'}, inplace=True)
+    df.rename(columns={'latitude': 'lat', 'longitude': 'lon'}, inplace=True)
 
     # Setup the global attributes for the NetCDF file and create the NetCDF timeseries object
     global_attributes = {
@@ -53,7 +53,7 @@ def main():
     ts = TimeSeries(
         output_directory=outpath,
         latitude=lat,
-        longitude=lng,
+        longitude=lon,
         station_name=platform,
         global_attributes=global_attributes,
         times=df.time.values.astype(np.int64) * 10**-9,

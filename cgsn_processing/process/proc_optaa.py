@@ -289,7 +289,7 @@ def main():
     platform = args.platform
     deployment = args.deployment
     lat = args.latitude
-    lng = args.longitude
+    lon = args.longitude
     depth = np.float(args.switch)  # utilize the switch option to set the deployment depth
 
     coeff_file = os.path.abspath(args.coeff_file)
@@ -352,7 +352,7 @@ def main():
     ts = TimeSeries(
         output_directory=outpath,
         latitude=lat,
-        longitude=lng,
+        longitude=lon,
         station_name=platform,
         global_attributes=global_attributes,
         times=df.time.values.astype(np.int64) * 10**-9,

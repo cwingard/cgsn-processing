@@ -11,7 +11,7 @@
 # Parse the command line inputs
 if [ $# -ne 7 ]; then
     echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the SPKIR"
-    echo "directory name, the UID name of the stored factory calibration data, and the name of the file to process."
+    echo "directory name, the UNIQUE_ID name of the stored factory calibration data, and the name of the file to process."
     echo ""
     echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 nsif/spkir SPKIRB/CGINS-SPKIRB-00242__20160926 20161012.spkir.json"
     exit 1
@@ -20,8 +20,8 @@ PLATFORM=${1,,}
 DEPLOY=${2^^}
 LAT=$3; LNG=$4
 SPKIR=${5,,}
-UID=${6^^}
-CFILE=`/bin/basename $UID`
+UNIQUE_ID=${6^^}
+CFILE=`/bin/basename $UNIQUE_ID`
 FILE=`/bin/basename $7`
 
 # Set the default directory paths and input/output sources
@@ -35,7 +35,7 @@ if [ ! -d `/usr/bin/dirname $OUT` ]; then
 fi
 
 COEFF="$DATA/proc/$PLATFORM/$DEPLOY/$SPKIR/$CFILE.coeff"
-URL="https://raw.githubusercontent.com/ooi-integration/asset-management/master/calibration/$UID.csv"
+URL="https://raw.githubusercontent.com/ooi-integration/asset-management/master/calibration/$UNIQUE_ID.csv"
 
 # Process the file (if it hasn't already been done)
 if [ -e $IN ] && [ ! -e $OUT ]; then

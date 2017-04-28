@@ -24,7 +24,7 @@ class Blanks(object):
     a Sunburst Sensors, SAMI2-pCO2
     """
     def __init__(self, blnkfile, blank_434, blank_620):
-        # initialize the information needed to define the blanks cPickle file
+        # initialize the information needed to define the blanks Pickle file
         # and the blanks        
         self.blnkfile = blnkfile
         self.blank_434 = blank_434
@@ -89,69 +89,56 @@ class Calibrations(Coefficients):
 
 
 def main():
-    # load  the input arguments
+    # load the input arguments
     args = inputs()
     infile = os.path.abspath(args.infile)
-    outfile = os.path.abspath(args.outfile)
+    outpath, outfile = os.path.split(args.outfile)
+    platform = args.platform
+    deployment = args.deployment
+    lat = args.latitude
+    lon = args.longitude
+    depth = args.depth
+
     coeff_file = os.path.abspath(args.coeff_file)
-    blnk_file = os.path.abspath(args.devfile)
-        
+    cal = Calibrations(coeff_file)  # initialize calibration class
+
     # check for the source of calibration coeffs and load accordingly
-    dev = Calibrations(coeff_file)  # initialize calibration class
     if os.path.isfile(coeff_file):
         # we always want to use this file if it exists
-        dev.load_coeffs()
+        cal.load_coeffs()
     elif args.csvurl:
         # load from the CI hosted CSV files
-        csv_url = args.csvurl
-        dev.read_csv(csv_url)
-        dev.save_coeffs()
+        cal.read_csv(args.csvurl)
+        cal.save_coeffs()
     else:
         raise Exception('A source for the PCO2W calibration coefficients could not be found')
 
-    # check for the source of instrument blanks and load accordingly
-    blank = Blanks(blnk_file, 1.0, 1.0) # initialize the calibration class using default blank
-    if os.path.isfile(blnk_file):
-        blank.load_blanks()
-    else:
-        blank.save_blanks()
-        
-    # load the PCO2W data file
-    with open(infile, 'rb') as f:
-        pco2w = Munch(json.load(f))
-
-    if len(pco2w.time) == 0:
+    # load the json data file and return a panda dataframe
+    df = json2df(infile)
+    if df.empty:
         # This is an empty file, end processing
         return None
 
+    df['depth'] = depth
+    df['deploy_id'] = deployment
+
     # convert the raw battery voltage and thermistor values from counts
     # to V and degC, respectively
-    pco2w.thermistor = ph_thermistor(np.array(pco2w.thermistor_raw)).tolist()
-    pco2w.voltage_battery = ph_battery(np.array(pco2w.voltage_battery)).tolist()
+    df['thermistor'] = ph_thermistor(df['thermistor_raw'])
+    df['voltage_battery'] = ph_battery(df['voltage_battery'])
 
     # compare the instrument clock to the GPS based DCL time stamp
     # --> PCO2W uses the OSX date format of seconds since 1904-01-01
     mac = datetime.strptime("01-01-1904", "%m-%d-%Y")
     offset = []
-    for i in range(len(pco2w.time)):
-        rec = mac + timedelta(seconds=pco2w.record_time[i])
+    for i in range(len(df['time'])):
+        rec = mac + timedelta(seconds=df['record_time'][i].astype(np.float64))
         rec.replace(tzinfo=timezone('UTC'))
-        dcl = datetime.utcfromtimestamp(pco2w.time[i])
-        
-        # we use the sample collection time as the time record for the sample.
-        # the record_time, however, is when the sample was processed. so the
-        # true offset needs to include the difference between the collection
-        # and processing times
-        collect = dcl_to_epoch(pco2w.collect_date_time[i])
-        process = dcl_to_epoch(pco2w.process_date_time[i])
-        diff = process - collect
-        if np.isnan(diff):
-            diff = 300
-        offset.append((rec - dcl).total_seconds() - diff)
+        offset.append((rec - df['time'][i]).total_seconds())
 
-    pco2w.time_offset = offset
+    df['time_offset'] = offset
 
-    # set calibration inputs to pCO2 calculations
+    # set factory constants for pCO2 calculations
     ea434 = 19706.   # factory constants
     eb434 = 3073.    # factory constants
     ea620 = 34.      # factory constants
@@ -162,19 +149,13 @@ def main():
     blank434 = []
     blank620 = []
 
-    for i in range(len(pco2w.record_type)):
-        if pco2w.record_type[i] == 4:
+    for i in range(len(df['record_type'])):
+        if df['record_type'][i] == 4:
             # this is a light measurement, calculate the pCO2
-            pCO2.append(pco2_pco2wat(pco2w.record_type[i],
-                                     pco2w.light_measurements[i],
-                                     pco2w.thermistor[i],
+            pCO2.append(pco2_pco2wat(df['record_type'][i], df['light_measurements'][i], df['thermistor'][i],
                                      ea434, eb434, ea620, eb620,
-                                     dev.coeffs['calt'], 
-                                     dev.coeffs['cala'],
-                                     dev.coeffs['calb'],
-                                     dev.coeffs['calc'],
-                                     blank.blank_434,
-                                     blank.blank_620)[0])
+                                     cal.coeffs['calt'], cal.coeffs['cala'], cal.coeffs['calb'], cal.coeffs['calc'],
+                                     blank.blank_434, blank.blank_620)[0])
 
             # record the blanks used
             blank434.append(blank.blank_434)

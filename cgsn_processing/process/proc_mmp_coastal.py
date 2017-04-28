@@ -130,9 +130,9 @@ def main():
     platform = args.platform
     deployment = args.deployment
     lat = args.latitude
-    lng = args.longitude
+    lon = args.longitude
 
-    json2netcdf(infile, out_basepath, lat=lat, lon=lng, platform=platform, deployment=deployment)
+    json2netcdf(infile, out_basepath, lat=lat, lon=lon, platform=platform, deployment=deployment)
     
 if __name__ == '__main__':
     main()

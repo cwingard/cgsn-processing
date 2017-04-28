@@ -25,7 +25,7 @@ def main():
     platform = args.platform
     deployment = args.deployment
     lat = args.latitude
-    lng = args.longitude
+    lon = args.longitude
     depth = args.depth
 
     # load the json data file and return a panda dataframe, adding a deployment depth and ID
@@ -38,7 +38,7 @@ def main():
     # df['seafloor_pressure'] = sfl_sflpres_rtime(df['absolute_pressure'])
 
     # convert the dataframe to a format suitable for the pocean OMTs
-    df = df2omtdf(df, lat, lng, depth)
+    df = df2omtdf(df, lat, lon, depth)
 
     # add to the global attributes for the PRESF
     attrs = PRESF
