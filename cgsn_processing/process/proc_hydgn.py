@@ -24,7 +24,7 @@ def main():
     platform = args.platform
     deployment = args.deployment
     lat = args.latitude
-    lng = args.longitude
+    lon = args.longitude
 
     # load the json data file and return a panda dataframe
     df = json2df(infile)
@@ -49,7 +49,7 @@ def main():
     ts = TimeSeries(
         output_directory=outpath,
         latitude=lat,
-        longitude=lng,
+        longitude=lon,
         station_name=platform,
         global_attributes=global_attributes,
         times=df.time.values.astype(np.int64) * 10**-9,

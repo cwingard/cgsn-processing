@@ -8,7 +8,6 @@
 """
 import os
 import json
-import datetime
 import re
 
 import numpy as np
@@ -23,16 +22,7 @@ from cgsn_processing.process.configs.attr_mmp import MMP, MMP_ADATA, MMP_CDATA, 
 
 
 def json2dataframes(j, lat=0.):
-    # split adata "beams" into multiple columns
-    adata = j['adata']
-    adata['beam1'] = [b[1] for b in adata['beams']]
-    adata['beam2'] = [b[2] for b in adata['beams']]
-    adata['beam3'] = [b[3] for b in adata['beams']]
-    adata['beam4'] = [b[4] for b in adata['beams']]
-    adata['beams'] = [b[0] for b in adata['beams']]
-
     # convert to time-indexed dataframes
-    
     def from_xdata(j):
         df = pd.DataFrame(j)
         df['time'] = pd.to_datetime(df.time, unit='s')
@@ -43,32 +33,46 @@ def json2dataframes(j, lat=0.):
             if df[col].dtype == np.int64:
                 df[col] = df[col].astype(np.int32)
         return df
-    
-    adata = from_xdata(j['adata'])
-    cdata = from_xdata(j['cdata'])
-    edata = from_xdata(j['edata'])
-
-    # interpolate adata pressure from cdata
-    adata['pressure'] = np.nan
-    pressure = adata.pop('pressure')
-    pressure = pressure.append(cdata.pressure)
-    pressure.sort_index(inplace=True)
-    ipressure = pressure.interpolate(method='time')[np.isnan(pressure)]
-    adata['pressure'] = ipressure
 
     # convert pressure to depth
     def compute_depth(df):
         df['depth'] = [0 - z_from_p(p, lat) for p in df['pressure']]
 
-    compute_depth(adata)
+    # create dataframes from the E and C data files
+    cdata = from_xdata(j['cdata'])
+    edata = from_xdata(j['edata'])
+
+    # calculate the depth from the pressure records
     compute_depth(cdata)
     compute_depth(edata)
-                       
-    # now store time indices in "time" columns
-    adata['time'] = adata.index
-    cdata['time'] = cdata.index
-    edata['time'] = edata.index
-    
+
+    # grab the A data, and if it actually exists, process it
+    adata = j['adata']
+
+    if adata:
+        # split adata "beams" into multiple columns
+        adata['beam1'] = [b[1] for b in adata['beams']]
+        adata['beam2'] = [b[2] for b in adata['beams']]
+        adata['beam3'] = [b[3] for b in adata['beams']]
+        adata['beam4'] = [b[4] for b in adata['beams']]
+        adata['beams'] = [b[0] for b in adata['beams']]
+
+        # create a data frame for the A data
+        adata = from_xdata(j['adata'])
+
+        # interpolate adata pressure from cdata
+        adata['pressure'] = np.nan
+        pressure = adata.pop('pressure')
+        pressure = pressure.append(cdata.pressure)
+        pressure.sort_index(inplace=True)
+        ipressure = pressure.interpolate(method='time')[np.isnan(pressure)]
+        adata['pressure'] = ipressure
+
+        # calculate the depth from the pressure record
+        compute_depth(adata)
+    else:
+        adata = None
+
     return {
         'adata': adata,
         'cdata': cdata,
@@ -111,9 +115,10 @@ def json2netcdf(json_path, out_basepath, lat=0., lon=0., platform='', deployment
         nc = OMTs.from_dataframe(df, out_path, attributes=attrs)
         nc.close()
 
-    write_netcdf('adata', MMP_ADATA)
     write_netcdf('cdata', MMP_CDATA)
     write_netcdf('edata', MMP_EDATA)
+    if not dfs['adata'].empty:
+        write_netcdf('adata', MMP_ADATA)
 
 
 def main():

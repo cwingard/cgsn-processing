@@ -62,7 +62,7 @@ def main():
     platform = args.platform
     deployment = args.deployment
     lat = args.latitude
-    lng = args.longitude
+    lon = args.longitude
 
     # load the calibration data
     coeff_file = os.path.abspath(args.coeff_file)
@@ -95,7 +95,7 @@ def main():
     split_column(df, 'irr', 7, singular='irradiance')
 
     # convert the dataframe to a format suitable for the pocean OMTs
-    df = df2omtdf(df, lat, lng, 7.0)
+    df = df2omtdf(df, lat, lon, 7.0)
 
     # add to the global attributes for the SPKIR
     attrs = SPKIR
