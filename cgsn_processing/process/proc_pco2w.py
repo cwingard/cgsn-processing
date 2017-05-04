@@ -6,8 +6,9 @@
 @author Christopher Wingard
 @brief Calculate the pCO2 of water from the SAMI2-pCO2 (PCO2W) instrument
 """
-import pickle
 import numpy as np
+import pandas as pd
+import pickle
 import os
 
 from datetime import datetime, timedelta
