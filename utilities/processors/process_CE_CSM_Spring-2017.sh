@@ -28,7 +28,7 @@ case "$PLATFORM" in
         declare -a CTDBP1=("ctdbp")
         declare -a DOSTA1=("dosta" "DOSTAD/CGINS-DOSTAD-00220__20170202")
         declare -a FLORT=("FLORTD/CGINS-FLORTD-01290__20161130")
-        declare -a OPTAA1=("optaa" "OPTAAD/CGINS-OPTAAD-00170__20170124")
+        declare -a OPTAA1=("optaa" "OPTAAD/CGINS-OPTAAD-00170__20170112")
         declare -a PHSEN1=("phsen")
         declare -a SPKIR=("SPKIRB/CGINS-SPKIRB-00248__20161202")
         ;;
