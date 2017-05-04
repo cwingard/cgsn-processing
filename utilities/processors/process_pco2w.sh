@@ -27,7 +27,7 @@ FILE=`/bin/basename $8`
 
 # Set the default directory paths and input/output sources
 BIN="/home/ooiuser/code/cgsn-processing/cgsn_processing/process"
-PYTHON="/home/cgsnmo/anaconda3/envs/py27/bin/python"
+PYTHON="/home/ooiuser/bin/conda/bin/python3"
 
 DATA="/home/ooiuser/data"
 IN="$DATA/proc/$PLATFORM/$DEPLOY/$PCO2W/$FILE"
@@ -42,6 +42,6 @@ URL="https://github.com/ooi-integration/asset-management/raw/master/calibration/
 
 # Process the file
 if [ -e $IN ]; then
-    $PYTHON -m $BIN/proc_pco2w -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -dp $DEPTH -i $IN -o $OUT -cf $COEFF -df $BLANK
-     -u $URL
+    cd /home/ooiuser/code/cgsn-processing
+    $PYTHON -m $BIN/proc_pco2w -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -dp $DEPTH -i $IN -o $OUT -cf $COEFF -df $BLANK -u $URL
 fi
