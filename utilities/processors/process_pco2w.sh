@@ -7,21 +7,23 @@
 # C. Wingard 2017-01-24
 
 # Parse the command line inputs
-if [ $# -ne 7 ]; then
+if [ $# -ne 8 ]; then
     echo "$0: required inputs are the platform and deployment names, the PCO2W"
     echo "directory name, the UNIQUE_ID name of the stored factory calibration data,"
     echo "and the name of the file to process."
     echo ""
-    echo "     example: $0 ce07shsm D00004 mfn/pco2w PCO2WB/CGINS-PCO2WB-C0082__20160921 20161012.pco2w.json"
+    echo "     example: $0 ce07shsm D00004 46.98589 -124.56490 mfn/pco2w 87 PCO2WB/CGINS-PCO2WB-C0082__20160921
+    20161012.pco2w.json"
     exit 1
 fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
 LAT=$3; LNG=$4
 PCO2W=${5,,}
-UNIQUE_ID=${6^^}
+DEPTH=$6
+UNIQUE_ID=${7^^}
 CFILE=`/bin/basename $UNIQUE_ID`
-FILE=`/bin/basename $7`
+FILE=`/bin/basename $8`
 
 # Set the default directory paths and input/output sources
 BIN="/home/ooiuser/code/cgsn-processing/cgsn_processing/process"
@@ -40,5 +42,6 @@ URL="https://github.com/ooi-integration/asset-management/raw/master/calibration/
 
 # Process the file
 if [ -e $IN ]; then
-    $PYTHON -m $BIN/proc_pco2w -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -i $IN -o $OUT -cf $COEFF -df $BLANK -u $URL
+    $PYTHON -m $BIN/proc_pco2w -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -dp $DEPTH -i $IN -o $OUT -cf $COEFF -df $BLANK
+     -u $URL
 fi
