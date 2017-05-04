@@ -19,14 +19,11 @@ PCO2W = {
         'ancillary_variables': 'platform',
         'coverage_content_type': 'physicalMeasurement'
     },
-    'dcl_date_time_string': {
-    },
     'measurements': {
         'long_name': 'Measurements Array',
         'standard_name': 'measurements',
         'units': '1',
     },
-
     'collect_date_time': {
         'long_name': 'Sample Collection Date and Time Stamp',
         'standard_name': 'date_time_string',
@@ -36,7 +33,7 @@ PCO2W = {
         'platform': 'platform',
         'ancillary_variables': 'platform',
         'coverage_content_type': 'physicalMeasurement'
-},
+    },
     'process_date_time': {
         'long_name': 'Sample Processing Date and Time Stamp',
         'standard_name': 'date_time_string',

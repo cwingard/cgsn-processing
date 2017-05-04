@@ -38,7 +38,7 @@ case "$PLATFORM" in
         LNG="-124.95499"
         declare -a CTDBP1=("ctdbp")
         declare -a DOSTA1=("dosta" "DOSTAD/CGINS-DOSTAD-00135__20170202")
-        declare -a FLORT=("FLORTD/CGINS-FLORTD-01155__20160926")
+        declare -a FLORT=("FLORTD/CGINS-FLORTD-01155__20161130")
         declare -a OPTAA1=("optaa" "OPTAAD/CGINS-OPTAAD-00179__20170117")
         declare -a PHSEN1=("phsen")
         declare -a SPKIR=("SPKIRB/CGINS-SPKIRB-00295__20161202")

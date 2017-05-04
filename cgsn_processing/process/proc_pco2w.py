@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import pickle
 import os
+import re
 
 from datetime import datetime, timedelta
 from pyaxiom.netcdf.sensors import TimeSeries
@@ -164,8 +165,8 @@ def main():
 
     # calculate pCO2
     pCO2 = []
-    blank434 = []
-    blank620 = []
+    blank_434 = []
+    blank_620 = []
 
     for i in range(len(df['record_type'])):
         if df['record_type'][i] == 4:
@@ -176,8 +177,8 @@ def main():
                                      blank.blank_434, blank.blank_620)[0])
 
             # record the blanks used
-            blank434.append(blank.blank_434)
-            blank620.append(blank.blank_620)
+            blank_434.append(blank.blank_434)
+            blank_620.append(blank.blank_620)
 
         if df['record_type'][i] == 5:
             # this is a dark measurement, update and save the new blanks
@@ -185,13 +186,13 @@ def main():
             blank.blank_620 = pco2_blank(df['light_measurements'][i][7])
             blank.save_blanks()
 
-            blank434.append(blank.blank_434)
-            blank620.append(blank.blank_620)
+            blank_434.append(blank.blank_434)
+            blank_620.append(blank.blank_620)
 
     # add the resulting data to the dataframe
-    df['pCO2'] = pCO2.tolist()
-    df['blank434'] = blank434.tolist()
-    df['blank620'] = blank620.tolist()
+    df['pCO2'] = pCO2
+    df['blank_434'] = blank_434
+    df['blank_620'] = blank_620
 
     # Setup the global attributes for the NetCDF file and create the NetCDF TimeSeries object
     global_attributes = {
