@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Read the parsed CTDBP data files from the Endurance Surface Moorings and
+# Read the parsed CTDBP data files from the CGSN Coastal Surface Moorings and
 # create processed datasets available in NetCDF formatted files for further
 # processing and review.
 #
@@ -11,7 +11,7 @@ if [ $# -ne 7 ]; then
     echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the CTDBP"
     echo " directory name, the deployment depth and the name of the file to process."
     echo ""
-    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 buoy/ctdbp 82 20161012.ctdbp.json"
+    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 mfn/ctdbp 82 20161012.ctdbp.json"
     exit 1
 fi
 PLATFORM=${1,,}

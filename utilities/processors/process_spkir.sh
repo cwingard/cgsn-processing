@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Read the parsed SPKIR data files from the Endurance Surface Moorings and 
+# Read the parsed SPKIR data files from the CGSN Coastal Surface Moorings and
 # create processed datasets available in NetCDF formatted files with the vendor
 # factory calibration coefficients applied, rough temperature and salinity 
 # corrections (for now) and an initial scatter correction for further 
@@ -11,7 +11,8 @@
 # Parse the command line inputs
 if [ $# -ne 7 ]; then
     echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the SPKIR"
-    echo "directory name, the UNIQUE_ID name of the stored factory calibration data, and the name of the file to process."
+    echo "directory name, the UNIQUE_ID name of the stored factory calibration data, and the name of the file"
+    echo "to process."
     echo ""
     echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 nsif/spkir SPKIRB/CGINS-SPKIRB-00242__20160926 20161012.spkir.json"
     exit 1

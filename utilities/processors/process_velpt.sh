@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Read the parsed VELPT data files from the Endurance Surface Moorings and
+# Read the parsed VELPT data files from the CGSN Coastal Surface Moorings and
 # create processed datasets available in NetCDF formatted files for further
 # processing and review.
 #
@@ -8,10 +8,10 @@
 
 # Parse the command line inputs
 if [ $# -ne 7 ]; then
-    echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the deployment depth,"
-    echo " the VELPT directory name, and the name of the file to process."
+    echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the VELPT directory"
+    echo "name, the deployment depth and the name of the file to process."
     echo ""
-    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 7 buoy/velpt 20161012.velpt.json"
+    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 buoy/velpt 7 20161012.velpt.json"
     exit 1
 fi
 PLATFORM=${1,,}

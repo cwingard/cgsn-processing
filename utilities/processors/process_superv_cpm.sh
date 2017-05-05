@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Read the parsed CPM SUPERV data files from the Endurance Surface Moorings and
+# Read the parsed CPM SUPERV data files from the CGSN Coastal Surface Moorings and
 # create processed datasets available in NetCDF formatted files for further
 # processing and review.
 #
@@ -9,7 +9,7 @@
 # Parse the command line inputs
 if [ $# -ne 6 ]; then
     echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the CPM SUPERV"
-    echo " directory name, and the name of the file to process."
+    echo "directory name, and the name of the file to process."
     echo ""
     echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 buoy/superv/cpm1 20161012.superv.json"
     exit 1

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Read the parsed MOPAK data files from the Endurance Surface Moorings and
+# Read the parsed MOPAK data files from the CGSN Coastal Surface Moorings and
 # create processed datasets available in NetCDF formatted files for further
 # processing and review.
 #

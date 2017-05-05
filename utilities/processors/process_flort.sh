@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Read the parsed FLORT data files from the Endurance Surface Moorings and 
+# Read the parsed FLORT data files from the CGSN Coastal Surface Moorings and
 # create processed datasets available in NetCDF formatted files with the vendor
 # factory calibration coefficients applied, rough temperature and salinity 
 # corrections (for now) and an initial scatter correction for further 
