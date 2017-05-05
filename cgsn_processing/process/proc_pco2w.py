@@ -6,14 +6,19 @@
 @author Christopher Wingard
 @brief Calculate the pCO2 of water from the SAMI2-pCO2 (PCO2W) instrument
 """
-import pickle
 import numpy as np
+import pandas as pd
+import pickle
 import os
+import re
 
 from datetime import datetime, timedelta
+from pyaxiom.netcdf.sensors import TimeSeries
 from pytz import timezone
 
 from cgsn_processing.process.common import Coefficients, inputs, json2df
+from cgsn_processing.process.configs.attr_pco2w import PCO2W
+
 from pyseas.data.co2_functions import pco2_blank, pco2_pco2wat
 from pyseas.data.ph_functions import ph_thermistor, ph_battery
 
@@ -99,6 +104,13 @@ def main():
     lon = args.longitude
     depth = args.depth
 
+    # load the json data file and return a panda dataframe
+    df = json2df(infile)
+    if df.empty:
+        # This is an empty file, end processing
+        return None
+
+    # initialize the calibrations data class
     coeff_file = os.path.abspath(args.coeff_file)
     cal = Calibrations(coeff_file)  # initialize calibration class
 
@@ -113,12 +125,19 @@ def main():
     else:
         raise Exception('A source for the PCO2W calibration coefficients could not be found')
 
-    # load the json data file and return a panda dataframe
-    df = json2df(infile)
-    if df.empty:
-        # This is an empty file, end processing
-        return None
+    # initialize the pCO2 blanks class
+    blank_file = os.path.abspath(args.devfile)
+    blank = Blanks(blank_file, 0, 0)
 
+    # check for the source of pCO2 blanks and load accordingly
+    if os.path.isfile(blank_file):
+        # we always want to use this file if it exists
+        blank.load_blanks()
+    else:
+        # Create one using defaults of 0
+        blank.save_blanks()
+
+    # set the depth and deployment variables
     df['depth'] = depth
     df['deploy_id'] = deployment
 
@@ -146,8 +165,8 @@ def main():
 
     # calculate pCO2
     pCO2 = []
-    blank434 = []
-    blank620 = []
+    blank_434 = []
+    blank_620 = []
 
     for i in range(len(df['record_type'])):
         if df['record_type'][i] == 4:
@@ -158,25 +177,89 @@ def main():
                                      blank.blank_434, blank.blank_620)[0])
 
             # record the blanks used
-            blank434.append(blank.blank_434)
-            blank620.append(blank.blank_620)
+            blank_434.append(blank.blank_434)
+            blank_620.append(blank.blank_620)
 
-        if pco2w.record_type[i] == 5:
+        if df['record_type'][i] == 5:
             # this is a dark measurement, update and save the new blanks
-            blank.blank_434 = pco2_blank(pco2w.light_measurements[i][6])
-            blank.blank_620 = pco2_blank(pco2w.light_measurements[i][7])
+            blank.blank_434 = pco2_blank(df['light_measurements'][i][6])
+            blank.blank_620 = pco2_blank(df['light_measurements'][i][7])
             blank.save_blanks()
 
-            blank434.append(blank.blank_434)
-            blank620.append(blank.blank_620)
+            blank_434.append(blank.blank_434)
+            blank_620.append(blank.blank_620)
 
-    # save the resulting data to a json formatted file
-    pco2w.pCO2 = pCO2
-    pco2w.blank434 = blank434
-    pco2w.blank620 = blank620
+    # add the resulting data to the dataframe
+    df['pCO2'] = pCO2
+    df['blank_434'] = blank_434
+    df['blank_620'] = blank_620
 
-    with open(outfile, 'w') as f:
-        f.write(pco2w.toJSON())
+    # Setup the global attributes for the NetCDF file and create the NetCDF TimeSeries object
+    global_attributes = {
+        'title': 'Seawater pCO2 from PCO2W',
+        'summary': (
+            'Measures the seawater pCO2 from the Sunburst Sensors SAMI2-pCO2 Instrument).'
+        ),
+        'project': 'Ocean Observatories Initiative',
+        'institution': 'Coastal and Global Scales Nodes, (CGSN)',
+        'acknowledgement': 'National Science Foundation',
+        'references': 'http://oceanobservatories.org',
+        'creator_name': 'Christopher Wingard',
+        'creator_email': 'cwingard@coas.oregonstate.edu',
+        'creator_url': 'http://oceanobservatories.org',
+        'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
+    }
+    ts = TimeSeries(
+        output_directory=outpath,
+        latitude=lat,
+        longitude=lon,
+        station_name=platform,
+        global_attributes=global_attributes,
+        times=df.time.values.astype(np.int64) * 10**-9,
+        verticals=df.depth.values,
+        output_filename=outfile,
+        vertical_positive='down')
+
+    nc = ts._nc     # create a netCDF4 object from the TimeSeries object
+
+    # create a new dimension for the 14 measurements
+    nc.createDimension('measurements', size=14)
+    d = nc.createVariable('measurements', 'i', ('measurements',))
+    d.setncatts(PCO2W['measurements'])
+    d[:] = np.arange(0, 14).tolist()
+
+    # add the data from the data frame and set the attributes
+    for c in df.columns:
+        # skip the coordinate variables, if present, already added above via TimeSeries
+        if c in ['time', 'lat', 'lon', 'depth']:
+            # print("Skipping axis '{}' (already in file)".format(c))
+            continue
+
+        if c in ['light_measurements', 'reference_measurements']:
+            # print("Skipping '{}' (will be represented by more meaningful variables)".format(c))
+            continue
+
+        # create the netCDF.Variable object for the date/time and deploy_id strings
+        if c in ['collect_date_time', 'process_date_time']:
+            d = nc.createVariable(c, 'S23', ('time',))
+            d.setncatts(PCO2W[c])
+            d[:] = df[c].values
+        elif c == 'deploy_id':
+            d = nc.createVariable(c, 'S6', ('time',))
+            d.setncatts(PCO2W[c])
+            d[:] = df[c].values
+        # create the netCDF.Variable object for the measurement array
+        elif c in ['light_measurements']:
+            d = nc.createVariable(c, 'i', ('time', 'measurements',))
+            d.setncatts(PCO2W[c])
+            d[:] = np.array(np.vstack(df[c].values), dtype='int32')
+        else:
+            # use the TimeSeries object to add the variables
+            ts.add_variable(c, df[c].values, fillvalue=-999999999, attributes=PCO2W[c])
+
+    # synchronize the data with the netCDF file and close it
+    nc.sync()
+    nc.close()
 
 if __name__ == '__main__':
     main()

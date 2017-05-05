@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Read the parsed PHSEN data files from the Endurance Surface Moorings and
+# Read the parsed PHSEN data files from the CGSN Coastal Surface Moorings and
 # create processed datasets available in JSON formatted files for further
 # processing and review.
 #
@@ -9,7 +9,7 @@
 # Parse the command line inputs
 if [ $# -ne 7 ]; then
     echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the PHSEN"
-    echo "directory name, and the name of the file to process."
+    echo "directory name, the deployment depth and the name of the file to process."
     echo ""
     echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 nsif/phsen 7 20161012.phsen.json"
     exit 1
