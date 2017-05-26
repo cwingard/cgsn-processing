@@ -72,6 +72,7 @@ def main():
     # calculate the pH (with some cursing and grumbling about the Object dtype pandas use for arrays)
     refnc = np.array(np.vstack(df['reference_measurements'].values), dtype='int32')
     light = np.array(np.vstack(df['light_measurements'].values), dtype='int32')
+
     df['pH'] = ph_calc_phwater(refnc, light, therm, ea434, eb434, ea578, eb578, slope, offset, salinity)
 
     # now we need to reset the light and reference arrays to variables that are more meaningful and useful

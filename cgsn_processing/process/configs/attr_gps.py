@@ -18,7 +18,7 @@ GPS = {
         'ancillary_variables': 'platform',
         'coverage_content_type': 'physicalMeasurement'
     },
-    'dcl_date_time_string': {
+    'date_time_string': {
         'long_name': 'DCL Date and Time Stamp',
         'standard_name': 'dcl_date_time_string',
         'units': '1',

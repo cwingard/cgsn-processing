@@ -24,8 +24,8 @@ case "$PLATFORM" in
     "ce01issm"  )
         MFN_FLAG=1
         MFN_DEPTH=25
-        LAT=44.66003
-        LNG=-124.09512
+        LAT=44.659
+        LNG=-124.095
         declare -a FLORT1=("FLORTD/CGINS-FLORTD-01488__20160808")
         declare -a FLORT2=("FLORTD/CGINS-FLORTD-01197__20161130")
         declare -a OPTAA1=("optaa1" "OPTAAD/CGINS-OPTAAD-00183__20161011")
@@ -40,8 +40,8 @@ case "$PLATFORM" in
     "ce06issm" )
         MFN_FLAG=1
         MFN_DEPTH=29
-        LAT=47.13328
-        LNG=-124.27125
+        LAT=47.133
+        LNG=-124.272
         declare -a FLORT1=("FLORTD/CGINS-FLORTD-01123__20161130")
         declare -a FLORT2=("FLORTD/CGINS-FLORTD-01152__20161129")
         declare -a OPTAA1=("optaa1" "OPTAAD/CGINS-OPTAAD-00127__20161215")
@@ -59,6 +59,7 @@ case "$PLATFORM" in
 esac
 
 # Buoy
+$PROCESS/process_gps.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/gps" $FNAME.gps.json
 $PROCESS/process_superv_cpm.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/superv/cpm1" $FNAME.superv.json
 $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/superv/dcl17" $FNAME.superv.json
 
@@ -67,7 +68,7 @@ $PROCESS/process_ctdbp.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/ctdbp" 1 $FNAME.ctdb
 for mopak in $PROC/$PLATFORM/$DEPLOY/buoy/mopak/$FNAME*.mopak.json; do
     if [ -e $mopak ]; then
         SIZE=`du -k "$mopak" | cut -f1`
-        if [ $SIZE > 0 ]; then
+        if [ $SIZE -gt 0 ]; then
             $PROCESS/process_mopak.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/mopak" $mopak
         fi
     fi
@@ -84,7 +85,7 @@ $PROCESS/process_nutnr.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/nutnr" $FNAME.nutnr.
 for optaa in $PROC/$PLATFORM/$DEPLOY/nsif/optaa/$FNAME*.${OPTAA1[0]}.json; do
     if [ -e $optaa ]; then
         SIZE=`du -k "$optaa" | cut -f1`
-        if [ $SIZE > 0 ]; then
+        if [ $SIZE -gt 0 ]; then
             $PROCESS/process_optaa.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/optaa" 7 ${OPTAA1[1]} $optaa
         fi
     fi
@@ -106,7 +107,7 @@ if [ $MFN_FLAG == 1 ]; then
     for optaa in $PROC/$PLATFORM/$DEPLOY/mfn/optaa/$FNAME*.${OPTAA2[0]}.json; do
         if [ -e $optaa ]; then
             SIZE=`du -k "$optaa" | cut -f1`
-            if [ $SIZE > 0 ]; then
+            if [ $SIZE -gt 0 ]; then
                 $PROCESS/process_optaa.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/optaa" $MFN_DEPTH ${OPTAA2[1]} $optaa
             fi
         fi

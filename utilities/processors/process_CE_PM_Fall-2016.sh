@@ -27,7 +27,7 @@ LNG="-124.98229"
 for mopak in $PROC/$PLATFORM/$DEPLOY/buoy/3dmgx3/$FNAME*.3dmgx3.json; do
     if [ -e $mopak ]; then
         SIZE=`du -k "$mopak" | cut -f1`
-        if [ $SIZE > 0 ]; then
+        if [ $SIZE -gt 0 ]; then
             $PROCESS/process_mopak.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/3dmgx3" $mopak
         fi
     fi
@@ -37,7 +37,7 @@ $PROCESS/process_superv_stc.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/superv" $FNAME.
 # IMM/MMP
 for mmp in $PROC/$PLATFORM/$DEPLOY/imm/mmp/P*.json; do
     SIZE=`du -k "$mmp" | cut -f1`
-    if [ $SIZE > 0 ]; then
+    if [ $SIZE -gt 0 ]; then
         $PROCESS/process_mmp_coastal.sh $PLATFORM $DEPLOY $LAT $LNG "imm/mmp" $mmp
     fi
 done

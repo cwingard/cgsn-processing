@@ -28,6 +28,10 @@ def main():
 
     # load the json data file and return a panda dataframe
     df = json2df(infile)
+    if df.empty:
+        # there was no data in this file, ending early
+        return None
+
     df['depth'] = 0.0
     df['deploy_id'] = deployment
 
@@ -39,7 +43,7 @@ def main():
     global_attributes = {
         'title': 'Mooring GPS Data',
         'summary': (
-            'Records the GPS position of the mooring on a 1 minute interval'
+            'Records the GPS position of the mooring during a deployment'
         ),
         'project': 'Ocean Observatories Initiative',
         'institution': 'Coastal and Global Scales Nodes, (CGSN)',
@@ -71,7 +75,7 @@ def main():
             continue
 
         # create the netCDF.Variable object for the date/time string
-        if c == 'dcl_date_time_string':
+        if c == 'date_time_string':
             d = nc.createVariable(c, 'S23', ('time',))
             d.setncatts(GPS[c])
             d[:] = df[c].values

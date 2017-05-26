@@ -24,8 +24,8 @@ case "$PLATFORM" in
     "ce01issm"  )
         MFN_FLAG=1
         MFN_DEPTH=25
-        LAT=44.66003
-        LNG=-124.09512
+        LAT=44.659
+        LNG=-124.095
         declare -a FLORT=("FLORTD/CGINS-FLORTD-01121__20160930")
         declare -a OPTAA1=("None" "None")
         declare -a PCO2W1=("pco2w1" "PCO2WB/CGINS-PCO2WB-C0084__20160930")
@@ -39,8 +39,8 @@ case "$PLATFORM" in
     "ce06issm" )
         MFN_FLAG=1
         MFN_DEPTH=29
-        LAT=47.13328
-        LNG=-124.27125
+        LAT=47.133
+        LNG=-124.272
         declare -a FLORT=("FLORTD/CGINS-FLORTD-01154__20160927")
         declare -a OPTAA1=("optaa1" "OPTAAD/CGINS-OPTAAD-00136__20160927")
         declare -a PCO2W1=("pco2w1" "PCO2WB/CGINS-PCO2WB-C0085__20160927")
@@ -64,7 +64,7 @@ $PROCESS/process_ctdbp.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/ctdbp" 1 $FNAME.ctdb
 for mopak in $PROC/$PLATFORM/$DEPLOY/buoy/mopak/$FNAME*.mopak.json; do
     if [ -e $mopak ]; then
         SIZE=`du -k "$mopak" | cut -f1`
-        if [ $SIZE > 0 ]; then
+        if [ $SIZE -gt 0 ]; then
             $PROCESS/process_mopak.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/mopak" $mopak
         fi
     fi
@@ -81,7 +81,7 @@ $PROCESS/process_nutnr.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/nutnr" $FNAME.nutnr.
 for optaa in $PROC/$PLATFORM/$DEPLOY/nsif/optaa/$FNAME*.${OPTAA1[0]}.json; do
     if [ -e $optaa ]; then
         SIZE=`du -k "$optaa" | cut -f1`
-        if [ $SIZE > 0 ]; then
+        if [ $SIZE -gt 0 ]; then
             $PROCESS/process_optaa.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/optaa" 7 ${OPTAA1[1]} $optaa
         fi
     fi
@@ -103,7 +103,7 @@ if [ $MFN_FLAG == 1 ]; then
     for optaa in $PROC/$PLATFORM/$DEPLOY/mfn/optaa/$FNAME*.${OPTAA2[0]}.json; do
         if [ -e $optaa ]; then
             SIZE=`du -k "$optaa" | cut -f1`
-            if [ $SIZE > 0 ]; then
+            if [ $SIZE -gt 0 ]; then
                 $PROCESS/process_optaa.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/optaa" $MFN_DEPTH ${OPTAA2[1]} $optaa
             fi
         fi
