@@ -190,6 +190,53 @@ class PwrsysErrorFlag3(IntEnum):
     ef3_n_swgf_sensor_fault= 0x80000000
 
 
+class MPEAErrorFlag1(IntEnum):
+    ef1_no_error = 0x00000000
+    ef1_high_voltage_input_undervoltage = 0x00000001
+    ef1_high_voltage_input_overvoltage = 0x00000002
+    ef1_high_voltage_input_power_sensor_fault = 0x00000004
+    ef1_mpm_internal_over_temp = 0x00000008
+    ef1_mpea_hotel_power_coverter_over_temp = 0x00000010
+    ef1_5v_hotel_power_undervoltage = 0x00000020
+    ef1_5v_hotel_power_overvoltage = 0x00000040
+    ef1_microcontroller_core_undervoltage = 0x00000080
+    ef1_microcontroller_core_overvoltage = 0x00000100
+    ef1_hotel_power_status_sensor_fault = 0x00000200
+    ef1_mpea_reset_flag = 0x00000400
+    ef1_converter_1_input_overcurrent = 0x00000800
+    ef1_converter_1_output_overvoltage = 0x00001000
+    ef1_converter_1_output_undervoltage = 0x00002000
+    ef1_converter_1_output_overcurent = 0x00004000
+    ef1_converter_1_dc_converter_fault = 0x00008000
+    ef1_converter_1_input_sensor_fault = 0x00010000
+    ef1_converter_1_output_sensor_fault = 0x00020000
+    ef1_converter_2_input_overcurrent = 0x00040000
+    ef1_converter_2_output_overvoltage = 0x00080000
+    ef1_converter_2_output_undervoltage = 0x00100000
+    ef1_converter_2_output_overcurrent = 0x00200000
+    ef1_converter_2_dc_converter_fault = 0x00400000
+    ef1_converter_2_input_sensor_fault = 0x00800000
+    ef1_converter_2_output_sensor_fault = 0x01000000
+    ef1_converter_3_input_overcurrent = 0x02000000
+    ef1_converter_3_output_overvoltage = 0x04000000
+    ef1_converter_3_output_undervoltage = 0x08000000
+    ef1_converter_3_output_overcurrent = 0x10000000
+    ef1_converter_3_dc_converter_fault = 0x20000000
+    ef1_converter_3_input_sensor_fault = 0x40000000
+    ef1_converter_3_output_sensor_fault = 0x80000000
+
+
+class MPEAErrorFlag2(IntEnum):
+    ef2_no_error = 0x00000000
+    ef2_converter_4_input_overcurrent = 0x00000001
+    ef1_converter_4_output_overvoltage = 0x00000002
+    ef1_converter_4_output_undervoltage = 0x00000004
+    ef2_converter_4_output_overcurrent = 0x00000008
+    ef2_converter_4_dc_converter_fault = 0x00000010
+    ef2_converter_4_input_sensor_fault = 0x00000020
+    ef2_converter_4_output_sensor_fault = 0x00000040
+
+
 def derive_multi_flags(flag_class, flag_name, df):
     """
     Uses the enumeration flag classes from above to quickly set values for the flag values
