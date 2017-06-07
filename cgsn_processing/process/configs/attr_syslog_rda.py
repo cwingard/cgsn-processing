@@ -1,82 +1,47 @@
 #!/usr/bin/env python
-# _*_ coding: utf_8 _*_
+# -*- coding: utf-8 -*-
 """
-@package cgsn_processing.process.configs.attr_mpea
-@file cgsn_processing/process/configs/attr_mpea.py
-@author Christopher Wingard
-@brief Attributes for the MPEA variables
+@package cgsn_processing.process.configs.attr_RDA
+@file cgsn_processing/process/configs/attr_RDA.py
+@author Joe Futrelle
+@brief Attributes for the RDA variables
 """
-MPEA = {
+
+RDA = {
+    'global': {
+        'title': 'Downwelling Spectral Irradiance at 7 meters',
+        'summary': 'Downwelling spectral irradiance measured over 7 wavelengths at 7 meter depth',
+        'project': 'Ocean Observatories Initiative',
+        'institution': 'Coastal and Global Scales Nodes, (CGSN)',
+        'acknowledgement': 'National Science Foundation',
+        'references': 'http://oceanobservatories.org',
+        'creator_name': 'Christopher Wingard',
+        'creator_email': 'cwingard@coas.oregonstate.edu',
+        'creator_url': 'http://oceanobservatories.org',
+    },
     'deploy_id': {
         'long_name': 'Deployment ID',
         'standard_name': 'deployment_id',
         'units': '1',
-        'coordinates': 'time z latitude longitude',
-        'grid_mapping': 'crs',
-        'platform': 'platform',
-        'ancillary_variables': 'platform',
-        'coverage_content_type': 'physicalMeasurement'
     },
     'date_time_string': {
         'long_name': 'Date and Time Stamp',
         'standard_name': 'date_time_string',
         'units': '1',
-        'coordinates': 'time z latitude longitude',
-        'grid_mapping': 'crs',
-        'platform': 'platform',
-        'ancillary_variables': 'platform',
-        'coverage_content_type': 'physicalMeasurement'
     },
-    'main_voltage': {
-        'long_name': 'Main Voltage',
-        'standard_name': 'main_voltage',
-        'units': 'V'
-         },
-    'main_current': {
-        'long_name': 'Main Current',
-        'standard_name': 'main_current',
-        'units': 'mA'
+    'depth': {
+        'long_name': 'Sensor Depth',
+        'standard_name': 'depth_of_sensor_below_water',
+        'units': 'm',
+        'positive': 'down',
+        'axis': 'Z',
+        'valid_min': '-10000',
+        'valid_max': '1000',
     },
-    'error_flag1': {
-        'long_name': 'Error Flag 1',
-        'standard_name': 'error_flag_1',
-        'units': '1'
-    },
-    'error_flag2': {
-        'long_name': 'Error Flag 2',
-        'standard_name': 'error_flag_2',
-        'units': '1'
-    },
-    'cv1_state': {'units': '1'},
-    'cv1_voltage': {'units': 'V'},
-    'cv1_current': {'units': 'mA'},
-    'cv2_state': {'units': '1'},
-    'cv2_voltage': {'units': 'V'},
-    'cv2_current': {'units': 'mA'},
-    'cv3_state': {'units': '1'},
-    'cv3_voltage': {'units': 'V'},
-    'cv3_current': {'units': 'mA'},
-    'cv4_state': {'units': '1'},
-    'cv4_voltage': {'units': 'V'},
-    'cv4_current': {'units': 'mA'},
-    'cv5_state': {'units': '1'},
-    'cv5_voltage': {'units': 'V'},
-    'cv5_current': {'units': 'mA'},
-    'cv6_state': {'units': '1'},
-    'cv6_voltage': {'units': 'V'},
-    'cv6_current': {'units': 'mA'},
-    'cv7_state': {'units': '1'},
-    'cv7_voltage': {'units': 'V'},
-    'cv7_current': {'units': 'mA'},
-    'auxiliary_state': {'units': '1'},
-    'auxiliary_voltage': {'units': 'V'},
-    'auxiliary_current': {'units': 'mA'},
-    'hotel_5v_voltage': {'units': 'V'},
-    'hotel_5v_current': {'units': 'mA'},
-    'temperature': {'units': 'degreesC'},
-    'relative_humidity': {'units': 'percent'},
-    'leak_detect': {'units': 'mV'},
-    'internal_pressure': {'units': 'psi'},
+    'main_voltage': {'units': 'V'},
+    'main_current': {'units': 'mA'},
+    'error_flags': {'units': '1'},
+    'rda_type': {'units': '1'},
     'ef1_no_error': {'units': '1'},
     'ef1_high_voltage_input_undervoltage': {'units': '1'},
     'ef1_high_voltage_input_overvoltage': {'units': '1'},
@@ -112,8 +77,8 @@ MPEA = {
     'ef1_converter_3_output_sensor_fault': {'units': '1'},
     'ef2_no_error': {'units': '1'},
     'ef2_converter_4_input_overcurrent': {'units': '1'},
-    'ef2_converter_4_output_overvoltage': {'units': '1'},
-    'ef2_converter_4_output_undervoltage': {'units': '1'},
+    'ef1_converter_4_output_overvoltage': {'units': '1'},
+    'ef1_converter_4_output_undervoltage': {'units': '1'},
     'ef2_converter_4_output_overcurrent': {'units': '1'},
     'ef2_converter_4_dc_converter_fault': {'units': '1'},
     'ef2_converter_4_input_sensor_fault': {'units': '1'},

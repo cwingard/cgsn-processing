@@ -24,6 +24,7 @@ LNG="-124.98229"
 
 # Buoy
 $PROCESS/process_gps.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/gps" $FNAME.syslog.json
+$PROCESS/process_syslog_irid.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/irid" $FNAME.syslog.json
 $PROCESS/process_superv_stc.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/superv" $FNAME.syslog.json
 for mopak in $PROC/$PLATFORM/$DEPLOY/buoy/3dmgx3/$FNAME*.3dmgx3.json; do
     if [ -e $mopak ]; then

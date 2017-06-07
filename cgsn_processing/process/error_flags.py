@@ -229,8 +229,8 @@ class MPEAErrorFlag1(IntEnum):
 class MPEAErrorFlag2(IntEnum):
     ef2_no_error = 0x00000000
     ef2_converter_4_input_overcurrent = 0x00000001
-    ef1_converter_4_output_overvoltage = 0x00000002
-    ef1_converter_4_output_undervoltage = 0x00000004
+    ef2_converter_4_output_overvoltage = 0x00000002
+    ef2_converter_4_output_undervoltage = 0x00000004
     ef2_converter_4_output_overcurrent = 0x00000008
     ef2_converter_4_dc_converter_fault = 0x00000010
     ef2_converter_4_input_sensor_fault = 0x00000020

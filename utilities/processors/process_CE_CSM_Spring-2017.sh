@@ -82,6 +82,9 @@ esac
 
 # Buoy
 $PROCESS/process_gps.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/gps" $FNAME.gps.json
+$PROCESS/process_syslog_irid.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/irid" $FNAME.syslog.json
+$PROCESS/process_syslog_fb250.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/fb250" $FNAME.syslog.json
+$PROCESS/process_syslog_rda.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/rda" $FNAME.syslog.json
 $PROCESS/process_hydgn.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/hydgn" $FNAME.hyd1.json
 $PROCESS/process_hydgn.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/hydgn" $FNAME.hyd2.json
 for mopak in $PROC/$PLATFORM/$DEPLOY/buoy/mopak/$FNAME*.mopak.json; do
