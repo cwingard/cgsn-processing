@@ -29,6 +29,10 @@ def main():
     
     # load the json data file and return a panda data frame
     df = json2df(infile)
+    if df.empty:
+        # there was no data in this file, ending early
+        return None
+
     df['depth'] = -4.81       # default altitude
     df['deploy_id'] = deployment
 

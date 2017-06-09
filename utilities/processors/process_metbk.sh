@@ -22,7 +22,7 @@ FILE=`/bin/basename $6`
 
 # Set the default directory paths and input/output sources
 BIN="/home/ooiuser/code/cgsn-processing/cgsn_processing/process"
-PYTHON="/home/cgsnmo/anaconda3/envs/py27/bin/python"
+PYTHON="/home/ooiuser/bin/conda/bin/python"
 
 DATA="/home/ooiuser/data"
 IN="$DATA/proc/$PLATFORM/$DEPLOY/$METBK/$FILE"

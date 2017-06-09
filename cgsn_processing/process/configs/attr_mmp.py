@@ -46,6 +46,20 @@ MMP = {
         'long_name': 'Sea Water Temperature',
         'standard_name': 'sea_water_temperature',
         'units': 'degree_Celsius'
+    },
+    'psu': {
+        'long_name': 'Practical Salinity',
+        'standard_name': 'sea_water_salinity',
+        'units': '1',
+        'valid_min': '0',
+        'valid_max': '40'
+    },
+    'rho': {
+        'long_name': 'In-Situ Seawater Density',
+        'standard_name': 'sea_water_density',
+        'units': 'kg m-3',
+        'valid_min': '0',
+        'valid_max': '35'
     }
 }
 

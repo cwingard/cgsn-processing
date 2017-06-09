@@ -54,6 +54,7 @@ class Calibrations(Coefficients):
         # save the resulting dictionary
         self.coeffs = coeffs
 
+
 def main():
     # load the input arguments
     args = inputs()
@@ -82,11 +83,15 @@ def main():
 
     # load the json data file and return a panda dataframe, adding a default depth and the deployment ID
     df = json2df(infile)
+    if df.empty:
+        # there was no data in this file, ending early
+        return None
+
     df['depth'] = 7.0
     df['deploy_id'] = deployment
 
     # Convert spectral irradiance values from counts to uE/m^2/s
-    channels = np.array(np.vstack(df['raw_channels'].values), dtype='int32')
+    channels = np.array(np.vstack(df['raw_channels'].values), dtype='uint32')
     irr = opt_ocr507_irradiance(channels, dev.coeffs['offset'], dev.coeffs['scale'], dev.coeffs['immersion_factor'])
     df['irr'] = irr.tolist()
 

@@ -60,7 +60,16 @@ PCO2W = {
         'standard_name': 'instrument_time',
         'units': 'seconds since 1904-01-01',
     },
-    'light_measurements': {},
+    'light_measurements': {
+        'units': 'counts',
+        'coordinates': 'time z longitude latitude',
+        'fill_value': np.int32(-999999999),
+        'missing_value': np.int32(-999999999),
+        'grid_mapping': 'crs',
+        'platform': 'platform',
+        'ancillary_variables': 'platform',
+        'coverage_content_type': 'physicalMeasurement'
+    },
     'voltage_battery': {
         'long_name': 'Battery Voltage',
         'standard_name': 'battery_voltage',
@@ -68,7 +77,7 @@ PCO2W = {
     },
     'thermistor_raw': {},
     'thermistor': {
-        'long_name': 'Temperature Start',
+        'long_name': 'Temperature',
         'standard_name': 'seawater_temperature',
         'units': 'degree_Celsius'
     },
