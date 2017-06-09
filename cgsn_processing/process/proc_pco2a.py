@@ -17,6 +17,7 @@ from cgsn_processing.process.configs.attr_pco2a import PCO2A
 
 from pyseas.data.co2_functions import pco2_ppressure
 
+
 def main():
     # load  the input arguments
     args = inputs()
@@ -29,13 +30,21 @@ def main():
     
     # load the json data file and return a panda data frame
     df = json2df(infile)
+    if df.empty:
+        # there was no data in this file, ending early
+        return None
+
     df['depth'] = 0.0       # default depth, will update for sensors below
     df['deploy_id'] = deployment
 
-    # rename the co2_source parameter to sample_id for better subsetting, and the CO2 measurement variable
+    # rename the co2_source parameter to sample_id, and replace the single letter codes to full words for better
+    # sub-setting, and rename the CO2 measurement variable to remove the water water since it can be from either air or
+    # water.
     df.rename(columns={'co2_source': 'sample_id', 'measured_water_co2': 'measured_co2'}, inplace=True)
+    df['sample_id'].replace(to_replace='A', value='air', inplace=True)
+    df['sample_id'].replace(to_replace='W', value='water', inplace=True)
 
-    # calculate the partial pressure of CO2 in air and water samples
+    # calculate the partial pressure of CO2 in the air and water samples
     df['pCO2'] = pco2_ppressure(df['measured_co2'], df['gas_stream_pressure'])
 
     # Setup the global attributes for the NetCDF file and create the NetCDF timeseries object
@@ -95,7 +104,7 @@ def main():
             d.setncatts(PCO2A[c])
             d[:] = df[c].values
         elif c == 'sample_id':
-            d = nc.createVariable(c, 'S1', ('time',))
+            d = nc.createVariable(c, 'S5', ('time',))
             d.setncatts(PCO2A[c])
             d[:] = df[c].values
         else:

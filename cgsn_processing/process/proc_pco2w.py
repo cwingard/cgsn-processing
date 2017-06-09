@@ -222,7 +222,7 @@ def main():
 
     nc = ts._nc     # create a netCDF4 object from the TimeSeries object
 
-    # create a new dimension for the 14 measurements
+    # create a new dimension for the 14 light measurements
     nc.createDimension('measurements', size=14)
     d = nc.createVariable('measurements', 'i', ('measurements',))
     d.setncatts(PCO2W['measurements'])
@@ -233,10 +233,6 @@ def main():
         # skip the coordinate variables, if present, already added above via TimeSeries
         if c in ['time', 'lat', 'lon', 'depth']:
             # print("Skipping axis '{}' (already in file)".format(c))
-            continue
-
-        if c in ['light_measurements', 'reference_measurements']:
-            # print("Skipping '{}' (will be represented by more meaningful variables)".format(c))
             continue
 
         # create the netCDF.Variable object for the date/time and deploy_id strings

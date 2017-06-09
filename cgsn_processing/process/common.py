@@ -28,6 +28,7 @@ class Coefficients(object):
         """
         # set the infile name and path
         self.coeff_file = coeff_file
+        self.coeffs = {}
 
     def load_coeffs(self):
         """

@@ -1,0 +1,121 @@
+#!/usr/bin/env python
+# _*_ coding: utf_8 _*_
+"""
+@package cgsn_processing.process.configs.attr_mpea
+@file cgsn_processing/process/configs/attr_mpea.py
+@author Christopher Wingard
+@brief Attributes for the MPEA variables
+"""
+MPEA = {
+    'deploy_id': {
+        'long_name': 'Deployment ID',
+        'standard_name': 'deployment_id',
+        'units': '1',
+        'coordinates': 'time z latitude longitude',
+        'grid_mapping': 'crs',
+        'platform': 'platform',
+        'ancillary_variables': 'platform',
+        'coverage_content_type': 'physicalMeasurement'
+    },
+    'date_time_string': {
+        'long_name': 'Date and Time Stamp',
+        'standard_name': 'date_time_string',
+        'units': '1',
+        'coordinates': 'time z latitude longitude',
+        'grid_mapping': 'crs',
+        'platform': 'platform',
+        'ancillary_variables': 'platform',
+        'coverage_content_type': 'physicalMeasurement'
+    },
+    'main_voltage': {
+        'long_name': 'Main Voltage',
+        'standard_name': 'main_voltage',
+        'units': 'V'
+         },
+    'main_current': {
+        'long_name': 'Main Current',
+        'standard_name': 'main_current',
+        'units': 'mA'
+    },
+    'error_flag1': {
+        'long_name': 'Error Flag 1',
+        'standard_name': 'error_flag_1',
+        'units': '1'
+    },
+    'error_flag2': {
+        'long_name': 'Error Flag 2',
+        'standard_name': 'error_flag_2',
+        'units': '1'
+    },
+    'cv1_state': {'units': '1'},
+    'cv1_voltage': {'units': 'V'},
+    'cv1_current': {'units': 'mA'},
+    'cv2_state': {'units': '1'},
+    'cv2_voltage': {'units': 'V'},
+    'cv2_current': {'units': 'mA'},
+    'cv3_state': {'units': '1'},
+    'cv3_voltage': {'units': 'V'},
+    'cv3_current': {'units': 'mA'},
+    'cv4_state': {'units': '1'},
+    'cv4_voltage': {'units': 'V'},
+    'cv4_current': {'units': 'mA'},
+    'cv5_state': {'units': '1'},
+    'cv5_voltage': {'units': 'V'},
+    'cv5_current': {'units': 'mA'},
+    'cv6_state': {'units': '1'},
+    'cv6_voltage': {'units': 'V'},
+    'cv6_current': {'units': 'mA'},
+    'cv7_state': {'units': '1'},
+    'cv7_voltage': {'units': 'V'},
+    'cv7_current': {'units': 'mA'},
+    'auxiliary_state': {'units': '1'},
+    'auxiliary_voltage': {'units': 'V'},
+    'auxiliary_current': {'units': 'mA'},
+    'hotel_5v_voltage': {'units': 'V'},
+    'hotel_5v_current': {'units': 'mA'},
+    'temperature': {'units': 'degreesC'},
+    'relative_humidity': {'units': 'percent'},
+    'leak_detect': {'units': 'mV'},
+    'internal_pressure': {'units': 'psi'},
+    'ef1_no_error': {'units': '1'},
+    'ef1_high_voltage_input_undervoltage': {'units': '1'},
+    'ef1_high_voltage_input_overvoltage': {'units': '1'},
+    'ef1_high_voltage_input_power_sensor_fault': {'units': '1'},
+    'ef1_mpm_internal_over_temp': {'units': '1'},
+    'ef1_mpea_hotel_power_coverter_over_temp': {'units': '1'},
+    'ef1_5v_hotel_power_undervoltage': {'units': '1'},
+    'ef1_5v_hotel_power_overvoltage': {'units': '1'},
+    'ef1_microcontroller_core_undervoltage': {'units': '1'},
+    'ef1_microcontroller_core_overvoltage': {'units': '1'},
+    'ef1_hotel_power_status_sensor_fault': {'units': '1'},
+    'ef1_mpea_reset_flag': {'units': '1'},
+    'ef1_converter_1_input_overcurrent': {'units': '1'},
+    'ef1_converter_1_output_overvoltage': {'units': '1'},
+    'ef1_converter_1_output_undervoltage': {'units': '1'},
+    'ef1_converter_1_output_overcurent': {'units': '1'},
+    'ef1_converter_1_dc_converter_fault': {'units': '1'},
+    'ef1_converter_1_input_sensor_fault': {'units': '1'},
+    'ef1_converter_1_output_sensor_fault': {'units': '1'},
+    'ef1_converter_2_input_overcurrent': {'units': '1'},
+    'ef1_converter_2_output_overvoltage': {'units': '1'},
+    'ef1_converter_2_output_undervoltage': {'units': '1'},
+    'ef1_converter_2_output_overcurrent': {'units': '1'},
+    'ef1_converter_2_dc_converter_fault': {'units': '1'},
+    'ef1_converter_2_input_sensor_fault': {'units': '1'},
+    'ef1_converter_2_output_sensor_fault': {'units': '1'},
+    'ef1_converter_3_input_overcurrent': {'units': '1'},
+    'ef1_converter_3_output_overvoltage': {'units': '1'},
+    'ef1_converter_3_output_undervoltage': {'units': '1'},
+    'ef1_converter_3_output_overcurrent': {'units': '1'},
+    'ef1_converter_3_dc_converter_fault': {'units': '1'},
+    'ef1_converter_3_input_sensor_fault': {'units': '1'},
+    'ef1_converter_3_output_sensor_fault': {'units': '1'},
+    'ef2_no_error': {'units': '1'},
+    'ef2_converter_4_input_overcurrent': {'units': '1'},
+    'ef2_converter_4_output_overvoltage': {'units': '1'},
+    'ef2_converter_4_output_undervoltage': {'units': '1'},
+    'ef2_converter_4_output_overcurrent': {'units': '1'},
+    'ef2_converter_4_dc_converter_fault': {'units': '1'},
+    'ef2_converter_4_input_sensor_fault': {'units': '1'},
+    'ef2_converter_4_output_sensor_fault': {'units': '1'}
+}

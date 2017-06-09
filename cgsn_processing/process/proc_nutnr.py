@@ -28,6 +28,10 @@ def main():
 
     # load the json data file and return a panda dataframe
     df = json2df(infile)
+    if df.empty:
+        # there was no data in this file, ending early
+        return None
+
     df['depth'] = 7.0
     df['deploy_id'] = deployment
 
