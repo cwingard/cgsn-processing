@@ -86,6 +86,11 @@ def json2df(infile):
 
         df['time'] = pd.to_datetime(df.time, unit='s')
         df.index = df['time']
+
+        for col in df.columns:
+            if df[col].dtype == np.int64:
+                df[col] = df[col].astype(np.int32)
+
         return df
 
 
@@ -101,6 +106,11 @@ def json_sub2df(infile, sub):
 
         df['time'] = pd.to_datetime(df.time, unit='s')
         df.index = df['time']
+
+        for col in df.columns:
+            if df[col].dtype == np.int64:
+                df[col] = df[col].astype(np.int32)
+
         return df
 
 
@@ -120,6 +130,18 @@ def df2omtdf(df, lat=0., lon=0., depth=0., time_var='time'):
     # just one station
     df['station'] = 0
 
+    # convert all int64s to int32s
+    for col in df.columns:
+        if df[col].dtype == np.int64:
+            df[col] = df[col].astype(np.int32)
+
+    return df
+
+
+def reset_long(df):
+    """
+    Resets all int64s (longs) in a dataframe to int32 (int). ERDDAP cannot handle longs.
+    """
     # convert all int64s to int32s
     for col in df.columns:
         if df[col].dtype == np.int64:
