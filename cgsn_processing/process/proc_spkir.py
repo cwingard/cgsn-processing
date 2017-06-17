@@ -95,6 +95,11 @@ def main():
     irr = opt_ocr507_irradiance(channels, dev.coeffs['offset'], dev.coeffs['scale'], dev.coeffs['immersion_factor'])
     df['irr'] = irr.tolist()
 
+    # convert voltages and temperature to engineering units
+    df['input_voltage'] *= 0.03
+    df['analog_rail_voltage'] *= 0.03
+    df['internal_temperature'] = -50 + df['internal_temperature'] * 0.5
+
     # convert the 7 spectral irradiance values from arrays to scalars
     split_column(df, 'raw_channels', 7, singular='raw_channel')
     split_column(df, 'irr', 7, singular='irradiance')

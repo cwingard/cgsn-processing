@@ -6,7 +6,6 @@
 @author Christopher Wingard
 @brief Attributes for the CSPP dataset variables
 """
-
 CSPP = {
     'global': {
         'project': 'Ocean Observatories Initiative',
@@ -27,14 +26,14 @@ CSPP = {
         'standard_name': 'profile_id',
         'units': '1'
     },
-    'depth': {
-        'long_name': 'Sensor Depth',
-        'standard_name': 'depth_of_sensor_below_water',
+    'site_depth': {
+        'long_name': 'Deployment Site Depth',
+        'standard_name': 'depth',
         'units': 'm',
         'positive': 'down',
         'axis': 'Z',
         'valid_min': '-10000',
-        'valid_max': '1000',
+        'valid_max': '1000'
     },
     'z': {
         'long_name': 'Sensor Depth',
@@ -43,8 +42,8 @@ CSPP = {
         'positive': 'down',
         'axis': 'Z',
         'valid_min': '-10000',
-        'valid_max': '1000',
-    },
+        'valid_max': '1000'
+    }
 }
 
 CSPP_CTDPF = {
@@ -80,7 +79,192 @@ CSPP_CTDPF = {
         'long_name': 'In-Situ Seawater Density',
         'standard_name': 'sea_water_density',
         'units': 'kg m-3',
-        'valid_min': '0',
-        'valid_max': '35'
+        'valid_min': '1000',
+        'valid_max': '1035'
     }
+}
+
+CSPP_DOSTA = {
+    'global': {
+        'title': 'uCSPP Dissolved Oxygen Data Records',
+        'summary': (
+            'Records the dissolved oxygen data for the uncabled Coastal Surface Piercing Profilers'
+        )
+    },
+    'depth': {
+        'long_name': 'CSPP Depth',
+        'standard_name': 'sea_water_pressure_due_to_sea_water',
+        'units': 'dbar',
+        'axis': 'Z',
+        'valid_min': '-5',
+        'valid_max': '1000',
+    },
+    'product_number': {
+        'units': '1'
+    },
+    'serial_number': {
+        'units': '1'
+    },
+    'estimated_oxygen_concentration': {
+        'units': 'uM'
+    },
+    'estimated_oxygen_saturation': {
+        'units': 'percent'
+    },
+    'optode_temperature': {
+        'units': 'degree_Celsius'
+    },
+    'calibrated_phase': {
+        'units': 'degree'
+    },
+    'temp_compensated_phase': {
+        'units': 'degree'
+    },
+    'blue_phase': {
+        'units': 'degree'
+    },
+    'red_phase': {
+        'units': 'degree'
+    },
+    'blue_amplitude': {
+        'units': 'mV'
+    },
+    'red_amplitude': {
+        'units': 'mV'
+    },
+    'raw_temperature': {
+        'units': 'mV'
+    }
+}
+
+CSPP_FLORT = {
+    'global': {
+        'title': 'uCSPP ECO Triplet Data Records',
+        'summary': (
+            'Records chlorophyll, optical backscatter and CDOM data for the uncabled Coastal Surface Piercing Profilers'
+        )
+    },
+    'depth': {
+        'long_name': 'CSPP Depth',
+        'standard_name': 'sea_water_pressure_due_to_sea_water',
+        'units': 'dbar',
+        'axis': 'Z',
+        'valid_min': '-5',
+        'valid_max': '1000',
+    },
+    'measurement_wavelength_beta': {
+        'units': 'nm'
+    },
+    'raw_signal_beta': {
+        'units': 'counts'
+    },
+    'measurement_wavelength_chl': {
+        'units': 'nm'
+    },
+    'raw_signal_chl': {
+        'units': 'counts'
+    },
+    'measurement_wavelength_cdom': {
+        'units': 'nm'
+    },
+    'raw_signal_cdom': {
+        'units': 'counts'
+    },
+    'raw_internal_temp': {
+        'units': 'counts'
+    },
+    'estimated_chlorophyll': {
+        'units': 'mg L-1'
+    },
+    'fluorometric_cdom': {
+        'units': 'ppm'
+    },
+    'beta_700': {
+        'units': 'm-1 sr-1'
+    }
+}
+
+CSPP_PARAD = {
+    'global': {
+        'title': 'uCSPP ECO Triplet Data Records',
+        'summary': (
+            'Records chlorophyll, optical backscatter and CDOM data for the uncabled Coastal Surface Piercing Profilers'
+        )
+    },
+    'depth': {
+        'long_name': 'CSPP Depth',
+        'standard_name': 'sea_water_pressure_due_to_sea_water',
+        'units': 'dbar',
+        'axis': 'Z',
+        'valid_min': '-5',
+        'valid_max': '1000',
+    },
+}
+
+CSPP_SPKIR = {
+    'global': {
+        'title': 'uCSPP Downwelling Spectral Irradiance Data Records',
+        'summary': (
+            'Records 7 wavelengths of downwelling irradiance data for the uncabled Coastal Surface Piercing Profilers'
+        )
+    },
+    'depth': {
+        'long_name': 'CSPP Depth',
+        'standard_name': 'sea_water_pressure_due_to_sea_water',
+        'units': 'dbar',
+        'axis': 'Z',
+        'valid_min': '-5',
+        'valid_max': '1000',
+    },
+    'serial_number': {
+        'units': '1'
+    },
+    'timer': {
+        'units': 's'
+    },
+    'sample_delay': {
+        'units': 'ms'
+    },
+    'raw_channels': {
+        'units': 'counts'
+    },
+    'input_voltage': {
+        'units': 'V'
+    },
+    'analog_rail_voltage': {
+        'units': 'V'
+    },
+    'frame_counter': {
+        'units': '1'
+    },
+    'internal_temperature': {
+        'units': 'degree_Celsius'
+    },
+    'irradiance': {
+        'long_name': 'Downwelling Spectral Irradiance',
+        'standard_name': 'downwelling_spectral_spherical_irradiance_in_sea_water',
+        'units': 'uW cm-2 nm-1'
+    },
+    'wavelengths': {
+        'long_name': 'Radiation Wavelength',
+        'standard_name': 'radiation_wavelength',
+        'units': 'nm'
+    }
+}
+
+CSPP_VELPT = {
+    'global': {
+        'title': 'uCSPP ECO Triplet Data Records',
+        'summary': (
+            'Records chlorophyll, optical backscatter and CDOM data for the uncabled Coastal Surface Piercing Profilers'
+        )
+    },
+    'depth': {
+        'long_name': 'CSPP Depth',
+        'standard_name': 'sea_water_pressure_due_to_sea_water',
+        'units': 'dbar',
+        'axis': 'Z',
+        'valid_min': '-5',
+        'valid_max': '1000',
+    },
 }

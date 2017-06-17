@@ -9,9 +9,11 @@ import pickle
 # Create a Global dictionary with Basic Information about the moorings
 BUOYS = {
     'ce01issm': {'name': 'Coastal Endurance Oregon Inshore Surface Mooring'},
+    'ce01issp': {'name': 'Coastal Endurance Oregon Inshore Surface Piercing Profiler'},
     'ce02shsm': {'name': 'Coastal Endurance Oregon Shelf Surface Mooring'},
     'ce04ossm': {'name': 'Coastal Endurance Oregon Offshore Surface Mooring'},
     'ce06issm': {'name': 'Coastal Endurance Washington Inshore Surface Mooring'},
+    'ce06issp': {'name': 'Coastal Endurance Washington Inshore Surface Piercing Profiler'},
     'ce07shsm': {'name': 'Coastal Endurance Washington Shelf Surface Mooring'},
     'ce09ossm': {'name': 'Coastal Endurance Washington Offshore Surface Mooring'},
     'ce09ospm': {'name': 'Coastal Endurance Washington Offshore Profiler Mooring'}

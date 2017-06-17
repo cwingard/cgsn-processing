@@ -27,16 +27,40 @@ DOSTA = {
         'ancillary_variables': 'platform',
         'coverage_content_type': 'physicalMeasurement'
     },
-    'product_number': {},
-    'serial_number': {},
-    'estimated_oxygen_concentration': {},
-    'estimated_oxygen_saturation': {},
-    'optode_temperature': {},
-    'calibrated_phase': {},
-    'temp_compensated_phase': {},
-    'blue_phase': {},
-    'red_phase': {},
-    'blue_amplitude': {},
-    'red_amplitude': {},
-    'raw_temperature': {}
+    'product_number': {
+        'units': '1'
+    },
+    'serial_number': {
+        'units': '1'
+    },
+    'estimated_oxygen_concentration': {
+        'units': 'uM'
+    },
+    'estimated_oxygen_saturation': {
+        'units': 'percent'
+    },
+    'optode_temperature': {
+        'units': 'degree_Celsius'
+    },
+    'calibrated_phase': {
+        'units': 'degree'
+    },
+    'temp_compensated_phase': {
+        'units': 'degree'
+    },
+    'blue_phase': {
+        'units': 'degree'
+    },
+    'red_phase': {
+        'units': 'degree'
+    },
+    'blue_amplitude': {
+        'units': 'mV'
+    },
+    'red_amplitude': {
+        'units': 'mV'
+    },
+    'raw_temperature': {
+        'units': 'mV'
+    }
 }
