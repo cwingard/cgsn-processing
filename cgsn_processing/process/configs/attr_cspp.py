@@ -35,6 +35,11 @@ CSPP = {
         'valid_min': '-10000',
         'valid_max': '1000'
     },
+    'precise_time': {
+        'long_name': 'Measurement Time',
+        'standard_name': 'time',
+        'units': 'seconds since 1970-01-01',
+    },
     'z': {
         'long_name': 'Sensor Depth',
         'standard_name': 'depth_of_sensor_below_water',
@@ -92,7 +97,7 @@ CSPP_DOSTA = {
         )
     },
     'depth': {
-        'long_name': 'CSPP Depth',
+        'long_name': 'CSPP Depth from CTD',
         'standard_name': 'sea_water_pressure_due_to_sea_water',
         'units': 'dbar',
         'axis': 'Z',
@@ -145,7 +150,7 @@ CSPP_FLORT = {
         )
     },
     'depth': {
-        'long_name': 'CSPP Depth',
+        'long_name': 'CSPP Depth from CTD',
         'standard_name': 'sea_water_pressure_due_to_sea_water',
         'units': 'dbar',
         'axis': 'Z',
@@ -186,19 +191,27 @@ CSPP_FLORT = {
 
 CSPP_PARAD = {
     'global': {
-        'title': 'uCSPP ECO Triplet Data Records',
+        'title': 'uCSPP PAR Data Records',
         'summary': (
-            'Records chlorophyll, optical backscatter and CDOM data for the uncabled Coastal Surface Piercing Profilers'
+            'Records downwelling PAR data for the uncabled Coastal Surface Piercing Profilers'
         )
     },
     'depth': {
-        'long_name': 'CSPP Depth',
+        'long_name': 'CSPP Depth from CTD',
         'standard_name': 'sea_water_pressure_due_to_sea_water',
         'units': 'dbar',
         'axis': 'Z',
         'valid_min': '-5',
         'valid_max': '1000',
     },
+    'raw_par': {
+        'units': 'counts'
+    },
+    'irradiance': {
+        'long_name': 'Downwelling Photosynthetic Radiation',
+        'standard_name': 'downwelling_photosynthetic_photon_spherical_irradiance_in_sea_water',
+        'units': 'umol m-2 s-1'
+    }
 }
 
 CSPP_SPKIR = {
@@ -209,7 +222,7 @@ CSPP_SPKIR = {
         )
     },
     'depth': {
-        'long_name': 'CSPP Depth',
+        'long_name': 'CSPP Depth from CTD',
         'standard_name': 'sea_water_pressure_due_to_sea_water',
         'units': 'dbar',
         'axis': 'Z',
@@ -260,11 +273,47 @@ CSPP_VELPT = {
         )
     },
     'depth': {
-        'long_name': 'CSPP Depth',
+        'long_name': 'CSPP Depth from CTD',
         'standard_name': 'sea_water_pressure_due_to_sea_water',
         'units': 'dbar',
         'axis': 'Z',
         'valid_min': '-5',
         'valid_max': '1000',
     },
+    'speed_of_sound': {
+        'units': 'm s-1'
+    },
+    'heading': {
+        'units': 'degree'
+    },
+    'pitch': {
+        'units': 'degree'
+    },
+    'roll': {
+        'units': 'degree'
+    },
+    'pressure': {
+        'units': 'dbar'
+    },
+    'temperature': {
+        'units': 'degree_Celsius'
+    },
+    'velocity_east': {
+        'units': 'cm s-1'
+    },
+    'velocity_north': {
+        'units': 'cm s-1'
+    },
+    'velocity_vertical': {
+        'units': 'cm s-1'
+    },
+    'amplitude_beam1': {
+        'units': 'counts'
+    },
+    'amplitude_beam2': {
+        'units': 'counts'
+    },
+    'amplitude_beam3': {
+        'units': 'counts'
+    }
 }

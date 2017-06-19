@@ -21,7 +21,7 @@ GIT = 'https://github.com'
 def list_links(url, tag=''):
     page = requests.get(url).text
     soup = BeautifulSoup(page, 'html.parser')
-    pattern = re.compile(tag)
+    pattern = re.compile(str(tag))
     return [node.get('href') for node in soup.find_all('a', text=pattern)]
 
 
@@ -55,13 +55,12 @@ def find_calibration(inst_class, inst_serial, sampling_date):
     if tdiff:
         # check the resulting list of files and time differences for the closest file that precedes our deployment
         m = min(i for i in tdiff if i > 0)
-        csv = '{}{}'.format(GIT, flist[tdiff.index(m)])
+
+        # assemble the csv URL, adjusting for the fact we want the raw content
+        csv = '{}{}'.format('https://raw.githubusercontent.com', flist[tdiff.index(m)])
+        csv = re.sub('/blob', '', csv)
+
     else:
         csv = None
 
     return csv
-
-
-inst_class = 'SPKIR'
-inst_serial = '242'
-sampling_date = 1491177612.2030001

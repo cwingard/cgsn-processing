@@ -1,23 +1,61 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-@package cgsn_processing.process.proc_cspp_flort
-@file cgsn_processing/process/proc_cspp_flort.py
+@package cgsn_processing.process.proc_cspp_parad
+@file cgsn_processing/process/proc_cspp_parad.py
 @author Christopher Wingard
-@brief Creates a NetCDF dataset for the uCSPP FLORT data from JSON formatted source data
+@brief Creates a NetCDF dataset for the uCSPP PARAD data from JSON formatted source data
 """
+import numpy as np
 import os
+import pandas as pd
 import re
 
 from pocean.utils import dict_update
 from pocean.dsg.timeseriesProfile.om import OrthogonalMultidimensionalTimeseriesProfile as OMTP
 from gsw import z_from_p
 
-from cgsn_processing.process.common import inputs, json2df, reset_long
-from cgsn_processing.process.proc_flort import Calibrations
-from cgsn_processing.process.configs.attr_cspp import CSPP, CSPP_FLORT
+from cgsn_processing.process.common import Coefficients, inputs, json2df, reset_long
+from cgsn_processing.process.finding_calibrations import find_calibration
+from cgsn_processing.process.configs.attr_cspp import CSPP, CSPP_PARAD
 
-from pyseas.data.flo_functions import flo_scale_and_offset
+from pyseas.data.opt_functions import opt_par_satlantic
+
+
+class Calibrations(Coefficients):
+    def __init__(self, coeff_file, csv_url=None):
+        """
+        Loads the PARAD factory calibration coefficients for a unit. Values come from either a serialized object
+        created per instrument and deployment (calibration coefficients do not change in the middle of a deployment),
+        or from parsed CSV files maintained on GitHub by the OOI CI team.
+        """
+        # assign the inputs
+        Coefficients.__init__(self, coeff_file)
+        self.csv_url = csv_url
+
+    def read_csv(self, csv_url):
+        """
+        Reads the values from an ECO Triplet (aka PARAD) device file already parsed and stored on
+        Github as a CSV files. Note, the formatting of those files puts some constraints on this process. 
+        If someone has a cleaner method, I'm all in favor...
+        """
+        # create the device file dictionary and assign values
+        coeffs = {}
+
+        # read in the calibration data
+        cal = pd.read_csv(csv_url, usecols=[0, 1, 2])
+        for idx, row in cal.iterrows():
+            # immersion, scale and offset correction factors
+            if row[1] == 'CC_a0':
+                coeffs['a0'] = np.array(json.loads(row[2]))
+            if row[1] == 'CC_a1':
+                coeffs['a1'] = np.array(json.loads(row[2]))
+            if row[1] == 'CC_Im':
+                coeffs['Im'] = np.array(json.loads(row[2]))
+
+        # save the resulting dictionary
+        self.coeffs = coeffs
+
 
 def main():
     # load the input arguments
@@ -31,33 +69,32 @@ def main():
     lon = args.longitude
     site_depth = args.depth
 
-    coeff_file = os.path.abspath(args.coeff_file)
-    dev = Calibrations(coeff_file)  # initialize calibration class
-
-    # check for the source of calibration coeffs and load accordingly
-    if os.path.isfile(coeff_file):
-        # we always want to use this file if it exists
-        dev.load_coeffs()
-    elif args.csvurl:
-        # load from the CI hosted CSV files
-        csv_url = args.csvurl
-        dev.read_csv(csv_url)
-        dev.save_coeffs()
-    else:
-        raise Exception('A source for the FLORT calibration coefficients could not be found')
-
     # load the json data file and return a panda dataframe
     df = json2df(infile)
     if df.empty:
         # there was no data in this file, ending early
         return None
 
-    # Apply the scale and offset correction factors from the factory calibration coefficients
-    df['estimated_chlorophyll'] = flo_scale_and_offset(df['raw_signal_chl'], dev.coeffs['dark_chla'], dev.coeffs['scale_chla'])
-    df['fluorometric_cdom'] = flo_scale_and_offset(df['raw_signal_cdom'], dev.coeffs['dark_cdom'], dev.coeffs['scale_cdom'])
-    df['beta_700'] = flo_scale_and_offset(df['raw_signal_beta'], dev.coeffs['dark_beta'], dev.coeffs['scale_beta'])
+    # remove the PARAD date/time string from the dataset
+    _ = df.pop('parad_date_time_string')
 
-    # TODO: Add the calculation of total optical backscatter here. Requires co-located CTD data
+    # check for the source of calibration coeffs and load accordingly
+    coeff_file = os.path.abspath(args.coeff_file)
+    dev = Calibrations(coeff_file)  # initialize calibration class
+    if os.path.isfile(coeff_file):
+        # we always want to use this file if it exists
+        dev.load_coeffs()
+    else:
+        # load from the CI hosted CSV files
+        csv_url = find_calibration('PARAD', args.serial, (df.time.values.astype('int64') * 10 ** -9)[0])
+        if csv_url:
+            dev.read_csv(csv_url)
+            dev.save_coeffs()
+        else:
+            raise Exception('A source for the PARAD calibration coefficients could not be found')
+
+    # Apply the scale, offset and immersion correction factors from the factory calibration coefficients
+    df['irradiance'] = opt_par_satlantic(df['raw_par'], dev.coeffs['a0'], dev.coeffs['a1'], dev.coeffs['Im'])
 
     # setup some further parameters for use with the OMTP class
     df['deploy_id'] = deployment
@@ -66,7 +103,7 @@ def main():
     df['profile_id'] = "{}.{}.{}".format(profile_id[0], profile_id[1:4], profile_id[4:])
     df['x'] = lon
     df['y'] = lat
-    df['z'] = -1 * z_from_p(df['depth'], lat)    # uses CTD pressure record interpolated into FLORT record
+    df['z'] = -1 * z_from_p(df['depth'], lat)    # uses CTD pressure record interpolated into PARAD record
     df['t'] = df.pop('time')    # renames time to t, OMTP class will convert it back
     df['station'] = 0
 
@@ -74,14 +111,14 @@ def main():
     df = reset_long(df)
 
     # Setup and update the attributes for the resulting NetCDF file
-    flort_attr = CSPP
+    parad_attr = CSPP
 
-    flort_attr['global'] = dict_update(flort_attr['global'], {
+    parad_attr['global'] = dict_update(parad_attr['global'], {
         'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
     })
-    flort_attr = dict_update(flort_attr, CSPP_FLORT)
+    parad_attr = dict_update(parad_attr, CSPP_PARAD)
 
-    nc = OMTP.from_dataframe(df, outfile, attributes=flort_attr)
+    nc = OMTP.from_dataframe(df, outfile, attributes=parad_attr)
     nc.close()
 
 if __name__ == '__main__':

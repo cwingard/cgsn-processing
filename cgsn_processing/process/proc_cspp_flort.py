@@ -6,6 +6,7 @@
 @author Christopher Wingard
 @brief Creates a NetCDF dataset for the uCSPP FLORT data from JSON formatted source data
 """
+import numpy as np
 import os
 import re
 
@@ -14,10 +15,12 @@ from pocean.dsg.timeseriesProfile.om import OrthogonalMultidimensionalTimeseries
 from gsw import z_from_p
 
 from cgsn_processing.process.common import inputs, json2df, reset_long
+from cgsn_processing.process.finding_calibrations import find_calibration
 from cgsn_processing.process.proc_flort import Calibrations
 from cgsn_processing.process.configs.attr_cspp import CSPP, CSPP_FLORT
 
 from pyseas.data.flo_functions import flo_scale_and_offset
+
 
 def main():
     # load the input arguments
@@ -31,26 +34,29 @@ def main():
     lon = args.longitude
     site_depth = args.depth
 
-    coeff_file = os.path.abspath(args.coeff_file)
-    dev = Calibrations(coeff_file)  # initialize calibration class
-
-    # check for the source of calibration coeffs and load accordingly
-    if os.path.isfile(coeff_file):
-        # we always want to use this file if it exists
-        dev.load_coeffs()
-    elif args.csvurl:
-        # load from the CI hosted CSV files
-        csv_url = args.csvurl
-        dev.read_csv(csv_url)
-        dev.save_coeffs()
-    else:
-        raise Exception('A source for the FLORT calibration coefficients could not be found')
-
     # load the json data file and return a panda dataframe
     df = json2df(infile)
     if df.empty:
         # there was no data in this file, ending early
         return None
+
+    # remove the FLORT date/time string from the dataset
+    _ = df.pop('flort_date_time_string')
+
+    # check for the source of calibration coeffs and load accordingly
+    coeff_file = os.path.abspath(args.coeff_file)
+    dev = Calibrations(coeff_file)  # initialize calibration class
+    if os.path.isfile(coeff_file):
+        # we always want to use this file if it exists
+        dev.load_coeffs()
+    else:
+        # load from the CI hosted CSV files
+        csv_url = find_calibration('FLORT', args.serial, (df.time.values.astype('int64') * 10**-9)[0])
+        if csv_url:
+            dev.read_csv(csv_url)
+            dev.save_coeffs()
+        else:
+            raise Exception('A source for the FLORT calibration coefficients could not be found')
 
     # Apply the scale and offset correction factors from the factory calibration coefficients
     df['estimated_chlorophyll'] = flo_scale_and_offset(df['raw_signal_chl'], dev.coeffs['dark_chla'], dev.coeffs['scale_chla'])

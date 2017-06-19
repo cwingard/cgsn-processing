@@ -6,6 +6,7 @@
 @author Christopher Wingard
 @brief Creates a NetCDF dataset for the uCSPP CTDPF data from JSON formatted source data
 """
+import numpy as np
 import os
 import re
 
@@ -47,8 +48,9 @@ def main():
     df['profile_id'] = "{}.{}.{}".format(profile_id[0], profile_id[1:4], profile_id[4:])
     df['x'] = lon
     df['y'] = lat
-    df['z'] = -1 * z_from_p(df['pressure'], lat)    # uses CTD pressure record
-    df['t'] = df.pop('time')    # renames time to t, OMTP class will convert it back
+    df['z'] = -1 * z_from_p(df['pressure'], lat)                    # uses CTD pressure record
+    df['t'] = df['time'][0]                                         # set profile time to time of first data record
+    df['precise_time'] = np.int64(df.pop('time')) * 10 ** -9        # rename time record
     df['station'] = 0
 
     # make sure all ints are represented as int32 instead of int64

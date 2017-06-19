@@ -12,10 +12,12 @@ import os
 import pandas as pd
 import re
 
+from netCDF4 import Dataset
 from pocean.utils import dict_update
 from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMTs
 
-from cgsn_processing.process.common import Coefficients, inputs, json2df, df2omtdf, split_column
+from cgsn_processing.process.common import Coefficients, inputs, json2df, df2omtdf
+from cgsn_processing.process.finding_calibrations import find_calibration
 from cgsn_processing.process.configs.attr_spkir import SPKIR
 from pyseas.data.opt_functions import opt_ocr507_irradiance
 
@@ -65,7 +67,12 @@ def main():
     lat = args.latitude
     lon = args.longitude
 
-    # load the calibration data
+    # load the json data file and return a panda dataframe, adding a default depth and the deployment ID
+    df = json2df(infile)
+    if df.empty:
+        # there was no data in this file, ending early
+        return None
+
     coeff_file = os.path.abspath(args.coeff_file)
     dev = Calibrations(coeff_file)  # initialize calibration class
 
@@ -73,39 +80,29 @@ def main():
     if os.path.isfile(coeff_file):
         # we always want to use this file if it exists
         dev.load_coeffs()
-    elif args.csvurl:
-        # load from the CI hosted CSV files
-        csv_url = args.csvurl
-        dev.read_csv(csv_url)
-        dev.save_coeffs()
     else:
-        raise Exception('A source for the SPKIR calibration coefficients could not be found')
+        # load from the CI hosted CSV files
+        csv_url = find_calibration('SPKIR', df.serial_number[0], (df.time.values.astype('int64') * 10**-9)[0])
+        if csv_url:
+            dev.read_csv(csv_url)
+            dev.save_coeffs()
+        else:
+            raise Exception('A source for the SPKIR calibration coefficients could not be found')
 
-    # load the json data file and return a panda dataframe, adding a default depth and the deployment ID
-    df = json2df(infile)
-    if df.empty:
-        # there was no data in this file, ending early
-        return None
-
-    df['depth'] = 7.0
-    df['deploy_id'] = deployment
-
+    # pop the raw_channels array out of the dataframe (will put it back in later)
+    channels = np.array(np.vstack(df.pop('raw_channels')), dtype='uint32')
     # Convert spectral irradiance values from counts to uE/m^2/s
-    channels = np.array(np.vstack(df['raw_channels'].values), dtype='uint32')
-    irr = opt_ocr507_irradiance(channels, dev.coeffs['offset'], dev.coeffs['scale'], dev.coeffs['immersion_factor'])
-    df['irr'] = irr.tolist()
+    wavelengths = [412, 444, 490, 510, 555, 620, 683]
+    Ed = opt_ocr507_irradiance(channels, dev.coeffs['offset'], dev.coeffs['scale'], dev.coeffs['immersion_factor'])
 
     # convert voltages and temperature to engineering units
-    df['input_voltage'] *= 0.03
-    df['analog_rail_voltage'] *= 0.03
-    df['internal_temperature'] = -50 + df['internal_temperature'] * 0.5
-
-    # convert the 7 spectral irradiance values from arrays to scalars
-    split_column(df, 'raw_channels', 7, singular='raw_channel')
-    split_column(df, 'irr', 7, singular='irradiance')
+    df['input_voltage'].apply(lambda x: x * 0.03)
+    df['analog_rail_voltage'].apply(lambda x: x * 0.03)
+    df['internal_temperature'].apply(lambda x: -50 + x * 0.5)
 
     # convert the dataframe to a format suitable for the pocean OMTs
-    df = df2omtdf(df, lat, lon, 7.0)
+    df['deploy_id'] = deployment
+    df = df2omtdf(df, lat, lon, 7.0,)
 
     # add to the global attributes for the SPKIR
     attrs = SPKIR
@@ -114,6 +111,26 @@ def main():
     })
 
     nc = OMTs.from_dataframe(df, outfile, attributes=attrs)
+    nc.close()
+
+    # re-open the netcdf file and add the raw channels, the downwelling irradiance and the wavelengths with the
+    # additional dimension of the measurement wavelengths.
+    nc = Dataset(outfile, 'a')
+    nc.createDimension('wavelengths', 7)
+
+    d = nc.createVariable('wavelengths', 'i', ('wavelengths',))
+    d.setncatts(attrs['wavelengths'])
+    d[:] = wavelengths
+
+    d = nc.createVariable('raw_channels', 'u4', ('time', 'station', 'wavelengths',))
+    d.setncatts(attrs['raw_channels'])
+    d[:] = channels
+
+    d = nc.createVariable('irradiance', 'f', ('time', 'station', 'wavelengths',))
+    d.setncatts(attrs['irradiance'])
+    d[:] = Ed
+
+    nc.sync()
     nc.close()
 
 if __name__ == '__main__':

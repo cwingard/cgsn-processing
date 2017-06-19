@@ -198,6 +198,7 @@ def inputs():
     parser.add_argument("-dp", "--depth", dest="depth", type=float, required=False)
     
     parser.add_argument("-cf", "--coeff_file", dest="coeff_file", type=str, required=False)
+    parser.add_argument("-sn", "--serial_number", dest="serial", type=str, required=False)
     parser.add_argument("-df", "--devfile", dest="devfile", type=str, required=False)
     parser.add_argument("-u", "--csvurl", dest="csvurl", type=str, required=False)
     parser.add_argument("-s", "--switch", dest="switch", type=int, default=0)
