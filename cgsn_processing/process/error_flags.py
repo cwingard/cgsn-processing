@@ -247,7 +247,7 @@ def derive_multi_flags(flag_class, flag_name, df):
         for row in df.itertuples():
             # grab the flag value
             x = row._asdict()[flag_name]
-            if not isinstance(x, (np.int, np.int64)):
+            if not isinstance(x, (np.int, np.int32, np.int64)):
                 # convert it to an integer if still a string
                 x = int(x, 16)
             # compare via a logical AND bitwise operation to the flags
@@ -257,6 +257,7 @@ def derive_multi_flags(flag_class, flag_name, df):
             else:
                 # set to 1, or "true" for this flag condition
                 flag.append(1)
+
         # add the flag variable to the data frame
         df[name] = flag
 
@@ -273,7 +274,7 @@ def derive_single_flags(flag_class, value, df):
         for row in df.itertuples():
             # grab the flag value
             x = row._asdict()[flag_name]
-            if not isinstance(x, (np.int, np.int64)):
+            if not isinstance(x, (np.int, np.int32, np.int64)):
                 # convert it to an integer if still a string
                 x = int(x, 16)
             # compare via a logical OR bitwise operation to the flags
@@ -283,6 +284,7 @@ def derive_single_flags(flag_class, value, df):
             else:
                 # set to 1, or "true" for this flag condition
                 flag.append(1)
+
         # add the flag variable to the data frame
         df[name] = flag
 

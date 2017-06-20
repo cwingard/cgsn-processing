@@ -77,8 +77,6 @@ CSPP_CTDPF = {
         'long_name': 'Practical Salinity',
         'standard_name': 'sea_water_salinity',
         'units': '1',
-        'valid_min': '0',
-        'valid_max': '40'
     },
     'in_situ_density': {
         'long_name': 'In-Situ Seawater Density',
@@ -186,6 +184,22 @@ CSPP_FLORT = {
     },
     'beta_700': {
         'units': 'm-1 sr-1'
+    },
+    'temperature': {
+        'long_name': 'Sea Water Temperature',
+        'standard_name': 'sea_water_temperature',
+        'units': 'degree_Celsius',
+        'comment': 'Interpolated into record from co-located CTD for use in calculating the total optical backscatter'
+    },
+    'salinity': {
+        'long_name': 'Practical Salinity',
+        'standard_name': 'sea_water_salinity',
+        'units': '1',
+        'comment': 'Interpolated into record from co-located CTD for use in calculating the total optical backscatter'
+    },
+    'bback': {
+        'long_name': 'Total Optical Backscatter at 700 nm',
+        'units': 'm-1'
     }
 }
 

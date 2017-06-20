@@ -44,8 +44,8 @@ def main():
     df['x'] = lon
     df['y'] = lat
     df['z'] = -1 * z_from_p(df['depth'], lat)               # uses CTD pressure record interpolated into VELPT record
-    df['t'] = df['time'][0]                                         # set profile time to time of first data record
-    df['precise_time'] = np.int64(df.pop('time')) * 10 ** -9        # rename time record
+    df['t'] = (df.time.values.astype('int64') * 10 ** -9)[0]  # set profile time to time of first data record
+    df['precise_time'] = np.int64(df.pop('time')) * 10 ** -9  # rename time record
     df['station'] = 0
 
     # make sure all ints are represented as int32 instead of int64

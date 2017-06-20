@@ -38,61 +38,38 @@ SPKIR = {
         'valid_min': '-10000',
         'valid_max': '1000',
     },
-    'serial_number': {},
-    'timer': {},
-    'sample_delay': {},
-    'raw_channel1': {
+    'serial_number': {
+        'units': '1'
+    },
+    'timer': {
+        'units': 's'
+    },
+    'sample_delay': {
+        'units': 'ms'
+    },
+    'raw_channels': {
         'units': 'counts'
-    },
-    'raw_channel2': {
-        'units': 'counts'
-    },
-    'raw_channel3': {
-        'units': 'counts'
-    },
-    'raw_channel4': {
-        'units': 'counts'
-    },
-    'raw_channel5': {
-        'units': 'counts'
-    },
-    'raw_channel6': {
-        'units': 'counts'
-    },
-    'raw_channel7': {
-        'units': 'counts'
-    },
-    'irradiance1': {
-        'units': 'microW cm-2 nm-1'
-    },
-    'irradiance2': {
-        'units': 'microW cm-2 nm-1'
-    },
-    'irradiance3': {
-        'units': 'microW cm-2 nm-1'
-    },
-    'irradiance4': {
-        'units': 'microW cm-2 nm-1'
-    },
-    'irradiance5': {
-        'units': 'microW cm-2 nm-1'
-    },
-    'irradiance6': {
-        'units': 'microW cm-2 nm-1'
-    },
-    'irradiance7': {
-        'units': 'microW cm-2 nm-1'
     },
     'input_voltage': {
-        'units': 'Volts'
+        'units': 'V'
     },
     'analog_rail_voltage': {
-        'units': 'Volts'
+        'units': 'V'
     },
     'frame_counter': {
         'units': '1'
     },
     'internal_temperature': {
         'units': 'degree_Celsius'
+    },
+    'irradiance': {
+        'long_name': 'Downwelling Spectral Irradiance',
+        'standard_name': 'downwelling_spectral_spherical_irradiance_in_sea_water',
+        'units': 'uW cm-2 nm-1'
+    },
+    'wavelengths': {
+        'long_name': 'Radiation Wavelength',
+        'standard_name': 'radiation_wavelength',
+        'units': 'nm'
     }
 }

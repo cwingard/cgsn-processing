@@ -10,9 +10,10 @@ import numpy as np
 import os
 import re
 
+from datetime import datetime
+from gsw import z_from_p, SA_from_SP, CT_from_t, rho
 from pocean.utils import dict_update
 from pocean.dsg.timeseriesProfile.om import OrthogonalMultidimensionalTimeseriesProfile as OMTP
-from gsw import z_from_p, SA_from_SP, CT_from_t, rho
 
 from cgsn_processing.process.common import inputs, json2df, reset_long
 from cgsn_processing.process.configs.attr_cspp import CSPP, CSPP_CTDPF
@@ -48,9 +49,9 @@ def main():
     df['profile_id'] = "{}.{}.{}".format(profile_id[0], profile_id[1:4], profile_id[4:])
     df['x'] = lon
     df['y'] = lat
-    df['z'] = -1 * z_from_p(df['pressure'], lat)                    # uses CTD pressure record
-    df['t'] = df['time'][0]                                         # set profile time to time of first data record
-    df['precise_time'] = np.int64(df.pop('time')) * 10 ** -9        # rename time record
+    df['z'] = -1 * z_from_p(df['pressure'], lat)                   # uses CTD pressure record
+    df['t'] = df.pop('time')[0]                                      # set profile time to time of first data record
+    #df['precise_time'] = np.int64(df.pop('time')) / 1e9            # rename time record
     df['station'] = 0
 
     # make sure all ints are represented as int32 instead of int64
