@@ -12,7 +12,7 @@ import pandas as pd
 import re
 
 from pocean.utils import dict_update
-from pocean.dsg.timeseriesProfile.om import OrthogonalMultidimensionalTimeseriesProfile as OMTP
+from pocean.dsg.timeseriesProfile.om import OrthogonalMultidimensionalTimeseriesProfile as OMTp
 from gsw import z_from_p
 
 from cgsn_processing.process.common import Coefficients, inputs, json2df, reset_long
@@ -35,8 +35,8 @@ class Calibrations(Coefficients):
 
     def read_csv(self, csv_url):
         """
-        Reads the values from an ECO Triplet (aka PARAD) device file already parsed and stored on
-        Github as a CSV files. Note, the formatting of those files puts some constraints on this process. 
+        Reads the values from an Satlantic PAR sensor (aka PARAD) device file already parsed and stored on
+        Github as a CSV files. Note, the formatting of these files puts some constraints on this process.
         If someone has a cleaner method, I'm all in favor...
         """
         # create the device file dictionary and assign values
@@ -86,7 +86,7 @@ def main():
         dev.load_coeffs()
     else:
         # load from the CI hosted CSV files
-        csv_url = find_calibration('PARAD', args.serial, (df.time.values.astype('int64') * 10 ** -9)[0])
+        csv_url = find_calibration('PARAD', args.serial, (df.time.values.astype('int64') / 1e9)[0])
         if csv_url:
             dev.read_csv(csv_url)
             dev.save_coeffs()
@@ -96,17 +96,20 @@ def main():
     # Apply the scale, offset and immersion correction factors from the factory calibration coefficients
     df['irradiance'] = opt_par_satlantic(df['raw_par'], dev.coeffs['a0'], dev.coeffs['a1'], dev.coeffs['Im'])
 
-    # setup some further parameters for use with the OMTP class
+    # setup some further parameters for use with the OMTp class
     df['deploy_id'] = deployment
     df['site_depth'] = site_depth
     profile_id = re.sub('\D+', '', fname)
     df['profile_id'] = "{}.{}.{}".format(profile_id[0], profile_id[1:4], profile_id[4:])
     df['x'] = lon
     df['y'] = lat
-    df['z'] = -1 * z_from_p(df['depth'], lat)    # uses CTD pressure record interpolated into PARAD record
-    df['t'] = (df.time.values.astype('int64') * 10 ** -9)[0]  # set profile time to time of first data record
-    df['precise_time'] = np.int64(df.pop('time')) * 10 ** -9  # rename time record
+    df['z'] = -1 * z_from_p(df['depth'], lat)               # uses CTD pressure record interpolated into PARAD record
+    df['t'] = df.pop('time')[0]                             # set profile time to time of first data record
+    df['precise_time'] = df.t.values.astype('int64') / 1e9  # create a precise time record
     df['station'] = 0
+
+    # clean-up duplicate depth values
+    df.drop_duplicates(subset='z', keep='first', inplace=True)
 
     # make sure all ints are represented as int32 instead of int64
     df = reset_long(df)
@@ -119,7 +122,7 @@ def main():
     })
     parad_attr = dict_update(parad_attr, CSPP_PARAD)
 
-    nc = OMTP.from_dataframe(df, outfile, attributes=parad_attr)
+    nc = OMTp.from_dataframe(df, outfile, attributes=parad_attr)
     nc.close()
 
 if __name__ == '__main__':

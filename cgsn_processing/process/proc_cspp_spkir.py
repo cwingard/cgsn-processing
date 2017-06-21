@@ -12,7 +12,7 @@ import re
 
 from netCDF4 import Dataset
 from pocean.utils import dict_update
-from pocean.dsg.timeseriesProfile.om import OrthogonalMultidimensionalTimeseriesProfile as OMTP
+from pocean.dsg.timeseriesProfile.om import OrthogonalMultidimensionalTimeseriesProfile as OMTp
 from gsw import z_from_p
 
 from cgsn_processing.process.common import inputs, json2df, reset_long
@@ -67,7 +67,7 @@ def main():
     df['analog_rail_voltage'].apply(lambda x: x * 0.03)
     df['internal_temperature'].apply(lambda x: -50 + x * 0.5)
 
-    # setup some further parameters for use with the OMTP class
+    # setup some further parameters for use with the OMTp class
     df['deploy_id'] = deployment
     df['site_depth'] = site_depth
     profile_id = re.sub('\D+', '', fname)
@@ -75,9 +75,12 @@ def main():
     df['x'] = lon
     df['y'] = lat
     df['z'] = -1 * z_from_p(df['depth'], lat)               # uses CTD pressure record interpolated into SPKIR record
-    df['t'] = (df.time.values.astype('int64') * 10 ** -9)[0]  # set profile time to time of first data record
-    df['precise_time'] = np.int64(df.pop('time')) * 10 ** -9  # rename time record
+    df['t'] = df.pop('time')[0]                             # set profile time to time of first data record
+    df['precise_time'] = df.t.values.astype('int64') / 1e9  # create a precise time record
     df['station'] = 0
+
+    # clean-up duplicate depth values
+    df.drop_duplicates(subset='z', keep='first', inplace=True)
 
     # make sure all ints are represented as int32 instead of int64
     df = reset_long(df)
@@ -90,7 +93,7 @@ def main():
     })
     spkir_attr = dict_update(spkir_attr, CSPP_SPKIR)
 
-    nc = OMTP.from_dataframe(df, outfile, attributes=spkir_attr)
+    nc = OMTp.from_dataframe(df, outfile, attributes=spkir_attr)
     nc.close()
 
     # re-open the netcdf file and add the raw channels, the downwelling irradiance and the wavelengths with the
