@@ -6,7 +6,6 @@
 @author Christopher Wingard
 @brief Creates a NetCDF dataset for the uCSPP PARAD data from JSON formatted source data
 """
-import numpy as np
 import os
 import pandas as pd
 import re
@@ -47,11 +46,11 @@ class Calibrations(Coefficients):
         for idx, row in cal.iterrows():
             # immersion, scale and offset correction factors
             if row[1] == 'CC_a0':
-                coeffs['a0'] = np.array(json.loads(row[2]))
+                coeffs['a0'] = row[2]
             if row[1] == 'CC_a1':
-                coeffs['a1'] = np.array(json.loads(row[2]))
+                coeffs['a1'] = row[2]
             if row[1] == 'CC_Im':
-                coeffs['Im'] = np.array(json.loads(row[2]))
+                coeffs['Im'] = row[2]
 
         # save the resulting dictionary
         self.coeffs = coeffs

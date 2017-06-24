@@ -23,8 +23,8 @@ CSPP = {
     },
     'profile_id': {
         'long_name': 'Profile ID',
-        'standard_name': 'profile_id',
-        'units': '1'
+        'units': '1',
+        'cf_role': 'profile_id'
     },
     'site_depth': {
         'long_name': 'Deployment Site Depth',
@@ -232,15 +232,29 @@ CSPP_NUTNR = {
         'units': 'hour'
     },
     'nitrate_concentration': {
-        'units': 'uM'
+        'units': 'umol L-1'
     },
-    'nitrogen_in_nitrate': {},
-    'absorbance_254': {},
-    'absorbance_250': {},
-    'bromide_trace': {},
-    'spectal_average': {},
-    'dark_value': {},
-    'integration_factor': {},
+    'nitrogen_in_nitrate': {
+        'units': 'mg L-1'
+    },
+    'absorbance_254': {
+        'units': '1'
+    },
+    'absorbance_250': {
+        'units': '1'
+    },
+    'bromide_trace': {
+        'units': 'mg L-1'
+    },
+    'spectal_average': {
+        'units': '1'
+    },
+    'dark_value': {
+        'units': '1'
+    },
+    'integration_factor': {
+        'units': '1'
+    },
     'channel_measurements': {
         'units': 'counts'
     },
@@ -254,7 +268,7 @@ CSPP_NUTNR = {
         'units': 'degree_Celsius'
     },
     'lamp_on_time': {
-        'units': 'ms'
+        'units': 's'
     },
     'humidity': {
         'units': 'percent'
@@ -271,11 +285,21 @@ CSPP_NUTNR = {
     'main_current': {
         'units': 'mA'
     },
-    'fit_auxiliary_1': {},
-    'fit_auxiliary_2': {},
-    'fit_base_1': {},
-    'fit_base_2': {},
-    'fit_rmse': {},
+    'fit_auxiliary_1': {
+        'units': '1'
+    },
+    'fit_auxiliary_2': {
+        'units': '1'
+    },
+    'fit_base_1': {
+        'units': '1'
+    },
+    'fit_base_2': {
+        'units': '1'
+    },
+    'fit_rmse': {
+        'units': '1'
+    },
     'temperature': {
        'long_name': 'Sea Water Temperature',
        'standard_name': 'sea_water_temperature',
@@ -288,9 +312,15 @@ CSPP_NUTNR = {
         'units': '1',
         'comment': 'Interpolated into record from co-located CTD'
     },
+    'wavelength': {
+        'long_name': 'Wavelength',
+        'standard_name': 'radiation_wavelength',
+        'units': 'nm',
+    },
     'corrected_nitrate': {
         'long_name': 'Corrected Nitrate Concentration',
-        'units': 'uM'
+        'standard_name': 'mole_concentration_of_nitrate_in_sea_water',
+        'units': 'umol L-1'
     }
 }
 
@@ -525,7 +555,7 @@ CSPP_SPKIR = {
         'units': 'uW cm-2 nm-1'
     },
     'wavelengths': {
-        'long_name': 'Radiation Wavelength',
+        'long_name': 'Wavelength',
         'standard_name': 'radiation_wavelength',
         'units': 'nm'
     }
@@ -595,10 +625,20 @@ CSPP_WINCH = {
     'raw_discharge': {},
     'rope_on_drum': {},
 
-    'pressure': {},
-    'velocity': {},
+    'pressure': {
+        'units': 'dbar'
+    },
+    'velocity': {
+        'units': 'cm s-1'
+    },
 
-    'heading': {},
-    'pitch': {},
-    'roll': {}
+    'heading': {
+        'units': 'degree'
+    },
+    'pitch': {
+        'units': 'degree'
+    },
+    'roll': {
+        'units': 'degree'
+    }
 }

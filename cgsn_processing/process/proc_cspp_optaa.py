@@ -48,19 +48,15 @@ def main():
         dev.load_coeffs()
     else:
         # load from the CI hosted CSV files
-        csv_url = find_calibration('OPTAA', args.serial, (df.time.values.astype('int64') * 10**-9)[0])
+        csv_url = find_calibration('OPTAA', df.serial_number[0], (df.time.values.astype('int64') * 10**-9)[0])
         if csv_url:
             # load from the CI hosted CSV files
-            hdr_url = csv_url
-            tca_url = re.sub('.csv', '__CC_taarray.ext', hdr_url)
-            tcc_url = re.sub('.csv', '__CC_tcarray.ext', hdr_url)
-            dev.read_devurls(hdr_url, tca_url, tcc_url)
+            tca_url = re.sub('.csv', '__CC_taarray.ext', csv_url)
+            tcc_url = re.sub('.csv', '__CC_tcarray.ext', csv_url)
+            dev.read_devurls(csv_url, tca_url, tcc_url)
             dev.save_coeffs()
         else:
             raise Exception('A source for the OPTAA calibration coefficients could not be found')
-
-    # apply the device file conversions from counts to m^-1
-    df = apply_dev(df, dev.coeffs)
 
     # Merge the co-located CTD temperature and salinity data and calculate the temperature and salinity corrections
     ctd_file = re.sub('optaa', 'ctdpf', infile)
@@ -70,16 +66,23 @@ def main():
         # interpolate temperature, pressure and salinity data from the CTD into the OPTAA record for calculations
         degC = interp1d(ctd.time.values.astype('int64'), ctd.temperature.values, bounds_error=False)
         df['temperature'] = degC(df.time.values.astype('int64'))
+
         psu = interp1d(ctd.time.values.astype('int64'), ctd.salinity, bounds_error=False)
         df['salinity'] = psu(df.time.values.astype('int64'))
+
         dbar = interp1d(ctd.time.values.astype('int64'), ctd.pressure, bounds_error=False)
         df['depth'] = dbar(df.time.values.astype('int64'))
-
-        df = apply_tscorr(df, dev.coeffs, df['temperature'], df['salinity'])
+        df = df[np.isnan(df.depth.values) != 1]  # remove rows with NaN for depth
     else:
-        df['temperature'] = np.nan
-        df['salinity'] = np.nan
-        df = apply_tscorr(df, dev.coeffs)
+        # there was no CTD data, and thus no pressure record or temperature and salinity available, ending early
+        return None
+
+    # apply the device file conversions from counts to m^-1
+    df = apply_dev(df, dev.coeffs)
+    # apply the temperature and salinity corrections
+    df = apply_tscorr(df, dev.coeffs, df['temperature'], df['salinity'])
+    # finally apply the scatter corrections
+    df = apply_scatcorr(df, dev.coeffs)
 
     # setup some further parameters for use with the OMTp class
     df['deploy_id'] = deployment
@@ -93,11 +96,11 @@ def main():
     df['precise_time'] = df.t.values.astype('int64') / 1e9  # create a precise time record
     df['station'] = 0
 
-    # clean-up duplicate depth values
-    df.drop_duplicates(subset='z', keep='first', inplace=True)
-
     # make sure all ints are represented as int32 instead of int64
     df = reset_long(df)
+
+    # clean-up duplicate depth values
+    df.drop_duplicates(subset='depth', keep='first', inplace=True)
 
     # Setup and update the attributes for the resulting NetCDF file
     optaa_attr = CSPP
@@ -107,7 +110,7 @@ def main():
     })
     optaa_attr = dict_update(optaa_attr, CSPP_OPTAA)
 
-    # pop the arrays out of the dataframe (will put them back in later)
+    # pop arrays out of the dataframe (will put them into the netcdf file later)
     c_ref = np.array(np.vstack(df.pop('c_reference_raw')))
     a_ref = np.array(np.vstack(df.pop('a_reference_raw')))
     c_sig = np.array(np.vstack(df.pop('c_signal_raw')))
@@ -143,39 +146,39 @@ def main():
     # now add all the popped arrays back in
     d = nc.createVariable('a_reference_raw', 'i', ('time', 'z', 'station', 'a_wavelengths',))
     d.setncatts(optaa_attr['a_reference_raw'])
-    d[:] = a_ref
+    d[:] = np.concatenate((a_ref, np.tile(fill, (len(df.t), 1))), axis=1)
 
     d = nc.createVariable('a_signal_raw', 'i', ('time', 'z', 'station', 'a_wavelengths',))
     d.setncatts(optaa_attr['a_signal_raw'])
-    d[:] = a_sig
+    d[:] = np.concatenate((a_sig, np.tile(fill, (len(df.t), 1))), axis=1)
 
     d = nc.createVariable('c_reference_raw', 'i', ('time', 'z', 'station', 'c_wavelengths',))
     d.setncatts(optaa_attr['c_reference_raw'])
-    d[:] = c_ref
+    d[:] = np.concatenate((c_ref, np.tile(fill, (len(df.t), 1))), axis=1)
 
     d = nc.createVariable('c_signal_raw', 'i', ('time', 'z', 'station', 'c_wavelengths',))
     d.setncatts(optaa_attr['c_signal_raw'])
-    d[:] = c_sig
+    d[:] = np.concatenate((c_sig, np.tile(fill, (len(df.t), 1))), axis=1)
 
     d = nc.createVariable('apd', 'f', ('time', 'z', 'station', 'a_wavelengths',))
     d.setncatts(optaa_attr['apd'])
-    d[:] = apd
+    d[:] = np.concatenate((apd, np.tile(fill, (len(df.t), 1))), axis=1)
 
     d = nc.createVariable('apd_ts', 'f', ('time', 'z', 'station', 'a_wavelengths',))
     d.setncatts(optaa_attr['apd_ts'])
-    d[:] = apd_ts
+    d[:] = np.concatenate((apd_ts, np.tile(fill, (len(df.t), 1))), axis=1)
 
     d = nc.createVariable('apd_ts_s', 'f', ('time', 'z', 'station', 'a_wavelengths',))
     d.setncatts(optaa_attr['apd_ts_s'])
-    d[:] = apd_ts_s
+    d[:] = np.concatenate((apd_ts_s, np.tile(fill, (len(df.t), 1))), axis=1)
 
     d = nc.createVariable('cpd', 'f', ('time', 'z', 'station', 'c_wavelengths',))
     d.setncatts(optaa_attr['cpd'])
-    d[:] = cpd
+    d[:] = np.concatenate((cpd, np.tile(fill, (len(df.t), 1))), axis=1)
 
-    d = nc.createVariable('apd_ts', 'f', ('time', 'z', 'station', 'c_wavelengths',))
-    d.setncatts(optaa_attr['apd_ts'])
-    d[:] = cpd_ts
+    d = nc.createVariable('cpd_ts', 'f', ('time', 'z', 'station', 'c_wavelengths',))
+    d.setncatts(optaa_attr['cpd_ts'])
+    d[:] = np.concatenate((cpd_ts, np.tile(fill, (len(df.t), 1))), axis=1)
 
     # synchronize the data with the netCDF file and close it
     nc.sync()

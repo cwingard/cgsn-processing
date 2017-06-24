@@ -11,6 +11,7 @@ import os
 import re
 
 from gsw import z_from_p
+from netCDF4 import Dataset
 from pocean.utils import dict_update
 from pocean.dsg.timeseriesProfile.om import OrthogonalMultidimensionalTimeseriesProfile as OMTp
 from scipy.interpolate import interp1d
@@ -56,11 +57,6 @@ def main():
         else:
             raise Exception('A source for the NUTNR calibration coefficients could not be found')
 
-    # pop the raw_channels array out of the dataframe (will put it back in later)
-    channels = np.array(np.vstack(df.pop('channel_measurements')))
-    # create the wavelengths array
-    wavelengths = dev.coeffs['wl']
-
     # Merge the co-located CTD temperature and salinity data and calculate the corrected nitrate concentration
     ctd_file = re.sub('nutnr', 'ctdpf', infile)
     ctd_file = re.sub('SNA_SNA', 'PPB_CTD', ctd_file)
@@ -70,22 +66,27 @@ def main():
         # interpolate temperature, pressure and salinity data from the CTD into the NUTNR record for calculations
         degC = interp1d(ctd.time.values.astype('int64'), ctd.temperature.values, bounds_error=False)
         df['temperature'] = degC(df.time.values.astype('int64'))
+
         psu = interp1d(ctd.time.values.astype('int64'), ctd.salinity, bounds_error=False)
         df['salinity'] = psu(df.time.values.astype('int64'))
+
         dbar = interp1d(ctd.time.values.astype('int64'), ctd.pressure, bounds_error=False)
         df['depth'] = dbar(df.time.values.astype('int64'))
+        df = df[np.isnan(df.depth.values) != 1]     # remove rows with NaN for depth
+
+        # create the wavelength array and the raw channels
+        wavelength = (dev.coeffs['wl']).astype(np.float)
+        raw_channels = np.array(np.vstack(df['channel_measurements'].values))
 
         # Calculate the corrected nitrate concentration (uM) accounting for temperature and salinity and the pure
         # water calibration values.
-        df['corrected_nitrate'] = ts_corrected_nitrate(dev.coeffs['cal_temp'], dev.coeffs['wl'], dev.coeffs['eno3'],
+        df['corrected_nitrate'] = ts_corrected_nitrate(dev.coeffs['cal_temp'], wavelength, dev.coeffs['eno3'],
                                                        dev.coeffs['eswa'], dev.coeffs['di'], df['dark_value'],
-                                                       df['temperature'], df['salinity'], channels,
-                                                       df['measurement_type'], dev.coeffs['wllower'],
-                                                       dev.coeffs['wlupper'])
+                                                       df['temperature'], df['salinity'], raw_channels,
+                                                       df['measurement_type'])
     else:
-        df['temperature'] = np.nan
-        df['salinity'] = np.nan
-        df['bback'] = np.nan
+        # there was no CTD data, and thus no pressure record or temperature and salinity available, ending early
+        return None
 
     # setup some further parameters for use with the OMTp class
     df['deploy_id'] = deployment
@@ -99,35 +100,38 @@ def main():
     df['precise_time'] = df.t.values.astype('int64') / 1e9  # create a precise time record
     df['station'] = 0
 
-    # clean-up duplicate depth values
-    df.drop_duplicates(subset='z', keep='first', inplace=True)
-
     # make sure all ints are represented as int32 instead of int64
     df = reset_long(df)
 
-    # Setup and update the attributes for the resulting NetCDF file
-    nutnr_attr = CSPP
+    # clean-up duplicate depth values
+    df.drop_duplicates(subset='depth', keep='first', inplace=True)
 
-    nutnr_attr['global'] = dict_update(nutnr_attr['global'], {
+    # pop the raw_channels array out of the dataframe (will put it back in later)
+    raw_channels = np.array(np.vstack(df.pop('channel_measurements')))
+
+    # Setup and update the attributes for the resulting NetCDF file
+    attr = CSPP
+
+    attr['global'] = dict_update(attr['global'], {
         'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
     })
-    nutnr_attr = dict_update(nutnr_attr, CSPP_NUTNR)
+    attr = dict_update(attr, CSPP_NUTNR)
 
-    nc = OMTp.from_dataframe(df, outfile, attributes=nutnr_attr)
+    nc = OMTp.from_dataframe(df, outfile, attributes=attr)
     nc.close()
 
-    # re-open the netcdf file and add the raw channel measurements and the wavelengths with the additional dimension
-    # of the measurement wavelengths.
+    # re-open the netcdf file and add the raw channel measurements and the wavelength with the additional dimension
+    # of the measurement wavelength.
     nc = Dataset(outfile, 'a')
-    nc.createDimension('wavelengths', len(wavelengths))
+    nc.createDimension('wavelength', len(wavelength))
 
-    d = nc.createVariable('wavelengths', 'f', ('wavelengths',))
-    d.setncatts(attrs['wavelengths'])
-    d[:] = wavelengths
+    d = nc.createVariable('wavelength', 'f', ('wavelength',))
+    d.setncatts(attr['wavelength'])
+    d[:] = wavelength
 
-    d = nc.createVariable('channel_measurements', 'i', ('time', 'z', 'station', 'wavelengths',))
-    d.setncatts(attrs['channel_measurements'])
-    d[:] = channels
+    d = nc.createVariable('channel_measurements', 'i', ('time', 'z', 'station', 'wavelength',))
+    d.setncatts(attr['channel_measurements'])
+    d[:] = raw_channels
 
     # synchronize the data with the netCDF file and close it
     nc.sync()

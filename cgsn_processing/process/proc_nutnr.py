@@ -6,6 +6,7 @@
 @author Christopher Wingard
 @brief Creates a NetCDF dataset for the Nitrate concentration data from the NUTNR
 """
+import json
 import numpy as np
 import os
 import pandas as pd
@@ -47,25 +48,25 @@ class Calibrations(Coefficients):
         cal = pd.read_csv(csv_url, usecols=[0, 1, 2])
         for idx, row in cal.iterrows():
             if row[1] == 'CC_cal_temp':
-                coeffs['cal_temp'] = row[2]
+                coeffs['cal_temp'] = float(row[2])
 
             if row[1] == 'CC_di':
-                coeffs['di'] = row[2]
+                coeffs['di'] = np.array(json.loads(row[2]))
 
             if row[1] == 'CC_eno3':
-                coeffs['eno3'] = row[2]
+                coeffs['eno3'] = np.array(json.loads(row[2]))
 
             if row[1] == 'CC_eswa':
-                coeffs['eswa'] = row[2]
+                coeffs['eswa'] = np.array(json.loads(row[2]))
 
-            if row[1] == 'CC_lower_wavelength_for_spectra_fit':
-                coeffs['wllower'] = row[2]
+            if row[1] == 'CC_lower_wavelength_limit_for_spectra_fit':
+                coeffs['wllower'] = int(row[2])
 
-            if row[1] == 'CC_upper_wavelength_for_spectra_fit':
-                coeffs['wlupper'] = row[2]
+            if row[1] == 'CC_upper_wavelength_limit_for_spectra_fit':
+                coeffs['wlupper'] = int(row[2])
 
             if row[1] == 'CC_wl':
-                coeffs['wl'] = row[2]
+                coeffs['wl'] = np.array(json.loads(row[2]))
 
         # save the resulting dictionary
         self.coeffs = coeffs

@@ -5,11 +5,11 @@
 # Wingard, C. 2015-04-17
 
 # Parse the command line inputs
-if [ $# -ne 8 ]; then
+if [ $# -ne 9 ]; then
     echo "$0: required inputs are the platform and deployment names, the latitude and "
     echo "longitude of the mooring, site depth, the data file type and the FLORT and PARAD serial numbers"
     echo ""
-    echo "     example: $0 ce02shsp R00001 44.639 -124.304 25 PPD 266 421"
+    echo "     example: $0 ce02shsp R00001 44.639 -124.304 25 PPB 1084 365 337"
     exit 1
     exit 1
 fi
@@ -21,6 +21,7 @@ DEPTH=$5
 FTYPE=${6^^}
 FLORT=$7
 PARAD=$8
+NUTNR=$9
 
 # setup the base directories and the python parser used for creating the JSON formatted file
 PROC="/home/ooiuser/data/proc/$PLATFORM/$DEPLOY"
@@ -31,7 +32,7 @@ case $FTYPE in
     "ACS" )
         # OPTAA data files
         ODIR="$ERDDAP/optaa"
-        COEFF="$PROC/optaa_factory_coeffs.pkl"
+        COEFF="$PROC/optaa/optaa_factory_calibration.coeffs"
         if [ ! -d $ODIR ]; then
             mkdir -p $ODIR
         fi
@@ -40,7 +41,7 @@ case $FTYPE in
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
-                $PYTHON -m cgsn_processing.process.proc_cspp_optaa -i $file -o $ODIR/${out%.json}.nc \
+                $PYTHON -m cgsn_processing.process.proc_cspp_optaa -i $file -o "$ODIR/${out%.json}.nc" \
                     -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -cf $COEFF
             fi
         done ;;
@@ -56,7 +57,7 @@ case $FTYPE in
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
-                $PYTHON -m cgsn_processing.process.proc_cspp_ctdpf -i $file -o $ODIR/${out%.json}.nc \
+                $PYTHON -m cgsn_processing.process.proc_cspp_ctdpf -i $file -o "$ODIR/${out%.json}.nc" \
                     -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH
             fi
         done
@@ -71,14 +72,14 @@ case $FTYPE in
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
-                $PYTHON -m cgsn_processing.process.proc_cspp_dosta -i $file -o $ODIR/${out%.json}.nc \
+                $PYTHON -m cgsn_processing.process.proc_cspp_dosta -i $file -o "$ODIR/${out%.json}.nc" \
                     -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH
             fi
         done
 
         # FLORT data files
         ODIR="$ERDDAP/flort"
-        COEFF="$PROC/flort_factory_coeffs.pkl"
+        COEFF="$PROC/flort/flort_factory_calibration.coeffs"
         if [ ! -d $ODIR ]; then
             mkdir -p $ODIR
         fi
@@ -87,14 +88,14 @@ case $FTYPE in
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
-                $PYTHON -m cgsn_processing.process.proc_cspp_flort -i $file -o $ODIR/${out%.json}.nc \
+                $PYTHON -m cgsn_processing.process.proc_cspp_flort -i $file -o "$ODIR/${out%.json}.nc" \
                     -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -sn $FLORT -cf $COEFF
             fi
         done
 
         # PARAD data files
         ODIR="$ERDDAP/parad"
-        COEFF="$PROC/parad_factory_coeffs.pkl"
+        COEFF="$PROC/parad/parad_factory_calibration.coeffs"
         if [ ! -d $ODIR ]; then
             mkdir -p $ODIR
         fi
@@ -103,14 +104,14 @@ case $FTYPE in
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
-                $PYTHON -m cgsn_processing.process.proc_cspp_parad -i $file -o $ODIR/${out%.json}.nc \
+                $PYTHON -m cgsn_processing.process.proc_cspp_parad -i $file -o "$ODIR/${out%.json}.nc" \
                     -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -sn $PARAD -cf $COEFF
             fi
         done
 
         # SPKIR data files
         ODIR="$ERDDAP/spkir"
-        COEFF="$PROC/spkir_factory_coeffs.pkl"
+        COEFF="$PROC/spkir/spkir_factory_calibration.coeffs"
         if [ ! -d $ODIR ]; then
             mkdir -p $ODIR
         fi
@@ -119,7 +120,7 @@ case $FTYPE in
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
-                $PYTHON -m cgsn_processing.process.proc_cspp_spkir -i $file -o $ODIR/${out%.json}.nc \
+                $PYTHON -m cgsn_processing.process.proc_cspp_spkir -i $file -o "$ODIR/${out%.json}.nc" \
                     -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -cf $COEFF
             fi
         done
@@ -134,7 +135,7 @@ case $FTYPE in
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
-                $PYTHON -m cgsn_processing.process.proc_cspp_velpt -i $file -o $ODIR/${out%.json}.nc \
+                $PYTHON -m cgsn_processing.process.proc_cspp_velpt -i $file -o "$ODIR/${out%.json}.nc" \
                     -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH
             fi
         done ;;
@@ -142,6 +143,7 @@ case $FTYPE in
     "SNA" )
         # NUTNR data files
         ODIR="$ERDDAP/nutnr"
+        COEFF="$PROC/nutnr/nutnr_inhouse_calibration.coeffs"
         if [ ! -d $ODIR ]; then
             mkdir -p $ODIR
         fi
@@ -150,8 +152,8 @@ case $FTYPE in
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
-                $PYTHON -m cgsn_processing.process.proc_cspp_nutnr -i $file -o $ODIR/${out%.json}.nc \
-                    -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH
+                $PYTHON -m cgsn_processing.process.proc_cspp_nutnr -i $file -o "$ODIR/${out%.json}.nc" \
+                    -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -sn $NUTNR -cf $COEFF
             fi
         done ;;
 
@@ -166,7 +168,7 @@ case $FTYPE in
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
-                $PYTHON -m cgsn_processing.process.proc_cspp_wc_hmr -i $file -o $ODIR/${out%.json}.nc \
+                $PYTHON -m cgsn_processing.process.proc_cspp_wc_hmr -i $file -o "$ODIR/${out%.json}.nc" \
                     -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH
             fi
         done
@@ -177,7 +179,7 @@ case $FTYPE in
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
-                $PYTHON -m cgsn_processing.process.proc_wc_sbe -i $file -o $ODIR/${out%.json}.nc \
+                $PYTHON -m cgsn_processing.process.proc_cspp_wc_sbe -i $file -o "$ODIR/${out%.json}.nc" \
                     -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH
             fi
         done
@@ -188,7 +190,7 @@ case $FTYPE in
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
-                $PYTHON -m cgsn_processing.process.proc_cspp_wc_wm -i $file -o $ODIR/${out%.json}.nc \
+                $PYTHON -m cgsn_processing.process.proc_cspp_wc_wm -i $file -o "$ODIR/${out%.json}.nc" \
                     -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH
             fi
         done ;;

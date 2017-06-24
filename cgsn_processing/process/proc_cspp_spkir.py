@@ -40,6 +40,9 @@ def main():
         # there was no data in this file, ending early
         return None
 
+    # clean-up duplicate depth values
+    df.drop_duplicates(subset='depth', keep='first', inplace=True)
+
     coeff_file = os.path.abspath(args.coeff_file)
     dev = Calibrations(coeff_file)  # initialize calibration class
 
@@ -78,9 +81,6 @@ def main():
     df['t'] = df.pop('time')[0]                             # set profile time to time of first data record
     df['precise_time'] = df.t.values.astype('int64') / 1e9  # create a precise time record
     df['station'] = 0
-
-    # clean-up duplicate depth values
-    df.drop_duplicates(subset='z', keep='first', inplace=True)
 
     # make sure all ints are represented as int32 instead of int64
     df = reset_long(df)
