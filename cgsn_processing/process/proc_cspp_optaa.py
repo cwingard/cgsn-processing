@@ -103,12 +103,12 @@ def main():
     df.drop_duplicates(subset='depth', keep='first', inplace=True)
 
     # Setup and update the attributes for the resulting NetCDF file
-    optaa_attr = CSPP
+    attr = CSPP
 
-    optaa_attr['global'] = dict_update(optaa_attr['global'], {
+    attr['global'] = dict_update(attr['global'], {
         'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
     })
-    optaa_attr = dict_update(optaa_attr, CSPP_OPTAA)
+    attr = dict_update(attr, CSPP_OPTAA)
 
     # pop arrays out of the dataframe (will put them into the netcdf file later)
     c_ref = np.array(np.vstack(df.pop('c_reference_raw')))
@@ -121,7 +121,7 @@ def main():
     cpd = np.array(np.vstack(df.pop('cpd')))
     cpd_ts = np.array(np.vstack(df.pop('cpd_ts')))
 
-    nc = OMTp.from_dataframe(df, outfile, attributes=optaa_attr)
+    nc = OMTp.from_dataframe(df, outfile, attributes=attr)
     nc.close()
 
     # re-open the netcdf file and add the raw and calculated measurements and the wavelengths with the additional
@@ -133,51 +133,57 @@ def main():
     nc.createDimension('a_wavelengths', size=100)
     nc.createDimension('c_wavelengths', size=100)
     pad = 100 - dev.coeffs['num_wavelengths']
-    fill = np.ones(pad) * -999999999.
+    fill = np.ones(pad) * np.nan
 
     d = nc.createVariable('a_wavelengths', 'f', ('a_wavelengths',))
-    d.setncatts(optaa_attr['a_wavelengths'])
-    d[:] = np.concatenate((dev.coeffs['a_wavelengths'], fill)).tolist()
+    d.setncatts(attr['a_wavelengths'])
+    last = dev.coeffs['a_wavelengths'][-1]
+    step = np.median(np.diff(dev.coeffs['a_wavelengths']))
+    wave_pad = (np.arange(pad) + 1 * step) + last
+    d[:] = np.concatenate((dev.coeffs['a_wavelengths'], wave_pad)).tolist()
 
     d = nc.createVariable('c_wavelengths', 'f', ('c_wavelengths',))
-    d.setncatts(optaa_attr['c_wavelengths'])
-    d[:] = np.concatenate((dev.coeffs['c_wavelengths'], fill)).tolist()
+    d.setncatts(attr['c_wavelengths'])
+    last = dev.coeffs['a_wavelengths'][-1]
+    step = np.median(np.diff(dev.coeffs['a_wavelengths']))
+    wave_pad = (np.arange(pad) + 1 * step) + last
+    d[:] = np.concatenate((dev.coeffs['c_wavelengths'], wave_pad)).tolist()
 
     # now add all the popped arrays back in
     d = nc.createVariable('a_reference_raw', 'i', ('time', 'z', 'station', 'a_wavelengths',))
-    d.setncatts(optaa_attr['a_reference_raw'])
+    d.setncatts(attr['a_reference_raw'])
     d[:] = np.concatenate((a_ref, np.tile(fill, (len(df.t), 1))), axis=1)
 
     d = nc.createVariable('a_signal_raw', 'i', ('time', 'z', 'station', 'a_wavelengths',))
-    d.setncatts(optaa_attr['a_signal_raw'])
+    d.setncatts(attr['a_signal_raw'])
     d[:] = np.concatenate((a_sig, np.tile(fill, (len(df.t), 1))), axis=1)
 
     d = nc.createVariable('c_reference_raw', 'i', ('time', 'z', 'station', 'c_wavelengths',))
-    d.setncatts(optaa_attr['c_reference_raw'])
+    d.setncatts(attr['c_reference_raw'])
     d[:] = np.concatenate((c_ref, np.tile(fill, (len(df.t), 1))), axis=1)
 
     d = nc.createVariable('c_signal_raw', 'i', ('time', 'z', 'station', 'c_wavelengths',))
-    d.setncatts(optaa_attr['c_signal_raw'])
+    d.setncatts(attr['c_signal_raw'])
     d[:] = np.concatenate((c_sig, np.tile(fill, (len(df.t), 1))), axis=1)
 
     d = nc.createVariable('apd', 'f', ('time', 'z', 'station', 'a_wavelengths',))
-    d.setncatts(optaa_attr['apd'])
+    d.setncatts(attr['apd'])
     d[:] = np.concatenate((apd, np.tile(fill, (len(df.t), 1))), axis=1)
 
     d = nc.createVariable('apd_ts', 'f', ('time', 'z', 'station', 'a_wavelengths',))
-    d.setncatts(optaa_attr['apd_ts'])
+    d.setncatts(attr['apd_ts'])
     d[:] = np.concatenate((apd_ts, np.tile(fill, (len(df.t), 1))), axis=1)
 
     d = nc.createVariable('apd_ts_s', 'f', ('time', 'z', 'station', 'a_wavelengths',))
-    d.setncatts(optaa_attr['apd_ts_s'])
+    d.setncatts(attr['apd_ts_s'])
     d[:] = np.concatenate((apd_ts_s, np.tile(fill, (len(df.t), 1))), axis=1)
 
     d = nc.createVariable('cpd', 'f', ('time', 'z', 'station', 'c_wavelengths',))
-    d.setncatts(optaa_attr['cpd'])
+    d.setncatts(attr['cpd'])
     d[:] = np.concatenate((cpd, np.tile(fill, (len(df.t), 1))), axis=1)
 
     d = nc.createVariable('cpd_ts', 'f', ('time', 'z', 'station', 'c_wavelengths',))
-    d.setncatts(optaa_attr['cpd_ts'])
+    d.setncatts(attr['cpd_ts'])
     d[:] = np.concatenate((cpd_ts, np.tile(fill, (len(df.t), 1))), axis=1)
 
     # synchronize the data with the netCDF file and close it
