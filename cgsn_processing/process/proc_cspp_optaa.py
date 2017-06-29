@@ -92,6 +92,7 @@ def main():
     df['y'] = lat
     df['t'] = df.pop('time')
     df['station'] = 0
+    df.rename(columns={'depth': 'ctd_depth'}, inplace=True)
 
     # make sure all ints are represented as int32 instead of int64
     df = reset_long(df)
@@ -122,7 +123,7 @@ def main():
     # dimension of the measurement wavelengths.
     nc = Dataset(outfile, 'a')
 
-    # create a new dimension for the wavelength array, padded out to a size of 100 to account for the variable number
+    # create a new dimension for the wavelength arrays, padded out to a size of 100 to account for the variable number
     # of wavelengths, and then create arrays for the the 'a' and 'c'-channel wavelengths
     nc.createDimension('a_wavelengths', size=100)
     nc.createDimension('c_wavelengths', size=100)

@@ -75,6 +75,7 @@ def main():
     df['y'] = lat
     df['t'] = df.pop('time')
     df['station'] = 0
+    df.rename(columns={'depth': 'ctd_depth'}, inplace=True)
 
     # make sure all ints are represented as int32 instead of int64
     df = reset_long(df)

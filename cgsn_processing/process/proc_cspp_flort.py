@@ -91,6 +91,7 @@ def main():
     df['t'] = df.pop('time')[0]                             # set profile time to time of first data record
     df['precise_time'] = df.t.values.astype('int64') / 1e9  # create a precise time record
     df['station'] = 0
+    df.rename(columns={'depth': 'ctd_depth'}, inplace=True)
 
     # make sure all ints are represented as int32 instead of int64
     df = reset_long(df)
