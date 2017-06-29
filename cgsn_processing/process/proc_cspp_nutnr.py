@@ -10,10 +10,9 @@ import numpy as np
 import os
 import re
 
-from gsw import z_from_p
 from netCDF4 import Dataset
 from pocean.utils import dict_update
-from pocean.dsg.timeseriesProfile.om import OrthogonalMultidimensionalTimeseriesProfile as OMTp
+from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMTs
 from scipy.interpolate import interp1d
 
 from cgsn_processing.process.common import inputs, json2df, reset_long
@@ -34,7 +33,7 @@ def main():
     deployment = args.deployment
     lat = args.latitude
     lon = args.longitude
-    site_depth = args.depth
+    depth = args.depth
 
     # load the json data file and return a panda dataframe
     df = json2df(infile)
@@ -72,15 +71,14 @@ def main():
 
         dbar = interp1d(ctd.time.values.astype('int64'), ctd.pressure, bounds_error=False)
         df['depth'] = dbar(df.time.values.astype('int64'))
-        df = df[np.isnan(df.depth.values) != 1]     # remove rows with NaN for depth
 
-        # create the wavelength array and the raw channels
-        wavelength = (dev.coeffs['wl']).astype(np.float)
+        # create the wavelengths array and the raw channels
+        wavelengths = (dev.coeffs['wl']).astype(np.float)
         raw_channels = np.array(np.vstack(df['channel_measurements'].values))
 
         # Calculate the corrected nitrate concentration (uM) accounting for temperature and salinity and the pure
         # water calibration values.
-        df['corrected_nitrate'] = ts_corrected_nitrate(dev.coeffs['cal_temp'], wavelength, dev.coeffs['eno3'],
+        df['corrected_nitrate'] = ts_corrected_nitrate(dev.coeffs['cal_temp'], wavelengths, dev.coeffs['eno3'],
                                                        dev.coeffs['eswa'], dev.coeffs['di'], df['dark_value'],
                                                        df['temperature'], df['salinity'], raw_channels,
                                                        df['measurement_type'])
@@ -88,23 +86,18 @@ def main():
         # there was no CTD data, and thus no pressure record or temperature and salinity available, ending early
         return None
 
-    # setup some further parameters for use with the OMTp class
+    # setup some further parameters for use with the OMTs class
     df['deploy_id'] = deployment
-    df['site_depth'] = site_depth
+    df['z'] = depth
     profile_id = re.sub('\D+', '', fname)
     df['profile_id'] = "{}.{}.{}".format(profile_id[0], profile_id[1:4], profile_id[4:])
     df['x'] = lon
     df['y'] = lat
-    df['z'] = -1 * z_from_p(df['depth'], lat)               # uses CTD pressure record interpolated into NUTNR record
-    df['t'] = df.pop('time')[0]                             # set profile time to time of first data record
-    df['precise_time'] = df.t.values.astype('int64') / 1e9  # create a precise time record
+    df['t'] = df.pop('time')
     df['station'] = 0
 
     # make sure all ints are represented as int32 instead of int64
     df = reset_long(df)
-
-    # clean-up duplicate depth values
-    df.drop_duplicates(subset='depth', keep='first', inplace=True)
 
     # pop the raw_channels array out of the dataframe (will put it back in later)
     raw_channels = np.array(np.vstack(df.pop('channel_measurements')))
@@ -117,19 +110,19 @@ def main():
     })
     attr = dict_update(attr, CSPP_NUTNR)
 
-    nc = OMTp.from_dataframe(df, outfile, attributes=attr)
+    nc = OMTs.from_dataframe(df, outfile, attributes=attr)
     nc.close()
 
-    # re-open the netcdf file and add the raw channel measurements and the wavelength with the additional dimension
-    # of the measurement wavelength.
+    # re-open the netcdf file and add the raw channel measurements and the wavelengths with the additional dimension
+    # of the measurement wavelengths.
     nc = Dataset(outfile, 'a')
-    nc.createDimension('wavelength', len(wavelength))
+    nc.createDimension('wavelengths', len(wavelengths))
 
-    d = nc.createVariable('wavelength', 'f', ('wavelength',))
-    d.setncatts(attr['wavelength'])
-    d[:] = wavelength
+    d = nc.createVariable('wavelengths', 'f', ('wavelengths',))
+    d.setncatts(attr['wavelengths'])
+    d[:] = wavelengths
 
-    d = nc.createVariable('channel_measurements', 'i', ('time', 'z', 'station', 'wavelength',))
+    d = nc.createVariable('channel_measurements', 'i', ('time', 'station', 'wavelengths',))
     d.setncatts(attr['channel_measurements'])
     d[:] = raw_channels
 

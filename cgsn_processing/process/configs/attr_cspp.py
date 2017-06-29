@@ -18,36 +18,25 @@ CSPP = {
     },
     'deploy_id': {
         'long_name': 'Deployment ID',
-        'standard_name': 'deployment_id',
         'units': '1'
     },
     'profile_id': {
         'long_name': 'Profile ID',
         'units': '1',
-        'cf_role': 'profile_id'
     },
-    'site_depth': {
-        'long_name': 'Deployment Site Depth',
+    'z': {
+        'long_name': 'Depth',
         'standard_name': 'depth',
         'units': 'm',
         'positive': 'down',
         'axis': 'Z',
         'valid_min': '-10000',
-        'valid_max': '1000'
+        'valid_max': '1000',
     },
     'precise_time': {
         'long_name': 'Measurement Time',
         'standard_name': 'time',
         'units': 'seconds since 1970-01-01',
-    },
-    'z': {
-        'long_name': 'Sensor Depth',
-        'standard_name': 'depth_of_sensor_below_water',
-        'units': 'm',
-        'positive': 'down',
-        'axis': 'Z',
-        'valid_min': '-10000',
-        'valid_max': '1000'
     }
 }
 
@@ -98,9 +87,9 @@ CSPP_DOSTA = {
         'long_name': 'CSPP Depth from CTD',
         'standard_name': 'sea_water_pressure_due_to_sea_water',
         'units': 'dbar',
-        'axis': 'Z',
         'valid_min': '-5',
         'valid_max': '1000',
+        'comment': 'Interpolated into record from co-located CTD'
     },
     'product_number': {
         'units': '1'
@@ -151,9 +140,9 @@ CSPP_FLORT = {
         'long_name': 'CSPP Depth from CTD',
         'standard_name': 'sea_water_pressure_due_to_sea_water',
         'units': 'dbar',
-        'axis': 'Z',
         'valid_min': '-5',
         'valid_max': '1000',
+        'comment': 'Interpolated into record from co-located CTD'
     },
     'measurement_wavelength_beta': {
         'units': 'nm'
@@ -214,7 +203,6 @@ CSPP_NUTNR = {
         'long_name': 'CSPP Depth from CTD',
         'standard_name': 'sea_water_pressure_due_to_sea_water',
         'units': 'dbar',
-        'axis': 'Z',
         'valid_min': '-5',
         'valid_max': '1000',
         'comment': 'Interpolated into record from co-located CTD'
@@ -312,7 +300,7 @@ CSPP_NUTNR = {
         'units': '1',
         'comment': 'Interpolated into record from co-located CTD'
     },
-    'wavelength': {
+    'wavelengths': {
         'long_name': 'Wavelength',
         'standard_name': 'radiation_wavelength',
         'units': 'nm',
@@ -335,7 +323,6 @@ CSPP_OPTAA = {
         'long_name': 'CSPP Depth from CTD',
         'standard_name': 'sea_water_pressure_due_to_sea_water',
         'units': 'dbar',
-        'axis': 'Z',
         'valid_min': '-5',
         'valid_max': '1000',
         'comment': 'Interpolated into record from co-located CTD'
@@ -347,27 +334,23 @@ CSPP_OPTAA = {
     },
     'a_reference_dark': {
         'long_name': 'A Channel Dark Reference',
-        'standard_name': 'a_reference_dark',
         'units': 'counts'
     },
     'pressure_raw': {
         'long_name': 'Raw Pressure',
-        'standard_name': 'pressure_raw',
         'units': 'counts'
     },
     'pressure': {
         'long_name': 'Pressure',
-        'standard_name': 'pressure_raw',
+        'standard_name': 'sea_water_pressure_due_to_sea_water',
         'units': 'dbar'
     },
     'a_signal_dark': {
         'long_name': 'A Channel Dark Signal',
-        'standard_name': 'a_signal_dark',
         'units': 'counts'
     },
     'external_temp_raw': {
         'long_name': 'Raw External Temperature',
-        'standard_name': 'external_temperature_raw',
         'units': 'counts'
     },
     'external_temp': {
@@ -377,97 +360,80 @@ CSPP_OPTAA = {
     },
     'internal_temp_raw': {
         'long_name': 'Raw Internal Temperature',
-        'standard_name': 'internal_temperature_raw',
         'units': 'counts'
     },
     'internal_temp': {
         'long_name': 'Instrument Temperature',
-        'standard_name': 'instrument_temperature',
         'units': 'degree_Celsius'
     },
     'c_reference_dark': {
         'long_name': 'C Channel Dark Reference',
-        'standard_name': 'c_reference_dark',
         'units': 'counts'
     },
     'c_signal_dark': {
         'long_name': 'C Channel Dark Signal',
-        'standard_name': 'c_signal_dark',
         'units': 'counts'
     },
     'elapsed_run_time': {
         'long_name': 'Elapsed Run Time',
-        'standard_name': 'elapsed_run_time',
         'units': 'ms'
     },
     'num_wavelengths': {
         'long_name': 'Number of Wavelengths',
-        'standard_name': 'number_wavelengths',
         'units': '1'
     },
     'a_wavelengths': {
         'long_name': 'A Channel Wavelengths',
-        'standard_name': 'a_wavelengths',
-        'units': 'nm',
-        'fill_value': -999999999.
+        'standard_name': 'radiation_wavelength',
+        'units': 'nm'
     },
     'c_wavelengths': {
         'long_name': 'c Channel Wavelengths',
-        'standard_name': 'c_wavelengths',
-        'units': 'nm',
-        'fill_value': -999999999.
+        'standard_name': 'radiation_wavelength',
+        'units': 'nm'
     },
     'c_reference_raw': {
         'long_name': 'C Channel Raw Reference',
-        'standard_name': 'c_reference_raw',
         'units': 'counts',
         'fill_value': -999999999
     },
     'a_reference_raw': {
         'long_name': 'A Channel Raw Reference',
-        'standard_name': 'a_reference_raw',
         'units': 'counts',
         'fill_value': -999999999
     },
     'c_signal_raw': {
         'long_name': 'C Channel Raw Signal',
-        'standard_name': 'c_signal_raw',
         'units': 'counts',
         'fill_value': -999999999
     },
     'a_signal_raw': {
         'long_name': 'A Channel Raw Signal',
-        'standard_name': 'a_signal_raw',
         'units': 'counts',
         'fill_value': -999999999
     },
     'apd': {
         'long_name': 'Particulate and Dissolved Absorbance',
-        'standard_name': 'particulate_dissolved_absorbance',
         'units': 'm-1',
         'fill_value': -999999999.
     },
     'apd_ts': {
         'long_name': 'Particulate and Dissolved Absorbance with TS Correction',
         'standard_name': 'particulate_dissolved_absorbance_ts',
-        'units': 'm-1',
         'fill_value': -999999999.
     },
     'apd_ts_s': {
         'long_name': 'Particulate and Dissolved Absorbance with TS and Scatter Correction',
-        'standard_name': 'particulate_dissolved_absorbance_ts_scat',
         'units': 'm-1',
         'fill_value': -999999999.
     },
     'cpd': {
         'long_name': 'Particulate and Dissolved Attenuation',
-        'standard_name': 'particulate_dissolved_attenuation',
         'units': 'm-1',
         'fill_value': -999999999.
     },
     'cpd_ts': {
         'long_name': 'Particulate and Dissolved Attenuation with TS Correction',
-        'standard_name': 'particulate_dissolved_attenuation_ts',
         'units': 'm-1',
         'fill_value': -999999999.
     },
@@ -496,9 +462,9 @@ CSPP_PARAD = {
         'long_name': 'CSPP Depth from CTD',
         'standard_name': 'sea_water_pressure_due_to_sea_water',
         'units': 'dbar',
-        'axis': 'Z',
         'valid_min': '-5',
         'valid_max': '1000',
+        'comment': 'Interpolated into record from co-located CTD'
     },
     'raw_par': {
         'units': 'counts'
@@ -521,9 +487,9 @@ CSPP_SPKIR = {
         'long_name': 'CSPP Depth from CTD',
         'standard_name': 'sea_water_pressure_due_to_sea_water',
         'units': 'dbar',
-        'axis': 'Z',
         'valid_min': '-5',
         'valid_max': '1000',
+        'comment': 'Interpolated into record from co-located CTD'
     },
     'serial_number': {
         'units': '1'
@@ -572,9 +538,9 @@ CSPP_VELPT = {
         'long_name': 'CSPP Depth from CTD',
         'standard_name': 'sea_water_pressure_due_to_sea_water',
         'units': 'dbar',
-        'axis': 'Z',
         'valid_min': '-5',
         'valid_max': '1000',
+        'comment': 'Interpolated into record from co-located CTD'
     },
     'speed_of_sound': {
         'units': 'm s-1'
@@ -589,6 +555,7 @@ CSPP_VELPT = {
         'units': 'degree'
     },
     'pressure': {
+        'standard_name': 'sea_water_pressure_due_to_sea_water',
         'units': 'dbar'
     },
     'temperature': {
@@ -615,23 +582,54 @@ CSPP_VELPT = {
 }
 
 CSPP_WINCH = {
-    'encoder_counts': {},
-    'current': {},
-    'status_string': {},
-    'raw_velocity': {},
-    'temperature': {},
-    'voltage': {},
-    'raw_time': {},
-    'raw_discharge': {},
-    'rope_on_drum': {},
-
+    'global': {
+        'title': 'uCSPP Winch Controller Data',
+        'summary': (
+            'Records data from the uCSPP winch controller data files'
+        )
+    },
+    'depth': {
+        'long_name': 'CSPP Depth from CTD',
+        'standard_name': 'sea_water_pressure_due_to_sea_water',
+        'units': 'dbar',
+        'valid_min': '-5',
+        'valid_max': '1000',
+        'comment': 'Interpolated into record from co-located CTD'
+    },
+    'encoder_counts': {
+        'units': 'counts'
+    },
+    'current': {
+        'units': 'A'
+    },
+    'status_string': {
+        'units': '1'
+    },
+    'raw_velocity': {
+        'units': 'cm s-1'
+    },
+    'temperature': {
+        'units': 'degree_Celsius'
+    },
+    'voltage': {
+        'units': 'V'
+    },
+    'raw_time': {
+        'units': '1'
+    },
+    'raw_discharge': {
+        'units': '1'
+    },
+    'rope_on_drum': {
+        'units': 'm'
+    },
     'pressure': {
+        'standard_name': 'sea_water_pressure_due_to_sea_water',
         'units': 'dbar'
     },
     'velocity': {
         'units': 'cm s-1'
     },
-
     'heading': {
         'units': 'degree'
     },

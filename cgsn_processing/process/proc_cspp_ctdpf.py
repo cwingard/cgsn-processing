@@ -11,7 +11,7 @@ import re
 
 from gsw import z_from_p, SA_from_SP, CT_from_t, rho
 from pocean.utils import dict_update
-from pocean.dsg.timeseriesProfile.om import OrthogonalMultidimensionalTimeseriesProfile as OMTp
+from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMTs
 
 from cgsn_processing.process.common import inputs, json2df, reset_long
 from cgsn_processing.process.configs.attr_cspp import CSPP, CSPP_CTDPF
@@ -27,7 +27,7 @@ def main():
     deployment = args.deployment
     lat = args.latitude
     lon = args.longitude
-    site_depth = args.depth
+    depth = args.depth
 
     # load the json data file and return a panda dataframe
     df = json2df(infile)
@@ -40,9 +40,9 @@ def main():
     ct = CT_from_t(sa, df['temperature'], df['pressure'])       # conservative temperature
     df['in_situ_density'] = rho(sa, ct, df['pressure'])         # in-situ density
 
-    # setup some further parameters for use with the OMTp class
+    # setup some further parameters for use with the OMTs class
     df['deploy_id'] = deployment
-    df['site_depth'] = site_depth
+    df['z'] = depth
     profile_id = re.sub('\D+', '', fname)
     df['profile_id'] = "{}.{}.{}".format(profile_id[0], profile_id[1:4], profile_id[4:])
     df['x'] = lon
@@ -66,7 +66,7 @@ def main():
     })
     ctdpf_attr = dict_update(ctdpf_attr, CSPP_CTDPF)
 
-    nc = OMTp.from_dataframe(df, outfile, attributes=ctdpf_attr)
+    nc = OMTs.from_dataframe(df, outfile, attributes=ctdpf_attr)
     nc.close()
 
 if __name__ == '__main__':

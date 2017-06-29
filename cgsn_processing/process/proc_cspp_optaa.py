@@ -10,10 +10,9 @@ import numpy as np
 import os
 import re
 
-from gsw import z_from_p
 from netCDF4 import Dataset
 from pocean.utils import dict_update
-from pocean.dsg.timeseriesProfile.om import OrthogonalMultidimensionalTimeseriesProfile as OMTp
+from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMTs
 from scipy.interpolate import interp1d
 
 from cgsn_processing.process.common import inputs, json2df, reset_long
@@ -32,7 +31,7 @@ def main():
     deployment = args.deployment
     lat = args.latitude
     lon = args.longitude
-    site_depth = args.depth
+    depth = args.depth
 
     # load the json data file and return a panda dataframe
     df = json2df(infile)
@@ -72,35 +71,30 @@ def main():
 
         dbar = interp1d(ctd.time.values.astype('int64'), ctd.pressure, bounds_error=False)
         df['depth'] = dbar(df.time.values.astype('int64'))
-        df = df[np.isnan(df.depth.values) != 1]  # remove rows with NaN for depth
     else:
         # there was no CTD data, and thus no pressure record or temperature and salinity available, ending early
         return None
 
     # apply the device file conversions from counts to m^-1
+    df.drop(df[df.num_wavelengths != dev.coeffs['num_wavelengths']].index, inplace=True)
     df = apply_dev(df, dev.coeffs)
     # apply the temperature and salinity corrections
     df = apply_tscorr(df, dev.coeffs, df['temperature'], df['salinity'])
     # finally apply the scatter corrections
     df = apply_scatcorr(df, dev.coeffs)
 
-    # setup some further parameters for use with the OMTp class
+    # setup some further parameters for use with the OMTs class
     df['deploy_id'] = deployment
-    df['site_depth'] = site_depth
+    df['z'] = depth
     profile_id = re.sub('\D+', '', fname)
     df['profile_id'] = "{}.{}.{}".format(profile_id[0], profile_id[1:4], profile_id[4:])
     df['x'] = lon
     df['y'] = lat
-    df['z'] = -1 * z_from_p(df['depth'], lat)               # uses CTD pressure record interpolated into OPTAA record
-    df['t'] = df.pop('time')[0]                             # set profile time to time of first data record
-    df['precise_time'] = df.t.values.astype('int64') / 1e9  # create a precise time record
+    df['t'] = df.pop('time')
     df['station'] = 0
 
     # make sure all ints are represented as int32 instead of int64
     df = reset_long(df)
-
-    # clean-up duplicate depth values
-    df.drop_duplicates(subset='depth', keep='first', inplace=True)
 
     # Setup and update the attributes for the resulting NetCDF file
     attr = CSPP
@@ -121,7 +115,7 @@ def main():
     cpd = np.array(np.vstack(df.pop('cpd')))
     cpd_ts = np.array(np.vstack(df.pop('cpd_ts')))
 
-    nc = OMTp.from_dataframe(df, outfile, attributes=attr)
+    nc = OMTs.from_dataframe(df, outfile, attributes=attr)
     nc.close()
 
     # re-open the netcdf file and add the raw and calculated measurements and the wavelengths with the additional
@@ -150,39 +144,39 @@ def main():
     d[:] = np.concatenate((dev.coeffs['c_wavelengths'], wave_pad)).tolist()
 
     # now add all the popped arrays back in
-    d = nc.createVariable('a_reference_raw', 'i', ('time', 'z', 'station', 'a_wavelengths',))
+    d = nc.createVariable('a_reference_raw', 'i', ('time', 'station', 'a_wavelengths',))
     d.setncatts(attr['a_reference_raw'])
     d[:] = np.concatenate((a_ref, np.tile(fill, (len(df.t), 1))), axis=1)
 
-    d = nc.createVariable('a_signal_raw', 'i', ('time', 'z', 'station', 'a_wavelengths',))
+    d = nc.createVariable('a_signal_raw', 'i', ('time', 'station', 'a_wavelengths',))
     d.setncatts(attr['a_signal_raw'])
     d[:] = np.concatenate((a_sig, np.tile(fill, (len(df.t), 1))), axis=1)
 
-    d = nc.createVariable('c_reference_raw', 'i', ('time', 'z', 'station', 'c_wavelengths',))
+    d = nc.createVariable('c_reference_raw', 'i', ('time', 'station', 'c_wavelengths',))
     d.setncatts(attr['c_reference_raw'])
     d[:] = np.concatenate((c_ref, np.tile(fill, (len(df.t), 1))), axis=1)
 
-    d = nc.createVariable('c_signal_raw', 'i', ('time', 'z', 'station', 'c_wavelengths',))
+    d = nc.createVariable('c_signal_raw', 'i', ('time', 'station', 'c_wavelengths',))
     d.setncatts(attr['c_signal_raw'])
     d[:] = np.concatenate((c_sig, np.tile(fill, (len(df.t), 1))), axis=1)
 
-    d = nc.createVariable('apd', 'f', ('time', 'z', 'station', 'a_wavelengths',))
+    d = nc.createVariable('apd', 'f', ('time', 'station', 'a_wavelengths',))
     d.setncatts(attr['apd'])
     d[:] = np.concatenate((apd, np.tile(fill, (len(df.t), 1))), axis=1)
 
-    d = nc.createVariable('apd_ts', 'f', ('time', 'z', 'station', 'a_wavelengths',))
+    d = nc.createVariable('apd_ts', 'f', ('time', 'station', 'a_wavelengths',))
     d.setncatts(attr['apd_ts'])
     d[:] = np.concatenate((apd_ts, np.tile(fill, (len(df.t), 1))), axis=1)
 
-    d = nc.createVariable('apd_ts_s', 'f', ('time', 'z', 'station', 'a_wavelengths',))
+    d = nc.createVariable('apd_ts_s', 'f', ('time', 'station', 'a_wavelengths',))
     d.setncatts(attr['apd_ts_s'])
     d[:] = np.concatenate((apd_ts_s, np.tile(fill, (len(df.t), 1))), axis=1)
 
-    d = nc.createVariable('cpd', 'f', ('time', 'z', 'station', 'c_wavelengths',))
+    d = nc.createVariable('cpd', 'f', ('time', 'station', 'c_wavelengths',))
     d.setncatts(attr['cpd'])
     d[:] = np.concatenate((cpd, np.tile(fill, (len(df.t), 1))), axis=1)
 
-    d = nc.createVariable('cpd_ts', 'f', ('time', 'z', 'station', 'c_wavelengths',))
+    d = nc.createVariable('cpd_ts', 'f', ('time', 'station', 'c_wavelengths',))
     d.setncatts(attr['cpd_ts'])
     d[:] = np.concatenate((cpd_ts, np.tile(fill, (len(df.t), 1))), axis=1)
 

@@ -12,8 +12,7 @@ import re
 
 from netCDF4 import Dataset
 from pocean.utils import dict_update
-from pocean.dsg.timeseriesProfile.om import OrthogonalMultidimensionalTimeseriesProfile as OMTp
-from gsw import z_from_p
+from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMTs
 
 from cgsn_processing.process.common import inputs, json2df, reset_long
 from cgsn_processing.process.finding_calibrations import find_calibration
@@ -32,16 +31,13 @@ def main():
     deployment = args.deployment
     lat = args.latitude
     lon = args.longitude
-    site_depth = args.depth
+    depth = args.depth
 
     # load the json data file and return a panda dataframe
     df = json2df(infile)
     if df.empty:
         # there was no data in this file, ending early
         return None
-
-    # clean-up duplicate depth values
-    df.drop_duplicates(subset='depth', keep='first', inplace=True)
 
     coeff_file = os.path.abspath(args.coeff_file)
     dev = Calibrations(coeff_file)  # initialize calibration class
@@ -70,30 +66,28 @@ def main():
     df['analog_rail_voltage'].apply(lambda x: x * 0.03)
     df['internal_temperature'].apply(lambda x: -50 + x * 0.5)
 
-    # setup some further parameters for use with the OMTp class
+    # setup some further parameters for use with the OMTs class
     df['deploy_id'] = deployment
-    df['site_depth'] = site_depth
+    df['z'] = depth
     profile_id = re.sub('\D+', '', fname)
     df['profile_id'] = "{}.{}.{}".format(profile_id[0], profile_id[1:4], profile_id[4:])
     df['x'] = lon
     df['y'] = lat
-    df['z'] = -1 * z_from_p(df['depth'], lat)               # uses CTD pressure record interpolated into SPKIR record
-    df['t'] = df.pop('time')[0]                             # set profile time to time of first data record
-    df['precise_time'] = df.t.values.astype('int64') / 1e9  # create a precise time record
+    df['t'] = df.pop('time')
     df['station'] = 0
 
     # make sure all ints are represented as int32 instead of int64
     df = reset_long(df)
 
     # Setup and update the attributes for the resulting NetCDF file
-    spkir_attr = CSPP
+    attr = CSPP
 
-    spkir_attr['global'] = dict_update(spkir_attr['global'], {
+    attr['global'] = dict_update(attr['global'], {
         'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
     })
-    spkir_attr = dict_update(spkir_attr, CSPP_SPKIR)
+    attr = dict_update(attr, CSPP_SPKIR)
 
-    nc = OMTp.from_dataframe(df, outfile, attributes=spkir_attr)
+    nc = OMTs.from_dataframe(df, outfile, attributes=attr)
     nc.close()
 
     # re-open the netcdf file and add the raw channels, the downwelling irradiance and the wavelengths with the
@@ -102,15 +96,15 @@ def main():
     nc.createDimension('wavelengths', 7)
 
     d = nc.createVariable('wavelengths', 'i', ('wavelengths',))
-    d.setncatts(spkir_attr['wavelengths'])
+    d.setncatts(attr['wavelengths'])
     d[:] = wavelengths
 
-    d = nc.createVariable('raw_channels', 'u4', ('time', 'z', 'station', 'wavelengths',))
-    d.setncatts(spkir_attr['raw_channels'])
+    d = nc.createVariable('raw_channels', 'u4', ('time', 'station', 'wavelengths',))
+    d.setncatts(attr['raw_channels'])
     d[:] = channels
 
-    d = nc.createVariable('irradiance', 'f', ('time', 'z', 'station', 'wavelengths',))
-    d.setncatts(spkir_attr['irradiance'])
+    d = nc.createVariable('irradiance', 'f', ('time', 'station', 'wavelengths',))
+    d.setncatts(attr['irradiance'])
     d[:] = Ed
 
     nc.sync()
