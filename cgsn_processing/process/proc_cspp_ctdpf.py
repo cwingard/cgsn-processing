@@ -47,13 +47,9 @@ def main():
     df['profile_id'] = "{}.{}.{}".format(profile_id[0], profile_id[1:4], profile_id[4:])
     df['x'] = lon
     df['y'] = lat
-    df['z'] = -1 * z_from_p(df['pressure'], lat)                   # uses CTD pressure record
-    df['t'] = df.pop('time')[0]                                    # set profile time to time of first data record
-    df['precise_time'] = df.t.values.astype('int64') / 1e9         # create a precise time record
+    df['t'] = df.pop('time')[0]                                 # set profile time to time of first data record
+    df['precise_time'] = df.t.values.astype('int64') / 1e9      # create a precise time record
     df['station'] = 0
-
-    # clean-up duplicate depth values
-    df.drop_duplicates(subset='z', keep='first', inplace=True)
 
     # make sure all ints are represented as int32 instead of int64
     df = reset_long(df)

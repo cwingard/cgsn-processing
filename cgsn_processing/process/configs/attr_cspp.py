@@ -25,19 +25,26 @@ CSPP = {
         'units': '1',
     },
     'z': {
-        'long_name': 'ctd_depth',
-        'standard_name': 'ctd_depth',
+        'long_name': 'Depth',
+        'standard_name': 'depth',
         'units': 'm',
+        'comment': 'Deployment site depth',
         'positive': 'down',
-        'axis': 'Z',
-        'valid_min': '-10000',
-        'valid_max': '1000',
+        'axis': 'Z'
     },
     'precise_time': {
         'long_name': 'Measurement Time',
         'standard_name': 'time',
         'units': 'seconds since 1970-01-01',
-    }
+    },
+    'ctd_depth': {
+        'long_name': 'Depth from CTD Pressure',
+        'standard_name': 'sea_water_pressure_due_to_sea_water',
+        'units': 'dbar',
+        'valid_min': '-5',
+        'valid_max': '1000',
+        'comment': 'Pressure used as proxy for depth interpolated into record from co-located CTD'
+    },
 }
 
 CSPP_CTDPF = {
@@ -83,14 +90,6 @@ CSPP_DOSTA = {
             'Records the dissolved oxygen data for the uncabled Coastal Surface Piercing Profilers'
         )
     },
-    'ctd_depth': {
-        'long_name': 'CSPP Depth from CTD',
-        'standard_name': 'sea_water_pressure_due_to_sea_water',
-        'units': 'dbar',
-        'valid_min': '-5',
-        'valid_max': '1000',
-        'comment': 'Interpolated into record from co-located CTD'
-    },
     'product_number': {
         'units': '1'
     },
@@ -135,14 +134,6 @@ CSPP_FLORT = {
         'summary': (
             'Records chlorophyll, optical backscatter and CDOM data for the uncabled Coastal Surface Piercing Profilers'
         )
-    },
-    'ctd_depth': {
-        'long_name': 'CSPP Depth from CTD',
-        'standard_name': 'sea_water_pressure_due_to_sea_water',
-        'units': 'dbar',
-        'valid_min': '-5',
-        'valid_max': '1000',
-        'comment': 'Interpolated into record from co-located CTD'
     },
     'measurement_wavelength_beta': {
         'units': 'nm'
@@ -198,14 +189,6 @@ CSPP_NUTNR = {
         'summary': (
             'Records the nitrate concentration for the uncabled Coastal Surface Piercing Profilers'
         )
-    },
-    'ctd_depth': {
-        'long_name': 'CSPP Depth from CTD',
-        'standard_name': 'sea_water_pressure_due_to_sea_water',
-        'units': 'dbar',
-        'valid_min': '-5',
-        'valid_max': '1000',
-        'comment': 'Interpolated into record from co-located CTD'
     },
     'measurement_type': {
         'units': '1'
@@ -318,14 +301,6 @@ CSPP_OPTAA = {
         'summary': (
             'Records the absorbance and attenuation data for the uncabled Coastal Surface Piercing Profilers'
         )
-    },
-    'ctd_depth': {
-        'long_name': 'CSPP Depth from CTD',
-        'standard_name': 'sea_water_pressure_due_to_sea_water',
-        'units': 'dbar',
-        'valid_min': '-5',
-        'valid_max': '1000',
-        'comment': 'Interpolated into record from co-located CTD'
     },
     'serial_number': {
         'long_name': 'Unit Serial Number',
@@ -458,14 +433,6 @@ CSPP_PARAD = {
             'Records downwelling PAR data for the uncabled Coastal Surface Piercing Profilers'
         )
     },
-    'ctd_depth': {
-        'long_name': 'CSPP Depth from CTD',
-        'standard_name': 'sea_water_pressure_due_to_sea_water',
-        'units': 'dbar',
-        'valid_min': '-5',
-        'valid_max': '1000',
-        'comment': 'Interpolated into record from co-located CTD'
-    },
     'raw_par': {
         'units': 'counts'
     },
@@ -482,14 +449,6 @@ CSPP_SPKIR = {
         'summary': (
             'Records 7 wavelengths of downwelling irradiance data for the uncabled Coastal Surface Piercing Profilers'
         )
-    },
-    'ctd_depth': {
-        'long_name': 'CSPP Depth from CTD',
-        'standard_name': 'sea_water_pressure_due_to_sea_water',
-        'units': 'dbar',
-        'valid_min': '-5',
-        'valid_max': '1000',
-        'comment': 'Interpolated into record from co-located CTD'
     },
     'serial_number': {
         'units': '1'
@@ -533,14 +492,6 @@ CSPP_VELPT = {
         'summary': (
             'Records chlorophyll, optical backscatter and CDOM data for the uncabled Coastal Surface Piercing Profilers'
         )
-    },
-    'ctd_depth': {
-        'long_name': 'CSPP Depth from CTD',
-        'standard_name': 'sea_water_pressure_due_to_sea_water',
-        'units': 'dbar',
-        'valid_min': '-5',
-        'valid_max': '1000',
-        'comment': 'Interpolated into record from co-located CTD'
     },
     'speed_of_sound': {
         'units': 'm s-1'
@@ -587,14 +538,6 @@ CSPP_WINCH = {
         'summary': (
             'Records data from the uCSPP winch controller data files'
         )
-    },
-    'ctd_depth': {
-        'long_name': 'CSPP Depth from CTD',
-        'standard_name': 'sea_water_pressure_due_to_sea_water',
-        'units': 'dbar',
-        'valid_min': '-5',
-        'valid_max': '1000',
-        'comment': 'Interpolated into record from co-located CTD'
     },
     'encoder_counts': {
         'units': 'counts'
