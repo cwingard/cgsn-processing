@@ -88,8 +88,7 @@ def main():
     df['profile_id'] = "{}.{}.{}".format(profile_id[0], profile_id[1:4], profile_id[4:])
     df['x'] = lon
     df['y'] = lat
-    df['t'] = df.pop('time')[0]                             # set profile time to time of first data record
-    df['precise_time'] = df.t.values.astype('int64') / 1e9  # create a precise time record
+    df['t'] = df.pop('time')
     df['station'] = 0
     df.rename(columns={'depth': 'ctd_depth'}, inplace=True)
 
