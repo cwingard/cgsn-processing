@@ -6,6 +6,8 @@
 @author Christopher Wingard
 @brief Attributes for the CSPP dataset variables
 """
+import numpy as np
+
 CSPP = {
     'global': {
         'project': 'Ocean Observatories Initiative',
@@ -357,6 +359,7 @@ CSPP_OPTAA = {
         'long_name': 'Number of Wavelengths',
         'units': '1'
     },
+    'wavelengths': {'units': '1'},
     'a_wavelengths': {
         'long_name': 'A Channel Wavelengths',
         'standard_name': 'radiation_wavelength',
@@ -370,47 +373,47 @@ CSPP_OPTAA = {
     'c_reference_raw': {
         'long_name': 'C Channel Raw Reference',
         'units': 'counts',
-        'fill_value': -999999999
+        'fill_value': np.int32(-999999999)
     },
     'a_reference_raw': {
         'long_name': 'A Channel Raw Reference',
         'units': 'counts',
-        'fill_value': -999999999
+        'fill_value': np.int32(-999999999)
     },
     'c_signal_raw': {
         'long_name': 'C Channel Raw Signal',
         'units': 'counts',
-        'fill_value': -999999999
+        'fill_value': np.int32(-999999999)
     },
     'a_signal_raw': {
         'long_name': 'A Channel Raw Signal',
         'units': 'counts',
-        'fill_value': -999999999
+        'fill_value': np.int32(-999999999)
     },
     'apd': {
         'long_name': 'Particulate and Dissolved Absorbance',
         'units': 'm-1',
-        'fill_value': -999999999.
+        'fill_value': np.nan
     },
     'apd_ts': {
         'long_name': 'Particulate and Dissolved Absorbance with TS Correction',
-        'standard_name': 'particulate_dissolved_absorbance_ts',
-        'fill_value': -999999999.
+        'units': 'm-1',
+        'fill_value': np.nan
     },
     'apd_ts_s': {
         'long_name': 'Particulate and Dissolved Absorbance with TS and Scatter Correction',
         'units': 'm-1',
-        'fill_value': -999999999.
+        'fill_value': np.nan
     },
     'cpd': {
         'long_name': 'Particulate and Dissolved Attenuation',
         'units': 'm-1',
-        'fill_value': -999999999.
+        'fill_value': np.nan
     },
     'cpd_ts': {
         'long_name': 'Particulate and Dissolved Attenuation with TS Correction',
         'units': 'm-1',
-        'fill_value': -999999999.
+        'fill_value': np.nan
     },
     'temperature': {
         'long_name': 'Sea Water Temperature',
@@ -490,7 +493,7 @@ CSPP_VELPT = {
     'global': {
         'title': 'uCSPP ECO Triplet Data Records',
         'summary': (
-            'Records chlorophyll, optical backscatter and CDOM data for the uncabled Coastal Surface Piercing Profilers'
+            'Records combined profiler and seawater point velocity data for the uncabled Coastal Surface Piercing Profilers'
         )
     },
     'speed_of_sound': {

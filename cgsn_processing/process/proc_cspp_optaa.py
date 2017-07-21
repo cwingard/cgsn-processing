@@ -125,61 +125,65 @@ def main():
 
     # create a new dimension for the wavelength arrays, padded out to a size of 100 to account for the variable number
     # of wavelengths, and then create arrays for the the 'a' and 'c'-channel wavelengths
-    nc.createDimension('a_wavelengths', size=100)
-    nc.createDimension('c_wavelengths', size=100)
-    pad = 100 - dev.coeffs['num_wavelengths']
-    fill = np.ones(pad) * np.nan
+    nc.createDimension('wavelengths', size=100)
+    d = nc.createVariable('wavelengths', 'i', ('wavelengths',))
+    d[:] = np.arange(100)
+    d.setncatts(attr['wavelengths'])
 
-    d = nc.createVariable('a_wavelengths', 'f', ('a_wavelengths',))
+    pad = 100 - dev.coeffs['num_wavelengths']
+    fill_int = (np.ones(pad) * -999999999).astype(np.int32)
+    fill_nan = np.ones(pad) * np.nan
+
+    d = nc.createVariable('a_wavelengths', 'f', ('wavelengths',))
     d.setncatts(attr['a_wavelengths'])
     last = dev.coeffs['a_wavelengths'][-1]
     step = np.median(np.diff(dev.coeffs['a_wavelengths']))
     wave_pad = (np.arange(pad) + 1 * step) + last
     d[:] = np.concatenate((dev.coeffs['a_wavelengths'], wave_pad)).tolist()
 
-    d = nc.createVariable('c_wavelengths', 'f', ('c_wavelengths',))
+    d = nc.createVariable('c_wavelengths', 'f', ('wavelengths',))
     d.setncatts(attr['c_wavelengths'])
-    last = dev.coeffs['a_wavelengths'][-1]
-    step = np.median(np.diff(dev.coeffs['a_wavelengths']))
+    last = dev.coeffs['c_wavelengths'][-1]
+    step = np.median(np.diff(dev.coeffs['c_wavelengths']))
     wave_pad = (np.arange(pad) + 1 * step) + last
     d[:] = np.concatenate((dev.coeffs['c_wavelengths'], wave_pad)).tolist()
 
     # now add all the popped arrays back in
-    d = nc.createVariable('a_reference_raw', 'i', ('time', 'station', 'a_wavelengths',))
+    d = nc.createVariable('a_reference_raw', 'i', ('time', 'station', 'wavelengths',))
     d.setncatts(attr['a_reference_raw'])
-    d[:] = np.concatenate((a_ref, np.tile(fill, (len(df.t), 1))), axis=1)
+    d[:] = np.concatenate((a_ref, np.tile(fill_int, (len(df.t), 1))), axis=1).astype(np.int32)
 
-    d = nc.createVariable('a_signal_raw', 'i', ('time', 'station', 'a_wavelengths',))
+    d = nc.createVariable('a_signal_raw', 'i', ('time', 'station', 'wavelengths',))
     d.setncatts(attr['a_signal_raw'])
-    d[:] = np.concatenate((a_sig, np.tile(fill, (len(df.t), 1))), axis=1)
+    d[:] = np.concatenate((a_sig, np.tile(fill_int, (len(df.t), 1))), axis=1).astype(np.int32)
 
-    d = nc.createVariable('c_reference_raw', 'i', ('time', 'station', 'c_wavelengths',))
+    d = nc.createVariable('c_reference_raw', 'i', ('time', 'station', 'wavelengths',))
     d.setncatts(attr['c_reference_raw'])
-    d[:] = np.concatenate((c_ref, np.tile(fill, (len(df.t), 1))), axis=1)
+    d[:] = np.concatenate((c_ref, np.tile(fill_int, (len(df.t), 1))), axis=1).astype(np.int32)
 
-    d = nc.createVariable('c_signal_raw', 'i', ('time', 'station', 'c_wavelengths',))
+    d = nc.createVariable('c_signal_raw', 'i', ('time', 'station', 'wavelengths',))
     d.setncatts(attr['c_signal_raw'])
-    d[:] = np.concatenate((c_sig, np.tile(fill, (len(df.t), 1))), axis=1)
+    d[:] = np.concatenate((c_sig, np.tile(fill_int, (len(df.t), 1))), axis=1).astype(np.int32)
 
-    d = nc.createVariable('apd', 'f', ('time', 'station', 'a_wavelengths',))
+    d = nc.createVariable('apd', 'f', ('time', 'station', 'wavelengths',))
     d.setncatts(attr['apd'])
-    d[:] = np.concatenate((apd, np.tile(fill, (len(df.t), 1))), axis=1)
+    d[:] = np.concatenate((apd, np.tile(fill_nan, (len(df.t), 1))), axis=1)
 
-    d = nc.createVariable('apd_ts', 'f', ('time', 'station', 'a_wavelengths',))
+    d = nc.createVariable('apd_ts', 'f', ('time', 'station', 'wavelengths',))
     d.setncatts(attr['apd_ts'])
-    d[:] = np.concatenate((apd_ts, np.tile(fill, (len(df.t), 1))), axis=1)
+    d[:] = np.concatenate((apd_ts, np.tile(fill_nan, (len(df.t), 1))), axis=1)
 
-    d = nc.createVariable('apd_ts_s', 'f', ('time', 'station', 'a_wavelengths',))
+    d = nc.createVariable('apd_ts_s', 'f', ('time', 'station', 'wavelengths',))
     d.setncatts(attr['apd_ts_s'])
-    d[:] = np.concatenate((apd_ts_s, np.tile(fill, (len(df.t), 1))), axis=1)
+    d[:] = np.concatenate((apd_ts_s, np.tile(fill_nan, (len(df.t), 1))), axis=1)
 
-    d = nc.createVariable('cpd', 'f', ('time', 'station', 'c_wavelengths',))
+    d = nc.createVariable('cpd', 'f', ('time', 'station', 'wavelengths',))
     d.setncatts(attr['cpd'])
-    d[:] = np.concatenate((cpd, np.tile(fill, (len(df.t), 1))), axis=1)
+    d[:] = np.concatenate((cpd, np.tile(fill_nan, (len(df.t), 1))), axis=1)
 
-    d = nc.createVariable('cpd_ts', 'f', ('time', 'station', 'c_wavelengths',))
+    d = nc.createVariable('cpd_ts', 'f', ('time', 'station', 'wavelengths',))
     d.setncatts(attr['cpd_ts'])
-    d[:] = np.concatenate((cpd_ts, np.tile(fill, (len(df.t), 1))), axis=1)
+    d[:] = np.concatenate((cpd_ts, np.tile(fill_nan, (len(df.t), 1))), axis=1)
 
     # synchronize the data with the netCDF file and close it
     nc.sync()
