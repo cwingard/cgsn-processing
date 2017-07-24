@@ -29,14 +29,13 @@ IRID = {
         'standard_name': 'date_time_string',
         'units': '1',
     },
-    'depth': {
+    'z': {
         'long_name': 'Sensor Depth',
-        'standard_name': 'depth_of_sensor_below_water',
+        'standard_name': 'depth',
         'units': 'm',
+        'comment': 'Sensor depth below sea surface',
         'positive': 'down',
-        'axis': 'Z',
-        'valid_min': '-10000',
-        'valid_max': '1000',
+        'axis': 'Z'
     },
     'files_sent': {},
     'files_received': {},

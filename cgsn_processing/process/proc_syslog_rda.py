@@ -34,7 +34,6 @@ def main():
         # there was no data in this file, ending early
         return None
 
-    df['depth'] = depth
     df['deploy_id'] = deployment
 
     # convert the error flags strings to named variables
