@@ -1,60 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-@package cgsn_processing.process.proc_spkir
-@file cgsn_processing/process/proc_spkir.py
-@author Joe Futrelle
-@brief Creates a NetCDF dataset for SPKIR from JSON formatted source data
+@package cgsn_processing.process.proc_cspp_spkir
+@file cgsn_processing/process/proc_cspp_spkir.py
+@author Christopher Wingard
+@brief Creates a NetCDF dataset for the uCSPP SPKIR data from JSON formatted source data
 """
-import json
 import numpy as np
 import os
-import pandas as pd
 import re
 
 from netCDF4 import Dataset
 from pocean.utils import dict_update
 from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMTs
 
-from cgsn_processing.process.common import Coefficients, inputs, json2df, df2omtdf
+from cgsn_processing.process.common import inputs, json2df, reset_long
 from cgsn_processing.process.finding_calibrations import find_calibration
-from cgsn_processing.process.configs.attr_spkir import SPKIR
+from cgsn_processing.process.proc_spkir import Calibrations
+from cgsn_processing.process.configs.attr_cspp import CSPP, CSPP_SPKIR
 from pyseas.data.opt_functions import opt_ocr507_irradiance
-
-
-class Calibrations(Coefficients):
-    def __init__(self, coeff_file, csv_url=None):
-        """
-        Loads the SPKIR factory calibration coefficients for a unit. Values come from either a serialized object
-        created per instrument and deployment (calibration coefficients do not change in the middle of a deployment),
-        or from parsed CSV files maintained on GitHub by the OOI CI team.
-        """
-        # assign the inputs
-        Coefficients.__init__(self, coeff_file)
-        self.csv_url = csv_url
-
-    def read_csv(self, csv_url):
-        """
-        Reads the values from a SPKIR calibration file already parsed and stored on Github as a CSV files. Note, 
-        the formatting of those files puts some constraints on this process. If someone has a cleaner method, 
-        I'm all in favor... 
-        """
-        # create the device file dictionary and assign values
-        coeffs = {}
-
-        # read in the calibration data
-        cal = pd.read_csv(csv_url, usecols=[0, 1, 2])
-        for idx, row in cal.iterrows():
-            # immersion, scale and offset correction factors
-            if row[1] == 'CC_immersion_factor':
-                coeffs['immersion_factor'] = np.array(json.loads(row[2]))
-            if row[1] == 'CC_offset':
-                coeffs['offset'] = np.array(json.loads(row[2]))
-            if row[1] == 'CC_scale':
-                coeffs['scale'] = np.array(json.loads(row[2]))
-
-        # save the resulting dictionary
-        self.coeffs = coeffs
 
 
 def main():
@@ -62,12 +26,14 @@ def main():
     args = inputs()
     infile = os.path.abspath(args.infile)
     outfile = os.path.abspath(args.outfile)
+    _, fname = os.path.split(outfile)
     platform = args.platform
     deployment = args.deployment
     lat = args.latitude
     lon = args.longitude
+    depth = args.depth
 
-    # load the json data file and return a panda dataframe, adding a default depth and the deployment ID
+    # load the json data file and return a panda dataframe
     df = json2df(infile)
     if df.empty:
         # there was no data in this file, ending early
@@ -100,17 +66,29 @@ def main():
     df['analog_rail_voltage'].apply(lambda x: x * 0.03)
     df['internal_temperature'].apply(lambda x: -50 + x * 0.5)
 
-    # convert the dataframe to a format suitable for the pocean OMTs
+    # setup some further parameters for use with the OMTs class
     df['deploy_id'] = deployment
-    df = df2omtdf(df, lat, lon, 7.0,)
+    df['z'] = depth
+    profile_id = re.sub('\D+', '', fname)
+    df['profile_id'] = "{}.{}.{}".format(profile_id[0], profile_id[1:4], profile_id[4:])
+    df['x'] = lon
+    df['y'] = lat
+    df['t'] = df.pop('time')
+    df['station'] = 0
+    df.rename(columns={'depth': 'ctd_depth'}, inplace=True)
 
-    # add to the global attributes for the SPKIR
-    attrs = SPKIR
-    attrs['global'] = dict_update(attrs['global'], {
+    # make sure all ints are represented as int32 instead of int64
+    df = reset_long(df)
+
+    # Setup and update the attributes for the resulting NetCDF file
+    attr = CSPP
+
+    attr['global'] = dict_update(attr['global'], {
         'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
     })
+    attr = dict_update(attr, CSPP_SPKIR)
 
-    nc = OMTs.from_dataframe(df, outfile, attributes=attrs)
+    nc = OMTs.from_dataframe(df, outfile, attributes=attr)
     nc.close()
 
     # re-open the netcdf file and add the raw channels, the downwelling irradiance and the wavelengths with the
@@ -119,15 +97,15 @@ def main():
     nc.createDimension('wavelengths', 7)
 
     d = nc.createVariable('wavelengths', 'i', ('wavelengths',))
-    d.setncatts(attrs['wavelengths'])
+    d.setncatts(attr['wavelengths'])
     d[:] = wavelengths
 
     d = nc.createVariable('raw_channels', 'u4', ('time', 'station', 'wavelengths',))
-    d.setncatts(attrs['raw_channels'])
+    d.setncatts(attr['raw_channels'])
     d[:] = channels
 
     d = nc.createVariable('irradiance', 'f', ('time', 'station', 'wavelengths',))
-    d.setncatts(attrs['irradiance'])
+    d.setncatts(attr['irradiance'])
     d[:] = Ed
 
     nc.sync()

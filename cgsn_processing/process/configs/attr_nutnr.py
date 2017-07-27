@@ -47,6 +47,22 @@ NUTNR = {
     'average_reference': {},
     'variance_reference': {},
     'seawater_dark': {},
-    'spectal_average': {},
-    'channel_measurements': {}
+    'spectral_average': {},
+    'channel_measurements': {},
+    'temperature': {
+        'long_name': 'Sea Water Temperature',
+        'standard_name': 'sea_water_temperature',
+        'units': 'degree_Celsius',
+        'comment': 'Interpolated into record from co-located CTD'
+    },
+    'salinity': {
+        'long_name': 'Practical Salinity',
+        'standard_name': 'sea_water_salinity',
+        'units': '1',
+        'comment': 'Interpolated into record from co-located CTD'
+    },
+    'corrected_nitrate': {
+        'long_name': 'Corrected Nitrate Concentration',
+        'units': 'uM'
+    }
 }

@@ -152,6 +152,7 @@ def apply_dev(optaa, coeffs):
     factory calibration coefficents contained in the coeffs dictionary to
     convert the data into initial science units.
     """
+    _ = np.seterr(all='ignore')
     # convert internal and external temperature sensors
     optaa['internal_temp'] = opt_internal_temp(optaa['internal_temp_raw'].values)
     optaa['external_temp'] = opt_external_temp(optaa['external_temp_raw'].values)
@@ -211,6 +212,7 @@ def apply_tscorr(optaa, coeffs, temp=None, salinity=None):
     scalar, or a 1D array or row or column vector with the same number of time
     points as 'a' and 'c'.
     """
+    _ = np.seterr(all='ignore')
     # setup the temperature and salinity arrays
     if temp is None:
         temp = optaa['external_temp'].values
@@ -266,6 +268,7 @@ def apply_scatcorr(optaa, coeffs, method=1):
     if method != 1:
         raise Exception('Only scatter method = 1 is coded for the time being.')
 
+    _ = np.seterr(all='ignore')
     reference_wavelength = 715.0
 
     # find the closest wavelength to the reference wavelength

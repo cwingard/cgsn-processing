@@ -9,9 +9,11 @@ import pickle
 # Create a Global dictionary with Basic Information about the moorings
 BUOYS = {
     'ce01issm': {'name': 'Coastal Endurance Oregon Inshore Surface Mooring'},
+    'ce01issp': {'name': 'Coastal Endurance Oregon Inshore Surface Piercing Profiler'},
     'ce02shsm': {'name': 'Coastal Endurance Oregon Shelf Surface Mooring'},
     'ce04ossm': {'name': 'Coastal Endurance Oregon Offshore Surface Mooring'},
     'ce06issm': {'name': 'Coastal Endurance Washington Inshore Surface Mooring'},
+    'ce06issp': {'name': 'Coastal Endurance Washington Inshore Surface Piercing Profiler'},
     'ce07shsm': {'name': 'Coastal Endurance Washington Shelf Surface Mooring'},
     'ce09ossm': {'name': 'Coastal Endurance Washington Offshore Surface Mooring'},
     'ce09ospm': {'name': 'Coastal Endurance Washington Offshore Profiler Mooring'}
@@ -86,6 +88,11 @@ def json2df(infile):
 
         df['time'] = pd.to_datetime(df.time, unit='s')
         df.index = df['time']
+
+        for col in df.columns:
+            if df[col].dtype == np.int64:
+                df[col] = df[col].astype(np.int32)
+
         return df
 
 
@@ -101,6 +108,11 @@ def json_sub2df(infile, sub):
 
         df['time'] = pd.to_datetime(df.time, unit='s')
         df.index = df['time']
+
+        for col in df.columns:
+            if df[col].dtype == np.int64:
+                df[col] = df[col].astype(np.int32)
+
         return df
 
 
@@ -120,6 +132,18 @@ def df2omtdf(df, lat=0., lon=0., depth=0., time_var='time'):
     # just one station
     df['station'] = 0
 
+    # convert all int64s to int32s
+    for col in df.columns:
+        if df[col].dtype == np.int64:
+            df[col] = df[col].astype(np.int32)
+
+    return df
+
+
+def reset_long(df):
+    """
+    Resets all int64s (longs) in a dataframe to int32 (int). ERDDAP cannot handle longs.
+    """
     # convert all int64s to int32s
     for col in df.columns:
         if df[col].dtype == np.int64:
@@ -174,6 +198,7 @@ def inputs():
     parser.add_argument("-dp", "--depth", dest="depth", type=float, required=False)
     
     parser.add_argument("-cf", "--coeff_file", dest="coeff_file", type=str, required=False)
+    parser.add_argument("-sn", "--serial_number", dest="serial", type=str, required=False)
     parser.add_argument("-df", "--devfile", dest="devfile", type=str, required=False)
     parser.add_argument("-u", "--csvurl", dest="csvurl", type=str, required=False)
     parser.add_argument("-s", "--switch", dest="switch", type=int, default=0)
