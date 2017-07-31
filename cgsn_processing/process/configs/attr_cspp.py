@@ -138,18 +138,24 @@ CSPP_FLORT = {
         )
     },
     'measurement_wavelength_beta': {
+        'long_name': 'Wavelength',
+        'standard_name': 'radiation_wavelength',
         'units': 'nm'
     },
     'raw_signal_beta': {
         'units': 'counts'
     },
     'measurement_wavelength_chl': {
+        'long_name': 'Wavelength',
+        'standard_name': 'radiation_wavelength',
         'units': 'nm'
     },
     'raw_signal_chl': {
         'units': 'counts'
     },
     'measurement_wavelength_cdom': {
+        'long_name': 'Wavelength',
+        'standard_name': 'radiation_wavelength',
         'units': 'nm'
     },
     'raw_signal_cdom': {

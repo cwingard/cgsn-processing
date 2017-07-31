@@ -13,11 +13,13 @@ import os
 import re
 
 from datetime import datetime, timedelta
-from pyaxiom.netcdf.sensors import TimeSeries
+from pocean.utils import dict_update
+from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMTs
 from pytz import timezone
 
 from cgsn_processing.process.common import Coefficients, inputs, json2df
 from cgsn_processing.process.configs.attr_pco2w import PCO2W
+from cgsn_processing.process.finding_calibrations import find_calibration
 
 from pyseas.data.co2_functions import pco2_blank, pco2_pco2wat
 from pyseas.data.ph_functions import ph_thermistor, ph_battery
@@ -115,15 +117,19 @@ def main(argv=None):
     cal = Calibrations(coeff_file)  # initialize calibration class
 
     # check for the source of calibration coeffs and load accordingly
+    coeff_file = os.path.abspath(args.coeff_file)
+    dev = Calibrations(coeff_file)  # initialize calibration class
     if os.path.isfile(coeff_file):
         # we always want to use this file if it exists
-        cal.load_coeffs()
-    elif args.csvurl:
-        # load from the CI hosted CSV files
-        cal.read_csv(args.csvurl)
-        cal.save_coeffs()
+        dev.load_coeffs()
     else:
-        raise Exception('A source for the PCO2W calibration coefficients could not be found')
+        # load from the CI hosted CSV files
+        csv_url = find_calibration('PCO2W', args.serial, (df.time.values.astype('int64') * 10 ** -9)[0])
+        if csv_url:
+            dev.read_csv(csv_url)
+            dev.save_coeffs()
+        else:
+            raise Exception('A source for the PCO2W calibration coefficients could not be found')
 
     # initialize the pCO2 blanks class
     blank_file = os.path.abspath(args.devfile)
@@ -138,7 +144,6 @@ def main(argv=None):
         blank.save_blanks()
 
     # set the depth and deployment variables
-    df['depth'] = depth
     df['deploy_id'] = deployment
 
     # convert the raw battery voltage and thermistor values from counts
@@ -181,7 +186,8 @@ def main(argv=None):
             blank_620.append(blank.blank_620)
 
         if df['record_type'][i] == 5:
-            # this is a dark measurement, update and save the new blanks
+            # this is a dark measurement, no pCO2 measurement, update and save the new blanks
+            pCO2.append(np.nan)
             blank.blank_434 = pco2_blank(df['light_measurements'][i][6])
             blank.blank_620 = pco2_blank(df['light_measurements'][i][7])
             blank.save_blanks()
