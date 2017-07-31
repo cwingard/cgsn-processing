@@ -27,7 +27,7 @@ case "$PLATFORM" in
         LNG="-124.304"
         declare -a CTDBP1=("ctdbp")
         declare -a DOSTA1=("dosta" "DOSTAD/CGINS-DOSTAD-00220__20170202")
-        declare -a FLORT=("FLORTD/CGINS-FLORTD-01290__20161130")
+        declare -a FLORT=("1290")
         declare -a OPTAA1=("optaa" "OPTAAD/CGINS-OPTAAD-00170__20170112")
         declare -a PHSEN1=("phsen")
         declare -a SPKIR=("SPKIRB/CGINS-SPKIRB-00248__20161202")
@@ -38,7 +38,7 @@ case "$PLATFORM" in
         LNG="-124.956"
         declare -a CTDBP1=("ctdbp")
         declare -a DOSTA1=("dosta" "DOSTAD/CGINS-DOSTAD-00135__20170202")
-        declare -a FLORT=("FLORTD/CGINS-FLORTD-01155__20161130")
+        declare -a FLORT=("1155")
         declare -a OPTAA1=("optaa" "OPTAAD/CGINS-OPTAAD-00179__20170117")
         declare -a PHSEN1=("phsen")
         declare -a SPKIR=("SPKIRB/CGINS-SPKIRB-00295__20161202")
@@ -50,7 +50,7 @@ case "$PLATFORM" in
         LNG="-124.566"
         declare -a CTDBP1=("ctdbp1")
         declare -a DOSTA1=("dosta" "DOSTAD/CGINS-DOSTAD-00134__20170202")
-        declare -a FLORT=("FLORTD/CGINS-FLORTD-00995__20161129")
+        declare -a FLORT=("995")
         declare -a OPTAA1=("optaa1" "OPTAAD/CGINS-OPTAAD-00182__20161011")
         declare -a PHSEN1=("phsen1")
         declare -a SPKIR=("SPKIRB/CGINS-SPKIRB-00250__20161202")
@@ -66,7 +66,7 @@ case "$PLATFORM" in
         LNG="-124.972"
         declare -a CTDBP1=("ctdbp1")
         declare -a DOSTA1=("dosta" "DOSTAD/CGINS-DOSTAD-00222__20170202")
-        declare -a FLORT=("FLORTD/CGINS-FLORTD-01487__20160808")
+        declare -a FLORT=("1487")
         declare -a OPTAA1=("optaa1" "OPTAAD/CGINS-OPTAAD-00259__20160923")
         declare -a PHSEN1=("phsen1")
         declare -a SPKIR=("SPKIRB/CGINS-SPKIRB-00255__20161202")
@@ -116,7 +116,7 @@ $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/superv/dcl27" $
 #--> ADCPT
 $PROCESS/process_ctdbp.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/ctdbp" 7 $FNAME.${CTDBP1[0]}.json
 $PROCESS/process_dosta.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/dosta" 7 $FNAME.${DOSTA1[0]}.json
-$PROCESS/process_flort.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/flort" ${FLORT[0]} $FNAME.flort.json
+#$PROCESS/process_flort.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/flort" ${FLORT[0]} $FNAME.flort.json
 $PROCESS/process_nutnr.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/nutnr" $FNAME.nutnr.json
 for optaa in $PROC/$PLATFORM/$DEPLOY/nsif/optaa/$FNAME*.${OPTAA1[0]}.json; do
     if [ -e $optaa ]; then
@@ -148,7 +148,7 @@ if [ $MFN_FLAG == 1 ]; then
             fi
         fi
     done
-    $PROCESS/process_pco2w.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/pco2w" $MFN_DEPTH ${PCO2W[1]} $FNAME.${PCO2W[0]}.json
+    #$PROCESS/process_pco2w.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/pco2w" $MFN_DEPTH ${PCO2W[1]} $FNAME.${PCO2W[0]}.json
     $PROCESS/process_phsen.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/phsen" $MFN_DEPTH $FNAME.${PHSEN2[0]}.json
     $PROCESS/process_presf.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/presf" $MFN_DEPTH $FNAME.presf.json
     #--> VEL3D

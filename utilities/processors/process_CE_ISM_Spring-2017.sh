@@ -81,7 +81,7 @@ $PROCESS/process_velpt.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/velpt" 1 $FNAME.velp
 $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/superv/dcl16" $FNAME.superv.json
 
 $PROCESS/process_ctdbp.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/ctdbp" 7 $FNAME.ctdbp1.json
-$PROCESS/process_flort.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/flort" ${FLORT2[0]} $FNAME.flort.json
+#$PROCESS/process_flort.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/flort" ${FLORT2[0]} $FNAME.flort.json
 $PROCESS/process_nutnr.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/nutnr" $FNAME.nutnr.json
 for optaa in $PROC/$PLATFORM/$DEPLOY/nsif/optaa/$FNAME*.${OPTAA1[0]}.json; do
     if [ -e $optaa ]; then
@@ -91,7 +91,7 @@ for optaa in $PROC/$PLATFORM/$DEPLOY/nsif/optaa/$FNAME*.${OPTAA1[0]}.json; do
         fi
     fi
 done
-$PROCESS/process_pco2w.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/pco2w" 7 ${PCO2W1[1]} $FNAME.${PCO2W1[0]}.json
+#$PROCESS/process_pco2w.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/pco2w" 7 ${PCO2W1[1]} $FNAME.${PCO2W1[0]}.json
 $PROCESS/process_phsen.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/phsen" 7 $FNAME.${PHSEN1[0]}.json
 $PROCESS/process_spkir.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/spkir" ${SPKIR[0]} $FNAME.spkir.json
 $PROCESS/process_velpt.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/velpt" 7 $FNAME.velpt2.json
@@ -113,7 +113,7 @@ if [ $MFN_FLAG == 1 ]; then
             fi
         fi
     done
-    $PROCESS/process_pco2w.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/pco2w" $MFN_DEPTH ${PCO2W2[1]} $FNAME.${PCO2W2[0]}.json
+    #$PROCESS/process_pco2w.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/pco2w" $MFN_DEPTH ${PCO2W2[1]} $FNAME.${PCO2W2[0]}.json
     $PROCESS/process_phsen.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/phsen" $MFN_DEPTH $FNAME.${PHSEN2[0]}.json
     $PROCESS/process_presf.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/presf" $MFN_DEPTH $FNAME.presf.json
     #--> VEL3D

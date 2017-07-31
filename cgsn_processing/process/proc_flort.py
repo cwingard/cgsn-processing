@@ -8,15 +8,18 @@
 """
 import numpy as np
 import os
-import pandas as pd
 import re
 
-from pyaxiom.netcdf.sensors import TimeSeries
+from gsw import SP_from_C
+from pocean.utils import dict_update
+from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMTs
+from scipy.interpolate import interp1d
 
-from cgsn_processing.process.common import Coefficients, inputs, json2df
+from cgsn_processing.process.common import Coefficients, inputs, json2df, reset_long
+from cgsn_processing.process.finding_calibrations import find_calibration
 from cgsn_processing.process.configs.attr_flort import FLORT
 
-from pyseas.data.flo_functions import flo_scale_and_offset
+from pyseas.data.flo_functions import flo_scale_and_offset, flo_bback_total
 
 
 class Calibrations(Coefficients):
@@ -71,102 +74,89 @@ class Calibrations(Coefficients):
 
 
 def main():
-    # load  the input arguments
+    # load the input arguments
     args = inputs()
     infile = os.path.abspath(args.infile)
-    outpath, outfile = os.path.split(args.outfile)
+    outfile = os.path.abspath(args.outfile)
+    _, fname = os.path.split(outfile)
     platform = args.platform
     deployment = args.deployment
     lat = args.latitude
     lon = args.longitude
+    depth = args.depth
 
-    coeff_file = os.path.abspath(args.coeff_file)
-    dev = Calibrations(coeff_file)  # initialize calibration class
-
-    # check for the source of calibration coeffs and load accordingly
-    if os.path.isfile(coeff_file):
-        # we always want to use this file if it exists
-        dev.load_coeffs()
-    elif args.csvurl:
-        # load from the CI hosted CSV files
-        csv_url = args.csvurl
-        dev.read_csv(csv_url)
-        dev.save_coeffs()
-    else:
-        raise Exception('A source for the FLORT calibration coefficients could not be found')
-
-    # load the json data file and return a panda data frame
+    # load the json data file and return a panda dataframe
     df = json2df(infile)
     if df.empty:
         # there was no data in this file, ending early
         return None
 
-    df['depth'] = 7.0
-    df['deploy_id'] = deployment
+    # remove the FLORT date/time string from the dataset
+    _ = df.pop('flort_date_time_string')
+
+    # check for the source of calibration coeffs and load accordingly
+    coeff_file = os.path.abspath(args.coeff_file)
+    dev = Calibrations(coeff_file)  # initialize calibration class
+    if os.path.isfile(coeff_file):
+        # we always want to use this file if it exists
+        dev.load_coeffs()
+    else:
+        # load from the CI hosted CSV files
+        csv_url = find_calibration('FLORT', args.serial, (df.time.values.astype('int64') * 10 ** -9)[0])
+        if csv_url:
+            dev.read_csv(csv_url)
+            dev.save_coeffs()
+        else:
+            raise Exception('A source for the FLORT calibration coefficients could not be found')
 
     # Apply the scale and offset correction factors from the factory calibration coefficients
-    df['estimated_chlorophyll'] = flo_scale_and_offset(df['raw_signal_chl'], dev.coeffs['dark_chla'], dev.coeffs['scale_chla'])
-    df['fluorometric_cdom'] = flo_scale_and_offset(df['raw_signal_cdom'], dev.coeffs['dark_cdom'], dev.coeffs['scale_cdom'])
+    df['estimated_chlorophyll'] = flo_scale_and_offset(df['raw_signal_chl'], dev.coeffs['dark_chla'],
+                                                       dev.coeffs['scale_chla'])
+    df['fluorometric_cdom'] = flo_scale_and_offset(df['raw_signal_cdom'], dev.coeffs['dark_cdom'],
+                                                   dev.coeffs['scale_cdom'])
     df['beta_700'] = flo_scale_and_offset(df['raw_signal_beta'], dev.coeffs['dark_beta'], dev.coeffs['scale_beta'])
 
-    # TODO: Add the calculation of total optical backscatter here. Requires co-located CTD data
+    # Merge the co-located CTD temperature and salinity data and calculate the total optical backscatter
+    ctd_file = re.sub('flort', 'ctdbp', infile)
+    ctd = json2df(ctd_file)
+    if not ctd.empty:
+        # calculate the practical salinity of the seawater from the temperature, conductivity and pressure measurements
+        ctd['psu'] = SP_from_C(ctd['conductivity'] * 10.0, ctd['temperature'], ctd['pressure'])
 
-    # Setup the global attributes for the NetCDF file and create the NetCDF timeseries object
-    global_attributes = {
-        'title': 'WET Labs ECO Triplet Chlorophyll and CDOM Fluorescence and Optical Backscatter',
-        'summary': (
-            'Records bursts of ECO Triplet data measuring chlorophyll and CDOM fluorescence and optical backscatter.'
-        ),
-        'project': 'Ocean Observatories Initiative',
-        'institution': 'Coastal and Global Scales Nodes, (CGSN)',
-        'acknowledgement': 'National Science Foundation',
-        'references': 'http://oceanobservatories.org',
-        'creator_name': 'Christopher Wingard',
-        'creator_email': 'cwingard@coas.oregonstate.edu',
-        'creator_url': 'http://oceanobservatories.org',
+        # interpolate temperature and salinity data from the CTD into the FLORT record for calculations
+        degC = interp1d(ctd.time.values.astype('int64'), ctd.temperature.values, bounds_error=False)
+        df['temperature'] = degC(df.time.values.astype('int64'))
+
+        psu = interp1d(ctd.time.values.astype('int64'), ctd.psu, bounds_error=False)
+        df['salinity'] = psu(df.time.values.astype('int64'))
+
+        df['bback'] = flo_bback_total(df['beta_700'], df['temperature'], df['salinity'], 124., 700., 1.076)
+    else:
+        df['temperature'] = np.nan
+        df['salinity'] = np.nan
+        df['bback'] = np.nan
+
+    # setup some further parameters for use with the OMTs class
+    df['deploy_id'] = deployment
+    df['z'] = depth
+    profile_id = re.sub('\D+', '', fname)
+    df['profile_id'] = "{}.{}.{}".format(profile_id[0], profile_id[1:4], profile_id[4:])
+    df['x'] = lon
+    df['y'] = lat
+    df['t'] = df.pop('time')
+    df['station'] = 0
+    df.rename(columns={'depth': 'ctd_depth'}, inplace=True)
+
+    # make sure all ints are represented as int32 instead of int64
+    df = reset_long(df)
+
+    # Setup and update the attributes for the resulting NetCDF file
+    attr = FLORT
+    attr['global'] = dict_update(attr['global'], {
         'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
-    }
+    })
 
-    ts = TimeSeries(
-            output_directory=outpath,
-            latitude=lat,
-            longitude=lon,
-            station_name=platform,
-            global_attributes=global_attributes,
-            times=df.time.values.astype(np.float) * 10**-9,
-            verticals=df.depth.values,
-            output_filename=outfile,
-            vertical_positive='down')
-
-    # add the data from the data frame and set the attributes
-    nc = ts._nc     # create a netCDF4 object from the TimeSeries object
-
-    # add the data from the data frame and set the attributes
-    for c in df.columns:
-        # skip the coordinate variables, if present, already added above via TimeSeries
-        if c in ['time', 'latitude', 'longitude', 'depth']:
-            # print("Skipping axis '{}' (already in file)".format(c))
-            continue
-
-        # create the netCDF.Variable object for the date/time string
-        if c == 'dcl_date_time_string':
-            d = nc.createVariable(c, 'S23', ('time',))
-            d.setncatts(FLORT[c])
-            d[:] = df[c].values
-        elif c == 'flort_date_time_string':
-            d = nc.createVariable(c, 'S17', ('time',))
-            d.setncatts(FLORT[c])
-            d[:] = df[c].values
-        elif c == 'deploy_id':
-            d = nc.createVariable(c, 'S6', ('time',))
-            d.setncatts(FLORT[c])
-            d[:] = df[c].values
-        else:
-            # use the TimeSeries object to add the variables
-            ts.add_variable(c, df[c].values, fillvalue=-999999999, attributes=FLORT[c])
-
-    # synchronize the data with the netCDF file and close it
-    nc.sync()
+    nc = OMTs.from_dataframe(df, outfile, attributes=attr)
     nc.close()
 
 if __name__ == '__main__':
