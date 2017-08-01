@@ -81,6 +81,7 @@ def main(argv=None):
     deployment = args.deployment
     lat = args.latitude
     lon = args.longitude
+    depth = args.depth
 
     # load the json data file and return a panda dataframe
     df = json2df(infile)
@@ -140,7 +141,7 @@ def main(argv=None):
 
     # convert the dataframe to a format suitable for the pocean OMTs, adding the deployment name
     df['deploy_id'] = deployment
-    df = df2omtdf(df, lat, lon, 7.0,)
+    df = df2omtdf(df, lat, lon, depth)
 
     # add to the global attributes for the NUTNR
     attrs = NUTNR

@@ -15,7 +15,7 @@ from pocean.utils import dict_update
 from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMTs
 from scipy.interpolate import interp1d
 
-from cgsn_processing.process.common import Coefficients, inputs, json2df, reset_long
+from cgsn_processing.process.common import Coefficients, inputs, json2df, df2omtdf
 from cgsn_processing.process.finding_calibrations import find_calibration
 from cgsn_processing.process.configs.attr_flort import FLORT
 
@@ -136,19 +136,9 @@ def main(argv=None):
         df['salinity'] = np.nan
         df['bback'] = np.nan
 
-    # setup some further parameters for use with the OMTs class
+    # convert the dataframe to a format suitable for the pocean OMTs
     df['deploy_id'] = deployment
-    df['z'] = depth
-    profile_id = re.sub('\D+', '', fname)
-    df['profile_id'] = "{}.{}.{}".format(profile_id[0], profile_id[1:4], profile_id[4:])
-    df['x'] = lon
-    df['y'] = lat
-    df['t'] = df.pop('time')
-    df['station'] = 0
-    df.rename(columns={'depth': 'ctd_depth'}, inplace=True)
-
-    # make sure all ints are represented as int32 instead of int64
-    df = reset_long(df)
+    df = df2omtdf(df, lat, lon, depth)
 
     # Setup and update the attributes for the resulting NetCDF file
     attr = FLORT

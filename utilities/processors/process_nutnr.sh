@@ -7,18 +7,19 @@
 # C. Wingard 2017-01-24
 
 # Parse the command line inputs
-if [ $# -ne 6 ]; then
+if [ $# -ne 7 ]; then
     echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the NUTNR"
-    echo " directory name, and the name of the file to process."
+    echo " directory name, the deployment depth, and the name of the file to process."
     echo ""
-    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 nsif/nutnr 20161012.nutnr.json"
+    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 nsif/nutnr 7 20161012.nutnr.json"
     exit 1
 fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
 LAT=$3; LNG=$4
-NUTNR=${5,,}
-FILE=`/bin/basename $6`
+DEPTH=$5
+NUTNR=${6,,}
+FILE=`/bin/basename $7`
 
 # Set the default directory paths and input/output sources
 PYTHON="/home/ooiuser/bin/conda/bin/python3"
@@ -33,5 +34,5 @@ fi
 # Process the file
 if [ -e $IN ]; then
     cd /home/ooiuser/code/cgsn-processing
-    $PYTHON -m cgsn_processing.process.proc_nutnr -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -i $IN -o $OUT
+    $PYTHON -m cgsn_processing.process.proc_nutnr -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -dp $DEPTH -i $IN -o $OUT
 fi

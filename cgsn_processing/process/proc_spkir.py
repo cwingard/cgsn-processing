@@ -102,7 +102,7 @@ def main(argv=None):
 
     # convert the dataframe to a format suitable for the pocean OMTs
     df['deploy_id'] = deployment
-    df = df2omtdf(df, lat, lon, 7.0,)
+    df = df2omtdf(df, lat, lon, 7.0)
 
     # add to the global attributes for the SPKIR
     attrs = SPKIR
