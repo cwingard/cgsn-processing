@@ -12,6 +12,7 @@ import os
 import pandas as pd
 import re
 
+from gsw import SP_from_C
 from netCDF4 import Dataset
 from pocean.utils import dict_update
 from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMTs
@@ -76,7 +77,7 @@ def main(argv=None):
     # load the input arguments
     args = inputs(argv)
     infile = os.path.abspath(args.infile)
-    outfile = os.path.split(args.outfile)
+    outfile = os.path.abspath(args.outfile)
     platform = args.platform
     deployment = args.deployment
     lat = args.latitude
@@ -117,6 +118,7 @@ def main(argv=None):
             # interpolate temperature and salinity data from the CTD into the NUTNR record for calculations
             degC = interp1d(ctd.time.values.astype('int64'), ctd.temperature.values, bounds_error=False)
             df['temperature'] = degC(df.time.values.astype('int64'))
+            ctd['salinity'] = SP_from_C(ctd['conductivity'] * 10.0, ctd['temperature'], ctd['pressure'])
             psu = interp1d(ctd.time.values.astype('int64'), ctd.salinity, bounds_error=False)
             df['salinity'] = psu(df.time.values.astype('int64'))
 
@@ -134,7 +136,7 @@ def main(argv=None):
 
     else:   # dataset does not include the full spectral array. Pad out with fill values to keep datasets consistent
         channels = np.ones(256) * -999999999
-        wavelengths = np.arange(0, 256) * np.nan
+        wavelengths = np.arange(0, 255) * np.nan
         df['temperature'] = np.nan
         df['salinity'] = np.nan
         df['corrected_nitrate'] = np.nan
@@ -161,7 +163,7 @@ def main(argv=None):
     d.setncatts(attrs['wavelengths'])
     d[:] = wavelengths
 
-    d = nc.createVariable('channel_measurements', 'i', ('time', 'station', 'wavelengths',))
+    d = nc.createVariable('channel_measurements', 'i', ('station', 'time', 'wavelengths',))
     d.setncatts(attrs['channel_measurements'])
     d[:] = channels
 

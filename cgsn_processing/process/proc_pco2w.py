@@ -13,11 +13,12 @@ import os
 import re
 
 from datetime import datetime, timedelta
+from netCDF4 import Dataset
 from pocean.utils import dict_update
 from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMTs
 from pytz import timezone
 
-from cgsn_processing.process.common import Coefficients, inputs, json2df
+from cgsn_processing.process.common import Coefficients, inputs, json2df, df2omtdf
 from cgsn_processing.process.configs.attr_pco2w import PCO2W
 from cgsn_processing.process.finding_calibrations import find_calibration
 
@@ -99,7 +100,7 @@ def main(argv=None):
     # load the input arguments
     args = inputs(argv)
     infile = os.path.abspath(args.infile)
-    outpath, outfile = os.path.split(args.outfile)
+    outfile = os.path.abspath(args.outfile)
     platform = args.platform
     deployment = args.deployment
     lat = args.latitude
@@ -117,23 +118,21 @@ def main(argv=None):
     cal = Calibrations(coeff_file)  # initialize calibration class
 
     # check for the source of calibration coeffs and load accordingly
-    coeff_file = os.path.abspath(args.coeff_file)
-    dev = Calibrations(coeff_file)  # initialize calibration class
     if os.path.isfile(coeff_file):
         # we always want to use this file if it exists
-        dev.load_coeffs()
+        cal.load_coeffs()
     else:
         # load from the CI hosted CSV files
         csv_url = find_calibration('PCO2W', args.serial, (df.time.values.astype('int64') * 10 ** -9)[0])
         if csv_url:
-            dev.read_csv(csv_url)
-            dev.save_coeffs()
+            cal.read_csv(csv_url)
+            cal.save_coeffs()
         else:
             raise Exception('A source for the PCO2W calibration coefficients could not be found')
 
     # initialize the pCO2 blanks class
     blank_file = os.path.abspath(args.devfile)
-    blank = Blanks(blank_file, 0, 0)
+    blank = Blanks(blank_file, 1, 1)
 
     # check for the source of pCO2 blanks and load accordingly
     if os.path.isfile(blank_file):
@@ -142,9 +141,6 @@ def main(argv=None):
     else:
         # Create one using defaults of 0
         blank.save_blanks()
-
-    # set the depth and deployment variables
-    df['deploy_id'] = deployment
 
     # convert the raw battery voltage and thermistor values from counts
     # to V and degC, respectively
@@ -200,64 +196,35 @@ def main(argv=None):
     df['blank_434'] = blank_434
     df['blank_620'] = blank_620
 
-    # Setup the global attributes for the NetCDF file and create the NetCDF TimeSeries object
-    global_attributes = {
-        'title': 'Seawater pCO2 from PCO2W',
-        'summary': (
-            'Measures the seawater pCO2 from the Sunburst Sensors SAMI2-pCO2 Instrument).'
-        ),
-        'project': 'Ocean Observatories Initiative',
-        'institution': 'Coastal and Global Scales Nodes, (CGSN)',
-        'acknowledgement': 'National Science Foundation',
-        'references': 'http://oceanobservatories.org',
-        'creator_name': 'Christopher Wingard',
-        'creator_email': 'cwingard@coas.oregonstate.edu',
-        'creator_url': 'http://oceanobservatories.org',
+    # convert the dataframe to a format suitable for the pocean OMTs
+    df['deploy_id'] = deployment
+    df = df2omtdf(df, lat, lon, depth)
+
+    # add to the global attributes for the PCO2W
+    attrs = PCO2W
+    attrs['global'] = dict_update(attrs['global'], {
         'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
-    }
-    ts = TimeSeries(
-        output_directory=outpath,
-        latitude=lat,
-        longitude=lon,
-        station_name=platform,
-        global_attributes=global_attributes,
-        times=df.time.values.astype(np.int64) * 10**-9,
-        verticals=df.depth.values,
-        output_filename=outfile,
-        vertical_positive='down')
+    })
 
-    nc = ts._nc     # create a netCDF4 object from the TimeSeries object
+    # pop arrays out of the dataframe (will put them into the netcdf file later)
+    light = np.array(np.vstack(df.pop('light_measurements')))
 
-    # create a new dimension for the 14 light measurements
+    nc = OMTs.from_dataframe(df, outfile, attributes=attrs)
+    nc.close()
+
+    # re-open the netcdf file and add the light_measurement
+    nc = Dataset(outfile, 'a')
+
+    # create a new dimension and variable for the 14 light measurements
     nc.createDimension('measurements', size=14)
     d = nc.createVariable('measurements', 'i', ('measurements',))
     d.setncatts(PCO2W['measurements'])
     d[:] = np.arange(0, 14).tolist()
 
-    # add the data from the data frame and set the attributes
-    for c in df.columns:
-        # skip the coordinate variables, if present, already added above via TimeSeries
-        if c in ['time', 'lat', 'lon', 'depth']:
-            # print("Skipping axis '{}' (already in file)".format(c))
-            continue
-
-        # create the netCDF.Variable object for the date/time and deploy_id strings
-        if c in ['collect_date_time', 'process_date_time']:
-            d = nc.createVariable(c, 'S23', ('time',))
-            d.setncatts(PCO2W[c])
-            d[:] = df[c].values
-        elif c == 'deploy_id':
-            d = nc.createVariable(c, 'S6', ('time',))
-            d.setncatts(PCO2W[c])
-            d[:] = df[c].values
-        # create the netCDF.Variable object for the measurement array
-        elif c in ['light_measurements']:
-            d = nc.createVariable(c, 'i', ('time', 'measurements',))
-            d.setncatts(PCO2W[c])
-            d[:] = np.array(np.vstack(df[c].values), dtype='int32')
-        else:
-            # use the TimeSeries object to add the variables
-            ts.add_variable(c, df[c].values, fillvalue=-999999999, attributes=PCO2W[c])
+    # create the netCDF.Variable object for the light measurements array
+    d = nc.createVariable('light_measurements', 'i', ('station', 'time', 'measurements',))
+    d.setncatts(PCO2W['light_measurements'])
+    d[:] = light
 
     # synchronize the data with the netCDF file and close it
     nc.sync()

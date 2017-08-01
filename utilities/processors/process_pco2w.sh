@@ -20,7 +20,6 @@ LAT=$3; LNG=$4
 PCO2W=${5,,}
 DEPTH=$6
 SERIAL=${7^^}
-CFILE="${PLATFORM^^}_$DEPLOY_PCO2W.coeff"
 FILE=`/bin/basename $8`
 
 # Set the default directory paths and input/output sources
@@ -33,8 +32,8 @@ if [ ! -d `/usr/bin/dirname $OUT` ]; then
     mkdir -p `/usr/bin/dirname $OUT`
 fi
 
-COEFF="$DATA/proc/$PLATFORM/$DEPLOY/$PCO2W/$CFILE"
-BLANK="$DATA/proc/$PLATFORM/$DEPLOY/$PCO2W/${CFILE%.coeff}.blank"
+COEFF="$DATA/proc/$PLATFORM/$DEPLOY/$PCO2W/pco2w_factory_calibration.coeffs"
+BLANK="$DATA/proc/$PLATFORM/$DEPLOY/$PCO2W/pco2w_factory_calibrations.blanks"
 
 # Process the file
 if [ -e $IN ]; then

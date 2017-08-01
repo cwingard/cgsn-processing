@@ -8,6 +8,7 @@
 """
 import numpy as np
 import os
+import pandas as pd
 import re
 
 from gsw import SP_from_C
@@ -78,12 +79,12 @@ def main(argv=None):
     args = inputs(argv)
     infile = os.path.abspath(args.infile)
     outfile = os.path.abspath(args.outfile)
-    _, fname = os.path.split(outfile)
     platform = args.platform
     deployment = args.deployment
     lat = args.latitude
     lon = args.longitude
     depth = args.depth
+    ctd_name = args.devfile     # name of co-located CTD
 
     # load the json data file and return a panda dataframe
     df = json2df(infile)
@@ -117,8 +118,10 @@ def main(argv=None):
     df['beta_700'] = flo_scale_and_offset(df['raw_signal_beta'], dev.coeffs['dark_beta'], dev.coeffs['scale_beta'])
 
     # Merge the co-located CTD temperature and salinity data and calculate the total optical backscatter
-    ctd_file = re.sub('flort', 'ctdbp', infile)
-    ctd = json2df(ctd_file)
+    flort_path, flort_file = os.path.split(infile)
+    ctd_file = re.sub('flort[\w]*', ctd_name, flort_file)
+    ctd_path = re.sub('flort', re.sub('[\d]*', '', ctd_name), flort_path)
+    ctd = json2df(os.path.join(ctd_path, ctd_file))
     if not ctd.empty:
         # calculate the practical salinity of the seawater from the temperature, conductivity and pressure measurements
         ctd['psu'] = SP_from_C(ctd['conductivity'] * 10.0, ctd['temperature'], ctd['pressure'])

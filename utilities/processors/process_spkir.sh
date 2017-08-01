@@ -7,7 +7,7 @@
 # C. Wingard 2017-01-23
 
 # Parse the command line inputs
-if [ $# -ne 8 ]; then
+if [ $# -ne 7 ]; then
     echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the SPKIR"
     echo "directory name, deployment depth, the serial number of the unit, and the name of the file to process."
     echo ""
@@ -19,9 +19,8 @@ DEPLOY=${2^^}
 LAT=$3; LNG=$4
 SPKIR=${5,,}
 DEPTH=$6
-SERIAL=${7^^}
-CFILE="${PLATFORM^^}_$DEPLOY_SPKIR.coeff"
-FILE=`/bin/basename $8`
+CFILE="spkir_factory_calibrations.coeff"
+FILE=`/bin/basename $7`
 
 # Set the default directory paths and input/output sources
 PYTHON="/home/ooiuser/bin/conda/bin/python3"
@@ -36,7 +35,7 @@ fi
 COEFF="$DATA/proc/$PLATFORM/$DEPLOY/$SPKIR/$CFILE"
 
 # Process the file (if it hasn't already been done)
-if [ -e $IN ] && [ ! -e $OUT ]; then
+if [ -e $IN ]; then
     cd /home/ooiuser/code/cgsn-processing
-    $PYTHON -m cgsn_processing.process.proc_spkir -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -dp $DEPTH -i $IN -o $OUT -cf $COEFF -sn $SERIAL
+    $PYTHON -m cgsn_processing.process.proc_spkir -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -dp $DEPTH -i $IN -o $OUT -cf $COEFF
 fi

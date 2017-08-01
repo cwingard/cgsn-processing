@@ -122,11 +122,11 @@ def main(argv=None):
     d.setncatts(attrs['wavelengths'])
     d[:] = wavelengths
 
-    d = nc.createVariable('raw_channels', 'u4', ('time', 'station', 'wavelengths',))
+    d = nc.createVariable('raw_channels', 'u4', ('station', 'time', 'wavelengths',))
     d.setncatts(attrs['raw_channels'])
     d[:] = channels
 
-    d = nc.createVariable('irradiance', 'f', ('time', 'station', 'wavelengths',))
+    d = nc.createVariable('irradiance', 'f', ('station', 'time', 'wavelengths',))
     d.setncatts(attrs['irradiance'])
     d[:] = Ed
 
