@@ -54,7 +54,7 @@ def find_calibration(inst_class, inst_serial, sampling_date):
 
     if tdiff:
         # check the resulting list of files and time differences for the closest file that precedes our deployment
-        m = min(i for i in tdiff if i > 0)
+        m = min(i for i in tdiff if i >= 0)
 
         # assemble the csv URL, adjusting for the fact we want the raw content
         csv = '{}{}'.format('https://raw.githubusercontent.com', flist[tdiff.index(m)])

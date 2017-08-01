@@ -33,10 +33,6 @@ FLORT = {
         'long_name': 'DCL Date and Time Stamp',
         'units': '1',
     },
-    'flort_date_time_string':{
-        'long_name': 'FLORT Date and Time Stamp',
-        'units': '1',
-    },
     'measurement_wavelength_beta': {
         'long_name': 'Wavelength',
         'standard_name': 'radiation_wavelength',
@@ -65,12 +61,17 @@ FLORT = {
         'units': 'counts'
     },
     'estimated_chlorophyll': {
+        'long_name': 'Estimated Chlorophyll',
+        'standard_name': 'mass_concentration_of_chlorophyll_in_sea_water',
         'units': 'mg L-1'
     },
     'fluorometric_cdom': {
+        'long_name': 'Fluorometric CDOM',
         'units': 'ppm'
     },
     'beta_700': {
+        'long_name': 'Volume Scattering Function at 700 nm',
+        'standard_name': 'volume_scattering_function_of_radiative_flux_in_sea_water',
         'units': 'm-1 sr-1'
     },
     'temperature': {

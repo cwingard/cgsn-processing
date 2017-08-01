@@ -26,22 +26,20 @@ case "$PLATFORM" in
         LAT="44.639"
         LNG="-124.304"
         declare -a CTDBP1=("ctdbp")
-        declare -a DOSTA1=("dosta" "DOSTAD/CGINS-DOSTAD-00220__20170202")
+        declare -a DOSTA1=("dosta")
         declare -a FLORT=("1290")
-        declare -a OPTAA1=("optaa" "OPTAAD/CGINS-OPTAAD-00170__20170112")
+        declare -a OPTAA1=("optaa")
         declare -a PHSEN1=("phsen")
-        declare -a SPKIR=("SPKIRB/CGINS-SPKIRB-00248__20161202")
         ;;
     "ce04ossm" )
         MFN_FLAG=0
         LAT="44.381"
         LNG="-124.956"
         declare -a CTDBP1=("ctdbp")
-        declare -a DOSTA1=("dosta" "DOSTAD/CGINS-DOSTAD-00135__20170202")
+        declare -a DOSTA1=("dosta")
         declare -a FLORT=("1155")
-        declare -a OPTAA1=("optaa" "OPTAAD/CGINS-OPTAAD-00179__20170117")
+        declare -a OPTAA1=("optaa")
         declare -a PHSEN1=("phsen")
-        declare -a SPKIR=("SPKIRB/CGINS-SPKIRB-00295__20161202")
         ;;
     "ce07shsm"  )
         MFN_FLAG=1
@@ -49,14 +47,13 @@ case "$PLATFORM" in
         LAT="46.986"
         LNG="-124.566"
         declare -a CTDBP1=("ctdbp1")
-        declare -a DOSTA1=("dosta" "DOSTAD/CGINS-DOSTAD-00134__20170202")
+        declare -a DOSTA1=("dosta")
         declare -a FLORT=("995")
-        declare -a OPTAA1=("optaa1" "OPTAAD/CGINS-OPTAAD-00182__20161011")
+        declare -a OPTAA1=("optaa1")
         declare -a PHSEN1=("phsen1")
-        declare -a SPKIR=("SPKIRB/CGINS-SPKIRB-00250__20161202")
 
-        declare -a OPTAA2=("optaa2" "OPTAAD/CGINS-OPTAAD-00135__20161007")
-        declare -a PCO2W=("pco2w" "PCO2WB/CGINS-PCO2WB-C0083__20161128")
+        declare -a OPTAA2=("optaa2")
+        declare -a PCO2W=("C0083")
         declare -a PHSEN2=("phsen2")
         ;;
     "ce09ossm" )
@@ -65,14 +62,13 @@ case "$PLATFORM" in
         LAT="46.851"
         LNG="-124.972"
         declare -a CTDBP1=("ctdbp1")
-        declare -a DOSTA1=("dosta" "DOSTAD/CGINS-DOSTAD-00222__20170202")
+        declare -a DOSTA1=("dosta")
         declare -a FLORT=("1487")
-        declare -a OPTAA1=("optaa1" "OPTAAD/CGINS-OPTAAD-00259__20160923")
+        declare -a OPTAA1=("optaa1")
         declare -a PHSEN1=("phsen1")
-        declare -a SPKIR=("SPKIRB/CGINS-SPKIRB-00255__20161202")
 
-        declare -a OPTAA2=("optaa2" "OPTAAC/CGINS-OPTAAC-00142__20160224")
-        declare -a PCO2W=("pco2w" "PCO2WB/CGINS-PCO2WB-C0061__20161128")
+        declare -a OPTAA2=("optaa2")
+        declare -a PCO2W=("C0061")
         declare -a PHSEN2=("phsen2")
         ;;
     * )
@@ -95,10 +91,10 @@ for mopak in $PROC/$PLATFORM/$DEPLOY/buoy/mopak/$FNAME*.mopak.json; do
         fi
     fi
 done
-$PROCESS/process_pwrsys.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/pwrsys" $FNAME.pwrsys.json
-$PROCESS/process_superv_cpm.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/superv/cpm1" $FNAME.superv.json
-$PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/superv/dcl11" $FNAME.superv.json
-$PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/superv/dcl12" $FNAME.superv.json
+$PROCESS/process_pwrsys.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/pwrsys" 0 $FNAME.pwrsys.json
+$PROCESS/process_superv_cpm.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/superv/cpm1" 0 $FNAME.superv.json
+$PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/superv/dcl11" 0 $FNAME.superv.json
+$PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/superv/dcl12" 0 $FNAME.superv.json
 
 if [ $PLATFORM = "ce02shsm" ]; then
     $PROCESS/process_fdchp.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/fdchp" $FNAME.fdchp.json
@@ -109,33 +105,33 @@ $PROCESS/process_velpt.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/velpt" 1 $FNAME.velp
 $PROCESS/process_wavss.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/wavss" $FNAME.wavss.json
 
 # NSIF
-$PROCESS/process_superv_cpm.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/superv/cpm2" $FNAME.superv.json
-$PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/superv/dcl26" $FNAME.superv.json
-$PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/superv/dcl27" $FNAME.superv.json
+$PROCESS/process_superv_cpm.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/superv/cpm2" 7 $FNAME.superv.json
+$PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/superv/dcl26" 7 $FNAME.superv.json
+$PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/superv/dcl27" 7 $FNAME.superv.json
 
 #--> ADCPT
 $PROCESS/process_ctdbp.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/ctdbp" 7 $FNAME.${CTDBP1[0]}.json
 $PROCESS/process_dosta.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/dosta" 7 $FNAME.${DOSTA1[0]}.json
-#$PROCESS/process_flort.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/flort" ${FLORT[0]} $FNAME.flort.json
-$PROCESS/process_nutnr.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/nutnr" $FNAME.nutnr.json
+$PROCESS/process_flort.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/flort" 7 ${FLORT[0]} $FNAME.flort.json
+$PROCESS/process_nutnr.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/nutnr" 7 $FNAME.nutnr.json
 for optaa in $PROC/$PLATFORM/$DEPLOY/nsif/optaa/$FNAME*.${OPTAA1[0]}.json; do
     if [ -e $optaa ]; then
         SIZE=`du -k "$optaa" | cut -f1`
         if [ $SIZE -gt 0 ]; then
-            $PROCESS/process_optaa.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/optaa" 7 ${OPTAA1[1]} $optaa
+            $PROCESS/process_optaa.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/optaa" 7 $optaa
         fi
     fi
 done
 $PROCESS/process_phsen.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/phsen" 7 $FNAME.${PHSEN1[0]}.json
-$PROCESS/process_spkir.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/spkir" ${SPKIR[0]} $FNAME.spkir.json
+$PROCESS/process_spkir.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/spkir" 7 $FNAME.spkir.json
 #--> UCSPP (acoustic modem communications with uCSPP)
 $PROCESS/process_velpt.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/velpt" 7 $FNAME.velpt2.json
 
 if [ $MFN_FLAG == 1 ]; then
     # MFN
-    $PROCESS/process_superv_cpm.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/superv/cpm3" $FNAME.superv.json
-    $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/superv/dcl36" $FNAME.superv.json
-    $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/superv/dcl37" $FNAME.superv.json
+    $PROCESS/process_superv_cpm.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/superv/cpm3" $MFN_DEPTH $FNAME.superv.json
+    $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/superv/dcl36" $MFN_DEPTH $FNAME.superv.json
+    $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/superv/dcl37" $MFN_DEPTH $FNAME.superv.json
 
     #--> ADCPT
     $PROCESS/process_ctdbp.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/ctdbp" $MFN_DEPTH $FNAME.ctdbp2.json
@@ -144,11 +140,11 @@ if [ $MFN_FLAG == 1 ]; then
         if [ -e $optaa ]; then
             SIZE=`du -k "$optaa" | cut -f1`
             if [ $SIZE -gt 0 ]; then
-                $PROCESS/process_optaa.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/optaa" $MFN_DEPTH ${OPTAA2[1]} $optaa
+                $PROCESS/process_optaa.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/optaa" $MFN_DEPTH $optaa
             fi
         fi
     done
-    #$PROCESS/process_pco2w.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/pco2w" $MFN_DEPTH ${PCO2W[1]} $FNAME.${PCO2W[0]}.json
+    $PROCESS/process_pco2w.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/pco2w" $MFN_DEPTH ${PCO2W[0]} $FNAME.pco2w.json
     $PROCESS/process_phsen.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/phsen" $MFN_DEPTH $FNAME.${PHSEN2[0]}.json
     $PROCESS/process_presf.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/presf" $MFN_DEPTH $FNAME.presf.json
     #--> VEL3D

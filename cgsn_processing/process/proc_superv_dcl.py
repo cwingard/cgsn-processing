@@ -26,6 +26,7 @@ def main():
     deployment = args.deployment
     lat = args.latitude
     lon = args.longitude
+    depth = args.depth
 
     # load the json data file and return a panda dataframe
     df = json2df(infile)
@@ -33,7 +34,7 @@ def main():
         # there was no data in this file, ending early
         return None
 
-    df['depth'] = 0.0
+    df['depth'] = depth
     df['deploy_id'] = deployment
 
     # convert the error flag strings to named variables

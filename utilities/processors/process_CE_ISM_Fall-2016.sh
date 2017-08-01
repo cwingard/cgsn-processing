@@ -26,14 +26,14 @@ case "$PLATFORM" in
         MFN_DEPTH=25
         LAT=44.659
         LNG=-124.095
-        declare -a FLORT=("FLORTD/CGINS-FLORTD-01121__20160930")
+        declare -a FLORT=("1121")
         declare -a OPTAA1=("None" "None")
-        declare -a PCO2W1=("pco2w1" "PCO2WB/CGINS-PCO2WB-C0084__20160930")
+        declare -a PCO2W1=("pco2w1" "C0084")
         declare -a PHSEN1=("phsen1")
-        declare -a SPKIR=("SPKIRB/CGINS-SPKIRB-00296__20160930")
+        declare -a SPKIR=("296")
 
         declare -a OPTAA2=("None" "None")
-        declare -a PCO2W2=("pco2w2" "PCO2WB/CGINS-PCO2WB-C0053__20160930")
+        declare -a PCO2W2=("pco2w2" "C0053")
         declare -a PHSEN2=("phsen2")
         ;;
     "ce06issm" )
@@ -41,7 +41,7 @@ case "$PLATFORM" in
         MFN_DEPTH=29
         LAT=47.133
         LNG=-124.272
-        declare -a FLORT=("FLORTD/CGINS-FLORTD-01154__20160927")
+        declare -a FLORT=("1154")
         declare -a OPTAA1=("optaa1" "OPTAAD/CGINS-OPTAAD-00136__20160927")
         declare -a PCO2W1=("pco2w1" "PCO2WB/CGINS-PCO2WB-C0085__20160927")
         declare -a PHSEN1=("phsen1")
