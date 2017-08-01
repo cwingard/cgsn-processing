@@ -9,10 +9,9 @@
 # C. Wingard 2017-01-23
 
 # Parse the command line inputs
-if [ $# -ne 8 ]; then
+if [ $# -ne 7 ]; then
     echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the OPTAA directory"
-    echo "name, the deployment depth, the UNIQUE_ID name of the stored factory calibration data, and the name of the"
-    echo "file to process."
+    echo "name, the deployment depth, and the name of the file to process."
     echo ""
     echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 nsif/optaa 7 20161012_233000.optaa.json"
     exit 1

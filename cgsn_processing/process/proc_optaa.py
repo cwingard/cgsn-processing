@@ -18,6 +18,7 @@ from pyaxiom.netcdf.sensors import TimeSeries
 
 from cgsn_processing.process.common import Coefficients, inputs, json2df
 from cgsn_processing.process.configs.attr_optaa import OPTAA
+from cgsn_processing.process.finding_calibrations import find_calibration
 
 from pyseas.data.opt_functions import opt_internal_temp, opt_external_temp
 from pyseas.data.opt_functions import opt_pressure, opt_pd_calc, opt_tempsal_corr
@@ -295,33 +296,29 @@ def main():
     lon = args.longitude
     depth = np.float(args.switch)  # utilize the switch option to set the deployment depth
 
-    coeff_file = os.path.abspath(args.coeff_file)
-    dev = Calibrations(coeff_file)  # initialize calibration class
-    
-    # check for the source of calibration coeffs and load accordingly
-    if os.path.isfile(coeff_file):
-        # we always want to use this file if it exists
-        dev.load_coeffs()
-    elif args.devfile:
-        # load from the factory supplied device file
-        devfile = os.path.abspath(args.devfile)
-        dev.read_devfile(devfile)
-        dev.save_coeffs()
-    elif args.csvurl:
-        # load from the CI hosted CSV files
-        hdr_url = args.csvurl
-        tca_url = re.sub('.csv', '__CC_taarray.ext', hdr_url)
-        tcc_url = re.sub('.csv', '__CC_tcarray.ext', hdr_url)
-        dev.read_devurls(hdr_url, tca_url, tcc_url)
-        dev.save_coeffs()
-    else:
-        raise Exception('A source for the OPTAA calibration coefficients could not be found')
-    
     # load the json data file and return a panda dataframe
     df = json2df(infile)
     if df.empty:
         # This is an empty file, end processing
         return None
+
+    coeff_file = os.path.abspath(args.coeff_file)
+    dev = Calibrations(coeff_file)  # initialize calibration class
+
+    # check for the source of calibration coeffs and load accordingly
+    if os.path.isfile(coeff_file):
+        # we always want to use this file if it exists
+        dev.load_coeffs()
+    else:
+        # load from the CI hosted CSV files
+        csv_url = find_calibration('OPTAA', df.serial_number[0], (df.time.values.astype('int64') * 10 ** -9)[0])
+        if csv_url:
+            tca_url = re.sub('.csv', '__CC_taarray.ext', csv_url)
+            tcc_url = re.sub('.csv', '__CC_tcarray.ext', csv_url)
+            dev.read_devurls(csv_url, tca_url, tcc_url)
+            dev.save_coeffs()
+        else:
+            raise Exception('A source for the OPTAA calibration coefficients could not be found')
 
     df['depth'] = depth
     df['deploy_id'] = deployment
