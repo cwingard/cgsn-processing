@@ -317,7 +317,6 @@ CSPP_OPTAA = {
     },
     'serial_number': {
         'long_name': 'Unit Serial Number',
-        'standard_name': 'serial_number',
         'units': '1'
     },
     'a_reference_dark': {

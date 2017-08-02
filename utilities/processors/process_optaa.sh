@@ -21,7 +21,6 @@ DEPLOY=${2^^}
 LAT=$3; LNG=$4
 OPTAA=${5,,}
 DEPTH=$6
-CFILE="${PLATFORM^^}_$DEPLOY_OPTAA.coeff"
 FILE=`/bin/basename $7`
 
 # Set the default directory paths and input/output sources
@@ -34,7 +33,7 @@ if [ ! -d `/usr/bin/dirname $OUT` ]; then
     mkdir -p `/usr/bin/dirname $OUT`
 fi
 
-COEFF="$DATA/proc/$PLATFORM/$DEPLOY/$OPTAA/$CFILE"
+COEFF="$DATA/proc/$PLATFORM/$DEPLOY/$OPTAA/optaa_factory_calibration.coeffs"
 
 # Process the file (if it hasn't already been done)
 if [ -e $IN ] && [ ! -e $OUT ]; then

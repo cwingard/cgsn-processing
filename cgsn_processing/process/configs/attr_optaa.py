@@ -84,17 +84,16 @@ OPTAA = {
         'standard_name': 'number_wavelengths',
         'units': '1',
     },
+    'wavelengths': {'units': '1'},
     'a_wavelengths': {
         'long_name': 'A Channel Wavelengths',
-        'standard_name': 'a_wavelengths',
-        'units': 'nm',
-        'fill_value': -999999999.
+        'standard_name': 'radiation_wavelength',
+        'units': 'nm'
     },
     'c_wavelengths': {
         'long_name': 'c Channel Wavelengths',
-        'standard_name': 'c_wavelengths',
-        'units': 'nm',
-        'fill_value': -999999999.
+        'standard_name': 'radiation_wavelength',
+        'units': 'nm'
     },
     'c_reference_raw': {
         'long_name': 'C Channel Raw Reference',
@@ -144,7 +143,7 @@ OPTAA = {
         'long_name': 'Particulate and Dissolved Absorbance',
         'standard_name': 'particulate_dissolved_absorbance',
         'units': 'm-1',
-        'fill_value': -999999999.,
+        'fill_value': np.nan,
         'coordinates': 'time z longitude latitude',
         'grid_mapping': 'crs',
         'platform': 'platform',
@@ -155,7 +154,7 @@ OPTAA = {
         'long_name': 'Particulate and Dissolved Absorbance with TS Correction',
         'standard_name': 'particulate_dissolved_absorbance_ts',
         'units': 'm-1',
-        'fill_value': -999999999.,
+        'fill_value': np.nan,
         'coordinates': 'time z longitude latitude',
         'grid_mapping': 'crs',
         'platform': 'platform',
@@ -166,7 +165,7 @@ OPTAA = {
         'long_name': 'Particulate and Dissolved Absorbance with TS and Scatter Correction',
         'standard_name': 'particulate_dissolved_absorbance_ts_scat',
         'units': 'm-1',
-        'fill_value': -999999999.,
+        'fill_value': np.nan,
         'coordinates': 'time z longitude latitude',
         'grid_mapping': 'crs',
         'platform': 'platform',
@@ -177,7 +176,7 @@ OPTAA = {
         'long_name': 'Particulate and Dissolved Attenuation',
         'standard_name': 'particulate_dissolved_attenuation',
         'units': 'm-1',
-        'fill_value': -999999999.,
+        'fill_value': np.nan,
         'coordinates': 'time z longitude latitude',
         'grid_mapping': 'crs',
         'platform': 'platform',
@@ -188,7 +187,7 @@ OPTAA = {
         'long_name': 'Particulate and Dissolved Attenuation with TS Correction',
         'standard_name': 'particulate_dissolved_attenuation_ts',
         'units': 'm-1',
-        'fill_value': -999999999.,
+        'fill_value': np.nan,
         'coordinates': 'time z longitude latitude',
         'grid_mapping': 'crs',
         'platform': 'platform',
