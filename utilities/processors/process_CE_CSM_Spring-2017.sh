@@ -113,7 +113,7 @@ $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/superv/dcl27" 7
 $PROCESS/process_ctdbp.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/ctdbp" 7 $FNAME.${CTDBP1[0]}.json
 $PROCESS/process_dosta.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/dosta" 7 $FNAME.${DOSTA1[0]}.json
 $PROCESS/process_flort.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/flort" ${CTDBP1[0]} 7 ${FLORT[0]} $FNAME.flort.json
-$PROCESS/process_nutnr.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/nutnr" 7 1 $FNAME.nutnr.json
+$PROCESS/process_nutnr.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/nutnr" ${CTDBP1[0]} 7 1 $FNAME.nutnr.json
 for optaa in $PROC/$PLATFORM/$DEPLOY/nsif/optaa/$FNAME*.${OPTAA1[0]}.json; do
     if [ -e $optaa ]; then
         SIZE=`du -k "$optaa" | cut -f1`

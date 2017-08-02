@@ -83,6 +83,7 @@ def main(argv=None):
     lat = args.latitude
     lon = args.longitude
     depth = args.depth
+    ctd_name = args.devfile  # name of co-located CTD
 
     # load the json data file and return a panda dataframe
     df = json2df(infile)
@@ -99,7 +100,7 @@ def main(argv=None):
             dev.load_coeffs()
         else:
             # load from the CI hosted CSV files
-            csv_url = find_calibration('NUTNR', df.serial_number[0], (df.time.values.astype('int64') / 1e9)[0])
+            csv_url = find_calibration('NUTNR', str(df.serial_number[0]), (df.time.values.astype('int64') / 1e9)[0])
             if csv_url:
                 dev.read_csv(csv_url)
                 dev.save_coeffs()
@@ -112,8 +113,10 @@ def main(argv=None):
         wavelengths = dev.coeffs['wl']
 
         # Merge the co-located CTD temperature and salinity data and calculate the corrected nitrate concentration
-        ctd_file = re.sub('nutnr', 'ctdbp', infile)
-        ctd = json2df(ctd_file)
+        nutnr_path, nutnr_file = os.path.split(infile)
+        ctd_file = re.sub('nutnr[\w]*', ctd_name, nutnr_file)
+        ctd_path = re.sub('nutnr', re.sub('[\d]*', '', ctd_name), nutnr_path)
+        ctd = json2df(os.path.join(ctd_path, ctd_file))
         if not ctd.empty:
             # interpolate temperature and salinity data from the CTD into the NUTNR record for calculations
             degC = interp1d(ctd.time.values.astype('int64'), ctd.temperature.values, bounds_error=False)
@@ -135,8 +138,8 @@ def main(argv=None):
             df['corrected_nitrate'] = np.nan
 
     else:   # dataset does not include the full spectral array. Pad out with fill values to keep datasets consistent
-        channels = np.ones(256) * -999999999
-        wavelengths = np.arange(0, 255) * np.nan
+        channels = np.ones([df.shape[0], 256]) * -999999999
+        wavelengths = np.ones(256) * np.nan
         df['temperature'] = np.nan
         df['salinity'] = np.nan
         df['corrected_nitrate'] = np.nan

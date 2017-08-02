@@ -47,7 +47,7 @@ def main(argv=None):
         dev.load_coeffs()
     else:
         # load from the CI hosted CSV files
-        csv_url = find_calibration('OPTAA', df.serial_number[0], (df.time.values.astype('int64') * 10**-9)[0])
+        csv_url = find_calibration('OPTAA', str(df.serial_number[0]), (df.time.values.astype('int64') * 10**-9)[0])
         if csv_url:
             # load from the CI hosted CSV files
             tca_url = re.sub('.csv', '__CC_taarray.ext', csv_url)

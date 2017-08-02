@@ -14,8 +14,9 @@ from bs4 import BeautifulSoup
 from calendar import timegm
 from pytz import timezone
 
-# set the base URL for the OOI asset management listing of calibration files
+# set the base URL for the OOI asset management listing of calibration files and a regex for the CSV files
 GIT = 'https://github.com'
+CSV = re.compile('.*\.csv')
 
 
 def list_links(url, tag=''):
@@ -28,16 +29,19 @@ def list_links(url, tag=''):
 def find_calibration(inst_class, inst_serial, sampling_date):
     # find the links for the instrument class we are after
     links = list_links('{}/ooi-integration/asset-management/tree/master/calibration/'.format(GIT), inst_class)
-
     tdiff = []
     flist = []
 
     # if successful, start to zero in on our instrument
     if links:
         for link in links:
-            instrmts = list_links('{}/{}/'.format(GIT, link), inst_serial)
+            instrmts = list_links('{}/{}/'.format(GIT, link), '-{}__'.format(inst_serial.rjust(5, '0')))
             if instrmts:
                 for inst in instrmts:
+                    # only look at .csv files
+                    if not CSV.match(inst):
+                        continue
+
                     # we are getting close, now we need to pull out the date stamp
                     dstr = re.sub('.csv', '', re.split('__', inst)[1])
 
