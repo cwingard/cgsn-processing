@@ -104,4 +104,4 @@ $PROCESS/process_pco2w.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/pco2w" $MFN_DEPTH ${P
 $PROCESS/process_phsen.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/phsen" $MFN_DEPTH $FNAME.phsen2.json
 $PROCESS/process_presf.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/presf" $MFN_DEPTH $FNAME.presf.json
 #--> VEL3D
-#--> ZPLSC
+$PROCESS/process_zplsc.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/zplsc" $MFN_DEPTH 2.004 $FNAME.zplsc.json

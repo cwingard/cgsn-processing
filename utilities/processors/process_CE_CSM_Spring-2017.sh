@@ -55,6 +55,7 @@ case "$PLATFORM" in
         declare -a OPTAA2=("optaa2")
         declare -a PCO2W=("C0083")
         declare -a PHSEN2=("phsen2")
+        declare -a ZPLSC=(5.016)
         ;;
     "ce09ossm" )
         MFN_FLAG=1
@@ -70,6 +71,7 @@ case "$PLATFORM" in
         declare -a OPTAA2=("optaa2")
         declare -a PCO2W=("C0061")
         declare -a PHSEN2=("phsen2")
+        declare -a ZPLSC=(5.096)
         ;;
     * )
         echo "Unknown platform, please check the name again"
@@ -148,5 +150,5 @@ if [ $MFN_FLAG == 1 ]; then
     $PROCESS/process_phsen.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/phsen" $MFN_DEPTH $FNAME.${PHSEN2[0]}.json
     $PROCESS/process_presf.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/presf" $MFN_DEPTH $FNAME.presf.json
     #--> VEL3D
-    #--> ZPLSC
+    $PROCESS/process_zplsc.sh $PLATFORM $DEPLOY $LAT $LNG "mfn/zplsc" $MFN_DEPTH ${ZPLSC[0]} $FNAME.zplsc.json
 fi
