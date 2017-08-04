@@ -1,0 +1,14 @@
+infile='/home/ooiuser/data/raw/ce02shsm/D00005/cg_data/dcl27/optaa/20170425_183018.optaa.log'
+outfile='/home/ooiuser/data/proc/ce02shsm/D00005/nsif/optaa/20170425_183018.optaa.json'
+
+infile='/home/ooiuser/data/proc/ce02shsm/D00005/nsif/optaa/20170425_183018.optaa.json'
+outfile='/home/ooiuser/data/erddap/ce02shsm/D00005/nsif/optaa/20170425_183018.optaa.nc'
+
+coeff_file='/home/ooiuser/data/proc/ce02shsm/D00005/nsif/optaa/optaa_factory_calibration.coeffs'
+
+platform='ce02shsm'
+deployment='D00005'
+lat=44.639
+lon=-124.304
+depth=7.0
+

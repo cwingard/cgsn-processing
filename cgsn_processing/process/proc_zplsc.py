@@ -174,19 +174,19 @@ def main():
     d[:] = bin_depth
 
     # ... and add the profiles
-    d = nc.createVariable('profiles_channel_1', 'i', ('station', 'time', 'bin_depth',), fill_value=-999999999)
+    d = nc.createVariable('profiles_channel_1', 'i', ('time', 'z', 'station', 'bin_depth',), fill_value=-999999999)
     d.setncatts(attr['profiles_channel_1'])
     d[:] = profiles_channel_1
 
-    d = nc.createVariable('profiles_channel_2', 'i', ('station', 'time', 'bin_depth',), fill_value=-999999999)
+    d = nc.createVariable('profiles_channel_2', 'i', ('time', 'z', 'station', 'bin_depth',), fill_value=-999999999)
     d.setncatts(attr['profiles_channel_2'])
     d[:] = profiles_channel_2
 
-    d = nc.createVariable('profiles_channel_3', 'i', ('station', 'time', 'bin_depth',), fill_value=-999999999)
+    d = nc.createVariable('profiles_channel_3', 'i', ('time', 'z', 'station', 'bin_depth',), fill_value=-999999999)
     d.setncatts(attr['profiles_channel_3'])
     d[:] = profiles_channel_3
 
-    d = nc.createVariable('profiles_channel_4', 'i', ('station', 'time', 'bin_depth',), fill_value=-999999999)
+    d = nc.createVariable('profiles_channel_4', 'i', ('time', 'z', 'station', 'bin_depth',), fill_value=-999999999)
     d.setncatts(attr['profiles_channel_4'])
     d[:] = profiles_channel_4
 
