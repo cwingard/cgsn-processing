@@ -18,9 +18,9 @@ from cgsn_processing.process.configs.attr_pco2a import PCO2A
 from pyseas.data.co2_functions import pco2_ppressure
 
 
-def main():
+def main(argv=None):
     # load  the input arguments
-    args = inputs()
+    args = inputs(argv)
     infile = os.path.abspath(args.infile)
     outpath, outfile = os.path.split(args.outfile)
     platform = args.platform
