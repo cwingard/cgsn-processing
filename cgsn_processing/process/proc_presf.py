@@ -17,9 +17,9 @@ from cgsn_processing.process.configs.attr_presf import PRESF
 #from pyseas.data.sfl_functions import sfl_sflpres_rtime
 
 
-def main():
+def main(argv=None):
     # load the input arguments
-    args = inputs()
+    args = inputs(argv)
     infile = os.path.abspath(args.infile)
     outfile = os.path.abspath(args.outfile)
     platform = args.platform

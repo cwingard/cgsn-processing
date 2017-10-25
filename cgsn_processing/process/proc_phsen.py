@@ -20,9 +20,9 @@ from cgsn_processing.process.configs.attr_phsen import PHSEN
 from pyseas.data.ph_functions import ph_battery, ph_thermistor, ph_calc_phwater
 
 
-def main():
+def main(argv=None):
     # load  the input arguments
-    args = inputs()
+    args = inputs(argv)
     infile = os.path.abspath(args.infile)
     outpath, outfile = os.path.split(args.outfile)
     platform = args.platform

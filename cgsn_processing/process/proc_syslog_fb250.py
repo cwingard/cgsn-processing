@@ -16,9 +16,9 @@ from cgsn_processing.process.common import inputs, json2df, df2omtdf
 from cgsn_processing.process.configs.attr_syslog_fb250 import FB250
 
 
-def main():
+def main(argv=None):
     # load the input arguments
-    args = inputs()
+    args = inputs(argv)
     infile = os.path.abspath(args.infile)
     outfile = os.path.abspath(args.outfile)
     platform = args.platform

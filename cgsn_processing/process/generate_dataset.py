@@ -113,14 +113,14 @@ def variable_info(nc, dmap=None):
     return dvars
 
 
-def main():
+def main(argv=None):
     """
     Load a NetCDF file to use as a template for creating the dataset.xml file, set the dataset ID and create the
     dataset based on the timeSeries.xml template.
     """
     # load the input arguments, pulling in the paths and file names of the input and output files as well as the
     # dataset ID.
-    args = inputs()
+    args = inputs(argv)
     inpath, infile = os.path.split(os.path.abspath(args.infile))
     outfile = os.path.abspath(args.outfile)
     datasetID = args.deployment
