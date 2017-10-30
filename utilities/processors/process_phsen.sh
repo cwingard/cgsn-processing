@@ -34,5 +34,5 @@ fi
 # Process the file
 if [ -e $IN ]; then
     cd /home/ooiuser/code/cgsn-processing
-    $PYTHON -m cgsn_processing.process.proc_phsen -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -s $DEPTH -i $IN -o $OUT
+    $PYTHON -m cgsn_processing.process.proc_phsen -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -dp $DEPTH -i $IN -o $OUT
 fi
