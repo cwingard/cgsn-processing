@@ -5,6 +5,7 @@ import json
 import numpy as np
 import pandas as pd
 import pickle
+import sys
 
 # Create a Global dictionary with Basic Information about the moorings
 BUOYS = {
@@ -172,7 +173,7 @@ def split_column(df, colname, n=None, singular=None, names=None):
     return df
 
 
-def inputs():
+def inputs(args=None):
     """
     Sets the main input arguments for the processor. At the least, the input and output files need to be specified,
     as well as the platform name, deployment name, latitude and longitude. Optionally, you can specify the sources of
@@ -181,6 +182,9 @@ def inputs():
     simple integer switch is provided for cases where the processor needs to function differently depending on some
     set of basic conditions.
     """
+    if args is None:
+        args = sys.argv[1:]
+        
     # initialize argument parser
     parser = argparse.ArgumentParser(description="""Process data files, converting data from engineering units
                                                     to scientific units and saving as NetCDF""",
@@ -204,6 +208,4 @@ def inputs():
     parser.add_argument("-s", "--switch", dest="switch", type=int, default=0)
 
     # parse the input arguments and create a parser object
-    args = parser.parse_args()
-
-    return args
+    return parser.parse_args(args)

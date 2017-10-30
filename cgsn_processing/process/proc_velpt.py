@@ -16,16 +16,16 @@ from cgsn_processing.process.common import inputs, json_sub2df
 from cgsn_processing.process.configs.attr_velpt import VELPT
 
 
-def main():
+def main(argv=None):
     # load the input arguments
-    args = inputs()
+    args = inputs(argv)
     infile = os.path.abspath(args.infile)
     outpath, outfile = os.path.split(args.outfile)
     platform = args.platform
     deployment = args.deployment
     lat = args.latitude
     lon = args.longitude
-    depth = np.float(args.switch)  # utilize the switch option to set the deployment depth
+    depth = np.float(args.depth)  # set the deployment depth
 
     # load the json data file and return a panda dataframe
     df = json_sub2df(infile, 'velocity')

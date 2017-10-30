@@ -123,9 +123,9 @@ def json2netcdf(json_path, out_basepath, lat=0., lon=0., platform='', deployment
         write_netcdf('adata', MMP_ADATA)
 
 
-def main():
+def main(argv=None):
     # load  the input arguments
-    args = inputs()
+    args = inputs(argv)
     infile = os.path.abspath(args.infile)
     outfile = os.path.abspath(args.outfile)
     out_basepath, _ = os.path.splitext(outfile)

@@ -22,9 +22,9 @@ from cgsn_processing.process.configs.attr_cspp import CSPP, CSPP_FLORT
 from pyseas.data.flo_functions import flo_scale_and_offset, flo_bback_total
 
 
-def main():
+def main(argv=None):
     # load the input arguments
-    args = inputs()
+    args = inputs(argv)
     infile = os.path.abspath(args.infile)
     outfile = os.path.abspath(args.outfile)
     _, fname = os.path.split(outfile)

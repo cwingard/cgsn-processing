@@ -74,9 +74,9 @@ class Calibrations(Coefficients):
         self.coeffs = coeffs
 
 
-def main():
-    # load the input arguments
-    args = inputs()
+def main(argv=None):
+    # load  the input arguments
+    args = inputs(argv)
     infile = os.path.abspath(args.infile)
     outfile = os.path.abspath(args.outfile)
     platform = args.platform

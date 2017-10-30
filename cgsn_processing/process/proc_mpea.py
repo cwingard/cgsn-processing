@@ -17,9 +17,9 @@ from cgsn_processing.process.error_flags import MPEAErrorFlag1, MPEAErrorFlag2, 
 from cgsn_processing.process.configs.attr_mpea import MPEA
 
 
-def main():
+def main(argv=None):
     # load the input arguments
-    args = inputs()
+    args = inputs(argv)
     infile = os.path.abspath(args.infile)
     outpath, outfile = os.path.split(args.outfile)
     platform = args.platform
