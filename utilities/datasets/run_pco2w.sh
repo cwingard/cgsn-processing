@@ -30,7 +30,7 @@ for file in $RAW/$PLATFORM/$DEPLOY/cg_data/$DCL/pco2w*/*.log; do
     foo=`dirname $file`
     DNAME=`basename $foo`
     echo "$FNAME"
-    $PARSE/harvest_pco2w.sh $PLATFORM $DEPLOY $DCL $DNAME $FNAME
+    $PARSE/harvest_pco2w.sh $PLATFORM $DEPLOY $DCL $DNAME $SUB $FNAME
 done
 
 # Process the files
@@ -38,6 +38,6 @@ echo "Processing $PLATFORM/$DEPLOY parsed pco2w data"
 for file in $PROC/$PLATFORM/$DEPLOY/$SUB/pco2w/*.json; do
     FNAME=`basename $file`
     echo "$FNAME"
-    $PROCESS/process_pco2w.sh $PLATFORM $DEPLOY $LAT $LNG "$SUB/pco2w" $DEPTH $FNAME
+    $PROCESS/process_pco2w.sh $PLATFORM $DEPLOY $LAT $LNG "$SUB/pco2w" $DEPTH $SERIAL $FNAME
 done
 

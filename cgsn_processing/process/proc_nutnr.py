@@ -20,7 +20,7 @@ from scipy.interpolate import interp1d
 
 from cgsn_processing.process.common import Coefficients, inputs, json2df, df2omtdf
 from cgsn_processing.process.finding_calibrations import find_calibration
-from cgsn_processing.process.configs.attr_nutnr import NUTNR
+from cgsn_processing.process.configs.attr_nutnr import ISUS
 
 from pyseas.data.nit_functions import ts_corrected_nitrate
 
@@ -149,7 +149,7 @@ def main(argv=None):
     df = df2omtdf(df, lat, lon, depth)
 
     # add to the global attributes for the NUTNR
-    attrs = NUTNR
+    attrs = ISUS
     attrs['global'] = dict_update(attrs['global'], {
         'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
     })
@@ -173,6 +173,7 @@ def main(argv=None):
     # synchronize the data with the netCDF file and close it
     nc.sync()
     nc.close()
+
 
 if __name__ == '__main__':
     main()

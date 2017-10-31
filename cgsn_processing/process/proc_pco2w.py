@@ -13,7 +13,6 @@ import os
 import re
 
 from datetime import datetime, timedelta
-from netCDF4 import Dataset
 from pocean.utils import dict_update
 from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMTs
 from pytz import timezone
@@ -22,8 +21,8 @@ from cgsn_processing.process.common import Coefficients, inputs, json2df, df2omt
 from cgsn_processing.process.configs.attr_pco2w import PCO2W
 from cgsn_processing.process.finding_calibrations import find_calibration
 
-from pyseas.data.co2_functions import pco2_blank, pco2_pco2wat
-from pyseas.data.ph_functions import ph_thermistor, ph_battery
+from pyseas.data.co2_functions import pco2_blank, pco2_thermistor, pco2_calc_pco2
+from pyseas.data.ph_functions import ph_battery
 
 
 class Blanks(object):
@@ -31,12 +30,12 @@ class Blanks(object):
     Serialized object used to store the PCO2W absorbance blanks used in the calculations of the pCO2 of seawater from
     a Sunburst Sensors, SAMI2-pCO2
     """
-    def __init__(self, blnkfile, blank_434, blank_620):
+    def __init__(self, blnkfile, k434, k620):
         # initialize the information needed to define the blanks Pickle file
         # and the blanks        
         self.blnkfile = blnkfile
-        self.blank_434 = blank_434
-        self.blank_620 = blank_620
+        self.k434 = k434
+        self.k620 = k620
     
     def load_blanks(self):
         # load the cPickled blanks dictionary
@@ -44,14 +43,14 @@ class Blanks(object):
             blank = pickle.load(f)
 
         # assign the blanks
-        self.blank_434 = blank['434']
-        self.blank_620 = blank['620']
+        self.k434 = blank['434']
+        self.k620 = blank['620']
         
     def save_blanks(self):
         # create the blanks dictionary        
         blank = {
-            '434': self.blank_434,
-            '620': self.blank_620
+            '434': self.k434,
+            '620': self.k620
         }
 
         # save the cPickled blanks dictionary
@@ -132,20 +131,20 @@ def main(argv=None):
 
     # initialize the pCO2 blanks class
     blank_file = os.path.abspath(args.devfile)
-    blank = Blanks(blank_file, 1, 1)
+    blank = Blanks(blank_file, 1., 1.)
 
     # check for the source of pCO2 blanks and load accordingly
     if os.path.isfile(blank_file):
         # we always want to use this file if it exists
         blank.load_blanks()
     else:
-        # Create one using defaults of 0
+        # Create one using defaults of 1
         blank.save_blanks()
 
     # convert the raw battery voltage and thermistor values from counts
     # to V and degC, respectively
-    df['thermistor'] = ph_thermistor(df['thermistor_raw'])
-    df['voltage_battery'] = ph_battery(df['voltage_battery'])
+    df['thermistor'] = pco2_thermistor(df['thermistor_raw'])
+    df['voltage_battery'] = ph_battery(df['voltage_raw'])
 
     # compare the instrument clock to the GPS based DCL time stamp
     # --> PCO2W uses the OSX date format of seconds since 1904-01-01
@@ -158,43 +157,37 @@ def main(argv=None):
 
     df['time_offset'] = offset
 
-    # set factory constants for pCO2 calculations
-    ea434 = 19706.   # factory constants
-    eb434 = 3073.    # factory constants
-    ea620 = 34.      # factory constants
-    eb620 = 44327.   # factory constants
-
     # calculate pCO2
     pCO2 = []
-    blank_434 = []
-    blank_620 = []
+    k434 = []
+    k620 = []
 
     for i in range(len(df['record_type'])):
         if df['record_type'][i] == 4:
             # this is a light measurement, calculate the pCO2
-            pCO2.append(pco2_pco2wat(df['record_type'][i], df['light_measurements'][i], df['thermistor'][i],
-                                     ea434, eb434, ea620, eb620,
-                                     cal.coeffs['calt'], cal.coeffs['cala'], cal.coeffs['calb'], cal.coeffs['calc'],
-                                     blank.blank_434, blank.blank_620)[0])
+            p = pco2_calc_pco2(df['ratio_434'][i], df['ratio_620'][i], df['thermistor'][i], cal.coeffs['calt'],
+                               cal.coeffs['cala'], cal.coeffs['calb'], cal.coeffs['calc'],
+                               blank.k434, blank.k620)
+            pCO2.append(p.item())
 
             # record the blanks used
-            blank_434.append(blank.blank_434)
-            blank_620.append(blank.blank_620)
+            k434.append(blank.k434)
+            k620.append(blank.k620)
 
         if df['record_type'][i] == 5:
             # this is a dark measurement, no pCO2 measurement, update and save the new blanks
-            pCO2.append(np.nan)
-            blank.blank_434 = pco2_blank(df['light_measurements'][i][6])
-            blank.blank_620 = pco2_blank(df['light_measurements'][i][7])
+            blank.k434 = pco2_blank(df['ratio_434'][i])
+            blank.k620 = pco2_blank(df['ratio_620'][i])
             blank.save_blanks()
 
-            blank_434.append(blank.blank_434)
-            blank_620.append(blank.blank_620)
+            pCO2.append(-9999.9)
+            k434.append(blank.k434)
+            k620.append(blank.k620)
 
     # add the resulting data to the dataframe
     df['pCO2'] = pCO2
-    df['blank_434'] = blank_434
-    df['blank_620'] = blank_620
+    df['k434'] = k434
+    df['k620'] = k620
 
     # convert the dataframe to a format suitable for the pocean OMTs
     df['deploy_id'] = deployment
@@ -206,29 +199,9 @@ def main(argv=None):
         'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
     })
 
-    # pop arrays out of the dataframe (will put them into the netcdf file later)
-    light = np.array(np.vstack(df.pop('light_measurements')))
-
     nc = OMTs.from_dataframe(df, outfile, attributes=attrs)
     nc.close()
 
-    # re-open the netcdf file and add the light_measurement
-    nc = Dataset(outfile, 'a')
-
-    # create a new dimension and variable for the 14 light measurements
-    nc.createDimension('measurements', size=14)
-    d = nc.createVariable('measurements', 'i', ('measurements',))
-    d.setncatts(PCO2W['measurements'])
-    d[:] = np.arange(0, 14).tolist()
-
-    # create the netCDF.Variable object for the light measurements array
-    d = nc.createVariable('light_measurements', 'i', ('station', 'time', 'measurements',))
-    d.setncatts(PCO2W['light_measurements'])
-    d[:] = light
-
-    # synchronize the data with the netCDF file and close it
-    nc.sync()
-    nc.close()
 
 if __name__ == '__main__':
     main()

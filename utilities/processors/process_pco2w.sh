@@ -33,7 +33,7 @@ if [ ! -d `/usr/bin/dirname $OUT` ]; then
 fi
 
 COEFF="$DATA/proc/$PLATFORM/$DEPLOY/$PCO2W/pco2w_factory_calibration.coeffs"
-BLANK="$DATA/proc/$PLATFORM/$DEPLOY/$PCO2W/pco2w_factory_calibrations.blanks"
+BLANK="$DATA/proc/$PLATFORM/$DEPLOY/$PCO2W/pco2w_factory_calibration.blanks"
 
 # Process the file
 if [ -e $IN ]; then

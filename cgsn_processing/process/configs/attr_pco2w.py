@@ -23,7 +23,6 @@ PCO2W = {
     'deploy_id': {
         'long_name': 'Deployment ID',
         'standard_name': 'deployment_id',
-        'units': '1',
     },
     'z': {
         'long_name': 'Sensor Depth',
@@ -35,36 +34,83 @@ PCO2W = {
         'valid_max': '1000',
     },
     'collect_date_time': {
-        'long_name': 'Sample Collection Date and Time Stamp',
-        'units': '1',
+        'long_name': 'Sample Collection Date and Time Stamp'
     },
     'process_date_time': {
-        'long_name': 'Sample Processing Date and Time Stamp',
-        'units': '1',
+        'long_name': 'Sample Processing Date and Time Stamp'
     },
     'unique_id': {
-        'long_name': 'Unique ID',
-        'units': '1'
+        'long_name': 'Unique ID'
     },
     'record_length': {
-        'long_name': 'Record Length',
-        'units': '1'
+        'long_name': 'Record Length'
     },
     'record_type': {
-        'long_name': 'Record Type',
-        'units': '1'
+        'long_name': 'Record Type'
     },
     'record_time': {
         'long_name': 'Instrument Timestamp',
         'units': 'seconds since 1904-01-01',
     },
-    'measurements': {
-        'long_name': 'Measurements Array Index',
-        'units': '1',
+    'dark_reference_a': {
+        'long_name': 'Dark LED Reference, 1st',
+        'units': 'counts'
     },
-    'light_measurements': {
-        'long_name': 'Light Measurements',
-        'units': 'counts',
+    'dark_signal_a': {
+        'long_name': 'Dark LED Signal, 1st',
+        'units': 'counts'
+    },
+    'reference_434_a': {
+        'long_name': 'Reference 434 nm, 1st',
+        'units': 'counts'
+    },
+    'signal_434_a': {
+        'long_name': 'Signal 434 nm, 1st',
+        'units': 'counts'
+    },
+    'reference_620_a': {
+        'long_name': 'Reference 620 nm, 1st',
+        'units': 'counts'
+    },
+    'signal_620_a': {
+        'long_name': 'Signal 620 nm, 1st',
+        'units': 'counts'
+    },
+    'ratio_434': {
+        'long_name': 'Absorbance Ratio 434 nm',
+        'units': 'counts'
+    },
+    'ratio_620': {
+        'long_name': 'Absorbance Ratio 620 nm',
+        'units': 'counts'
+    },
+    'dark_reference_b': {
+        'long_name': 'Dark LED Reference, 2nd',
+        'units': 'counts'
+    },
+    'dark_signal_b': {
+        'long_name': 'Dark LED Signal, 2nd',
+        'units': 'counts'
+    },
+    'reference_434_b': {
+        'long_name': 'Reference 434 nm, 2nd',
+        'units': 'counts'
+    },
+    'signal_434_b': {
+        'long_name': 'Signal 434 nm, 2nd',
+        'units': 'counts'
+    },
+    'reference_620_b': {
+        'long_name': 'Reference 620 nm, 2nd',
+        'units': 'counts'
+    },
+    'signal_620_b': {
+        'long_name': 'Signal 620 nm, 2nd',
+        'units': 'counts'
+    },
+    'voltage_raw': {
+        'long_name': 'Raw Battery Voltage',
+        'units': 'counts'
     },
     'voltage_battery': {
         'long_name': 'Battery Voltage',
@@ -79,17 +125,13 @@ PCO2W = {
         'standard_name': 'seawater_temperature',
         'units': 'degree_Celsius'
     },
-    'blank_434': {
+    'k434': {
         'long_name': 'Blank Intensity 434 nm',
-        'units': 'counts',
-        'fill_value': np.int32(-999999999),
-        'missing_value': np.int32(-999999999),
+        'units': '1'
     },
-    'blank_620': {
+    'k620': {
         'long_name': 'Blank Intensity 620 nm',
-        'units': 'counts',
-        'fill_value': np.int32(-999999999),
-        'missing_value': np.int32(-999999999),
+        'units': '1'
     },
     'time_offset': {
         'long_name': 'Internal Clock Offset',
