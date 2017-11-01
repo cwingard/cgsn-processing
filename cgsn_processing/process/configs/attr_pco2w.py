@@ -6,8 +6,6 @@
 @author Christopher Wingard
 @brief Attributes for the PCO2W variables
 """
-import numpy as np
-
 PCO2W = {
     'global': {
         'title': 'Partial Pressure of CO2 in Sea Water',

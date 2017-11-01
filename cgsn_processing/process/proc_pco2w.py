@@ -17,6 +17,7 @@ from pocean.utils import dict_update
 from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMTs
 from pytz import timezone
 
+from cgsn_parsers.parsers.common import dcl_to_epoch
 from cgsn_processing.process.common import Coefficients, inputs, json2df, df2omtdf
 from cgsn_processing.process.configs.attr_pco2w import PCO2W
 from cgsn_processing.process.finding_calibrations import find_calibration
@@ -149,11 +150,14 @@ def main(argv=None):
     # compare the instrument clock to the GPS based DCL time stamp
     # --> PCO2W uses the OSX date format of seconds since 1904-01-01
     mac = datetime.strptime("01-01-1904", "%m-%d-%Y")
+    ept = datetime.strptime("01-01-1970", "%m-%d-%Y")
     offset = []
     for i in range(len(df['time'])):
-        rec = mac + timedelta(seconds=df['record_time'][i].astype(np.float64))
-        rec.replace(tzinfo=timezone('UTC'))
-        offset.append((rec - df['time'][i]).total_seconds())
+        proc = ept + timedelta(seconds=dcl_to_epoch(df['process_date_time'][i]))
+        proc.replace(tzinfo=timezone('UTC'))                # DCL sample processing time
+        rec = mac + timedelta(seconds=df['record_time'][i].astype(np.uint32) * 1.)
+        rec.replace(tzinfo=timezone('UTC'))                 # SAMI record time
+        offset.append((proc - rec).total_seconds())
 
     df['time_offset'] = offset
 
