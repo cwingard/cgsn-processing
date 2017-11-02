@@ -71,7 +71,7 @@ $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/superv/dcl16" 7
 $PROCESS/process_ctdbp.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/ctdbp" 7 $FNAME.ctdbp1.json
 $PROCESS/process_flort.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/flort" "ctdbp1" 7 ${FLORT2[0]} $FNAME.flort.json
 if [ $PLATFORM = "ce01issm" ]; then
-    $PROCESS/process_suna.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/nutnr" "ctdbp1" 7 $FNAME.nutnr.json
+    $PROCESS/process_suna.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/suna" "ctdbp1" 7 $FNAME.nutnr.json
 else
     $PROCESS/process_nutnr.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/nutnr" "ctdbp1" 7 1 $FNAME.nutnr.json
 fi

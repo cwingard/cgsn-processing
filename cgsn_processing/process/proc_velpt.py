@@ -29,6 +29,10 @@ def main(argv=None):
 
     # load the json data file and return a panda dataframe
     df = json_sub2df(infile, 'velocity')
+    if df.empty:
+        # there was no data in this file, ending early
+        return None
+
     df['depth'] = depth
     df['deploy_id'] = deployment
 

@@ -26,7 +26,6 @@ case "$PLATFORM" in
         LAT="44.639"
         LNG="-124.304"
         declare -a CTDBP1=("ctdbp")
-        declare -a DOSTA1=("dosta", "testO2")
         declare -a FLORT=("1153")
         declare -a OPTAA1=("optaa")
         declare -a PHSEN1=("phsen")
@@ -36,7 +35,6 @@ case "$PLATFORM" in
         LAT="44.381"
         LNG="-124.956"
         declare -a CTDBP1=("ctdbp")
-        declare -a DOSTA1=("dosta")
         declare -a FLORT=("996")
         declare -a OPTAA1=("optaa")
         declare -a PHSEN1=("phsen")
@@ -47,7 +45,6 @@ case "$PLATFORM" in
         LAT="46.986"
         LNG="-124.566"
         declare -a CTDBP1=("ctdbp1")
-        declare -a DOSTA1=("dosta")
         declare -a FLORT=("1291")
         declare -a OPTAA1=("optaa1")
         declare -a PHSEN1=("phsen1")
@@ -63,7 +60,6 @@ case "$PLATFORM" in
         LAT="46.851"
         LNG="-124.972"
         declare -a CTDBP1=("ctdbp1")
-        declare -a DOSTA1=("dosta")
         declare -a FLORT=("1302")
         declare -a OPTAA1=("optaa1")
         declare -a PHSEN1=("phsen1")
@@ -113,9 +109,9 @@ $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/superv/dcl27" 7
 
 #--> ADCPT
 $PROCESS/process_ctdbp.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/ctdbp" 7 $FNAME.${CTDBP1[0]}.json
-$PROCESS/process_dosta.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/dosta" 7 $FNAME.${DOSTA1[0]}.json
+$PROCESS/process_dosta.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/dosta" 7 $FNAME.dosta.json
 if [ $PLATFORM = "ce02shsm" ]; then
-    $PROCESS/process_dosta.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/dosta" 7 $FNAME.${DOSTA1[1]}.json
+    $PROCESS/process_dosta.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/dosta" 7 $FNAME.testO2.json
 fi
 $PROCESS/process_flort.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/flort" ${CTDBP1[0]} 7 ${FLORT[0]} $FNAME.flort.json
 $PROCESS/process_nutnr.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/nutnr" ${CTDBP1[0]} 7 1 $FNAME.nutnr.json
