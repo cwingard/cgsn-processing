@@ -18,6 +18,7 @@ FNAME=`/bin/date -u +%Y%m%d --date="$TIME"`
 
 PROC="/home/ooiuser/data/proc"
 PROCESS="/home/ooiuser/code/cgsn-processing/utilities/processors"
+source activate ooi
 
 # Set some instrument names and processing flags based on the platform name
 case "$PLATFORM" in

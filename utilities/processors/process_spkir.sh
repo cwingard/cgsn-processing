@@ -20,16 +20,15 @@ LAT=$3; LNG=$4
 SPKIR=${5,,}
 DEPTH=$6
 CFILE="spkir_factory_calibrations.coeff"
-FILE=`/bin/basename $7`
+FILE=`basename $7`
 
 # Set the default directory paths and input/output sources
-PYTHON="/home/ooiuser/bin/conda/bin/python3"
 
 DATA="/home/ooiuser/data"
 IN="$DATA/proc/$PLATFORM/$DEPLOY/$SPKIR/$FILE"
 OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$SPKIR/${FILE%.json}.nc"
-if [ ! -d `/usr/bin/dirname $OUT` ]; then
-    mkdir -p `/usr/bin/dirname $OUT`
+if [ ! -d `dirname $OUT` ]; then
+    mkdir -p `dirname $OUT`
 fi
 
 COEFF="$DATA/proc/$PLATFORM/$DEPLOY/$SPKIR/$CFILE"
@@ -37,5 +36,5 @@ COEFF="$DATA/proc/$PLATFORM/$DEPLOY/$SPKIR/$CFILE"
 # Process the file (if it hasn't already been done)
 if [ -e $IN ]; then
     cd /home/ooiuser/code/cgsn-processing
-    $PYTHON -m cgsn_processing.process.proc_spkir -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -dp $DEPTH -i $IN -o $OUT -cf $COEFF
+    python -m cgsn_processing.process.proc_spkir -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -dp $DEPTH -i $IN -o $OUT -cf $COEFF
 fi

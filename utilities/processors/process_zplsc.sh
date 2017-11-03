@@ -20,20 +20,19 @@ LAT=$3; LNG=$4
 ZPLSC=${5,,}
 DEPTH=$6
 BINSIZE=$7
-FILE=`/bin/basename $8`
+FILE=`basename $8`
 
 # Set the default directory paths and input/output sources
-PYTHON="/home/ooiuser/bin/conda/bin/python3"
 
 DATA="/home/ooiuser/data"
 IN="$DATA/proc/$PLATFORM/$DEPLOY/$ZPLSC/$FILE"
 OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$ZPLSC/${FILE%.json}.nc"
-if [ ! -d `/usr/bin/dirname $OUT` ]; then
-    mkdir -p `/usr/bin/dirname $OUT`
+if [ ! -d `dirname $OUT` ]; then
+    mkdir -p `dirname $OUT`
 fi
 
 # Process the file
 if [ -e $IN ]; then
     cd /home/ooiuser/code/cgsn-processing
-    $PYTHON -m cgsn_processing.process.proc_zplsc -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -dp $DEPTH -bs $BINSIZE -i $IN -o $OUT
+    python -m cgsn_processing.process.proc_zplsc -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -dp $DEPTH -bs $BINSIZE -i $IN -o $OUT
 fi

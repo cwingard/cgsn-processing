@@ -65,7 +65,7 @@ def main(argv=None):
     # Merge the co-located CTD temperature and salinity data and calculate the corrected nitrate concentration
     nutnr_path, nutnr_file = os.path.split(infile)
     ctd_file = re.sub('nutnr[\w]*', ctd_name, nutnr_file)
-    ctd_path = re.sub('suna', re.sub('[\d]*', '', ctd_name), nutnr_path)
+    ctd_path = re.sub('nutnr', re.sub('[\d]*', '', ctd_name), nutnr_path)
     ctd = json2df(os.path.join(ctd_path, ctd_file))
     if not ctd.empty:
         # interpolate temperature and salinity data from the CTD into the NUTNR record for calculations
@@ -116,6 +116,7 @@ def main(argv=None):
     # synchronize the data with the netCDF file and close it
     nc.sync()
     nc.close()
+
 
 if __name__ == '__main__':
     main()

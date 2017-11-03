@@ -20,16 +20,15 @@ LAT=$3; LNG=$4
 PCO2W=${5,,}
 DEPTH=$6
 SERIAL=${7^^}
-FILE=`/bin/basename $8`
+FILE=`basename $8`
 
 # Set the default directory paths and input/output sources
-PYTHON="/home/ooiuser/bin/conda/bin/python3"
 
 DATA="/home/ooiuser/data"
 IN="$DATA/proc/$PLATFORM/$DEPLOY/$PCO2W/$FILE"
 OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$PCO2W/${FILE%.json}.nc"
-if [ ! -d `/usr/bin/dirname $OUT` ]; then
-    mkdir -p `/usr/bin/dirname $OUT`
+if [ ! -d `dirname $OUT` ]; then
+    mkdir -p `dirname $OUT`
 fi
 
 COEFF="$DATA/proc/$PLATFORM/$DEPLOY/$PCO2W/pco2w_factory_calibration.coeffs"
@@ -38,5 +37,5 @@ BLANK="$DATA/proc/$PLATFORM/$DEPLOY/$PCO2W/pco2w_factory_calibration.blanks"
 # Process the file
 if [ -e $IN ]; then
     cd /home/ooiuser/code/cgsn-processing
-    $PYTHON -m cgsn_processing.process.proc_pco2w -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -dp $DEPTH -i $IN -o $OUT -cf $COEFF -df $BLANK -sn $SERIAL
+    python -m cgsn_processing.process.proc_pco2w -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -dp $DEPTH -i $IN -o $OUT -cf $COEFF -df $BLANK -sn $SERIAL
 fi

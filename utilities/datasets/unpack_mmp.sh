@@ -28,13 +28,10 @@ fi
 # set the unpacker and a limit of 5 seconds for processing (takes less than a second normally)
 UNPACK="/usr/bin/timeout 5 /home/ooiuser/bin/cg_util/mmp_unpack"
 
-# setup the python parser used for creating the JSON formatted file
-PYTHON="/home/ooiuser/bin/conda/bin/python"
-
 # Process the profiler data, using the E files as the key.
 for file in $RAW/E*.DAT; do
     # unpack the file, if it hasn't already been processed
-    out=`/bin/basename $file`
+    out=`basename $file`
     if [ ! -f $PROC/${out%.DAT}.TXT* ]; then
         echo "Processing $file..."
 
@@ -101,7 +98,7 @@ for file in $RAW/E*.DAT; do
         outfile=${infile/E/P}
         outfile=${outfile%.TXT}.json
         cd /home/ooiuser/code/cgsn-parsers
-        $PYTHON -m cgsn_parsers.parsers.parse_mmp_coastal -i $infile -o $outfile
+        python -m cgsn_parsers.parsers.parse_mmp_coastal -i $infile -o $outfile
     fi
 done
 

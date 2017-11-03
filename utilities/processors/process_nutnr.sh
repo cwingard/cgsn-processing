@@ -22,16 +22,15 @@ NUTNR=${5,,}
 CTD=${6,,}
 DEPTH=$7
 SWITCH=$8
-FILE=`/bin/basename $9`
+FILE=`basename $9`
 
 # Set the default directory paths and input/output sources
-PYTHON="/home/ooiuser/bin/conda/bin/python3"
 
 DATA="/home/ooiuser/data"
 IN="$DATA/proc/$PLATFORM/$DEPLOY/$NUTNR/$FILE"
 OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$NUTNR/${FILE%.json}.nc"
-if [ ! -d `/usr/bin/dirname $OUT` ]; then
-    mkdir -p `/usr/bin/dirname $OUT`
+if [ ! -d `dirname $OUT` ]; then
+    mkdir -p `dirname $OUT`
 fi
 
 COEFF="$DATA/proc/$PLATFORM/$DEPLOY/$NUTNR/nutnr_inhouse_calibration.coeffs"
@@ -39,6 +38,6 @@ COEFF="$DATA/proc/$PLATFORM/$DEPLOY/$NUTNR/nutnr_inhouse_calibration.coeffs"
 # Process the file
 if [ -e $IN ]; then
     cd /home/ooiuser/code/cgsn-processing
-    $PYTHON -m cgsn_processing.process.proc_nutnr -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -dp $DEPTH -i $IN -o $OUT \
+    python -m cgsn_processing.process.proc_nutnr -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -dp $DEPTH -i $IN -o $OUT \
         -cf $COEFF -df $CTD -s $SWITCH
 fi
