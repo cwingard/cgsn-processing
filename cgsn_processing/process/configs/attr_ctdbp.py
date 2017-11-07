@@ -47,7 +47,7 @@ CTDBP = {
         'units': 'dbar'
     },
     'oxygen_concentration': {
-        'units': 'mL/L'
+        'units': 'umol/L'
     },
     'raw_backscatter': {
         'units': 'counts'

@@ -66,6 +66,7 @@ def main(argv=None):
     deployment = args.deployment
     lat = args.latitude
     lon = args.longitude
+    depth = args.depth
 
     # load the json data file and return a panda dataframe, adding a default depth and the deployment ID
     df = json2df(infile)
@@ -82,7 +83,7 @@ def main(argv=None):
         dev.load_coeffs()
     else:
         # load from the CI hosted CSV files
-        csv_url = find_calibration('SPKIR', df.serial_number[0], (df.time.values.astype('int64') * 10**-9)[0])
+        csv_url = find_calibration('SPKIR', str(df.serial_number[0]), (df.time.values.astype('int64') * 10**-9)[0])
         if csv_url:
             dev.read_csv(csv_url)
             dev.save_coeffs()
@@ -102,7 +103,7 @@ def main(argv=None):
 
     # convert the dataframe to a format suitable for the pocean OMTs
     df['deploy_id'] = deployment
-    df = df2omtdf(df, lat, lon, 7.0,)
+    df = df2omtdf(df, lat, lon, depth)
 
     # add to the global attributes for the SPKIR
     attrs = SPKIR
@@ -122,11 +123,11 @@ def main(argv=None):
     d.setncatts(attrs['wavelengths'])
     d[:] = wavelengths
 
-    d = nc.createVariable('raw_channels', 'u4', ('time', 'station', 'wavelengths',))
+    d = nc.createVariable('raw_channels', 'u4', ('station', 'time', 'wavelengths',))
     d.setncatts(attrs['raw_channels'])
     d[:] = channels
 
-    d = nc.createVariable('irradiance', 'f', ('time', 'station', 'wavelengths',))
+    d = nc.createVariable('irradiance', 'f', ('station', 'time', 'wavelengths',))
     d.setncatts(attrs['irradiance'])
     d[:] = Ed
 

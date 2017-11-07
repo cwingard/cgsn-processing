@@ -12,6 +12,7 @@ import os
 import pandas as pd
 import re
 
+from gsw import SP_from_C
 from netCDF4 import Dataset
 from pocean.utils import dict_update
 from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMTs
@@ -19,7 +20,7 @@ from scipy.interpolate import interp1d
 
 from cgsn_processing.process.common import Coefficients, inputs, json2df, df2omtdf
 from cgsn_processing.process.finding_calibrations import find_calibration
-from cgsn_processing.process.configs.attr_nutnr import NUTNR
+from cgsn_processing.process.configs.attr_nutnr import ISUS
 
 from pyseas.data.nit_functions import ts_corrected_nitrate
 
@@ -76,11 +77,13 @@ def main(argv=None):
     # load the input arguments
     args = inputs(argv)
     infile = os.path.abspath(args.infile)
-    outfile = os.path.split(args.outfile)
+    outfile = os.path.abspath(args.outfile)
     platform = args.platform
     deployment = args.deployment
     lat = args.latitude
     lon = args.longitude
+    depth = args.depth
+    ctd_name = args.devfile  # name of co-located CTD
 
     # load the json data file and return a panda dataframe
     df = json2df(infile)
@@ -97,7 +100,7 @@ def main(argv=None):
             dev.load_coeffs()
         else:
             # load from the CI hosted CSV files
-            csv_url = find_calibration('NUTNR', df.serial_number[0], (df.time.values.astype('int64') / 1e9)[0])
+            csv_url = find_calibration('NUTNR', str(df.serial_number[0]), (df.time.values.astype('int64') / 1e9)[0])
             if csv_url:
                 dev.read_csv(csv_url)
                 dev.save_coeffs()
@@ -110,12 +113,15 @@ def main(argv=None):
         wavelengths = dev.coeffs['wl']
 
         # Merge the co-located CTD temperature and salinity data and calculate the corrected nitrate concentration
-        ctd_file = re.sub('nutnr', 'ctdbp', infile)
-        ctd = json2df(ctd_file)
+        nutnr_path, nutnr_file = os.path.split(infile)
+        ctd_file = re.sub('nutnr[\w]*', ctd_name, nutnr_file)
+        ctd_path = re.sub('nutnr', re.sub('[\d]*', '', ctd_name), nutnr_path)
+        ctd = json2df(os.path.join(ctd_path, ctd_file))
         if not ctd.empty:
             # interpolate temperature and salinity data from the CTD into the NUTNR record for calculations
             degC = interp1d(ctd.time.values.astype('int64'), ctd.temperature.values, bounds_error=False)
             df['temperature'] = degC(df.time.values.astype('int64'))
+            ctd['salinity'] = SP_from_C(ctd['conductivity'] * 10.0, ctd['temperature'], ctd['pressure'])
             psu = interp1d(ctd.time.values.astype('int64'), ctd.salinity, bounds_error=False)
             df['salinity'] = psu(df.time.values.astype('int64'))
 
@@ -132,18 +138,18 @@ def main(argv=None):
             df['corrected_nitrate'] = np.nan
 
     else:   # dataset does not include the full spectral array. Pad out with fill values to keep datasets consistent
-        channels = np.ones(256) * -999999999
-        wavelengths = np.arange(0, 256) * np.nan
+        channels = np.ones([df.shape[0], 256]) * -999999999
+        wavelengths = np.ones(256) * np.nan
         df['temperature'] = np.nan
         df['salinity'] = np.nan
         df['corrected_nitrate'] = np.nan
 
     # convert the dataframe to a format suitable for the pocean OMTs, adding the deployment name
     df['deploy_id'] = deployment
-    df = df2omtdf(df, lat, lon, 7.0,)
+    df = df2omtdf(df, lat, lon, depth)
 
     # add to the global attributes for the NUTNR
-    attrs = NUTNR
+    attrs = ISUS
     attrs['global'] = dict_update(attrs['global'], {
         'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
     })
@@ -160,13 +166,14 @@ def main(argv=None):
     d.setncatts(attrs['wavelengths'])
     d[:] = wavelengths
 
-    d = nc.createVariable('channel_measurements', 'i', ('time', 'station', 'wavelengths',))
+    d = nc.createVariable('channel_measurements', 'i', ('station', 'time', 'wavelengths',))
     d.setncatts(attrs['channel_measurements'])
     d[:] = channels
 
     # synchronize the data with the netCDF file and close it
     nc.sync()
     nc.close()
+
 
 if __name__ == '__main__':
     main()

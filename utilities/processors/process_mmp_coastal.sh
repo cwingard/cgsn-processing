@@ -16,22 +16,21 @@ if [ $# -ne 6 ]; then
 fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
-LAT=$3; LNG=$4
+LAT=$3; LON=$4
 MMP=${5,,}
-FILE=`/bin/basename $6`
+FILE=`basename $6`
 
 # Set the default directory paths and input/output sources
-PYTHON="/home/ooiuser/bin/conda/bin/python3"
 
 DATA="/home/ooiuser/data"
 IN="$DATA/proc/$PLATFORM/$DEPLOY/$MMP/$FILE"
 OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$MMP/${FILE%.json}.nc"
-if [ ! -d `/usr/bin/dirname $OUT` ]; then
-    mkdir -p `/usr/bin/dirname $OUT`
+if [ ! -d `dirname $OUT` ]; then
+    mkdir -p `dirname $OUT`
 fi
 
 # Process the profile dataset
 if [ -e $IN ] && [ ! -e ${OUT%.nc}-edata.nc ]; then
     cd /home/ooiuser/code/cgsn-processing
-    $PYTHON -m cgsn_processing.process.proc_mmp_coastal -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -i $IN -o $OUT
+    python -m cgsn_processing.process.proc_mmp_coastal -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -i $IN -o $OUT
 fi

@@ -48,7 +48,7 @@ def main(argv=None):
         dev.load_coeffs()
     else:
         # load from the CI hosted CSV files
-        csv_url = find_calibration('SPKIR', df.serial_number[0], (df.time.values.astype('int64') * 10**-9)[0])
+        csv_url = find_calibration('SPKIR', str(df.serial_number[0]), (df.time.values.astype('int64') * 10**-9)[0])
         if csv_url:
             dev.read_csv(csv_url)
             dev.save_coeffs()

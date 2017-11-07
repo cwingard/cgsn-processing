@@ -26,7 +26,6 @@ NUTNR=$9
 # setup the base directories and the python parser used for creating the JSON formatted file
 PROC="/home/ooiuser/data/proc/$PLATFORM/$DEPLOY"
 ERDDAP="/home/ooiuser/data/erddap/$PLATFORM/$DEPLOY"
-PYTHON="/home/ooiuser/bin/conda/bin/python3"
 
 case $FTYPE in
     "ACS" )
@@ -37,11 +36,11 @@ case $FTYPE in
             mkdir -p $ODIR
         fi
         for file in $PROC/optaa/ucspp_*_ACS_ACS.json; do
-            out=`/bin/basename $file`
+            out=`basename $file`
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
-                $PYTHON -m cgsn_processing.process.proc_cspp_optaa -i $file -o "$ODIR/${out%.json}.nc" \
+                python -m cgsn_processing.process.proc_cspp_optaa -i $file -o "$ODIR/${out%.json}.nc" \
                     -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -cf $COEFF
             fi
         done ;;
@@ -53,11 +52,11 @@ case $FTYPE in
             mkdir -p $ODIR
         fi
         for file in $PROC/ctdpf/ucspp_*_"$FTYPE"_CTD.json; do
-            out=`/bin/basename $file`
+            out=`basename $file`
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
-                $PYTHON -m cgsn_processing.process.proc_cspp_ctdpf -i $file -o "$ODIR/${out%.json}.nc" \
+                python -m cgsn_processing.process.proc_cspp_ctdpf -i $file -o "$ODIR/${out%.json}.nc" \
                     -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH
             fi
         done
@@ -68,11 +67,11 @@ case $FTYPE in
             mkdir -p $ODIR
         fi
         for file in $PROC/dosta/ucspp_*_"$FTYPE"_OPT.json; do
-            out=`/bin/basename $file`
+            out=`basename $file`
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
-                $PYTHON -m cgsn_processing.process.proc_cspp_dosta -i $file -o "$ODIR/${out%.json}.nc" \
+                python -m cgsn_processing.process.proc_cspp_dosta -i $file -o "$ODIR/${out%.json}.nc" \
                     -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH
             fi
         done
@@ -84,11 +83,11 @@ case $FTYPE in
             mkdir -p $ODIR
         fi
         for file in $PROC/flort/ucspp_*_"$FTYPE"_TRIP.json; do
-            out=`/bin/basename $file`
+            out=`basename $file`
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
-                $PYTHON -m cgsn_processing.process.proc_cspp_flort -i $file -o "$ODIR/${out%.json}.nc" \
+                python -m cgsn_processing.process.proc_cspp_flort -i $file -o "$ODIR/${out%.json}.nc" \
                     -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -sn $FLORT -cf $COEFF
             fi
         done
@@ -100,11 +99,11 @@ case $FTYPE in
             mkdir -p $ODIR
         fi
         for file in $PROC/parad/ucspp_*_"$FTYPE"_PARS.json; do
-            out=`/bin/basename $file`
+            out=`basename $file`
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
-                $PYTHON -m cgsn_processing.process.proc_cspp_parad -i $file -o "$ODIR/${out%.json}.nc" \
+                python -m cgsn_processing.process.proc_cspp_parad -i $file -o "$ODIR/${out%.json}.nc" \
                     -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -sn $PARAD -cf $COEFF
             fi
         done
@@ -116,11 +115,11 @@ case $FTYPE in
             mkdir -p $ODIR
         fi
         for file in $PROC/spkir/ucspp_*_"$FTYPE"_OCR.json; do
-            out=`/bin/basename $file`
+            out=`basename $file`
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
-                $PYTHON -m cgsn_processing.process.proc_cspp_spkir -i $file -o "$ODIR/${out%.json}.nc" \
+                python -m cgsn_processing.process.proc_cspp_spkir -i $file -o "$ODIR/${out%.json}.nc" \
                     -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -cf $COEFF
             fi
         done
@@ -131,11 +130,11 @@ case $FTYPE in
             mkdir -p $ODIR
         fi
         for file in $PROC/velpt/ucspp_*_"$FTYPE"_ADCP.json; do
-            out=`/bin/basename $file`
+            out=`basename $file`
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
-                $PYTHON -m cgsn_processing.process.proc_cspp_velpt -i $file -o "$ODIR/${out%.json}.nc" \
+                python -m cgsn_processing.process.proc_cspp_velpt -i $file -o "$ODIR/${out%.json}.nc" \
                     -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH
             fi
         done ;;
@@ -148,11 +147,11 @@ case $FTYPE in
             mkdir -p $ODIR
         fi
         for file in $PROC/nutnr/ucspp_*_SNA_SNA.json; do
-            out=`/bin/basename $file`
+            out=`basename $file`
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
-                $PYTHON -m cgsn_processing.process.proc_cspp_nutnr -i $file -o "$ODIR/${out%.json}.nc" \
+                python -m cgsn_processing.process.proc_cspp_nutnr -i $file -o "$ODIR/${out%.json}.nc" \
                     -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -sn $NUTNR -cf $COEFF
             fi
         done ;;
@@ -164,33 +163,33 @@ case $FTYPE in
             mkdir -p $ODIR
         fi
         for file in $PROC/winch/ucspp_*_WC_HMR.json; do
-            out=`/bin/basename $file`
+            out=`basename $file`
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
-                $PYTHON -m cgsn_processing.process.proc_cspp_wc_hmr -i $file -o "$ODIR/${out%.json}.nc" \
+                python -m cgsn_processing.process.proc_cspp_wc_hmr -i $file -o "$ODIR/${out%.json}.nc" \
                     -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH
             fi
         done
 
         # SBE data files
         for file in $PROC/winch/ucspp_*_WC_SBE.json; do
-            out=`/bin/basename $file`
+            out=`basename $file`
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
-                $PYTHON -m cgsn_processing.process.proc_cspp_wc_sbe -i $file -o "$ODIR/${out%.json}.nc" \
+                python -m cgsn_processing.process.proc_cspp_wc_sbe -i $file -o "$ODIR/${out%.json}.nc" \
                     -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH
             fi
         done
 
         # WM data files
         for file in $PROC/winch/ucspp_*_WC_WM.json; do
-            out=`/bin/basename $file`
+            out=`basename $file`
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
-                $PYTHON -m cgsn_processing.process.proc_cspp_wc_wm -i $file -o "$ODIR/${out%.json}.nc" \
+                python -m cgsn_processing.process.proc_cspp_wc_wm -i $file -o "$ODIR/${out%.json}.nc" \
                     -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH
             fi
         done ;;

@@ -1,0 +1,15 @@
+infile='/home/ooiuser/data/raw/ce01issm/D00008/cg_data/dcl16/pco2w1/20171012.pco2w1.log'
+outfile='/home/ooiuser/data/proc/ce01issm/D00008/nsif/pco2w/20171012.pco2w1.json'
+
+infile='/home/ooiuser/data/proc/ce01issm/D00008/nsif/pco2w/20171012.pco2w1.json'
+outfile='/home/ooiuser/data/erddap/ce01issm/D00008/nsif/pco2w/20171012.pco2w1.nc'
+
+coeff_file='/home/ooiuser/data/proc/ce01issm/D00008/nsif/pco2w/pco2w_factory_calibration.coeffs'
+blank_file='/home/ooiuser/data/proc/ce01issm/D00008/nsif/pco2w/pco2w_factory_calibration.blanks'
+
+platform='ce01issm'
+deployment='D00008'
+lat=44.639
+lon=-124.304
+depth=7.0
+

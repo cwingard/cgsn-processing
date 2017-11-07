@@ -29,7 +29,7 @@ def main(argv=None):
     deployment = args.deployment
     lat = args.latitude
     lon = args.longitude
-    depth = np.float(args.switch)    # utilize the switch option to set the deployment depth
+    depth = args.depth    # utilize the switch option to set the deployment depth
 
     # load the json data file and return a panda data frame
     df = json2df(infile)

@@ -138,18 +138,24 @@ CSPP_FLORT = {
         )
     },
     'measurement_wavelength_beta': {
+        'long_name': 'Wavelength',
+        'standard_name': 'radiation_wavelength',
         'units': 'nm'
     },
     'raw_signal_beta': {
         'units': 'counts'
     },
     'measurement_wavelength_chl': {
+        'long_name': 'Wavelength',
+        'standard_name': 'radiation_wavelength',
         'units': 'nm'
     },
     'raw_signal_chl': {
         'units': 'counts'
     },
     'measurement_wavelength_cdom': {
+        'long_name': 'Wavelength',
+        'standard_name': 'radiation_wavelength',
         'units': 'nm'
     },
     'raw_signal_cdom': {
@@ -159,12 +165,17 @@ CSPP_FLORT = {
         'units': 'counts'
     },
     'estimated_chlorophyll': {
+        'long_name': 'Estimated Chlorophyll',
+        'standard_name': 'mass_concentration_of_chlorophyll_in_sea_water',
         'units': 'mg L-1'
     },
     'fluorometric_cdom': {
+        'long_name': 'Fluorometric CDOM',
         'units': 'ppm'
     },
     'beta_700': {
+        'long_name': 'Volume Scattering Function at 700 nm',
+        'standard_name': 'volume_scattering_function_of_radiative_flux_in_sea_water',
         'units': 'm-1 sr-1'
     },
     'temperature': {
@@ -306,7 +317,6 @@ CSPP_OPTAA = {
     },
     'serial_number': {
         'long_name': 'Unit Serial Number',
-        'standard_name': 'serial_number',
         'units': '1'
     },
     'a_reference_dark': {

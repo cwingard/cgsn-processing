@@ -1,0 +1,38 @@
+#!/bin/bash
+#
+# Read the parsed ZPLSC data files from the CGSN Coastal Surface Moorings and
+# create processed datasets available in NetCDF formatted files for further
+# processing and review.
+#
+# C. Wingard 2017-01-24
+
+# Parse the command line inputs
+if [ $# -ne 8 ]; then
+    echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the ZPLSC directory"
+    echo "name, the deployment depth, then bin size of the condensed bins and the name of the file to process."
+    echo ""
+    echo "     example: $0 ce07shsm D00004 46.986 124.566 mfn/zplsc 87 5.016 20161012.zplsc.json"
+    exit 1
+fi
+PLATFORM=${1,,}
+DEPLOY=${2^^}
+LAT=$3; LON=$4
+ZPLSC=${5,,}
+DEPTH=$6
+BINSIZE=$7
+FILE=`basename $8`
+
+# Set the default directory paths and input/output sources
+
+DATA="/home/ooiuser/data"
+IN="$DATA/proc/$PLATFORM/$DEPLOY/$ZPLSC/$FILE"
+OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$ZPLSC/${FILE%.json}.nc"
+if [ ! -d `dirname $OUT` ]; then
+    mkdir -p `dirname $OUT`
+fi
+
+# Process the file
+if [ -e $IN ]; then
+    cd /home/ooiuser/code/cgsn-processing
+    python -m cgsn_processing.process.proc_zplsc -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -bs $BINSIZE -i $IN -o $OUT
+fi

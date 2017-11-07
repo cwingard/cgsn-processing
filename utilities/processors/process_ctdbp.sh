@@ -11,28 +11,26 @@ if [ $# -ne 7 ]; then
     echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the CTDBP"
     echo " directory name, the deployment depth and the name of the file to process."
     echo ""
-    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 mfn/ctdbp 82 20161012.ctdbp.json"
+    echo "     example: $0 ce07shsm D00004 44.63929 -124.30404 mfn/ctdbp 87 20161012.ctdbp2.json"
     exit 1
 fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
-LAT=$3; LNG=$4
+LAT=$3; LON=$4
 CTDBP=${5,,}
 DEPTH=$6
-FILE=`/bin/basename $7`
+FILE=`basename $7`
 
 # Set the default directory paths and input/output sources
-PYTHON="/home/ooiuser/bin/conda/bin/python3"
-
 DATA="/home/ooiuser/data"
 IN="$DATA/proc/$PLATFORM/$DEPLOY/$CTDBP/$FILE"
 OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$CTDBP/${FILE%.json}.nc"
-if [ ! -d `/usr/bin/dirname $OUT` ]; then
-    mkdir -p `/usr/bin/dirname $OUT`
+if [ ! -d `dirname $OUT` ]; then
+    mkdir -p `dirname $OUT`
 fi
 
 # Process the file
 if [ -e $IN ]; then
     cd /home/ooiuser/code/cgsn-processing
-    $PYTHON -m cgsn_processing.process.proc_ctdbp -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -dp $DEPTH -i $IN -o $OUT
+    python -m cgsn_processing.process.proc_ctdbp -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -i $IN -o $OUT
 fi

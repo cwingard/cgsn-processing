@@ -9,38 +9,33 @@
 # C. Wingard 2017-01-23
 
 # Parse the command line inputs
-if [ $# -ne 8 ]; then
+if [ $# -ne 7 ]; then
     echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the OPTAA directory"
-    echo "name, the deployment depth, the UNIQUE_ID name of the stored factory calibration data, and the name of the"
-    echo "file to process."
+    echo "name, the deployment depth, and the name of the file to process."
     echo ""
-    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 nsif/optaa 7 OPTAAD/CGINS-OPTAAD-00208__20160926 20161012_233000.optaa.json"
+    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 nsif/optaa 7 20161012_233000.optaa.json"
     exit 1
 fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
-LAT=$3; LNG=$4
+LAT=$3; LON=$4
 OPTAA=${5,,}
 DEPTH=$6
-UNIQUE_ID=${7^^}
-CFILE=`/bin/basename $UNIQUE_ID`
-FILE=`/bin/basename $8`
+FILE=`basename $7`
 
 # Set the default directory paths and input/output sources
-PYTHON="/home/ooiuser/bin/conda/bin/python3"
 
 DATA="/home/ooiuser/data"
 IN="$DATA/proc/$PLATFORM/$DEPLOY/$OPTAA/$FILE"
 OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$OPTAA/${FILE%.json}.nc"
-if [ ! -d `/usr/bin/dirname $OUT` ]; then
-    mkdir -p `/usr/bin/dirname $OUT`
+if [ ! -d `dirname $OUT` ]; then
+    mkdir -p `dirname $OUT`
 fi
 
-COEFF="$DATA/proc/$PLATFORM/$DEPLOY/$OPTAA/$CFILE.coeff"
-URL="https://raw.githubusercontent.com/ooi-integration/asset-management/master/calibration/$UNIQUE_ID.csv"
+COEFF="$DATA/proc/$PLATFORM/$DEPLOY/$OPTAA/optaa_factory_calibration.coeffs"
 
 # Process the file (if it hasn't already been done)
 if [ -e $IN ] && [ ! -e $OUT ]; then
     cd /home/ooiuser/code/cgsn-processing
-    $PYTHON -m cgsn_processing.process.proc_optaa -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -dp $DEPTH -i $IN -o $OUT -cf $COEFF -u $URL
+    python -m cgsn_processing.process.proc_optaa -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -i $IN -o $OUT -cf $COEFF
 fi

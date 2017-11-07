@@ -16,9 +16,9 @@ if [ $# -ne 6 ]; then
 fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
-LAT=$3; LNG=$4
+LAT=$3; LON=$4
 METBK=${5,,}
-FILE=`/bin/basename $6`
+FILE=`basename $6`
 
 # Set the default directory paths and input/output sources
 BIN="/home/ooiuser/code/cgsn-processing/cgsn_processing/process"
@@ -27,12 +27,12 @@ PYTHON="/home/ooiuser/bin/conda/bin/python"
 DATA="/home/ooiuser/data"
 IN="$DATA/proc/$PLATFORM/$DEPLOY/$METBK/$FILE"
 OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$METBK/${FILE%.json}.nc"
-if [ ! -d `/usr/bin/dirname $OUT` ]; then
-    mkdir -p `/usr/bin/dirname $OUT`
+if [ ! -d `dirname $OUT` ]; then
+    mkdir -p `dirname $OUT`
 fi
 
 # Process the file
 if [ -e $IN ]; then
     cd /home/ooiuser/code/cgsn-processing
-    $PYTHON -m cgsn_processing.process.proc_metbk -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -i $IN -o $OUT
+    python -m cgsn_processing.process.proc_metbk -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -i $IN -o $OUT
 fi

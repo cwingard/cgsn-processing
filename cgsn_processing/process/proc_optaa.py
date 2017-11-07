@@ -18,6 +18,7 @@ from pyaxiom.netcdf.sensors import TimeSeries
 
 from cgsn_processing.process.common import Coefficients, inputs, json2df
 from cgsn_processing.process.configs.attr_optaa import OPTAA
+from cgsn_processing.process.finding_calibrations import find_calibration
 
 from pyseas.data.opt_functions import opt_internal_temp, opt_external_temp
 from pyseas.data.opt_functions import opt_pressure, opt_pd_calc, opt_tempsal_corr
@@ -293,35 +294,31 @@ def main(argv=None):
     deployment = args.deployment
     lat = args.latitude
     lon = args.longitude
-    depth = np.float(args.switch)  # utilize the switch option to set the deployment depth
+    depth = args.depth
 
-    coeff_file = os.path.abspath(args.coeff_file)
-    dev = Calibrations(coeff_file)  # initialize calibration class
-    
-    # check for the source of calibration coeffs and load accordingly
-    if os.path.isfile(coeff_file):
-        # we always want to use this file if it exists
-        dev.load_coeffs()
-    elif args.devfile:
-        # load from the factory supplied device file
-        devfile = os.path.abspath(args.devfile)
-        dev.read_devfile(devfile)
-        dev.save_coeffs()
-    elif args.csvurl:
-        # load from the CI hosted CSV files
-        hdr_url = args.csvurl
-        tca_url = re.sub('.csv', '__CC_taarray.ext', hdr_url)
-        tcc_url = re.sub('.csv', '__CC_tcarray.ext', hdr_url)
-        dev.read_devurls(hdr_url, tca_url, tcc_url)
-        dev.save_coeffs()
-    else:
-        raise Exception('A source for the OPTAA calibration coefficients could not be found')
-    
     # load the json data file and return a panda dataframe
     df = json2df(infile)
     if df.empty:
         # This is an empty file, end processing
         return None
+
+    coeff_file = os.path.abspath(args.coeff_file)
+    dev = Calibrations(coeff_file)  # initialize calibration class
+
+    # check for the source of calibration coeffs and load accordingly
+    if os.path.isfile(coeff_file):
+        # we always want to use this file if it exists
+        dev.load_coeffs()
+    else:
+        # load from the CI hosted CSV files
+        csv_url = find_calibration('OPTAA', str(df.serial_number[0]), (df.time.values.astype('int64') * 10 ** -9)[0])
+        if csv_url:
+            tca_url = re.sub('.csv', '__CC_taarray.ext', csv_url)
+            tcc_url = re.sub('.csv', '__CC_tcarray.ext', csv_url)
+            dev.read_devurls(csv_url, tca_url, tcc_url)
+            dev.save_coeffs()
+        else:
+            raise Exception('A source for the OPTAA calibration coefficients could not be found')
 
     df['depth'] = depth
     df['deploy_id'] = deployment
@@ -367,17 +364,21 @@ def main(argv=None):
 
     # create a new dimension for the wavelength array, padded out to a size of 100 to account for the variable number
     # of wavelengths and then create arrays for the the 'a' and 'c'-channel wavelengths
-    nc.createDimension('a_wavelengths', size=100)
-    nc.createDimension('c_wavelengths', size=100)
-    npad = 100 - dev.coeffs['num_wavelengths']
-    fill = np.ones(npad) * -999999999.
+    nc.createDimension('wavelengths', size=100)
+    d = nc.createVariable('wavelengths', 'i', ('wavelengths',))
+    d[:] = np.arange(100)
+    d.setncatts(OPTAA['wavelengths'])
 
-    d = nc.createVariable('a_wavelengths', 'f', ('a_wavelengths',))
+    pad = 100 - dev.coeffs['num_wavelengths']
+    fill_int = (np.ones(pad) * -999999999).astype(np.int32)
+    fill_nan = np.ones(pad) * np.nan
+
+    d = nc.createVariable('a_wavelengths', 'f', ('wavelengths',))
     d.setncatts(OPTAA['a_wavelengths'])
-    d[:] = np.concatenate((dev.coeffs['a_wavelengths'], fill)).tolist()
-    d = nc.createVariable('c_wavelengths', 'f', ('c_wavelengths',))
+    d[:] = np.concatenate((dev.coeffs['a_wavelengths'], fill_nan)).tolist()
+    d = nc.createVariable('c_wavelengths', 'f', ('wavelengths',))
     d.setncatts(OPTAA['c_wavelengths'])
-    d[:] = np.concatenate((dev.coeffs['c_wavelengths'], fill)).tolist()
+    d[:] = np.concatenate((dev.coeffs['c_wavelengths'], fill_nan)).tolist()
 
     # add the data from the data frame and set the attributes
     for c in df.columns:
@@ -399,21 +400,16 @@ def main(argv=None):
                    'a_signal_raw', 'a_reference_raw',
                    'c_signal_raw', 'c_reference_raw']:
             # first determine the data type and create accordingly
-            if c in ['a_signal_raw', 'a_reference_raw']:
-                d = nc.createVariable(c, 'i4', ('time', 'a_wavelengths',))
+            if c in ['a_signal_raw', 'a_reference_raw', 'c_signal_raw', 'c_reference_raw']:
+                d = nc.createVariable(c, 'i4', ('time', 'wavelengths',))
                 data = np.array(np.vstack(df[c].values), dtype='int32')
-            elif c in ['c_signal_raw', 'c_reference_raw']:
-                d = nc.createVariable(c, 'i4', ('time', 'c_wavelengths',))
-                data = np.array(np.vstack(df[c].values), dtype='int32')
-            elif c in ['apd', 'apd_ts', 'apd_ts_s']:
-                d = nc.createVariable(c, 'f', ('time', 'a_wavelengths',))
-                data = np.array(np.vstack(df[c].values), dtype='float32')
+                d.setncatts(OPTAA[c])
+                d[:] = np.concatenate((data, np.tile(fill_int, (len(df.time), 1))), axis=1)
             else:
-                d = nc.createVariable(c, 'f', ('time', 'c_wavelengths',))
+                d = nc.createVariable(c, 'f', ('time', 'wavelengths',))
                 data = np.array(np.vstack(df[c].values), dtype='float32')
-            # and now assign the data, padding out to 100 wavelengths
-            d.setncatts(OPTAA[c])
-            d[:] = np.concatenate((data, np.tile(fill, (len(df.time), 1))), axis=1)
+                d.setncatts(OPTAA[c])
+                d[:] = np.concatenate((data, np.tile(fill_nan, (len(df.time), 1))), axis=1)
         else:
             # use the TimeSeries object to add the remaining variables
             ts.add_variable(c, df[c].values, fillvalue=-999999999, attributes=OPTAA[c])
