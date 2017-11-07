@@ -11,7 +11,7 @@ fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
 LAT=$3
-LNG=$4
+LON=$4
 DCL=${5,,}
 DEPTH=$6
 LOCATE=${7,,}
@@ -27,8 +27,8 @@ PROCESS="/home/ooiuser/code/cgsn-processing/utilities/processors"
 echo "Parsing $PLATFORM/$DEPLOY raw ctdbp data"
 for file in $RAW/$PLATFORM/$DEPLOY/cg_data/$DCL/ctdbp*/*.log; do
     FNAME=`basename $file`
-    foo=`dirname $file`
-    DNAME=`basename $foo`
+    PNAME=`dirname $file`
+    DNAME=`basename $PNAME`
     echo "$FNAME"
     $PARSE/harvest_ctdbp.sh $PLATFORM $DEPLOY $DCL $DNAME $LOCATE $TYPE $FNAME 
 done
