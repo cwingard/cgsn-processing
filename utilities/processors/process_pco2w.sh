@@ -16,7 +16,7 @@ if [ $# -ne 8 ]; then
 fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
-LAT=$3; LNG=$4
+LAT=$3; LON=$4
 PCO2W=${5,,}
 DEPTH=$6
 SERIAL=${7^^}
@@ -37,5 +37,5 @@ BLANK="$DATA/proc/$PLATFORM/$DEPLOY/$PCO2W/pco2w_factory_calibration.blanks"
 # Process the file
 if [ -e $IN ]; then
     cd /home/ooiuser/code/cgsn-processing
-    python -m cgsn_processing.process.proc_pco2w -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -dp $DEPTH -i $IN -o $OUT -cf $COEFF -df $BLANK -sn $SERIAL
+    python -m cgsn_processing.process.proc_pco2w -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -i $IN -o $OUT -cf $COEFF -df $BLANK -sn $SERIAL
 fi

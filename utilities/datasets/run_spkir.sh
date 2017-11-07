@@ -12,7 +12,7 @@ DEPLOY=${2^^}
 DCL=$3
 COEFF=$4
 LAT=$5
-LNG=$6
+LON=$6
 
 # Set the default directory paths
 RAW="/home/ooiuser/data/raw"
@@ -33,7 +33,7 @@ files=($PROC/$PLATFORM/$DEPLOY/nsif/spkir/*.json)
 for ((i=${#files[@]}-1; i>=0; i--)) do
     FNAME=`basename "${files[$i]}"`
     echo "$FNAME"
-    $PROCESS/process_spkir.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/spkir" $COEFF $FNAME || echo "$FNAME processing failed"
+    $PROCESS/process_spkir.sh $PLATFORM $DEPLOY $LAT $LON "nsif/spkir" $COEFF $FNAME || echo "$FNAME processing failed"
 done
 
 

@@ -12,7 +12,7 @@ fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
 LAT=$3
-LNG=$4
+LON=$4
 DCL=${5,,}
 CTD=${6,,}
 DEPTH=$7
@@ -37,5 +37,5 @@ echo "Processing $PLATFORM/$DEPLOY parsed nutnr data"
 for file in $PROC/$PLATFORM/$DEPLOY/nsif/nutnr/*.json; do
     FNAME=`basename $file`
     echo "$FNAME"
-    $PROCESS/process_nutnr.sh $PLATFORM $DEPLOY $LAT $LNG "nsif/nutnr" $CTD $DEPTH $SWITCH $FNAME
+    $PROCESS/process_nutnr.sh $PLATFORM $DEPLOY $LAT $LON "nsif/nutnr" $CTD $DEPTH $SWITCH $FNAME
 done

@@ -11,7 +11,7 @@ fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
 LAT=$3
-LNG=$4
+LON=$4
 DCL=${5,,}
 DEPTH=$6
 SUB=${7,,}
@@ -38,6 +38,6 @@ echo "Processing $PLATFORM/$DEPLOY parsed pco2w data"
 for file in $PROC/$PLATFORM/$DEPLOY/$SUB/pco2w/*.json; do
     FNAME=`basename $file`
     echo "$FNAME"
-    $PROCESS/process_pco2w.sh $PLATFORM $DEPLOY $LAT $LNG "$SUB/pco2w" $DEPTH $SERIAL $FNAME
+    $PROCESS/process_pco2w.sh $PLATFORM $DEPLOY $LAT $LON "$SUB/pco2w" $DEPTH $SERIAL $FNAME
 done
 

@@ -10,7 +10,7 @@ fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
 LAT=$3
-LNG=$4
+LON=$4
 
 # Set the default directory paths
 RAW="/home/ooiuser/data/raw"
@@ -30,5 +30,5 @@ echo "Processing $PLATFORM/$DEPLOY parsed rda data"
 for file in $PROC/$PLATFORM/$DEPLOY/buoy/rda/*.json; do
     FNAME=`basename $file`
     echo "$FNAME"
-    $PROCESS/process_syslog_rda.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/rda" $FNAME
+    $PROCESS/process_syslog_rda.sh $PLATFORM $DEPLOY $LAT $LON "buoy/rda" $FNAME
 done

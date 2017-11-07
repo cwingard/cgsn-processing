@@ -18,7 +18,7 @@ if [ $# -ne 9 ]; then
 fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
-LAT=$3; LNG=$4
+LAT=$3; LON=$4
 FLORT=${5,,}
 CTD=${6,,}
 DEPTH=$7
@@ -39,6 +39,6 @@ COEFF="$DATA/proc/$PLATFORM/$DEPLOY/$FLORT/flort_factory_calibration.coeffs"
 # Process the file (if it hasn't already been done)
 if [ -e $IN ]; then
     cd /home/ooiuser/code/cgsn-processing
-    python -m cgsn_processing.process.proc_flort -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -dp $DEPTH \
+    python -m cgsn_processing.process.proc_flort -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH \
         -i $IN -o $OUT -cf $COEFF -sn $SERIAL -df $CTD
 fi

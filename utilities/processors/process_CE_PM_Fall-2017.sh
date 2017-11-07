@@ -21,17 +21,17 @@ PROCESS="/home/ooiuser/code/cgsn-processing/utilities/processors"
 source activate ooi
 
 LAT="46.85070"
-LNG="-124.97075"
+LON="-124.97075"
 
 # Buoy
-$PROCESS/process_gps.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/gps" $FNAME.syslog.json
-$PROCESS/process_syslog_irid.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/irid" $FNAME.syslog.json
-$PROCESS/process_superv_stc.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/superv" $FNAME.syslog.json
+$PROCESS/process_gps.sh $PLATFORM $DEPLOY $LAT $LON "buoy/gps" $FNAME.syslog.json
+$PROCESS/process_syslog_irid.sh $PLATFORM $DEPLOY $LAT $LON "buoy/irid" $FNAME.syslog.json
+$PROCESS/process_superv_stc.sh $PLATFORM $DEPLOY $LAT $LON "buoy/superv" $FNAME.syslog.json
 for mopak in $PROC/$PLATFORM/$DEPLOY/buoy/3dmgx3/$FNAME*.3dmgx3.json; do
     if [ -e $mopak ]; then
         SIZE=`du -k "$mopak" | cut -f1`
         if [ $SIZE -gt 0 ]; then
-            $PROCESS/process_mopak.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/3dmgx3" $mopak
+            $PROCESS/process_mopak.sh $PLATFORM $DEPLOY $LAT $LON "buoy/3dmgx3" $mopak
         fi
     fi
 done
@@ -40,6 +40,6 @@ done
 for mmp in $PROC/$PLATFORM/$DEPLOY/imm/mmp/P*.json; do
     SIZE=`du -k "$mmp" | cut -f1`
     if [ $SIZE -gt 0 ]; then
-        $PROCESS/process_mmp_coastal.sh $PLATFORM $DEPLOY $LAT $LNG "imm/mmp" $mmp
+        $PROCESS/process_mmp_coastal.sh $PLATFORM $DEPLOY $LAT $LON "imm/mmp" $mmp
     fi
 done

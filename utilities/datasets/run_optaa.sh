@@ -10,7 +10,7 @@ fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
 LAT=$3
-LNG=$4
+LON=$4
 DCL=${5,,}
 DEPTH=$6
 SUB=${7,,}
@@ -36,6 +36,6 @@ echo "Processing $PLATFORM/$DEPLOY parsed optaa data"
 for file in $PROC/$PLATFORM/$DEPLOY/$SUB/optaa/*.json; do
     FNAME=`basename $file`
     echo "$FNAME"
-    $PROCESS/process_optaa.sh $PLATFORM $DEPLOY $LAT $LNG "$SUB/optaa" $DEPTH $FNAME
+    $PROCESS/process_optaa.sh $PLATFORM $DEPLOY $LAT $LON "$SUB/optaa" $DEPTH $FNAME
 done
 

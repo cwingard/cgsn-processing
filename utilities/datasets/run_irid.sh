@@ -10,7 +10,7 @@ fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
 LAT=$3
-LNG=$4
+LON=$4
 
 # Set the default directory paths
 RAW="/home/ooiuser/data/raw"
@@ -39,5 +39,5 @@ echo "Processing $PLATFORM/$DEPLOY parsed Iridium data"
 for file in $PROC/$PLATFORM/$DEPLOY/buoy/irid/*.json; do
     FNAME=`basename $file`
     echo "$FNAME"
-    $PROCESS/process_syslog_irid.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/irid" $FNAME
+    $PROCESS/process_syslog_irid.sh $PLATFORM $DEPLOY $LAT $LON "buoy/irid" $FNAME
 done

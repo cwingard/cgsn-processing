@@ -16,7 +16,7 @@ if [ $# -ne 6 ]; then
 fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
-LAT=$3; LNG=$4
+LAT=$3; LON=$4
 GPS=${5,,}
 FILE=`basename $6`
 
@@ -32,5 +32,5 @@ fi
 # Process the file
 if [ -e $IN ]; then
     cd /home/ooiuser/code/cgsn-processing
-    python -m cgsn_processing.process.proc_gps -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -i $IN -o $OUT
+    python -m cgsn_processing.process.proc_gps -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -i $IN -o $OUT
 fi

@@ -11,7 +11,7 @@ fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
 LAT=$3
-LNG=$4
+LON=$4
 DEPTH=$5
 FLORT=$6
 PARAD=$7
@@ -29,7 +29,7 @@ cd $PARSE
 
 # now convert the parsed data files to netCDF file for use in ERDDAP
 cd $PROCESS
-./utilities/processors/process_ucspp.sh $PLATFORM $DEPLOY $LAT $LNG $DEPTH PPB $FLORT $PARAD 0
-./utilities/processors/process_ucspp.sh $PLATFORM $DEPLOY $LAT $LNG $DEPTH SNA 0 0 $NUTNR
-./utilities/processors/process_ucspp.sh $PLATFORM $DEPLOY $LAT $LNG $DEPTH ACS 0 0 0 
-./utilities/processors/process_ucspp.sh $PLATFORM $DEPLOY $LAT $LNG $DEPTH WC 0 0 0
+./utilities/processors/process_ucspp.sh $PLATFORM $DEPLOY $LAT $LON $DEPTH PPB $FLORT $PARAD 0
+./utilities/processors/process_ucspp.sh $PLATFORM $DEPLOY $LAT $LON $DEPTH SNA 0 0 $NUTNR
+./utilities/processors/process_ucspp.sh $PLATFORM $DEPLOY $LAT $LON $DEPTH ACS 0 0 0
+./utilities/processors/process_ucspp.sh $PLATFORM $DEPLOY $LAT $LON $DEPTH WC 0 0 0

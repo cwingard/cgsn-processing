@@ -12,7 +12,7 @@ DEPLOY=${2^^}
 DCL=$3
 OUT=$4
 LAT=$5
-LNG=$6
+LON=$6
 
 
 # Set the default directory paths
@@ -33,5 +33,5 @@ echo "Processing $PLATFORM/$DEPLOY parsed supervisor data"
 for file in $PROC/$PLATFORM/$DEPLOY/$OUT/*.json; do
     FNAME=`basename $file`
     echo "$FNAME"
-    $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LNG $OUT $FNAME
+    $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LON $OUT $FNAME
 done

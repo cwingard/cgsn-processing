@@ -11,7 +11,7 @@ PLATFORM=${1,,}
 DEPLOY=${2^^}
 DCL=$3
 LAT=$4
-LNG=$5
+LON=$5
 
 
 # Set the default directory paths
@@ -32,5 +32,5 @@ echo "Processing $PLATFORM/$DEPLOY parsed mopak data"
 for file in $PROC/$PLATFORM/$DEPLOY/buoy/mopak/*.json; do
     FNAME=`basename $file`
     echo "$FNAME"
-    $PROCESS/process_mopak.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/mopak" $FNAME
+    $PROCESS/process_mopak.sh $PLATFORM $DEPLOY $LAT $LON "buoy/mopak" $FNAME
 done

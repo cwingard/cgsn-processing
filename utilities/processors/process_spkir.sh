@@ -16,7 +16,7 @@ if [ $# -ne 7 ]; then
 fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
-LAT=$3; LNG=$4
+LAT=$3; LON=$4
 SPKIR=${5,,}
 DEPTH=$6
 CFILE="spkir_factory_calibrations.coeff"
@@ -36,5 +36,5 @@ COEFF="$DATA/proc/$PLATFORM/$DEPLOY/$SPKIR/$CFILE"
 # Process the file (if it hasn't already been done)
 if [ -e $IN ]; then
     cd /home/ooiuser/code/cgsn-processing
-    python -m cgsn_processing.process.proc_spkir -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -dp $DEPTH -i $IN -o $OUT -cf $COEFF
+    python -m cgsn_processing.process.proc_spkir -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -i $IN -o $OUT -cf $COEFF
 fi

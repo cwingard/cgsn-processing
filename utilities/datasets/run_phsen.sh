@@ -10,7 +10,7 @@ fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
 LAT=$3
-LNG=$4
+LON=$4
 DCL=${5,,}
 DEPTH=$6
 MFN=${7,,}
@@ -36,6 +36,6 @@ echo "Processing $PLATFORM/$DEPLOY parsed phsen data"
 for file in $PROC/$PLATFORM/$DEPLOY/$MFN/phsen/*.json; do
     FNAME=`basename $file`
     echo "$FNAME"
-    $PROCESS/process_phsen.sh $PLATFORM $DEPLOY $LAT $LNG "$MFN/phsen" $DEPTH $FNAME
+    $PROCESS/process_phsen.sh $PLATFORM $DEPLOY $LAT $LON "$MFN/phsen" $DEPTH $FNAME
 done
 

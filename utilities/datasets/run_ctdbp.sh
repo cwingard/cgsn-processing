@@ -38,6 +38,6 @@ echo "Processing $PLATFORM/$DEPLOY parsed ctdbp data"
 for file in $PROC/$PLATFORM/$DEPLOY/$LOCATE/ctdbp/*.json; do
     FNAME=`basename $file`
     echo "$FNAME"
-    $PROCESS/process_ctdbp.sh $PLATFORM $DEPLOY $LAT $LNG "$LOCATE/ctdbp" $DEPTH $FNAME
+    $PROCESS/process_ctdbp.sh $PLATFORM $DEPLOY $LAT $LON "$LOCATE/ctdbp" $DEPTH $FNAME
 done
 

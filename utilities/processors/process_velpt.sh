@@ -16,7 +16,7 @@ if [ $# -ne 7 ]; then
 fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
-LAT=$3; LNG=$4
+LAT=$3; LON=$4
 VELPT=${5,,}
 DEPTH=$6
 FILE=`basename $7`
@@ -33,5 +33,5 @@ fi
 # Process the file
 if [ -e $IN ]; then
     cd /home/ooiuser/code/cgsn-processing
-    python -m cgsn_processing.process.proc_velpt -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LNG -dp $DEPTH -i $IN -o $OUT
+    python -m cgsn_processing.process.proc_velpt -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -i $IN -o $OUT
 fi

@@ -10,7 +10,7 @@ fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
 LAT=$3
-LNG=$4
+LON=$4
 
 # Set the default directory paths
 RAW="/home/ooiuser/data/raw"
@@ -30,5 +30,5 @@ echo "Processing $PLATFORM/$DEPLOY parsed FB250 data"
 for file in $PROC/$PLATFORM/$DEPLOY/buoy/fb250/*.json; do
     FNAME=`basename $file`
     echo "$FNAME"
-    $PROCESS/process_syslog_fb250.sh $PLATFORM $DEPLOY $LAT $LNG "buoy/fb250" $FNAME
+    $PROCESS/process_syslog_fb250.sh $PLATFORM $DEPLOY $LAT $LON "buoy/fb250" $FNAME
 done
