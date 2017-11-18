@@ -11,7 +11,7 @@ if [ $# -ne 7 ]; then
     echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the SPKIR"
     echo "directory name, deployment depth, the serial number of the unit, and the name of the file to process."
     echo ""
-    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 nsif/spkir 7 1153 20161012.spkir.json"
+    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 nsif/spkir 7 20161012.spkir.json"
     exit 1
 fi
 PLATFORM=${1,,}

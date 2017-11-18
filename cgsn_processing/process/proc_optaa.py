@@ -318,7 +318,8 @@ def main(argv=None):
             dev.read_devurls(csv_url, tca_url, tcc_url)
             dev.save_coeffs()
         else:
-            raise Exception('A source for the OPTAA calibration coefficients could not be found')
+            print('A source for the OPTAA calibration coefficients for {} could not be found'.format(infile))
+            return None
 
     df['depth'] = depth
     df['deploy_id'] = deployment

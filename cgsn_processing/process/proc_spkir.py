@@ -88,7 +88,8 @@ def main(argv=None):
             dev.read_csv(csv_url)
             dev.save_coeffs()
         else:
-            raise Exception('A source for the SPKIR calibration coefficients could not be found')
+            print('A source for the SPKIR calibration coefficients for {} could not be found'.format(infile))
+            return None
 
     # pop the raw_channels array out of the dataframe (will put it back in later)
     channels = np.array(np.vstack(df.pop('raw_channels')), dtype='uint32')

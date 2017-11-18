@@ -2,9 +2,9 @@
 
 # Parse the command line inputs
 if [ $# -ne 8 ]; then
-    echo "$0: required inputs are the platform and deployment names, the latitude and longitude,"
-    echo "the DCL name, the sensor depth, the subplatform name, and the unit serial number"    
-    echo "in that order."
+    echo "$0: required inputs are the platform and deployment names, the latitude and longitude of the mooring,"
+    echo "the DCL id, the deployment depth of the sensor, the subassembly [buoy/nsif/mfn] location, and the serial"
+    echo "of the unit."
     echo "     example: $0 ce07shsm D00001 44.639 -124.304 dcl35 87 mfn P0120"
     exit 1
 fi
@@ -14,7 +14,7 @@ LAT=$3
 LON=$4
 DCL=${5,,}
 DEPTH=$6
-SUB=${7,,}
+SUBASY=${7,,}
 SERIAL=${8^^}
 
 # Set the default directory paths
@@ -27,17 +27,16 @@ PROCESS="/home/ooiuser/code/cgsn-processing/utilities/processors"
 echo "Parsing $PLATFORM/$DEPLOY raw pco2w data"
 for file in $RAW/$PLATFORM/$DEPLOY/cg_data/$DCL/pco2w*/*.log; do
     FNAME=`basename $file`
-    foo=`dirname $file`
-    DNAME=`basename $foo`
+    DNAME=`dirname $file`
+    DNAME=`basename $DNAME`
     echo "$FNAME"
-    $PARSE/harvest_pco2w.sh $PLATFORM $DEPLOY $DCL $DNAME $SUB $FNAME
+    $PARSE/harvest_pco2w.sh $PLATFORM $DEPLOY $DCL $DNAME $SUBASY $FNAME
 done
 
 # Process the files
 echo "Processing $PLATFORM/$DEPLOY parsed pco2w data"
-for file in $PROC/$PLATFORM/$DEPLOY/$SUB/pco2w/*.json; do
+for file in $PROC/$PLATFORM/$DEPLOY/$SUBASY/pco2w/*.json; do
     FNAME=`basename $file`
     echo "$FNAME"
-    $PROCESS/process_pco2w.sh $PLATFORM $DEPLOY $LAT $LON "$SUB/pco2w" $DEPTH $SERIAL $FNAME
+    $PROCESS/process_pco2w.sh $PLATFORM $DEPLOY $LAT $LON "$SUBASY/pco2w" $DEPTH $SERIAL $FNAME
 done
-

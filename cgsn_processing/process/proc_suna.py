@@ -55,7 +55,8 @@ def main(argv=None):
             dev.read_csv(csv_url)
             dev.save_coeffs()
         else:
-            raise Exception('A source for the NUTNR calibration coefficients could not be found')
+            print('A source for the NUTNR calibration coefficients for {} could not be found'.format(infile))
+            return None
 
     # pop the raw_channels array out of the dataframe (will put it back in later)
     channels = np.array(np.vstack(df.pop('channel_measurements')))
@@ -67,12 +68,25 @@ def main(argv=None):
     ctd_file = re.sub('nutnr[\w]*', ctd_name, nutnr_file)
     ctd_path = re.sub('nutnr', re.sub('[\d]*', '', ctd_name), nutnr_path)
     ctd = json2df(os.path.join(ctd_path, ctd_file))
-    if not ctd.empty:
-        # interpolate temperature and salinity data from the CTD into the NUTNR record for calculations
+    if not ctd.empty and len(ctd.index) >= 3:
+        # The Global moorings may use the data from the METBK-CT for the NUTNR mounted on the buoy subsurface plate.
+        # We'll rename the data columns from the METBK to match other CTDs and process accordingly.
+        if re.match('metbk', ctd_name):
+            ctd = ctd.rename(columns={
+                'sea_surface_temperature': 'temperature',
+                'sea_surface_conductivity': 'conductivity'
+            })
+            ctd['pressure'] = 1.0
+
+        # calculate the practical salinity of the seawater from the temperature, conductivity and pressure
+        # measurements
+        ctd['psu'] = SP_from_C(ctd['conductivity'] * 10.0, ctd['temperature'], ctd['pressure'])
+
+        # interpolate temperature and salinity data from the CTD into the FLORT record for calculations
         degC = interp1d(ctd.time.values.astype('int64'), ctd.temperature.values, bounds_error=False)
         df['temperature'] = degC(df.time.values.astype('int64'))
-        ctd['salinity'] = SP_from_C(ctd['conductivity'] * 10.0, ctd['temperature'], ctd['pressure'])
-        psu = interp1d(ctd.time.values.astype('int64'), ctd.salinity, bounds_error=False)
+
+        psu = interp1d(ctd.time.values.astype('int64'), ctd.psu, bounds_error=False)
         df['salinity'] = psu(df.time.values.astype('int64'))
 
         # Calculate the corrected nitrate concentration (uM) accounting for temperature and salinity and the pure
@@ -83,9 +97,9 @@ def main(argv=None):
                                                        df['measurement_type'], dev.coeffs['wllower'],
                                                        dev.coeffs['wlupper'])
     else:
-        df['temperature'] = np.nan
-        df['salinity'] = np.nan
-        df['corrected_nitrate'] = np.nan
+        df['temperature'] = -9999.9
+        df['salinity'] = -9999.9
+        df['corrected_nitrate'] = -9999.9
 
     # convert the dataframe to a format suitable for the pocean OMTs, adding the deployment name
     df['deploy_id'] = deployment

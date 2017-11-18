@@ -54,7 +54,8 @@ def main(argv=None):
             dev.read_csv(csv_url)
             dev.save_coeffs()
         else:
-            raise Exception('A source for the NUTNR calibration coefficients could not be found')
+            print('A source for the NUTNR calibration coefficients for {} could not be found'.format(infile))
+            return None
 
     # Merge the co-located CTD temperature and salinity data and calculate the corrected nitrate concentration
     ctd_file = re.sub('nutnr', 'ctdpf', infile)

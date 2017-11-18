@@ -89,7 +89,8 @@ def main(argv=None):
             dev.read_csv(csv_url)
             dev.save_coeffs()
         else:
-            raise Exception('A source for the PARAD calibration coefficients could not be found')
+            print('A source for the PARAD calibration coefficients for {} could not be found'.format(infile))
+            return None
 
     # Apply the scale, offset and immersion correction factors from the factory calibration coefficients
     df['irradiance'] = opt_par_satlantic(df['raw_par'], dev.coeffs['a0'], dev.coeffs['a1'], dev.coeffs['Im'])

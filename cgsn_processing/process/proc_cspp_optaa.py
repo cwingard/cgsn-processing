@@ -55,7 +55,8 @@ def main(argv=None):
             dev.read_devurls(csv_url, tca_url, tcc_url)
             dev.save_coeffs()
         else:
-            raise Exception('A source for the OPTAA calibration coefficients could not be found')
+            print('A source for the OPTAA calibration coefficients for {} could not be found'.format(infile))
+            return None
 
     # Merge the co-located CTD temperature and salinity data and calculate the temperature and salinity corrections
     ctd_file = re.sub('optaa', 'ctdpf', infile)
