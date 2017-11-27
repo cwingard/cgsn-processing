@@ -5,7 +5,7 @@ if [ $# -ne 8 ]; then
     echo "$0: required inputs are the platform and deployment names, the latitude and longitude of the mooring,"
     echo "the DCL id, the deployment depth of the sensor, the subassembly [buoy/nsif/mfn] location, and the serial"
     echo "of the unit."
-    echo "     example: $0 ce07shsm D00001 44.639 -124.304 dcl35 87 mfn P0120"
+    echo "     example: $0 ce07shsm D00001 44.639 -124.304 dcl35 87 mfn C0120"
     exit 1
 fi
 PLATFORM=${1,,}
