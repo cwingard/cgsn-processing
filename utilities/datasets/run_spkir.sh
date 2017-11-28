@@ -25,8 +25,8 @@ PROCESS="/home/ooiuser/code/cgsn-processing/utilities/processors"
 echo "Parsing $PLATFORM/$DEPLOY raw spkir data"
 for file in $RAW/$PLATFORM/$DEPLOY/cg_data/$DCL/spkir*/*.log; do
     FNAME=`basename $file`
-    foo=`dirname $file`
-    DNAME=`basename $foo`
+    DNAME=`dirname $file`
+    DNAME=`basename $DNAME`
     echo "$FNAME"
     $PARSE/harvest_spkir.sh $PLATFORM $DEPLOY $DCL $DNAME $SUBASY $FNAME
 done

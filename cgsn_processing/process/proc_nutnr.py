@@ -12,7 +12,7 @@ import os
 import pandas as pd
 import re
 
-from gsw import SP_from_C
+from gsw import SP_from_C, p_from_z
 from netCDF4 import Dataset
 from pocean.utils import dict_update
 from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMTs
@@ -122,11 +122,18 @@ def main(argv=None):
             # The Global moorings may use the data from the METBK-CT for the NUTNR mounted on the buoy subsurface plate.
             # We'll rename the data columns from the METBK to match other CTDs and process accordingly.
             if re.match('metbk', ctd_name):
+                # rename temperature and salinity
                 ctd = ctd.rename(columns={
                     'sea_surface_temperature': 'temperature',
                     'sea_surface_conductivity': 'conductivity'
                 })
-                ctd['pressure'] = 1.0
+                # set the depth in dbar from the measured depth in m below the water line.
+                if re.match('metbk1', ctd_name):
+                    ctd['pressure'] = p_from_z(-1.3661, lat)
+                elif re.match('metbk2', ctd_name):
+                    ctd['pressure'] = p_from_z(-1.2328, lat)
+                else:  # default of 1.00 m
+                    ctd['pressure'] = p_from_z(-1.0000, lat)
 
             # calculate the practical salinity of the seawater from the temperature, conductivity and pressure
             # measurements
