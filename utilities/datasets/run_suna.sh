@@ -35,8 +35,8 @@ done
 
 # Process the files
 echo "Processing $PLATFORM/$DEPLOY parsed suna data"
-for file in $PROC/$PLATFORM/$DEPLOY/$SUBASY/suna/*.json; do
+for file in $PROC/$PLATFORM/$DEPLOY/$SUBASY/nutnr/*.json; do
     FNAME=`basename $file`
     echo "$FNAME"
-    $PROCESS/process_suna.sh $PLATFORM $DEPLOY $LAT $LON "$SUBASY/suna" $CTD $DEPTH $FNAME
+    $PROCESS/process_suna.sh $PLATFORM $DEPLOY $LAT $LON "$SUBASY/nutnr" $CTD $DEPTH $FNAME
 done

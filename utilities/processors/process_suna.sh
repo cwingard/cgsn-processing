@@ -11,14 +11,13 @@ if [ $# -ne 8 ]; then
     echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the NUTNR"
     echo "directory name, the name of the co-located CTD, the deployment depth, and the name of the file to process."
     echo ""
-    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 nsif/nutnr ctdbp 7 20161012.nutnr.json"
+    echo "     example: $0 ce01issm D00008 44.63929 -124.30404 nsif/nutnr ctdbp1 7 20161012.nutnr.json"
     exit 1
 fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
 LAT=$3; LON=$4
 NUTNR=${5,,}
-SUNA=${NUTNR/nutnr/suna/}
 CTD=${6,,}
 DEPTH=$7
 FILE=`basename $8`
@@ -27,7 +26,7 @@ FILE=`basename $8`
 
 DATA="/home/ooiuser/data"
 IN="$DATA/proc/$PLATFORM/$DEPLOY/$NUTNR/$FILE"
-OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$SUNA/${FILE%.json}.nc"
+OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$NUTNR/${FILE%.json}.nc"
 if [ ! -d `dirname $OUT` ]; then
     mkdir -p `dirname $OUT`
 fi

@@ -65,8 +65,8 @@ def main(argv=None):
 
     # Merge the co-located CTD temperature and salinity data and calculate the corrected nitrate concentration
     nutnr_path, nutnr_file = os.path.split(infile)
-    ctd_file = re.sub('nutnr[\w]*|suna[\w]*', ctd_name, nutnr_file)
-    ctd_path = re.sub('nutnr|suna', re.sub('[\d]*', '', ctd_name), nutnr_path)
+    ctd_file = re.sub('nutnr[\w]*', ctd_name, nutnr_file)
+    ctd_path = re.sub('nutnr', re.sub('[\d]*', '', ctd_name), nutnr_path)
     ctd = json2df(os.path.join(ctd_path, ctd_file))
     if not ctd.empty and len(ctd.index) >= 3:
         # The Global moorings may use the data from the METBK-CT for the NUTNR mounted on the buoy subsurface plate.
