@@ -20,7 +20,7 @@ PROCESS="/home/ooiuser/code/cgsn-processing/utilities/processors"
 
 # Process the files
 echo "Parsing $PLATFORM/$DEPLOY raw GPS data"
-for file in $RAW/$PLATFORM/$DEPLOY/cg_data/syslog/*.log; do
+for file in $RAW/$PLATFORM/$DEPLOY/syslog/*.log; do
     FNAME=`basename $file`
     echo "$FNAME"
     $PARSE/harvest_syslog_gps.sh $PLATFORM $DEPLOY $FNAME

@@ -11,7 +11,7 @@ import os
 import pandas as pd
 import re
 
-from gsw import SP_from_C
+from gsw import SP_from_C, p_from_z
 from pocean.utils import dict_update
 from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMTs
 from scipy.interpolate import interp1d
@@ -108,7 +108,8 @@ def main(argv=None):
             dev.read_csv(csv_url)
             dev.save_coeffs()
         else:
-            raise Exception('A source for the FLORT calibration coefficients could not be found')
+            print('A source for the FLORT calibration coefficients for {} could not be found'.format(infile))
+            return None
 
     # Apply the scale and offset correction factors from the factory calibration coefficients
     df['estimated_chlorophyll'] = flo_scale_and_offset(df['raw_signal_chl'], dev.coeffs['dark_chla'],
@@ -117,12 +118,28 @@ def main(argv=None):
                                                    dev.coeffs['scale_cdom'])
     df['beta_700'] = flo_scale_and_offset(df['raw_signal_beta'], dev.coeffs['dark_beta'], dev.coeffs['scale_beta'])
 
-    # Merge the co-located CTD temperature and salinity data and calculate the total optical backscatter
+    # Merge co-located CTD temperature and salinity data and calculate the total optical backscatter
     flort_path, flort_file = os.path.split(infile)
     ctd_file = re.sub('flort[\w]*', ctd_name, flort_file)
     ctd_path = re.sub('flort', re.sub('[\d]*', '', ctd_name), flort_path)
     ctd = json2df(os.path.join(ctd_path, ctd_file))
-    if not ctd.empty:
+    if not ctd.empty and len(ctd.index) >= 3:
+        # The Global moorings may use the data from the METBK-CT for FLORT mounted on the buoy subsurface plate. We'll
+        # rename the data columns from the METBK to match other CTDs and process accordingly.
+        if re.match('metbk', ctd_name):
+            # rename temperature and salinity
+            ctd = ctd.rename(columns={
+                'sea_surface_temperature': 'temperature',
+                'sea_surface_conductivity': 'conductivity'
+            })
+            # set the depth in dbar from the measured depth in m below the water line.
+            if re.match('metbk1', ctd_name):
+                ctd['pressure'] = p_from_z(-1.3661, lat)
+            elif re.match('metbk2', ctd_name):
+                ctd['pressure'] = p_from_z(-1.2328, lat)
+            else:  # default of 1.00 m
+                ctd['pressure'] = p_from_z(-1.0000, lat)
+
         # calculate the practical salinity of the seawater from the temperature, conductivity and pressure measurements
         ctd['psu'] = SP_from_C(ctd['conductivity'] * 10.0, ctd['temperature'], ctd['pressure'])
 
@@ -135,9 +152,9 @@ def main(argv=None):
 
         df['bback'] = flo_bback_total(df['beta_700'], df['temperature'], df['salinity'], 124., 700., 1.076)
     else:
-        df['temperature'] = np.nan
-        df['salinity'] = np.nan
-        df['bback'] = np.nan
+        df['temperature'] = -9999.9
+        df['salinity'] = -9999.9
+        df['bback'] = -9999.9
 
     # convert the dataframe to a format suitable for the pocean OMTs
     df['deploy_id'] = deployment
@@ -151,6 +168,7 @@ def main(argv=None):
 
     nc = OMTs.from_dataframe(df, outfile, attributes=attr)
     nc.close()
+
 
 if __name__ == '__main__':
     main()

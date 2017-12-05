@@ -119,6 +119,9 @@ PHSEN = {
         'ancillary_variables': 'platform',
         'coverage_content_type': 'physicalMeasurement'
     },
+    'record_number': {
+        'long_name': 'IMM Record Number'
+    },
     'record_length': {
         'long_name': 'Record Length',
         'units': '1'

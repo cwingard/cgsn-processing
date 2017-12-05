@@ -7,6 +7,8 @@ import pandas as pd
 import pickle
 import sys
 
+from pathlib import Path
+
 # Create a Global dictionary with Basic Information about the moorings
 BUOYS = {
     'ce01issm': {'name': 'Coastal Endurance Oregon Inshore Surface Mooring'},
@@ -82,14 +84,29 @@ def json2df(infile):
     """
     Read in a JSON formatted data file and return the results as a panda dataframe.
     """
-    with open(infile) as jf:
-        df = pd.DataFrame(json.load(jf))
+    jf = Path(infile)
+    try:
+        # test to see if the file exists
+        jf.resolve()
+    except FileNotFoundError:
+        # if not, return an empty data frame
+        print("JSON data file {0} was not found, returning empty data frame".format(infile))
+        return pd.DataFrame()
+    else:
+        # otherwise, read in the data file
+        with open(infile) as jf:
+            df = pd.DataFrame(json.load(jf))
+
+        # some of the data files are empty, exit early if so.
         if df.empty:
+            print("JSON data file {0} was empty, returning empty data frame".format(infile))
             return df
 
+        # setup time and the index
         df['time'] = pd.to_datetime(df.time, unit='s')
         df.index = df['time']
 
+        # convert all long integers (int64) to ones acceptable for further processing
         for col in df.columns:
             if df[col].dtype == np.int64:
                 df[col] = df[col].astype(np.int32)

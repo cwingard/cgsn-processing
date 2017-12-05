@@ -128,11 +128,12 @@ def main(argv=None):
             cal.read_csv(csv_url)
             cal.save_coeffs()
         else:
-            raise Exception('A source for the PCO2W calibration coefficients could not be found')
+            print('A source for the PCO2W calibration coefficients for {} could not be found'.format(infile))
+            return None
 
     # initialize the pCO2 blanks class
     blank_file = os.path.abspath(args.devfile)
-    blank = Blanks(blank_file, 1., 1.)
+    blank = Blanks(blank_file, -9999.9, -9999.9)
 
     # check for the source of pCO2 blanks and load accordingly
     if os.path.isfile(blank_file):
@@ -171,7 +172,7 @@ def main(argv=None):
             # this is a light measurement, calculate the pCO2
             p = pco2_calc_pco2(df['ratio_434'][i], df['ratio_620'][i], df['thermistor'][i], cal.coeffs['calt'],
                                cal.coeffs['cala'], cal.coeffs['calb'], cal.coeffs['calc'],
-                               blank.k434, blank.k620)
+                               1.0, 1.0)
             pCO2.append(p.item())
 
             # record the blanks used

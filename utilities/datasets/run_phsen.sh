@@ -2,9 +2,9 @@
 
 # Parse the command line inputs
 if [ $# -ne 7 ]; then
-    echo "$0: required inputs are the platform and deployment names,"
-    echo "in that order, and the name of the file to process."
-    echo "     example: $0 ce02shsm D00001 44.639 -124.304"
+    echo "$0: required inputs are the platform and deployment names, the latitude and longitude of the mooring,"
+    echo "the DCL id, the deployment depth of the sensor, and the subassembly [buoy/nsif/mfn] location."
+    echo "     example: $0 ce07shsm D00001 44.639 -124.304 dcl35 87 mfn"
     exit 1
 fi
 PLATFORM=${1,,}
@@ -13,7 +13,7 @@ LAT=$3
 LON=$4
 DCL=${5,,}
 DEPTH=$6
-MFN=${7,,}
+SUBASY=${7,,}
 
 # Set the default directory paths
 RAW="/home/ooiuser/data/raw"
@@ -25,17 +25,17 @@ PROCESS="/home/ooiuser/code/cgsn-processing/utilities/processors"
 echo "Parsing $PLATFORM/$DEPLOY raw phsen data"
 for file in $RAW/$PLATFORM/$DEPLOY/cg_data/$DCL/phsen*/*.log; do
     FNAME=`basename $file`
-    foo=`dirname $file`
-    DNAME=`basename $foo`
+    DNAME=`dirname $file`
+    DNAME=`basename $DNAME`
     echo "$FNAME"
-    $PARSE/harvest_phsen.sh $PLATFORM $DEPLOY $DCL $DNAME $FNAME
+    $PARSE/harvest_phsen.sh $PLATFORM $DEPLOY $DCL $DNAME $SUBASY $FNAME
 done
 
 # Process the files
 echo "Processing $PLATFORM/$DEPLOY parsed phsen data"
-for file in $PROC/$PLATFORM/$DEPLOY/$MFN/phsen/*.json; do
+for file in $PROC/$PLATFORM/$DEPLOY/$SUBASY/phsen/*.json; do
     FNAME=`basename $file`
     echo "$FNAME"
-    $PROCESS/process_phsen.sh $PLATFORM $DEPLOY $LAT $LON "$MFN/phsen" $DEPTH $FNAME
+    $PROCESS/process_phsen.sh $PLATFORM $DEPLOY $LAT $LON "$SUBASY/phsen" $DEPTH $FNAME
 done
 

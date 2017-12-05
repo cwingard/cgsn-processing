@@ -25,8 +25,8 @@ PROCESS="/home/ooiuser/code/cgsn-processing/utilities/processors"
 echo "Parsing $PLATFORM/$DEPLOY raw optaa data"
 for file in $RAW/$PLATFORM/$DEPLOY/cg_data/$DCL/optaa*/*.log; do
     FNAME=`basename $file`
-    foo=`dirname $file`
-    DNAME=`basename $foo`
+    DNAME=`dirname $file`
+    DNAME=`basename $DNAME`
     echo "$FNAME"
     $PARSE/harvest_optaa.sh $PLATFORM $DEPLOY $DCL $DNAME $FNAME
 done

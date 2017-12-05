@@ -57,13 +57,16 @@ def find_calibration(inst_class, inst_serial, sampling_date):
                     tdiff.append(round((sampling_date - epts) / 60 / 60 / 24))
 
     if tdiff:
-        # check the resulting list of files and time differences for the closest file that precedes our deployment
-        m = min(i for i in tdiff if i >= 0)
-
-        # assemble the csv URL, adjusting for the fact we want the raw content
-        csv = '{}{}'.format('https://raw.githubusercontent.com', flist[tdiff.index(m)])
-        csv = re.sub('/blob', '', csv)
-
+        try:
+            # check the resulting list of files and time differences for the closest file that precedes our deployment
+            m = min(i for i in tdiff if i >= 0)
+        except ValueError:
+            print("Calibration file pre-dating the sampling date could not be found, returning empty csv string")
+            csv = None
+        else:
+            # assemble the csv URL, adjusting for the fact we want the raw content
+            csv = '{}{}'.format('https://raw.githubusercontent.com', flist[tdiff.index(m)])
+            csv = re.sub('/blob', '', csv)
     else:
         csv = None
 

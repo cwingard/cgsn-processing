@@ -19,12 +19,12 @@ PROC="/home/ooiuser/data/proc"
 PROCESS="/home/ooiuser/code/cgsn-processing/utilities/processors"
 
 # Process the files
-#echo "Processing $PLATFORM/$DEPLOY raw pco2a data"
-#for file in $RAW/$PLATFORM/$DEPLOY/cg_data/dcl12/pco2a/*.log; do
-#    FNAME=`basename $file`
-#    echo "$FNAME"
-#    $PARSE/harvest_pco2a.sh $PLATFORM $DEPLOY $FNAME
-#done
+echo "Processing $PLATFORM/$DEPLOY raw pco2a data"
+for file in $RAW/$PLATFORM/$DEPLOY/cg_data/dcl12/pco2a/*.log; do
+    FNAME=`basename $file`
+    echo "$FNAME"
+    $PARSE/harvest_pco2a.sh $PLATFORM $DEPLOY $FNAME
+done
 
 echo "Processing $PLATFORM/$DEPLOY parsed pco2a data"
 for file in $PROC/$PLATFORM/$DEPLOY/buoy/pco2a/*.json; do

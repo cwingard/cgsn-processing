@@ -56,7 +56,8 @@ def main(argv=None):
             dev.read_csv(csv_url)
             dev.save_coeffs()
         else:
-            raise Exception('A source for the FLORT calibration coefficients could not be found')
+            print('A source for the FLORT calibration coefficients for {} could not be found'.format(infile))
+            return None
 
     # Apply the scale and offset correction factors from the factory calibration coefficients
     df['estimated_chlorophyll'] = flo_scale_and_offset(df['raw_signal_chl'], dev.coeffs['dark_chla'], dev.coeffs['scale_chla'])
