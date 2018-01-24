@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 def readme():
@@ -24,7 +24,7 @@ setup(
     author='Christopher Wingard',
     author_email='cwingard@coas.oregonstate.edu',
     license='MIT',
-    packages=['cgsn_processing'],
+    packages=find_packages(),
     install_requires=[
         'numpy >= 1.9.2',
         'scipy >= 0.15.1',
@@ -35,7 +35,8 @@ setup(
         'jinja2',
         'pytz',
         'pyaxiom',
-        'requests'
+        'requests',
+        'xarray'
     ],
     include_package_data=True,
     zip_safe=False)
