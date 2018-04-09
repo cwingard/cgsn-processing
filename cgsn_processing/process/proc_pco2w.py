@@ -133,7 +133,7 @@ def main(argv=None):
 
     # initialize the pCO2 blanks class
     blank_file = os.path.abspath(args.devfile)
-    blank = Blanks(blank_file, -9999.0, -9999.0)
+    blank = Blanks(blank_file, -9999.9, -9999.9)
 
     # check for the source of pCO2 blanks and load accordingly
     if os.path.isfile(blank_file):
@@ -170,9 +170,9 @@ def main(argv=None):
     for i in range(len(df['record_type'])):
         if df['record_type'][i] == 4:
             # this is a light measurement, calculate the pCO2 concentration
-            if blank.k434 == -9999.0 and blank.k620 == -9999.0:
+            if blank.k434 == -9999.9 and blank.k620 == -9999.9:
                 # We don't have a blank to use in the calculation
-                pCO2.append(-9999.0)
+                pCO2.append(-9999.9)
             else:
                 p = co2_pco2wat(df['ratio_434'][i], df['ratio_620'][i], df['thermistor'][i], cal.coeffs['calt'],
                             cal.coeffs['cala'], cal.coeffs['calb'], cal.coeffs['calc'],
