@@ -22,7 +22,7 @@ from cgsn_processing.process.common import Coefficients, inputs, json2df, df2omt
 from cgsn_processing.process.configs.attr_pco2w import PCO2W
 from cgsn_processing.process.finding_calibrations import find_calibration
 
-from pyseas.data.co2_functions import pco2_blank, pco2_thermistor, pco2_calc_pco2
+from pyseas.data.co2_functions import co2_blank, co2_thermistor, co2_pco2wat
 from pyseas.data.ph_functions import ph_battery
 
 
@@ -145,7 +145,7 @@ def main(argv=None):
 
     # convert the raw battery voltage and thermistor values from counts
     # to V and degC, respectively
-    df['thermistor'] = pco2_thermistor(df['thermistor_raw'])
+    df['thermistor'] = co2_thermistor(df['thermistor_raw'])
     df['voltage_battery'] = ph_battery(df['voltage_raw'])
 
     # compare the instrument clock to the GPS based DCL time stamp
@@ -169,11 +169,15 @@ def main(argv=None):
 
     for i in range(len(df['record_type'])):
         if df['record_type'][i] == 4:
-            # this is a light measurement, calculate the pCO2
-            p = pco2_calc_pco2(df['ratio_434'][i], df['ratio_620'][i], df['thermistor'][i], cal.coeffs['calt'],
-                               cal.coeffs['cala'], cal.coeffs['calb'], cal.coeffs['calc'],
-                               1.0, 1.0)
-            pCO2.append(p.item())
+            # this is a light measurement, calculate the pCO2 concentration
+            if blank.k434 == -9999.9 and blank.k620 == -9999.9:
+                # We don't have a blank to use in the calculation
+                pCO2.append(-9999.9)
+            else:
+                p = co2_pco2wat(df['ratio_434'][i], df['ratio_620'][i], df['thermistor'][i], cal.coeffs['calt'],
+                            cal.coeffs['cala'], cal.coeffs['calb'], cal.coeffs['calc'],
+                            blank.k434, blank.k620)
+                pCO2.append(p.item())
 
             # record the blanks used
             k434.append(blank.k434)
@@ -181,8 +185,8 @@ def main(argv=None):
 
         if df['record_type'][i] == 5:
             # this is a dark measurement, no pCO2 measurement, update and save the new blanks
-            blank.k434 = pco2_blank(df['ratio_434'][i])
-            blank.k620 = pco2_blank(df['ratio_620'][i])
+            blank.k434 = co2_blank(df['ratio_434'][i])
+            blank.k620 = co2_blank(df['ratio_620'][i])
             blank.save_blanks()
 
             pCO2.append(-9999.9)

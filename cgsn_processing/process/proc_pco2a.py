@@ -15,7 +15,7 @@ from pyaxiom.netcdf.sensors import TimeSeries
 from cgsn_processing.process.common import inputs, json2df
 from cgsn_processing.process.configs.attr_pco2a import PCO2A
 
-from pyseas.data.co2_functions import pco2_ppressure
+from pyseas.data.co2_functions import co2_ppressure
 
 
 def main(argv=None):
@@ -45,7 +45,7 @@ def main(argv=None):
     df['sample_id'].replace(to_replace='W', value='water', inplace=True)
 
     # calculate the partial pressure of CO2 in the air and water samples
-    df['pCO2'] = pco2_ppressure(df['measured_co2'], df['gas_stream_pressure'])
+    df['pCO2'] = co2_ppressure(df['measured_co2'], df['gas_stream_pressure'])
 
     # Setup the global attributes for the NetCDF file and create the NetCDF timeseries object
     global_attributes = {
