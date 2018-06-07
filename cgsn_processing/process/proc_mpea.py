@@ -78,7 +78,7 @@ def main(argv=None):
             continue
 
         # create the netCDF.Variable object for the date/time string
-        if c == 'date_time_string':
+        if c == 'dcl_date_time_string':
             d = nc.createVariable(c, 'S23', ('time',))
             d.setncatts(MPEA[c])
             d[:] = df[c].values
@@ -97,6 +97,7 @@ def main(argv=None):
     # synchronize the data with the netCDF file and close it
     nc.sync()
     nc.close()
+
 
 if __name__ == '__main__':
     main()
