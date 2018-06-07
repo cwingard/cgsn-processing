@@ -17,7 +17,7 @@ MPEA = {
         'ancillary_variables': 'platform',
         'coverage_content_type': 'physicalMeasurement'
     },
-    'date_time_string': {
+    'dcl_date_time_string': {
         'long_name': 'Date and Time Stamp',
         'standard_name': 'date_time_string',
         'units': '1',
