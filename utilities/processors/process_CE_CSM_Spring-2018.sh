@@ -131,6 +131,7 @@ if [ $MFN_FLAG == 1 ]; then
     $PROCESS/process_superv_cpm.sh $PLATFORM $DEPLOY $LAT $LON "mfn/superv/cpm3" $MFN_DEPTH $FNAME.superv.json
     $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LON "mfn/superv/dcl36" $MFN_DEPTH $FNAME.superv.json
     $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LON "mfn/superv/dcl37" $MFN_DEPTH $FNAME.superv.json
+    $PROCESS/process_mpea.sh $PLATFORM $DEPLOY $LAT $LON "mfn/pwrsys" $MFN_DEPTH $FNAME.pwrsys.json
 
     #--> ADCPT
     $PROCESS/process_ctdbp.sh $PLATFORM $DEPLOY $LAT $LON "mfn/ctdbp" $MFN_DEPTH $FNAME.ctdbp2.json

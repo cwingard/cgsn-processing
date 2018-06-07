@@ -7,21 +7,21 @@
 # C. Wingard 2017-01-24
 
 # Parse the command line inputs
-if [ $# -ne 6 ]; then
+if [ $# -ne 7 ]; then
     echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the MPEA"
     echo " directory name, and the name of the file to process."
     echo ""
-    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 mfn/mpea 20161012.pwrsys.json"
+    echo "     example: $0 ce07shsm D00007 46.98820 -124.56794 mfn/pwrsys 87 20161012.pwrsys.json"
     exit 1
 fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
 LAT=$3; LON=$4
 MPEA=${5,,}
-FILE=`basename $6`
+DEPTH=$6
+FILE=`basename $7`
 
 # Set the default directory paths and input/output sources
-
 DATA="/home/ooiuser/data"
 IN="$DATA/proc/$PLATFORM/$DEPLOY/$MPEA/$FILE"
 OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$MPEA/${FILE%.json}.nc"
@@ -32,5 +32,5 @@ fi
 # Process the file
 if [ -e $IN ]; then
     cd /home/ooiuser/code/cgsn-processing
-    python -m cgsn_processing.process.proc_mpea -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -i $IN -o $OUT
+    python -m cgsn_processing.process.proc_mpea -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -i $IN -o $OUT
 fi
