@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import argparse
+import collections
 import json
 import numpy as np
 import pandas as pd
@@ -188,6 +189,22 @@ def split_column(df, colname, n=None, singular=None, names=None):
         df[name] = [v[i] for v in df[colname]]
     df.pop(colname)
     return df
+
+
+def dict_update(source, overrides):
+    """
+    Update a nested dictionary or similar mapping. Modifies ``source`` in place.
+
+    From https://stackoverflow.com/a/30655448. Replaces original dict_update used by poceans-core, also pulled from
+    the same thread.
+    """
+    for key, value in overrides.items():
+        if isinstance(value, collections.Mapping) and value:
+            returned = dict_update(source.get(key, {}), value)
+            source[key] = returned
+        else:
+            source[key] = overrides[key]
+    return source
 
 
 def inputs(args=None):

@@ -13,8 +13,9 @@ import pandas as pd
 import xarray as xr
 import re
 
-from cgsn_processing.process.common import inputs
-from cgsn_processing.process.configs.attr_adcp import ADCP
+from cgsn_processing.process.common import dict_update, inputs
+from cgsn_processing.process.configs.attr_adcp import ADCP, ADCP_PD0
+
 
 def json_sub2df(data, sub):
     """
@@ -47,7 +48,7 @@ def main(argv=None):
     depth = args.depth
     adcp_type = args.switch
 
-    # load the json data file and return a panda dataframe, adding a default depth and the deployment ID
+    # load the json data file
     with open(infile) as jf:
         data = json.load(jf)
 
@@ -110,7 +111,8 @@ def main(argv=None):
     adcp = xr.merge([hd, fx, vbl, rtc, vel, cor, echo, per])
 
     # add to the global attributes for the ADCP
-    attrs = ADCP
+    attrs = dict_update(ADCP, ADCP_PD0)    # merge default and ADCP type attribute dictionaries into a single dictionary
+
     attrs['global'] = dict_update(attrs['global'], {
         'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
     })
