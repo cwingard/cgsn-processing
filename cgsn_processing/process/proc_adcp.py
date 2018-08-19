@@ -52,10 +52,7 @@ def main(argv=None):
     with open(infile) as jf:
         data = json.load(jf)
 
-    # load the header, fixed and variable leader data packets
-    df = json_sub2df(data, 'header')
-    hd = xr.Dataset.from_dataframe(df)
-
+    # load the fixed and variable leader data packets
     df = json_sub2df(data, 'fixed')
     fx = xr.Dataset.from_dataframe(df)
 
@@ -66,13 +63,19 @@ def main(argv=None):
     time = np.array(data['time'])
     bin_number = np.arange(data['fixed']['num_cells'][0] - 1)
 
-    # drop real-time clock arrays 1 and 2, rewriting the data as an ISO 8601 combined date and time string
+    # drop real-time clock arrays 1 and 2, rewriting the data as an ISO 8601 combined date and time string and converting
+    # to an Epoch time value.
     rtc_string = ["{:2d}{:02d}{:02d}{:02d}T{:02d}{:02d}{:02d}.{:03d}Z".format(rtc[0], rtc[1], rtc[2], rtc[3],
                                                                               rtc[4], rtc[5], rtc[6], rtc[7])
                   for rtc in vbl['real_time_clock2'].values]
-    rtc = xr.Dataset({'real_time_clock': (['time'], rtc_string)},
+    rtc = xr.Dataset({'real_time_clock': (['time'], pd.to_datetime(rtc_string, unit='s'))},
                      coords={'time': (['time'], pd.to_datetime(time, unit='s'))})
     vbl = vbl.drop(['real_time_clock1', 'real_time_clock2'])
+
+    # use the ensemble number and increment variables (ensemble number rolls over at 65535) to calculate the
+    # sequential ensemble number
+    vbl['ensemble_number'] = vbl['ensemble_number'] + (vbl['ensemble_number_increment'] * 65535)
+    vbl = vbl.drop(['ensemble_number_increment'])
 
     # create the 2D velocity, correlation magnitude, echo intensity and percent good data sets
     vel = xr.Dataset({
@@ -108,7 +111,7 @@ def main(argv=None):
                'bin_number': (['bin_number'], bin_number)})
 
     # combine it all into one data set
-    adcp = xr.merge([hd, fx, vbl, rtc, vel, cor, echo, per])
+    adcp = xr.merge([fx, vbl, rtc, vel, cor, echo, per])
 
     # add to the global attributes for the ADCP
     attrs = dict_update(ADCP, ADCP_PD0)    # merge default and ADCP type attribute dictionaries into a single dictionary

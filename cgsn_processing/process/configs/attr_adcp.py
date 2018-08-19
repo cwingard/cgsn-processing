@@ -65,16 +65,6 @@ ADCP = {
         'axis': 'Z'
     },
 
-    # PD0 header
-'num_bytes': {
-        'long_name': '',
-        'comment': ''
-    },
-'num_data_types': {
-        'long_name': '',
-        'comment': ''
-    },
-
     # PD0 fixed leader
     'firmware_version': {
         'long_name': 'Firmware Version',
@@ -171,7 +161,7 @@ ADCP = {
     'error_vel_threshold': {
         'long_name': 'Error Velocity Threshold',
         'comment': 'Threshold value used to flag water-current data as good or bad.',
-        'units': 'mm s-1'
+        'units': 'mm/s'
     },
     'time_per_ping_minutes': {
         'long_name': 'Time Per Ping',
@@ -215,37 +205,37 @@ ADCP = {
     },
     'sensor_source_speed': {
         'long_name': 'Sensor Source Speed',
-        'comment': 'Whether speed of sound was calculated from depth, salinity and temperature?',
+        'comment': 'Contains the selected source for the speed of sound estimation',
         # 'units': ''    # deliberately left blank, no units for this value
     },
     'sensor_source_depth': {
         'long_name': 'Sensor Source Depth',
-        'comment': 'Uses ED from depth sensor?',
+        'comment': 'Uses ED for depth sensor',
         # 'units': ''    # deliberately left blank, no units for this value
     },
     'sensor_source_heading': {
         'long_name': 'Sensor Source Heading',
-        'comment': 'Uses EH from transducer heading?',
+        'comment': 'Uses EH for transducer heading',
         # 'units': ''    # deliberately left blank, no units for this value
     },
     'sensor_source_pitch': {
         'long_name': 'Sensor Source Pitch',
-        'comment': 'Uses EP from transducer pitch sensor',
+        'comment': 'Uses EP for transducer pitch sensor',
         # 'units': ''    # deliberately left blank, no units for this value
     },
     'sensor_source_roll': {
         'long_name': 'Sensor Source Roll',
-        'comment': 'Uses ER from transducer roll sensor',
+        'comment': 'Uses ER for transducer roll sensor',
         # 'units': ''    # deliberately left blank, no units for this value
     },
     'sensor_source_conductivity': {
         'long_name': 'Sensor Source Conductivity',
-        'comment': 'Uses ES (salinity) calculated from external conductivity sensor?',
+        'comment': 'Uses ES (salinity) calculated from external conductivity sensor',
         # 'units': ''    # deliberately left blank, no units for this value
     },
     'sensor_source_temperature': {
         'long_name': 'Sensor Source Temperature',
-        'comment': 'Uses ET from transducer temperature sensor?',
+        'comment': 'Uses ET for transducer temperature sensor',
         # 'units': ''    # deliberately left blank, no units for this value
     },
     'sensor_available_depth': {
@@ -283,9 +273,10 @@ ADCP = {
         'comment': 'Distance to the middle of the first depth cell.',
         'units': 'cm'
     },
-'transmit_pulse_length': {
-        'long_name': '',
-        'comment': ''
+    'transmit_pulse_length': {
+        'long_name': 'Transmit Pulse Length',
+        'comment': 'Length of transmit pulse',
+        'units': 'cm',
     },
     'reference_layer_start': {
         'long_name': 'Reference Layer Start',
@@ -319,11 +310,6 @@ ADCP = {
     },
     'beam_angle': {
         'long_name': 'Beam Angle',
-        'comment': 'System configuration for beam angle, 0 = 15E, 1 = 20E, 2 = 30E, 4 = Other',
-        # 'units': ''    # deliberately left blank, no units for this value
-    },
-    'beam_angle': {
-        'long_name': 'Beam Angle',
         'comment': 'Transducer head beam angle',
         'units': 'degrees'
     },
@@ -334,29 +320,25 @@ ADCP = {
         'comment': 'Sequential number of the ensemble to which the data applies',
         # 'units': ''    # deliberately left blank, no units for this value
     },
-'ensemble_number_increment': {
-        'long_name': '',
-        'comment': ''
+    'bit_result_demod_1': {
+        'long_name': 'BIT DEMOD 1 Error',
+        'comment': 'DEMOD 1 error from the ADCP''s builtin test function',
+        # 'units': ''    # deliberately left blank, no units for this value
     },
-'real_time_clock1': {
-        'long_name': '',
-        'comment': ''
+    'bit_result_demod_2': {
+        'long_name': 'BIT DEMOD 0 Error',
+        'comment': 'DEMOD 0 error from the ADCP''s builtin test function',
+        # 'units': ''    # deliberately left blank, no units for this value
     },
-'bit_result_demod_1': {
-        'long_name': '',
-        'comment': ''
+    'bit_result_timing': {
+        'long_name': 'BIT Timing Error',
+        'comment': 'Timing card error from the ADCP''s builtin test function',
+        # 'units': ''    # deliberately left blank, no units for this value
     },
-'bit_result_demod_2': {
-        'long_name': '',
-        'comment': ''
-    },
-'bit_result_timing': {
-        'long_name': '',
-        'comment': ''
-    },
-'speed_of_sound': {
-        'long_name': '',
-        'comment': ''
+    'speed_of_sound': {
+        'comment': 'Contains either manual or calculated speed of sound',
+        'long_name': 'Speed of Sound',
+        'units': 'm/s',
     },
     'transducer_depth': {
         'long_name': 'Transducer Depth',
@@ -389,135 +371,149 @@ ADCP = {
         'comment': 'Measured temperature at the transducer face, reported in centidegree Celsius.',
         'units': 'cdegree_Celsius'
     },
-'mpt_minutes': {
+    'mpt_minutes': {
+        'long_name': 'MPT Minutes',
+        'units': 'min',
+        'comment': 'Minimum pre-ping wait time (MPT) between ping groups in the ensemble in minutes',
+    },
+    'mpt_seconds': {
+        'comment': 'Minimum pre-ping wait time (MPT) between ping groups in the ensemble in seconds',
+        'long_name': 'MPT Seconds',
+        'units': 's',
+    },
+    'heading_stdev': {
+        'comment': 'Standard deviation of the heading reported in degrees',
+        'long_name': 'Heading Standard Deviation',
+        'units': 'degrees',
+    },
+    'pitch_stdev': {
+        'comment': 'Standard deviation of the pitch reported in decidegrees',
+        'long_name': 'Pitch Standard Deviation',
+        'units': 'ddegrees',
+    },
+    'roll_stdev': {
+        'units': 'ddegrees',
+        'comment': 'Standard deviation of the roll reported in decidegrees',
+        'long_name': 'Roll Standard Deviation',
+    },
+    'adc_transmit_current': {
+        'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the transmit current.',
+        'long_name': 'ADC Transmit Current',
+        'units': 'counts',
+    },
+    'adc_transmit_voltage': {
+        'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the transmit voltage.',
+        'long_name': 'ADC Transmit Voltage',
+        'units': 'counts',
+    },
+    'adc_ambient_temp': {
+        'long_name': 'ADC Ambient Temperature',
+        'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the ambient temperature.',
+        'units': 'counts',
+    },
+    'adc_pressure_plus': {
+        'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the pressure+.',
+        'long_name': 'ADC Pressure Plus',
+        'units': 'counts',
+    },
+    'adc_pressure_minus': {
+        'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the pressure-.',
+        'long_name': 'ADC Pressure Minus',
+        'units': 'counts',
+    },
+    'adc_attitude_temp': {
+        'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the attitude temperature.',
+        'units': 'counts',
+        'long_name': 'ADC Attitude Temperature',
+    },
+    'adc_attitude': {
+        'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the attitude.',
+        'long_name': 'ADC Attitiude',
+        'units': 'counts',
+    },
+    'adc_contamination_sensor': {
+        'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the contamination sensor.',
+        'long_name': 'ADC Contamination Sensor',
+        'units': 'counts',
+    },
+    'bus_error_exception': {
+        'long_name': 'Bus Error Exception',
+        'comment': 'Bus error exception recorded in the Error Status Word'
+        # 'units': ''    # deliberately left blank, no units for this value
+    },
+    'address_error_exception': {
+        'long_name': 'Address Error ',
+        'comment': ''
+    },
+    'illegal_instruction_exception': {
         'long_name': '',
         'comment': ''
     },
-'mpt_seconds': {
+    'zero_divide_instruction': {
         'long_name': '',
         'comment': ''
     },
-'heading_stdev': {
+    'emulator_exception': {
         'long_name': '',
         'comment': ''
     },
-'pitch_stdev': {
+    'unassigned_exception': {
         'long_name': '',
         'comment': ''
     },
-'roll_stdev': {
+    'watchdog_restart_occurred': {
         'long_name': '',
         'comment': ''
     },
-'adc_transmit_current': {
+    'battery_saver_power': {
         'long_name': '',
         'comment': ''
     },
-'adc_transmit_voltage': {
+    'pinging': {
         'long_name': '',
         'comment': ''
     },
-'adc_ambient_temp': {
+    'cold_wakeup_occurred': {
         'long_name': '',
         'comment': ''
     },
-'adc_pressure_plus': {
+    'unknown_wakeup_occurred': {
         'long_name': '',
         'comment': ''
     },
-'adc_pressure_minus': {
+    'clock_read_error': {
         'long_name': '',
         'comment': ''
     },
-'adc_attitude_temp': {
+    'unexpected_alarm': {
         'long_name': '',
         'comment': ''
     },
-'adc_attitude': {
+    'clock_jump_forward': {
         'long_name': '',
         'comment': ''
     },
-'adc_contamination_sensor': {
+    'clock_jump_backward': {
         'long_name': '',
         'comment': ''
     },
-'bus_error_exception': {
+    'power_fail': {
         'long_name': '',
         'comment': ''
     },
-'address_error_exception': {
+    'spurious_dsp_interrupt': {
         'long_name': '',
         'comment': ''
     },
-'illegal_instruction_exception': {
+    'spurious_uart_interrupt': {
         'long_name': '',
         'comment': ''
     },
-'zero_divide_instruction': {
+    'spurious_clock_interrupt': {
         'long_name': '',
         'comment': ''
     },
-'emulator_exception': {
-        'long_name': '',
-        'comment': ''
-    },
-'unassigned_exception': {
-        'long_name': '',
-        'comment': ''
-    },
-'watchdog_restart_occurred': {
-        'long_name': '',
-        'comment': ''
-    },
-'battery_saver_power': {
-        'long_name': '',
-        'comment': ''
-    },
-'pinging': {
-        'long_name': '',
-        'comment': ''
-    },
-'cold_wakeup_occurred': {
-        'long_name': '',
-        'comment': ''
-    },
-'unknown_wakeup_occurred': {
-        'long_name': '',
-        'comment': ''
-    },
-'clock_read_error': {
-        'long_name': '',
-        'comment': ''
-    },
-'unexpected_alarm': {
-        'long_name': '',
-        'comment': ''
-    },
-'clock_jump_forward': {
-        'long_name': '',
-        'comment': ''
-    },
-'clock_jump_backward': {
-        'long_name': '',
-        'comment': ''
-    },
-'power_fail': {
-        'long_name': '',
-        'comment': ''
-    },
-'spurious_dsp_interrupt': {
-        'long_name': '',
-        'comment': ''
-    },
-'spurious_uart_interrupt': {
-        'long_name': '',
-        'comment': ''
-    },
-'spurious_clock_interrupt': {
-        'long_name': '',
-        'comment': ''
-    },
-'level_7_interrupt': {
+    'level_7_interrupt': {
         'long_name': '',
         'comment': ''
     },
@@ -531,9 +527,10 @@ ADCP = {
         'comment': 'Variability in the pressure reading during the ensemble averaging period',
         'units': 'daPa'
     },
-'real_time_clock': {
-        'long_name': '',
-        'comment': ''
+    'real_time_clock': {
+        'long_name': 'Internal Real Time Clock',
+        'comment': 'Date and time stamp from the ADCP''s real-time clock for when the ensemble began.',
+        'units': 'seconds since 1970-01-01 00:00:00 0:00'
     },
 
     # velocity packets
@@ -654,7 +651,15 @@ ADCP = {
     'bin_depths': {
         'long_name': 'Bin Depths',
         'comment': ('Depths of the velocity bins estimated from the measured ADCP pressure and associated parameters ' +
-                    'from the unit''s configuration.'),
+                    'from the unit''s configuration. Used with a downward looking ADCP.'),
+        'ancillary_variables': 'pressure,depth_cell_length,sysconfig_vertical_orientation,bin_1_distance,num_cells,z',
+        'units': 'm'
+    },
+
+    'bin_heights': {
+        'long_name': 'Bin Heights',
+        'comment': ('Height of the velocity bins above the bottom, estimated from the measured ADCP pressure and ' +
+                    'associated parameters from the unit''s configuration. Used with an upward looking ADCP.'),
         'ancillary_variables': 'pressure,depth_cell_length,sysconfig_vertical_orientation,bin_1_distance,num_cells,z',
         'units': 'm'
     },
