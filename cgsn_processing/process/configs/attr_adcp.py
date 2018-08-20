@@ -64,7 +64,14 @@ ADCP = {
         'positive': 'down',
         'axis': 'Z'
     },
+    'bin_number': {
+        'long_name': 'Bin Number',
+        'comment': 'Number of the ADCP velocity bin. Number of bins is dependent on depth of deployment and frequency.',
+        # 'units': ''    # deliberately left blank, no units for this value
+    }
+}
 
+PD0 = {
     # PD0 fixed leader
     'firmware_version': {
         'long_name': 'Firmware Version',
@@ -432,90 +439,109 @@ ADCP = {
         'units': 'counts',
     },
     'adc_contamination_sensor': {
-        'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the contamination sensor.',
         'long_name': 'ADC Contamination Sensor',
+        'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the contamination sensor.',
         'units': 'counts',
     },
     'bus_error_exception': {
         'long_name': 'Bus Error Exception',
-        'comment': 'Bus error exception recorded in the Error Status Word'
+        'comment': 'Recorded in the Error Status Word'
         # 'units': ''    # deliberately left blank, no units for this value
     },
     'address_error_exception': {
-        'long_name': 'Address Error ',
-        'comment': ''
+        'long_name': 'Address Error Exception',
+        'comment': 'Recorded in the Error Status Word'
+        # 'units': ''    # deliberately left blank, no units for this value
     },
     'illegal_instruction_exception': {
-        'long_name': '',
-        'comment': ''
+        'long_name': 'Illegal Instruction Exception',
+        'comment': 'Recorded in the Error Status Word.'
+        # 'units': ''    # deliberately left blank, no units for this value
     },
     'zero_divide_instruction': {
-        'long_name': '',
-        'comment': ''
+        'long_name': 'Zero Divide Instruction',
+        'comment': 'Recorded in the Error Status Word'
+        # 'units': ''    # deliberately left blank, no units for this value
     },
     'emulator_exception': {
-        'long_name': '',
-        'comment': ''
+        'long_name': 'Emulator Exception',
+        'comment': 'Recorded in the Error Status Word'
+        # 'units': ''    # deliberately left blank, no units for this value
     },
     'unassigned_exception': {
-        'long_name': '',
-        'comment': ''
+        'long_name': 'Unassigned Exception',
+        'comment': 'Recorded in the Error Status Word'
+        # 'units': ''    # deliberately left blank, no units for this value
     },
     'watchdog_restart_occurred': {
-        'long_name': '',
-        'comment': ''
+        'long_name': 'Watchdog Restart Occurred',
+        'comment': 'Recorded in the Error Status Word'
+        # 'units': ''    # deliberately left blank, no units for this value
     },
     'battery_saver_power': {
-        'long_name': '',
-        'comment': ''
+        'long_name': 'Battery Saver Power',
+        'comment': 'Recorded in the Error Status Word'
+        # 'units': ''    # deliberately left blank, no units for this value
     },
     'pinging': {
-        'long_name': '',
-        'comment': ''
+        'long_name': 'Pinging Error',
+        'comment': 'Recorded in the Error Status Word'
+        # 'units': ''    # deliberately left blank, no units for this value
     },
     'cold_wakeup_occurred': {
-        'long_name': '',
-        'comment': ''
+        'long_name': 'Cold Wakeup Occurred',
+        'comment': 'Recorded in the Error Status Word'
+        # 'units': ''    # deliberately left blank, no units for this value
     },
     'unknown_wakeup_occurred': {
-        'long_name': '',
-        'comment': ''
+        'long_name': 'Unknown Wakeup Occurred',
+        'comment': 'Recorded in the Error Status Word'
+        # 'units': ''    # deliberately left blank, no units for this value
     },
     'clock_read_error': {
-        'long_name': '',
-        'comment': ''
+        'long_name': 'Clock Read Error',
+        'comment': 'Recorded in the Error Status Word'
+        # 'units': ''    # deliberately left blank, no units for this value
     },
     'unexpected_alarm': {
-        'long_name': '',
-        'comment': ''
+        'long_name': 'Unexpected Alarm',
+        'comment': 'Recorded in the Error Status Word'
+        # 'units': ''    # deliberately left blank, no units for this value
     },
     'clock_jump_forward': {
-        'long_name': '',
-        'comment': ''
+        'long_name': 'Clcok Jump Forward',
+        'comment': 'Recorded in the Error Status Word'
+        # 'units': ''    # deliberately left blank, no units for this value
     },
     'clock_jump_backward': {
-        'long_name': '',
-        'comment': ''
+        'long_name': 'Clock Jump Backward',
+        'comment': 'Recorded in the Error Status Word'
+        # 'units': ''    # deliberately left blank, no units for this value
     },
     'power_fail': {
-        'long_name': '',
-        'comment': ''
+        'long_name': 'Power Failure',
+        'comment': 'Recorded in the Error Status Word'
+        # 'units': ''    # deliberately left blank, no units for this value
     },
     'spurious_dsp_interrupt': {
-        'long_name': '',
-        'comment': ''
+        'long_name': 'Spurious DSP Interrupt',
+        'comment': 'Recorded in the Error Status Word'
+        # 'units': ''    # deliberately left blank, no units for this value
     },
     'spurious_uart_interrupt': {
-        'long_name': '',
-        'comment': ''
+        'long_name': 'Spurious UART Interrupt',
+        'comment': 'Recorded in the Error Status Word'
+        # 'units': ''    # deliberately left blank, no units for this value
     },
     'spurious_clock_interrupt': {
-        'long_name': '',
-        'comment': ''
+        'long_name': 'Spurious Clock Interrupt',
+        'comment': 'Recorded in the Error Status Word'
+        # 'units': ''    # deliberately left blank, no units for this value
     },
     'level_7_interrupt': {
-        'long_name': '',
-        'comment': ''
+        'long_name': 'Level 7 Interrupt',
+        'comment': 'Recorded in the Error Status Word'
+        # 'units': ''    # deliberately left blank, no units for this value
     },
     'pressure': {
         'long_name': 'Pressure',
@@ -540,7 +566,8 @@ ADCP = {
                     'ADCP sensor. This instance is the eastward seawater velocity component uncorrected for magnetic ' +
                     'declination as reported by the instrument.'),
         'data_product_identifier': 'VELPROF-VLE_L0',
-        'units': 'mm/s'
+        'units': 'mm/s',
+        '_FillValue': -32768
     },
     'northward': {
         'long_name': 'Northward Velocity',
@@ -548,7 +575,8 @@ ADCP = {
                     'ADCP sensor. This instance is the northward seawater velocity component uncorrected for ' +
                     'magnetic declination as reported by the instrument.'),
         'data_product_identifier': 'VELPROF-VLN_L0',
-        'units': 'mm/s'
+        'units': 'mm/s',
+        '_FillValue': -32768
     },
     'vertical': {
         'long_name': 'Vertical Velocity',
@@ -556,14 +584,16 @@ ADCP = {
                     'ADCP sensor. This instance is the vertical seawater velocity component as reported by the ' +
                     'instrument'),
         'data_product_identifier': 'VELPROF-VLU_L0',
-        'units': 'mm/s'
+        'units': 'mm/s',
+        '_FillValue': -32768
     },
     'error': {
         'long_name': 'Error Velocity',
         'comment': ('A velocity profile includes water velocity (speed & direction) throughout the depth range of an ' +
                     'ADCP sensor. This instance is the error velocity component as reported by the instrument.'),
         'data_product_identifier': 'VELPROF-EVL_L0',
-        'units': 'mm/s'
+        'units': 'mm/s',
+        '_FillValue': -32768
     },
 
     # correlation magnitudes
@@ -645,8 +675,10 @@ ADCP = {
         'long_name': 'Percent Good 4 Beams',
         'comment': 'Percentage of velocity data collected in an ensemble average that were calculated with all 4 beams',
         'units': 'percent'
-    },
+    }
+}
 
+DERIVED = {
     # derived values
     'bin_depths': {
         'long_name': 'Bin Depths',

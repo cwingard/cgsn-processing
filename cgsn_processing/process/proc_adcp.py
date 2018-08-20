@@ -14,7 +14,7 @@ import xarray as xr
 import re
 
 from cgsn_processing.process.common import dict_update, inputs
-from cgsn_processing.process.configs.attr_adcp import ADCP, ADCP_PD0
+from cgsn_processing.process.configs.attr_adcp import ADCP, PD0
 
 
 def json_sub2df(data, sub):
@@ -52,6 +52,18 @@ def main(argv=None):
     with open(infile) as jf:
         data = json.load(jf)
 
+    # create the time and bin_number coordinate arrays and setup a data frame with the global values used above
+    time = np.array(data['time'])
+    bin_number = np.arange(data['fixed']['num_cells'][0] - 1)
+    df = pd.DataFrame()
+    df['time'] = pd.to_datetime(time, unit='s')
+    df.index = df['time']
+    df['deploy_id'] = deployment
+    df['lat'] = lat
+    df['lon'] = lon
+    df['z'] = depth
+    glbl = xr.Dataset.from_dataframe(df)
+
     # load the fixed and variable leader data packets
     df = json_sub2df(data, 'fixed')
     fx = xr.Dataset.from_dataframe(df)
@@ -59,16 +71,12 @@ def main(argv=None):
     df = json_sub2df(data, 'variable')
     vbl = xr.Dataset.from_dataframe(df)
 
-    # create the time and bin_number coordinate arrays
-    time = np.array(data['time'])
-    bin_number = np.arange(data['fixed']['num_cells'][0] - 1)
-
-    # drop real-time clock arrays 1 and 2, rewriting the data as an ISO 8601 combined date and time string and converting
-    # to an Epoch time value.
+    # drop real-time clock arrays 1 and 2, rewriting the data as an ISO 8601 combined date and time string and
+    # converting to an Epoch time value.
     rtc_string = ["{:2d}{:02d}{:02d}{:02d}T{:02d}{:02d}{:02d}.{:03d}Z".format(rtc[0], rtc[1], rtc[2], rtc[3],
                                                                               rtc[4], rtc[5], rtc[6], rtc[7])
                   for rtc in vbl['real_time_clock2'].values]
-    rtc = xr.Dataset({'real_time_clock': (['time'], pd.to_datetime(rtc_string, unit='s'))},
+    rtc = xr.Dataset({'real_time_clock': (['time'], rtc_string)},
                      coords={'time': (['time'], pd.to_datetime(time, unit='s'))})
     vbl = vbl.drop(['real_time_clock1', 'real_time_clock2'])
 
@@ -111,14 +119,22 @@ def main(argv=None):
                'bin_number': (['bin_number'], bin_number)})
 
     # combine it all into one data set
-    adcp = xr.merge([fx, vbl, rtc, vel, cor, echo, per])
+    adcp = xr.merge([glbl, fx, vbl, rtc, vel, cor, echo, per])
 
-    # add to the global attributes for the ADCP
-    attrs = dict_update(ADCP, ADCP_PD0)    # merge default and ADCP type attribute dictionaries into a single dictionary
-
+    # add to the global attributes for the ADCP ...
+    attrs = dict_update(ADCP, PD0)    # merge default and ADCP type attribute dictionaries into a single dictionary
     attrs['global'] = dict_update(attrs['global'], {
         'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
     })
+
+    # ... and assign the updated attributes to the dataset and the individual variables ...
+    adcp.attrs = attrs['global']
+    for v in adcp.variables:
+        adcp[v].attrs = attrs[v]
+
+    # save the file
+    adcp['time'] = adcp.time.values.astype(float) / 10.0 ** 9  # Convert from nanoseconds to seconds since 1970
+    adcp.to_netcdf(outfile)
 
 
 if __name__ == '__main__':
