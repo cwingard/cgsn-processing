@@ -21,15 +21,15 @@ ADCP = {
         'institution': 'Coastal and Global Scales Nodes (CGSN)',
         'acknowledgement': 'National Science Foundation',
         'references': 'http://oceanobservatories.org',
-        'creator_name': 'Christopher Wingard',
-        'creator_email': 'cwingard@coas.oregonstate.edu',
+        'creator_name': 'Ocean Observatories Initiative',
+        'creator_email': 'helpdesk@oceanobservatories.org',
         'creator_url': 'http://oceanobservatories.org',
         'feature_type': 'timeSeriesProfile',
         'Conventions': 'CF-1.6'
     },
     'deploy_id': {
         'long_name': 'Deployment ID',
-        'comment': ('Mooring deployment ID. Useful for differentiating data per deployment, ' +
+        'comment': ('Mooring deployment ID. Useful for differentiating data by deployment, ' +
                     'allowing for overlapping deployments in the data sets.')
     },
     'timeSeries': {
@@ -89,13 +89,13 @@ PD0 = {
         'units': 'kHz'
     },
     'sysconfig_beam_pattern': {
-        'comment': 'Transducer head beam pattern',
         'long_name': 'Sysconfig Beam Pattern',
+        'comment': 'Transducer head beam pattern',
         # 'units': ''    # deliberately left blank, no units for this value
     },
     'sysconfig_sensor_config': {
-        'comment': 'Sensor configuration number (1, 2 or 3)',
         'long_name': 'Sysconfig Sensor Config',
+        'comment': 'Sensor configuration number (1, 2 or 3)',
         # 'units': ''    # deliberately left blank, no units for this value
      },
     'sysconfig_head_attached': {
@@ -201,8 +201,8 @@ PD0 = {
         # 'units': ''    # deliberately left blank, no units for this value
     },
     'heading_alignment': {
-        'comment': 'Correction factor for physical heading misalignment',
         'long_name': 'Heading Alignment',
+        'comment': 'Correction factor for physical heading misalignment',
         'units': 'cdegrees'
     },
     'heading_bias': {
@@ -389,28 +389,28 @@ PD0 = {
         'units': 's',
     },
     'heading_stdev': {
-        'comment': 'Standard deviation of the heading reported in degrees',
         'long_name': 'Heading Standard Deviation',
+        'comment': 'Standard deviation of the heading reported in degrees',
         'units': 'degrees',
     },
     'pitch_stdev': {
-        'comment': 'Standard deviation of the pitch reported in decidegrees',
         'long_name': 'Pitch Standard Deviation',
+        'comment': 'Standard deviation of the pitch reported in decidegrees',
         'units': 'ddegrees',
     },
     'roll_stdev': {
-        'units': 'ddegrees',
-        'comment': 'Standard deviation of the roll reported in decidegrees',
         'long_name': 'Roll Standard Deviation',
+        'comment': 'Standard deviation of the roll reported in decidegrees',
+        'units': 'ddegrees',
     },
     'adc_transmit_current': {
-        'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the transmit current.',
         'long_name': 'ADC Transmit Current',
+        'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the transmit current.',
         'units': 'counts',
     },
     'adc_transmit_voltage': {
-        'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the transmit voltage.',
         'long_name': 'ADC Transmit Voltage',
+        'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the transmit voltage.',
         'units': 'counts',
     },
     'adc_ambient_temp': {
@@ -419,23 +419,23 @@ PD0 = {
         'units': 'counts',
     },
     'adc_pressure_plus': {
-        'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the pressure+.',
         'long_name': 'ADC Pressure Plus',
+        'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the pressure+.',
         'units': 'counts',
     },
     'adc_pressure_minus': {
-        'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the pressure-.',
         'long_name': 'ADC Pressure Minus',
+        'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the pressure-.',
         'units': 'counts',
     },
     'adc_attitude_temp': {
-        'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the attitude temperature.',
         'units': 'counts',
+        'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the attitude temperature.',
         'long_name': 'ADC Attitude Temperature',
     },
     'adc_attitude': {
-        'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the attitude.',
         'long_name': 'ADC Attitiude',
+        'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the attitude.',
         'units': 'counts',
     },
     'adc_contamination_sensor': {
@@ -687,7 +687,6 @@ DERIVED = {
         'ancillary_variables': 'pressure,depth_cell_length,sysconfig_vertical_orientation,bin_1_distance,num_cells,z',
         'units': 'm'
     },
-
     'bin_heights': {
         'long_name': 'Bin Heights',
         'comment': ('Height of the velocity bins above the bottom, estimated from the measured ADCP pressure and ' +
@@ -695,7 +694,6 @@ DERIVED = {
         'ancillary_variables': 'pressure,depth_cell_length,sysconfig_vertical_orientation,bin_1_distance,num_cells,z',
         'units': 'm'
     },
-
     'backscatter_beam1': {
         'long_name': 'Estimated Acoustic Backscatter Beam 1',
         'comment': ('Acoustic backscatter is the strength of the returned sound wave pulse transmitted by the ADCP. ' +
@@ -736,7 +734,6 @@ DERIVED = {
         'ancillary_variables': 'echo_intensity_beam4',
         'units': 'dB'
     },
-
     'eastward_seawater_velocity': {
         'long_name': 'Eastward Seawater Velocity',
         'comment': ('Eastward sea water velocity component in Earth coordinates corrected for magnetic declination ' +

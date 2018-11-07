@@ -13,8 +13,8 @@ import pandas as pd
 import xarray as xr
 import re
 
-from cgsn_processing.process.common import dict_update, inputs
-from cgsn_processing.process.configs.attr_adcp import ADCP, PD0
+from cgsn_processing.process.common import inputs, dict_update
+from cgsn_processing.process.configs.attr_adcp import ADCP, PD0, DERIVED
 
 
 def json_sub2df(data, sub):
@@ -131,6 +131,8 @@ def main(argv=None):
     adcp.attrs = attrs['global']
     for v in adcp.variables:
         adcp[v].attrs = attrs[v]
+
+    # Assign additional metadata attributes
 
     # save the file
     adcp['time'] = adcp.time.values.astype(float) / 10.0 ** 9  # Convert from nanoseconds to seconds since 1970
