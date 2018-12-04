@@ -6,6 +6,7 @@
 @author Christopher Wingard
 @brief Attributes for the common ADCP and specific PD0, PD8 and PD12 data set variables
 """
+import numpy as np
 
 ADCP = {
     # global attributes
@@ -18,13 +19,14 @@ ADCP = {
                     'waves (i.e., Doppler shifts). This instrument is also referred to as an Acoustic Doppler' +
                     'Current Profiler (ADCP).'),
         'project': 'Ocean Observatories Initiative',
-        'institution': 'Coastal and Global Scales Nodes (CGSN)',
+        'institution': 'Coastal Endurance (CE) Array and Coastal and Global Scale Nodes (CGSN)',
         'acknowledgement': 'National Science Foundation',
         'references': 'http://oceanobservatories.org',
         'creator_name': 'Ocean Observatories Initiative',
         'creator_email': 'helpdesk@oceanobservatories.org',
         'creator_url': 'http://oceanobservatories.org',
-        'feature_type': 'timeSeriesProfile',
+        'feature_type': 'timeSeries',
+        'cdm_data_type': 'Station',
         'Conventions': 'CF-1.6'
     },
     'deploy_id': {
@@ -32,14 +34,15 @@ ADCP = {
         'comment': ('Mooring deployment ID. Useful for differentiating data by deployment, ' +
                     'allowing for overlapping deployments in the data sets.')
     },
-    'timeSeries': {
-        'long_name': 'Unique identifier for each feature instance',
-        'cf_role': 'timeseries_id'
+    'station': {
+        'cf_role': 'timeseries_id',
+        'long_name': 'Station Identifier'
     },
     'time': {
         'standard_name': 'time',
         'units': 'seconds since 1970-01-01 00:00:00 0:00',
         'axis': 'T',
+        'calendar': 'gregorian',
         'comment': 'Derived from the data logger''s GPS conditioned, real-time clock'
     },
     'lon': {
@@ -120,7 +123,7 @@ PD0 = {
     },
     'num_beams': {
         'long_name': 'Number Beams',
-        'comment': 'Number of beams used to calculate velocity data',
+        'comment': 'Contains the number of beams used to calculate velocity data',
         # 'units': ''    # deliberately left blank, no units for this value
     },
     'num_cells': {
@@ -567,7 +570,7 @@ PD0 = {
                     'declination as reported by the instrument.'),
         'data_product_identifier': 'VELPROF-VLE_L0',
         'units': 'mm/s',
-        '_FillValue': -32768
+        '_FillValue': np.int32(-32768)
     },
     'northward': {
         'long_name': 'Northward Velocity',
@@ -576,7 +579,7 @@ PD0 = {
                     'magnetic declination as reported by the instrument.'),
         'data_product_identifier': 'VELPROF-VLN_L0',
         'units': 'mm/s',
-        '_FillValue': -32768
+        '_FillValue': np.int32(-32768)
     },
     'vertical': {
         'long_name': 'Vertical Velocity',
@@ -585,7 +588,7 @@ PD0 = {
                     'instrument'),
         'data_product_identifier': 'VELPROF-VLU_L0',
         'units': 'mm/s',
-        '_FillValue': -32768
+        '_FillValue': np.int32(-32768)
     },
     'error': {
         'long_name': 'Error Velocity',
@@ -593,7 +596,7 @@ PD0 = {
                     'ADCP sensor. This instance is the error velocity component as reported by the instrument.'),
         'data_product_identifier': 'VELPROF-EVL_L0',
         'units': 'mm/s',
-        '_FillValue': -32768
+        '_FillValue': np.int32(-32768)
     },
 
     # correlation magnitudes
@@ -741,7 +744,8 @@ DERIVED = {
         'standard_name': 'eastward_sea_water_velocity',
         'data_product_identifier': 'VELPROF-VLE_L1',
         'ancillary_variables': 'eastward, northward, time, lat, lon, z',
-        'units': 'm/s'
+        'units': 'm/s',
+        '_FillValue': np.nan
     },
     'northward_seawater_velocity': {
         'long_name': 'Northward Seawater Velocity',
@@ -750,7 +754,8 @@ DERIVED = {
         'standard_name': 'northward_sea_water_velocity',
         'data_product_identifier': 'VELPROF-VLN_L1',
         'ancillary_variables': 'eastward, northward, time, lat, lon, z',
-        'units': 'm/s'
+        'units': 'm/s',
+        '_FillValue': np.nan
     },
     'vertical_seawater_velocity': {
         'long_name': 'Vertical Seawater Velocity',
@@ -758,13 +763,15 @@ DERIVED = {
         'standard_name': 'upward_sea_water_velocity',
         'data_product_identifier': 'VELPROF-VLU_L1',
         'ancillary_variables': 'vertical',
-        'units': 'm/s'
+        'units': 'm/s',
+        '_FillValue': np.nan
     },
     'error_velocity': {
         'long_name': 'Error Velocity',
         'comment': 'Error velocity component scaled to standard units of m/s.',
         'data_product_identifier': 'VELPROF-EVL_L1',
         'ancillary_variables': 'error',
-        'units': 'm/s'
+        'units': 'm/s',
+        '_FillValue': np.nan
     }
 }
