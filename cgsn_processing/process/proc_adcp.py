@@ -69,8 +69,11 @@ def main(argv=None):
     df = json_sub2df(data, 'variable')
     vbl = xr.Dataset.from_dataframe(df)
 
-    # drop real-time clock arrays 1 and 2, rewriting the data as an ISO 8601 combined date and time string and
-    # converting to an Epoch time value.
+    # combine the time_per_ping_seconds and the time_per_ping_minutes into a single variable, ping_period.
+    fx['ping_period'] = fx['time_per_ping_seconds'] + (fx['time_per_ping_minutes'] / 60)
+    fx = fx.drop(['time_per_ping_seconds', 'time_per_ping_minutes'])
+
+    # drop real-time clock arrays 1 and 2, rewriting the data as an ISO 8601 combined date and time string.
     rtc_string = ["{:2d}{:02d}{:02d}{:02d}T{:02d}{:02d}{:02d}.{:03d}Z".format(rtc[0], rtc[1], rtc[2], rtc[3],
                                                                               rtc[4], rtc[5], rtc[6], rtc[7])
                   for rtc in vbl['real_time_clock2'].values]

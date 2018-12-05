@@ -173,14 +173,10 @@ PD0 = {
         'comment': 'Threshold value used to flag water-current data as good or bad.',
         'units': 'mm/s'
     },
-    'time_per_ping_minutes': {
-        'long_name': 'Time Per Ping',
-        'comment': 'Contains the amount of time, in minutes, between pings in an ensemble.',
-        'units': 'min'
-    },
-    'time_per_ping_seconds': {
-        'long_name': 'Time Per Ping',
-        'comment': 'Contains the amount of time, in seconds, between pings in an ensemble.',
+    'ping_period': {
+        'long_name': 'Ping Period',
+        'comment': ('Contains the amount of time, in seconds, between pings in an ensemble. Derived from the' +
+                    'time_per_ping_seconds and time_per_ping_minutes parameters in the raw data'),
         'units': 's'
     },
     'coord_transform_type': {
@@ -558,8 +554,8 @@ PD0 = {
     },
     'real_time_clock': {
         'long_name': 'Internal Real Time Clock',
-        'comment': 'Date and time stamp from the ADCP''s real-time clock for when the ensemble began.',
-        'units': 'seconds since 1970-01-01 00:00:00 0:00'
+        'comment': 'Date and time stamp from the ADCP''s real-time clock for when the ensemble measurement began.',
+        # 'units': ''    # deliberately left blank, no units for this value, this is a string representation
     },
 
     # velocity packets
