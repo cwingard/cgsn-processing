@@ -146,8 +146,11 @@ def main(argv=None):
         vmin = depth + (adcp.bin_1_distance.values[0][0] / 100)
         vmax = vmin + adcp.depth_cell_length.values[0][0] / 100 * max(bin_number)
 
-    # add to the global attributes for the ADCP ...
-    attrs = dict_update(ADCP, PD0)    # merge default and PD0 type attribute dictionaries into a single dictionary
+    # add to the global attributes for the ADCP
+    attrs = dict_update(ADCP, PD0)       # merge default and PD0 type attribute dictionaries into a single dictionary
+    attrs = dict_update(attrs, DERIVED)  # add the derived attributes
+
+    # update the global attributes
     attrs['global'] = dict_update(attrs['global'], {
         'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment)),
         'date_created': datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:00Z"),

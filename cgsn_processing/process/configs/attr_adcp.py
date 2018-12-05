@@ -25,7 +25,7 @@ ADCP = {
         'creator_name': 'Ocean Observatories Initiative',
         'creator_email': 'helpdesk@oceanobservatories.org',
         'creator_url': 'http://oceanobservatories.org',
-        'feature_type': 'timeSeries',
+        'featureType': 'timeSeries',
         'cdm_data_type': 'Station',
         'Conventions': 'CF-1.6'
     },
@@ -172,12 +172,6 @@ PD0 = {
         'long_name': 'Error Velocity Threshold',
         'comment': 'Threshold value used to flag water-current data as good or bad.',
         'units': 'mm/s'
-    },
-    'ping_period': {
-        'long_name': 'Ping Period',
-        'comment': ('Contains the amount of time, in seconds, between pings in an ensemble. Derived from the' +
-                    'time_per_ping_seconds and time_per_ping_minutes parameters in the raw data'),
-        'units': 's'
     },
     'coord_transform_type': {
         'long_name': 'Coordinate Transform Type',
@@ -552,11 +546,6 @@ PD0 = {
         'comment': 'Variability in the pressure reading during the ensemble averaging period',
         'units': 'daPa'
     },
-    'real_time_clock': {
-        'long_name': 'Internal Real Time Clock',
-        'comment': 'Date and time stamp from the ADCP''s real-time clock for when the ensemble measurement began.',
-        # 'units': ''    # deliberately left blank, no units for this value, this is a string representation
-    },
 
     # velocity packets
     'eastward': {
@@ -692,6 +681,20 @@ DERIVED = {
                     'associated parameters from the unit''s configuration. Used with an upward looking ADCP.'),
         'ancillary_variables': 'pressure,depth_cell_length,sysconfig_vertical_orientation,bin_1_distance,num_cells,z',
         'units': 'm'
+    },
+    'ping_period': {
+        'long_name': 'Ping Period',
+        'comment': ('Contains the amount of time, in seconds, between pings in an ensemble. Derived from, and' +
+                    'replaces, the time_per_ping_seconds and time_per_ping_minutes parameters in the fixed leader' +
+                    'section of the raw data'),
+        'units': 's'
+    },
+    'real_time_clock': {
+        'long_name': 'Internal Real Time Clock',
+        'comment': ('Date and time stamp from the ADCP''s real-time clock for when the ensemble measurement began.' +
+                    'Combines data from, and replaces, the data from the two real_time_clock arrays contained in' +
+                    'the variable leader section of the raw data'),
+        # 'units': ''    # deliberately left blank, no units for this value, this is a string representation
     },
     'backscatter_beam1': {
         'long_name': 'Estimated Acoustic Backscatter Beam 1',
