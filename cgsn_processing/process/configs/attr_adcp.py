@@ -666,6 +666,126 @@ PD0 = {
     }
 }
 
+PD8 = {
+    # variable leader
+    'ensemble_number': {
+        'long_name': 'Ensemble Number',
+        'comment': 'Sequential number of the ensemble to which the data applies',
+        # 'units': ''    # deliberately left blank, no units for this value
+    },
+    'bit_result': {
+        'long_name': 'BIT Results',
+        'comment': 'Summary result of the ADCP''s builtin test functions',
+        # 'units': ''    # deliberately left blank, no units for this value
+    },
+    'speed_of_sound': {
+        'comment': 'Contains calculated speed of sound based on transducer temperature and default salinity',
+        'long_name': 'Speed of Sound',
+        'units': 'm/s',
+    },
+    'heading': {
+        'long_name': 'Heading',
+        'comment': 'Measured heading of the ADCP, uncorrected for magnetic declination',
+        'units': 'degrees'
+    },
+    'pitch': {
+        'long_name': 'Pitch',
+        'comment': 'Measured pitch of the ADCP.',
+        'units': 'degrees'
+    },
+    'roll': {
+        'long_name': 'Roll',
+        'comment': 'Measured roll of the ADCP',
+        'units': 'degrees'
+    },
+    'temperature': {
+        'long_name': 'Transducer Temperature',
+        'comment': 'Measured temperature at the transducer face.',
+        'units': 'degree_Celsius'
+    },
+
+    # velocity packets
+    'direction': {
+        'long_name': 'Water Velocity Direction',
+        'comment': ('Profile indicating direction water is travelling to. Corrected for instrument heading, pitch and ',
+                    'roll, but uncorrected for magnetic declination.'),
+        'units': 'degrees',
+        '_FillValue': np.nan
+    },
+    'magnitude': {
+        'long_name': 'Water Velocity Magnitude',
+        'comment': ('Profile of water current velocities. Corrected for instrument heading, pitch and roll, but ',
+                    'uncorrected for magnetic declination.'),
+        'units': 'mm/s',
+        '_FillValue': np.nan
+    },
+    'eastward': {
+        'long_name': 'Eastward Velocity',
+        'comment': ('A velocity profile includes water velocity (speed & direction) throughout the depth range of an ' +
+                    'ADCP sensor. This instance is the eastward seawater velocity component uncorrected for magnetic ' +
+                    'declination as reported by the instrument.'),
+        'data_product_identifier': 'VELPROF-VLE_L0',
+        'units': 'mm/s',
+        '_FillValue': np.int32(-32768)
+    },
+    'northward': {
+        'long_name': 'Northward Velocity',
+        'comment': ('A velocity profile includes water velocity (speed & direction) throughout the depth range of an ' +
+                    'ADCP sensor. This instance is the northward seawater velocity component uncorrected for ' +
+                    'magnetic declination as reported by the instrument.'),
+        'data_product_identifier': 'VELPROF-VLN_L0',
+        'units': 'mm/s',
+        '_FillValue': np.int32(-32768)
+    },
+    'vertical': {
+        'long_name': 'Vertical Velocity',
+        'comment': ('A velocity profile includes water velocity (speed & direction) throughout the depth range of an ' +
+                    'ADCP sensor. This instance is the vertical seawater velocity component as reported by the ' +
+                    'instrument'),
+        'data_product_identifier': 'VELPROF-VLU_L0',
+        'units': 'mm/s',
+        '_FillValue': np.int32(-32768)
+    },
+    'error': {
+        'long_name': 'Error Velocity',
+        'comment': ('A velocity profile includes water velocity (speed & direction) throughout the depth range of an ' +
+                    'ADCP sensor. This instance is the error velocity component as reported by the instrument.'),
+        'data_product_identifier': 'VELPROF-EVL_L0',
+        'units': 'mm/s',
+        '_FillValue': np.int32(-32768)
+    },
+
+    # echo intensities
+    'intensity_beam1': {
+        'long_name': 'Echo Intensity Beam 1',
+        'comment': ('Echo Intensity is the acoustic return signal per beam that is output directly from the ADCP. ' +
+                    'This is the raw measurement used to calculate the echo intensity data product for the beam.'),
+        'data_product_identifier': 'ECHOINT-B1_L0',
+        'units': 'counts'
+    },
+    'intensity_beam2': {
+        'long_name': 'Echo Intensity Beam 2',
+        'comment': ('Echo Intensity is the acoustic return signal per beam that is output directly from the ADCP. ' +
+                    'This is the raw measurement used to calculate the echo intensity data product for the beam.'),
+        'data_product_identifier': 'ECHOINT-B2_L0',
+        'units': 'counts'
+    },
+    'intensity_beam3': {
+        'long_name': 'Echo Intensity Beam 3',
+        'comment': ('Echo Intensity is the acoustic return signal per beam that is output directly from the ADCP. ' +
+                    'This is the raw measurement used to calculate the echo intensity data product for the beam.'),
+        'data_product_identifier': 'ECHOINT-B3_L0',
+        'units': 'counts'
+    },
+    'intensity_beam4': {
+        'long_name': 'Echo Intensity Beam 4',
+        'comment': ('Echo Intensity is the acoustic return signal per beam that is output directly from the ADCP. ' +
+                    'This is the raw measurement used to calculate the echo intensity data product for the beam.'),
+        'data_product_identifier': 'ECHOINT-B4_L0',
+        'units': 'counts'
+    }
+}
+
 DERIVED = {
     # derived values
     'bin_depths': {

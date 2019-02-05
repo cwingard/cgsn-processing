@@ -15,7 +15,7 @@ import xarray as xr
 import re
 
 from cgsn_processing.process.common import inputs, dict_update
-from cgsn_processing.process.configs.attr_adcp import ADCP, PD0, DERIVED
+from cgsn_processing.process.configs.attr_adcp import ADCP, PD0, PD8, DERIVED
 
 
 def json_sub2df(data, sub):
@@ -53,77 +53,131 @@ def main(argv=None):
     with open(infile) as jf:
         data = json.load(jf)
 
-    # create the time and bin_number coordinate arrays and setup a data frame with the global values used above
+    # create the time coordinate array and setup a data frame with the global values used above
     time = np.array(data['time'])
-    bin_number = np.arange(data['fixed']['num_cells'][0] - 1).astype(np.int32)
     df = pd.DataFrame()
     df['time'] = pd.to_datetime(time, unit='s')
     df.index = df['time']
     df['deploy_id'] = deployment
     glbl = xr.Dataset.from_dataframe(df)
 
-    # load the fixed and variable leader data packets
-    df = json_sub2df(data, 'fixed')
-    fx = xr.Dataset.from_dataframe(df)
+    # Process PD0 formatted data
+    if adcp_type.lower == 'pd0':
 
-    df = json_sub2df(data, 'variable')
-    vbl = xr.Dataset.from_dataframe(df)
+        # create the bin number coordinate array
+        bin_number = np.arange(data['fixed']['num_cells'][0] - 1).astype(np.int32)
 
-    # combine the time_per_ping_seconds and the time_per_ping_minutes into a single variable, ping_period.
-    fx['ping_period'] = fx['time_per_ping_seconds'] + (fx['time_per_ping_minutes'] / 60)
-    fx = fx.drop(['time_per_ping_seconds', 'time_per_ping_minutes'])
+        # load the fixed header data packets
+        df = json_sub2df(data, 'fixed')
+        fx = xr.Dataset.from_dataframe(df)
 
-    # drop real-time clock arrays 1 and 2, rewriting the data as an ISO 8601 combined date and time string.
-    rtc_string = ["{:2d}{:02d}{:02d}{:02d}T{:02d}{:02d}{:02d}.{:03d}Z".format(rtc[0], rtc[1], rtc[2], rtc[3],
-                                                                              rtc[4], rtc[5], rtc[6], rtc[7])
-                  for rtc in vbl['real_time_clock2'].values]
-    rtc = xr.Dataset({'real_time_clock': (['time'], rtc_string)},
-                     coords={'time': (['time'], pd.to_datetime(time, unit='s'))})
-    vbl = vbl.drop(['real_time_clock1', 'real_time_clock2'])
+        # combine the time_per_ping_seconds and the time_per_ping_minutes into a single variable, ping_period.
+        fx['ping_period'] = fx['time_per_ping_seconds'] + (fx['time_per_ping_minutes'] / 60)
+        fx = fx.drop(['time_per_ping_seconds', 'time_per_ping_minutes'])    # drop the sub-components
 
-    # use the ensemble number and increment variables (ensemble number rolls over at 65535) to calculate the
-    # sequential ensemble number
-    vbl['ensemble_number'] = vbl['ensemble_number'] + (vbl['ensemble_number_increment'] * 65535)
-    vbl = vbl.drop(['ensemble_number_increment'])
+        # load the variable leader data packets
+        df = json_sub2df(data, 'variable')
+        vbl = xr.Dataset.from_dataframe(df)
 
-    # create the 2D velocity, correlation magnitude, echo intensity and percent good data sets
-    vel = xr.Dataset({
-        'eastward': (['time', 'bin_number'], np.array(data['velocity']['eastward']).astype(np.int32)),
-        'northward': (['time', 'bin_number'], np.array(data['velocity']['northward']).astype(np.int32)),
-        'vertical': (['time', 'bin_number'], np.array(data['velocity']['vertical']).astype(np.int32)),
-        'error': (['time', 'bin_number'], np.array(data['velocity']['error']).astype(np.int32))
-    }, coords={'time': (['time'], pd.to_datetime(time, unit='s')),
-               'bin_number': bin_number})
+        # drop real-time clock arrays 1 and 2, rewriting the data as an ISO 8601 combined date and time string.
+        rtc_string = ["{:2d}{:02d}{:02d}{:02d}T{:02d}{:02d}{:02d}.{:03d}Z".format(rtc[0], rtc[1], rtc[2], rtc[3],
+                                                                                  rtc[4], rtc[5], rtc[6], rtc[7])
+                      for rtc in vbl['real_time_clock2'].values]
+        rtc = xr.Dataset({'real_time_clock': (['time'], rtc_string)},
+                         coords={'time': (['time'], pd.to_datetime(time, unit='s'))})
+        vbl = vbl.drop(['real_time_clock1', 'real_time_clock2'])    # drop the sub-components
 
-    cor = xr.Dataset({
-        'magnitude_beam1': (['time', 'bin_number'], np.array(data['correlation']['magnitude_beam1']).astype(np.int32)),
-        'magnitude_beam2': (['time', 'bin_number'], np.array(data['correlation']['magnitude_beam2']).astype(np.int32)),
-        'magnitude_beam3': (['time', 'bin_number'], np.array(data['correlation']['magnitude_beam3']).astype(np.int32)),
-        'magnitude_beam4': (['time', 'bin_number'], np.array(data['correlation']['magnitude_beam4']).astype(np.int32))
-    }, coords={'time': (['time'], pd.to_datetime(time, unit='s')),
-               'bin_number': bin_number})
+        # use the ensemble number and increment variables (ensemble number rolls over at 65535) to calculate the
+        # sequential ensemble number
+        vbl['ensemble_number'] = vbl['ensemble_number'] + (vbl['ensemble_number_increment'] * 65535)
+        vbl = vbl.drop(['ensemble_number_increment'])   # drop the sub-components
 
-    echo = xr.Dataset({
-        'intensity_beam1': (['time', 'bin_number'], np.array(data['echo']['intensity_beam1']).astype(np.int32)),
-        'intensity_beam2': (['time', 'bin_number'], np.array(data['echo']['intensity_beam2']).astype(np.int32)),
-        'intensity_beam3': (['time', 'bin_number'], np.array(data['echo']['intensity_beam3']).astype(np.int32)),
-        'intensity_beam4': (['time', 'bin_number'], np.array(data['echo']['intensity_beam4']).astype(np.int32))
-    }, coords={'time': (['time'], pd.to_datetime(time, unit='s')),
-               'bin_number': bin_number})
+        # create the 2D velocity, correlation magnitude, echo intensity and percent good data sets
+        vel = xr.Dataset({
+            'eastward': (['time', 'bin_number'], np.array(data['velocity']['eastward']).astype(np.int32)),
+            'northward': (['time', 'bin_number'], np.array(data['velocity']['northward']).astype(np.int32)),
+            'vertical': (['time', 'bin_number'], np.array(data['velocity']['vertical']).astype(np.int32)),
+            'error': (['time', 'bin_number'], np.array(data['velocity']['error']).astype(np.int32))
+        }, coords={'time': (['time'], pd.to_datetime(time, unit='s')),
+                   'bin_number': bin_number})
 
-    per = xr.Dataset({
-        'good_3beam': (['time', 'bin_number'], np.array(data['percent']['good_3beam']).astype(np.int32)),
-        'transforms_reject': (['time', 'bin_number'], np.array(data['percent']['transforms_reject']).astype(np.int32)),
-        'bad_beams': (['time', 'bin_number'], np.array(data['percent']['bad_beams']).astype(np.int32)),
-        'good_4beam': (['time', 'bin_number'], np.array(data['percent']['good_4beam']).astype(np.int32))
-    }, coords={'time': (['time'], pd.to_datetime(time, unit='s')),
-               'bin_number': bin_number})
+        cor = xr.Dataset({
+            'magnitude_beam1': (['time', 'bin_number'], np.array(data['correlation']['magnitude_beam1']).astype(np.int32)),
+            'magnitude_beam2': (['time', 'bin_number'], np.array(data['correlation']['magnitude_beam2']).astype(np.int32)),
+            'magnitude_beam3': (['time', 'bin_number'], np.array(data['correlation']['magnitude_beam3']).astype(np.int32)),
+            'magnitude_beam4': (['time', 'bin_number'], np.array(data['correlation']['magnitude_beam4']).astype(np.int32))
+        }, coords={'time': (['time'], pd.to_datetime(time, unit='s')),
+                   'bin_number': bin_number})
 
-    # combine it all into one data set
-    adcp = xr.merge([glbl, fx, vbl, rtc, vel, cor, echo, per])
-    adcp['time'] = adcp.time.values.astype(float) / 10.0 ** 9  # Convert from nanoseconds to seconds since 1970
+        echo = xr.Dataset({
+            'intensity_beam1': (['time', 'bin_number'], np.array(data['echo']['intensity_beam1']).astype(np.int32)),
+            'intensity_beam2': (['time', 'bin_number'], np.array(data['echo']['intensity_beam2']).astype(np.int32)),
+            'intensity_beam3': (['time', 'bin_number'], np.array(data['echo']['intensity_beam3']).astype(np.int32)),
+            'intensity_beam4': (['time', 'bin_number'], np.array(data['echo']['intensity_beam4']).astype(np.int32))
+        }, coords={'time': (['time'], pd.to_datetime(time, unit='s')),
+                   'bin_number': bin_number})
 
-    # add the station identifier as a coordinate variable
+        per = xr.Dataset({
+            'good_3beam': (['time', 'bin_number'], np.array(data['percent']['good_3beam']).astype(np.int32)),
+            'transforms_reject': (['time', 'bin_number'], np.array(data['percent']['transforms_reject']).astype(np.int32)),
+            'bad_beams': (['time', 'bin_number'], np.array(data['percent']['bad_beams']).astype(np.int32)),
+            'good_4beam': (['time', 'bin_number'], np.array(data['percent']['good_4beam']).astype(np.int32))
+        }, coords={'time': (['time'], pd.to_datetime(time, unit='s')),
+                   'bin_number': bin_number})
+
+        # combine it all into one data set
+        adcp = xr.merge([glbl, fx, vbl, rtc, vel, cor, echo, per])
+        adcp['time'] = adcp.time.values.astype(float) / 10.0 ** 9  # Convert from nanoseconds to seconds since 1970
+        adcp_attrs = PD0    # use the PD0 attributes
+
+        # Compute the vertical extent of the data for the global metadata attributes
+        if adcp.sysconfig_vertical_orientation.values[0][0]:
+            # ADCP is looking upwards, max depth is the deployment depth minus distance to first bin, and the min depth
+            # is a function of the number of bins and the bin size subtracted from the max depth
+            vmax = depth - (adcp.bin_1_distance.values[0][0] / 100)
+            vmin = vmax - adcp.depth_cell_length.values[0][0] / 100 * max(bin_number)
+        else:
+            # ADCP is looking downward, and we reverse the logic and order of the computations from above
+            vmin = depth + (adcp.bin_1_distance.values[0][0] / 100)
+            vmax = vmin + adcp.depth_cell_length.values[0][0] / 100 * max(bin_number)
+
+    elif adcp_type == 'PD8':
+        # load the subset of variable header data included with a PD8 dataset
+        df = json_sub2df(data, 'variable')
+        vbl = xr.Dataset.from_dataframe(df)
+
+        # pull the bin number out of the velocity data set
+        bin_number = np.array(data['velocity']['bin_number'][0]).astype(np.int32)
+
+        # create the 2D velocity and echo intensity data sets
+        vel = xr.Dataset({
+            'direction': (['time', 'bin_number'], np.array(data['velocity']['direction']).astype(np.float)),
+            'magnitude': (['time', 'bin_number'], np.array(data['velocity']['magnitude']).astype(np.float)),
+            'eastward': (['time', 'bin_number'], np.array(data['velocity']['eastward']).astype(np.int32)),
+            'northward': (['time', 'bin_number'], np.array(data['velocity']['northward']).astype(np.int32)),
+            'vertical': (['time', 'bin_number'], np.array(data['velocity']['vertical']).astype(np.int32)),
+            'error': (['time', 'bin_number'], np.array(data['velocity']['error']).astype(np.int32))
+        }, coords={'time': (['time'], pd.to_datetime(time, unit='s')),
+                   'bin_number': bin_number})
+
+        echo = xr.Dataset({
+            'intensity_beam1': (['time', 'bin_number'], np.array(data['echo']['intensity_beam1']).astype(np.int32)),
+            'intensity_beam2': (['time', 'bin_number'], np.array(data['echo']['intensity_beam2']).astype(np.int32)),
+            'intensity_beam3': (['time', 'bin_number'], np.array(data['echo']['intensity_beam3']).astype(np.int32)),
+            'intensity_beam4': (['time', 'bin_number'], np.array(data['echo']['intensity_beam4']).astype(np.int32))
+        }, coords={'time': (['time'], pd.to_datetime(time, unit='s')),
+                   'bin_number': bin_number})
+
+        # combine it all into one data set
+        adcp = xr.merge([glbl, vbl, vel, echo])
+        adcp['time'] = adcp.time.values.astype(float) / 10.0 ** 9  # Convert from nanoseconds to seconds since 1970
+        adcp_attrs = PD8    # use the PD8 attributes
+
+        # Compute the vertical extent of the data for the global metadata attributes
+        vmax = depth
+        vmin = 0.0
+
+    # add a default station identifier as a coordinate variable to the adcp dataset
     adcp.coords['station'] = np.int32(0)
     adcp = adcp.expand_dims('station', axis=None)
 
@@ -135,20 +189,9 @@ def main(argv=None):
     }, coords={'station': [np.int32(0)]})
     adcp = xr.merge([adcp, geo_coords])
 
-    # Compute the vertical extent of the data for the global metadata attributes
-    if adcp.sysconfig_vertical_orientation.values[0][0]:
-        # ADCP is looking upwards, max depth is deployment depth minus distance to first bin, and the min depth is a
-        # function of the number of bins and the bin size subtracted from the max depth
-        vmax = depth - (adcp.bin_1_distance.values[0][0] / 100)
-        vmin = vmax - adcp.depth_cell_length.values[0][0] / 100 * max(bin_number)
-    else:
-        # ADCP is looking downward, and we reverse the logic and order of the computations from above
-        vmin = depth + (adcp.bin_1_distance.values[0][0] / 100)
-        vmax = vmin + adcp.depth_cell_length.values[0][0] / 100 * max(bin_number)
-
     # add to the global attributes for the ADCP
-    attrs = dict_update(ADCP, PD0)       # merge default and PD0 type attribute dictionaries into a single dictionary
-    attrs = dict_update(attrs, DERIVED)  # add the derived attributes
+    attrs = dict_update(ADCP, adcp_attrs)   # merge default and PD0 attribute dictionaries into a single dictionary
+    attrs = dict_update(attrs, DERIVED)     # add the derived attributes
 
     # update the global attributes
     attrs['global'] = dict_update(attrs['global'], {
