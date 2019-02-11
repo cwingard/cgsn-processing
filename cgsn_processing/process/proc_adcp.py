@@ -132,13 +132,12 @@ def main(argv=None):
 
         # Compute the vertical extent of the data for the global metadata attributes
         if adcp.sysconfig_vertical_orientation.values[0][0]:
-            # ADCP is looking upwards, max depth is the deployment depth minus distance to first bin, and the min depth
-            # is a function of the number of bins and the bin size subtracted from the max depth
-            vmax = depth - (adcp.bin_1_distance.values[0][0] / 100)
-            vmin = vmax - adcp.depth_cell_length.values[0][0] / 100 * max(bin_number)
+            # ADCP is looking upwards, max depth is the deployment depth and the min depth is the surface
+            vmax = depth
+            vmin = 0.0
         else:
-            # ADCP is looking downward, and we reverse the logic and order of the computations from above
-            vmin = depth + (adcp.bin_1_distance.values[0][0] / 100)
+            # ADCP is looking downward, we reverse the logic from above and compute the full range for the max depth
+            vmin = depth
             vmax = vmin + adcp.depth_cell_length.values[0][0] / 100 * max(bin_number)
 
     elif adcp_type == 'PD8':
@@ -173,7 +172,8 @@ def main(argv=None):
         adcp['time'] = adcp.time.values.astype(float) / 10.0 ** 9  # Convert from nanoseconds to seconds since 1970
         adcp_attrs = PD8    # use the PD8 attributes
 
-        # Compute the vertical extent of the data for the global metadata attributes
+        # Compute the vertical extent of the data for the global metadata attributes. Only Pioneer uses PD8 and all of
+        # their units are on MFNs looking upward.
         vmax = depth
         vmin = 0.0
 
