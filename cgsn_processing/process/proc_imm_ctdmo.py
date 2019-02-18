@@ -15,9 +15,8 @@ import xarray as xr
 import re
 
 from cgsn_processing.process.common import inputs, dict_update
-from cgsn_processing.process.configs.attr_imm_ctdmo import CTDMO, STATUS, RAW, DERIVED
-from pyseas.data.ctd_functions import ctd_density, ctd_pracsal, ctd_sbe37im_condwat, \
-    ctd_sbe37im_preswat, ctd_sbe37im_tempwat
+from cgsn_processing.process.configs.attr_ctdmo import CTDMO, STATUS, RAW, DERIVED
+from gsw import SP_from_C, SA_from_SP, CT_from_t, rho
 
 # correct some encoding inconsistencies between xarray and a CF compliant NetCDF file
 ENCODING = {
@@ -131,7 +130,8 @@ def main(argv=None):
     status = update_dataset(status, platform, deployment, lat, lon, depth, STATUS)
 
     # save the CTD status data
-    status.to_netcdf(outfile, mode='a', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+    status_file = re.sub(r'_\d{6}\.nc', '.status.nc', outfile)
+    status.to_netcdf(status_file, mode='a', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
 
     # create a dataset with the raw CTD data
     df = json_sub2df(data, 'ctd')
@@ -141,7 +141,8 @@ def main(argv=None):
     raw = update_dataset(raw, platform, deployment, lat, lon, depth, RAW)
 
     # save the raw CTD data
-    raw.to_netcdf(outfile, mode='a', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+    raw_file = re.sub(r'_\d{6}\.nc', '.raw.nc', outfile)
+    raw.to_netcdf(raw_file, mode='a', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
 
     # create a dataset with the processed CTD data
     time = df.index.values.astype(float) / 10.0 ** 9  # Convert from nanoseconds to seconds since 1970
@@ -151,20 +152,24 @@ def main(argv=None):
     df['deploy_id'] = deployment
     ctd = xr.Dataset.from_dataframe(df)
 
-    # convert the raw measurements into scientific units
-    ctd['conductivity'] = ctd_sbe37im_condwat(raw['raw_conductivity'])
-    ctd['temperature'] = ctd_sbe37im_tempwat(raw['raw_temperature'])
-    ctd['pressure'] = ctd_sbe37im_preswat(raw['raw_pressure'], status['pressure_range'])
+    # convert the raw measurements from counts to scientific units
+    ctd['conductivity'] = raw['raw_conductivity'] / 100000.0 - 0.5
+    ctd['temperature'] = raw['raw_temperature'] / 10000.0 - 10.0
+    prange = (status['pressure_range'].value[0] - 14.7) * 0.6894757     # convert range from absolute PSI to dbar
+    ctd['pressure'] = raw['raw_pressure'] * prange / (0.85 * 65536.0) - 0.05 * prange
 
     # derive salinity and density
-    ctd['salinity'] = ctd_pracsal(ctd['conductivity'], ctd['temperature'], ctd['pressure'])
-    ctd['rho'] = ctd_density(ctd['salinity'], ctd['temperature'], ctd['pressure'], lat, lon)
+    ctd['salinity'] = SP_from_C(df['conductivity'] * 10.0, df['temperature'], df['pressure'])  # practical salinity
+    sa = SA_from_SP(ctd['salinity'], ctd['pressure'], lon, lat)  # absolute salinity from practical salinity
+    ct = CT_from_t(sa, ctd['temperature'], ctd['pressure'])      # conservative temperature
+    ctd['rho'] = rho(sa, ct, ctd['pressure'])                    # in-situ density
 
     # assign/create needed dimensions, geo coordinates and update the metadata attributes for the dataset
     ctd = update_dataset(ctd, platform, deployment, lat, lon, depth, DERIVED)
 
     # save the converted and derived CTD data
-    ctd.to_netcdf(outfile, mode='a', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+    proc_file = re.sub(r'_\d{6}\.nc', '.proc.nc', outfile)
+    ctd.to_netcdf(proc_file, mode='a', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
 
 
 if __name__ == '__main__':
