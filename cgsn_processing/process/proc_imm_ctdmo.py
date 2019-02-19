@@ -98,6 +98,9 @@ def update_dataset(ds, platform, deployment, lat, lon, depth, attrs):
         else:
             ds[v].attrs = attrs[v]
 
+    # Convert from nanoseconds to seconds since 1970
+    ds['time'] = ds.time.values.astype(float) / 10.0 ** 9
+
     # return the data set for further work
     return ds
 
@@ -126,50 +129,50 @@ def main(argv=None):
     df = json_sub2df(data, 'status')
     status = xr.Dataset.from_dataframe(df)
 
-    # assign/create needed dimensions, geo coordinates and update the metadata attributes for the dataset
+    # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
     status = update_dataset(status, platform, deployment, lat, lon, depth, STATUS)
 
     # save the CTD status data
-    status_file = re.sub(r'_\d{6}\.nc', '.status.nc', outfile)
-    status.to_netcdf(status_file, mode='a', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+    status_file = re.sub(r'\.nc', '.status.nc', outfile)
+    status.to_netcdf(status_file, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
 
     # create a dataset with the raw CTD data
     df = json_sub2df(data, 'ctd')
     raw = xr.Dataset.from_dataframe(df)
 
-    # assign/create needed dimensions, geo coordinates and update the metadata attributes for the dataset
+    # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
     raw = update_dataset(raw, platform, deployment, lat, lon, depth, RAW)
 
     # save the raw CTD data
-    raw_file = re.sub(r'_\d{6}\.nc', '.raw.nc', outfile)
-    raw.to_netcdf(raw_file, mode='a', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+    raw_file = re.sub(r'\.nc', '.raw.nc', outfile)
+    raw.to_netcdf(raw_file, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
 
-    # create a dataset with the processed CTD data
+    # create a data set with the processed CTD data
     time = df.index.values.astype(float) / 10.0 ** 9  # Convert from nanoseconds to seconds since 1970
     df = pd.DataFrame()
     df['time'] = pd.to_datetime(time, unit='s')
     df.set_index('time', drop=True, inplace=True)
     df['deploy_id'] = deployment
-    ctd = xr.Dataset.from_dataframe(df)
 
     # convert the raw measurements from counts to scientific units
-    ctd['conductivity'] = raw['raw_conductivity'] / 100000.0 - 0.5
-    ctd['temperature'] = raw['raw_temperature'] / 10000.0 - 10.0
-    prange = (status['pressure_range'].value[0] - 14.7) * 0.6894757     # convert range from absolute PSI to dbar
-    ctd['pressure'] = raw['raw_pressure'] * prange / (0.85 * 65536.0) - 0.05 * prange
+    df['conductivity'] = raw['raw_conductivity'].values[0] / 100000.0 - 0.5
+    df['temperature'] = raw['raw_temperature'].values[0] / 10000.0 - 10.0
+    prange = (status['pressure_range'].values[0] - 14.7) * 0.6894757     # convert range from absolute PSI to dbar
+    df['pressure'] = raw['raw_pressure'].values[0] * prange / (0.85 * 65536.0) - 0.05 * prange
 
     # derive salinity and density
-    ctd['salinity'] = SP_from_C(df['conductivity'] * 10.0, df['temperature'], df['pressure'])  # practical salinity
-    sa = SA_from_SP(ctd['salinity'], ctd['pressure'], lon, lat)  # absolute salinity from practical salinity
-    ct = CT_from_t(sa, ctd['temperature'], ctd['pressure'])      # conservative temperature
-    ctd['rho'] = rho(sa, ct, ctd['pressure'])                    # in-situ density
+    df['salinity'] = SP_from_C(df['conductivity'] * 10.0, df['temperature'], df['pressure'])
+    sa = SA_from_SP(df['salinity'], df['pressure'], lon, lat)  # absolute salinity from practical salinity
+    ct = CT_from_t(sa, df['temperature'], df['pressure'])      # conservative temperature
+    df['density'] = rho(sa, ct, df['pressure'])                    # in-situ density
 
-    # assign/create needed dimensions, geo coordinates and update the metadata attributes for the dataset
+    # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
+    ctd = xr.Dataset.from_dataframe(df)
     ctd = update_dataset(ctd, platform, deployment, lat, lon, depth, DERIVED)
 
     # save the converted and derived CTD data
-    proc_file = re.sub(r'_\d{6}\.nc', '.proc.nc', outfile)
-    ctd.to_netcdf(proc_file, mode='a', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+    proc_file = re.sub(r'\.nc', '.proc.nc', outfile)
+    ctd.to_netcdf(proc_file, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
 
 
 if __name__ == '__main__':
