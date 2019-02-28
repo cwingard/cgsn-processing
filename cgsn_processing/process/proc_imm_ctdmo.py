@@ -164,7 +164,7 @@ def main(argv=None):
     df['salinity'] = SP_from_C(df['conductivity'] * 10.0, df['temperature'], df['pressure'])
     sa = SA_from_SP(df['salinity'], df['pressure'], lon, lat)  # absolute salinity from practical salinity
     ct = CT_from_t(sa, df['temperature'], df['pressure'])      # conservative temperature
-    df['density'] = rho(sa, ct, df['pressure'])                    # in-situ density
+    df['density'] = rho(sa, ct, df['pressure'])                # in-situ density
 
     # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
     ctd = xr.Dataset.from_dataframe(df)
