@@ -2,11 +2,14 @@
 # -*- coding: utf-8 -*-
 import argparse
 import collections
+import datetime
 import json
 import numpy as np
 import pandas as pd
 import pickle
+import re
 import sys
+import xarray as xr
 
 from pathlib import Path
 
@@ -21,6 +24,15 @@ BUOYS = {
     'ce07shsm': {'name': 'Coastal Endurance Washington Shelf Surface Mooring'},
     'ce09ossm': {'name': 'Coastal Endurance Washington Offshore Surface Mooring'},
     'ce09ospm': {'name': 'Coastal Endurance Washington Offshore Profiler Mooring'}
+}
+
+# Create a dictionary to correct some inconsistencies between an xarray dataset and a CF compliant NetCDF file
+ENCODING = {
+    'time': {'_FillValue': False},
+    'lat': {'_FillValue': False},
+    'lon': {'_FillValue': False},
+    'z': {'_FillValue': False},
+    'station': {'dtype': np.int32}
 }
 
 
@@ -81,6 +93,56 @@ def hex2int(hstr):
     return int(hstr, 16)
 
 
+def join_df(df1, df2):
+    """
+    Join two data frames, padding missing values with the appropriate fill value. Recasting data types in the joined
+    data frames back to their original settings from prior to the join.
+
+    :param df1:
+    :param df2:
+    :return:
+    """
+    # capture the data types in the original data frames
+    orig = df1.dtypes.to_dict()
+    orig.update(df2.dtypes.to_dict())
+
+    # join the data frames
+    joined = df1.join(df2, how='outer')
+
+    # data types are converted to a float in the above operation, need to convert integers and strings back to their
+    # original data types and reset the fill values to appropriate values instead of NaN.
+    for col in joined:
+        if orig[col] == 'int32':
+            joined[col].fillna(-9999999, inplace=True)
+            joined[col] = joined[col].astype(orig[col])
+
+        if orig[col] == 'object':
+            joined[col].fillna('unknown', inplace=True)
+            joined[col] = joined[col].astype('|S')
+
+    return joined
+
+
+def json2obj(infile):
+    """
+    Read in a JSON formatted data file and return the results as a json formatted data object.
+    """
+    jf = Path(infile)
+    try:
+        # test to see if the file exists
+        jf.resolve()
+    except FileNotFoundError:
+        # if not, return an empty data frame
+        print("JSON data file {0} was not found, returning empty data frame".format(infile))
+        return None
+    else:
+        # otherwise, read in the data file
+        with open(infile) as jf:
+            data = json.load(jf)
+
+        return data
+
+
 def json2df(infile):
     """
     Read in a JSON formatted data file and return the results as a panda dataframe.
@@ -113,6 +175,86 @@ def json2df(infile):
                 df[col] = df[col].astype(np.int32)
 
         return df
+
+
+def json_obj2df(data, sub):
+    """
+    Take a JSON formatted data object, read it in as a dict, pull out the subarray of interest, and return the results
+    as a panda data frame.
+    """
+    df = pd.DataFrame(data[sub])
+    if df.empty:
+        return df
+
+    # Depending on the json data, time may or may not be present in the subarray. In those cases, it will be at the
+    # root level of the json data.
+    if 'time' in df.keys():
+        df['time'] = pd.to_datetime(df['time'], unit='s')
+        df.set_index('time', drop=True, inplace=True)
+    else:
+        df['time'] = pd.to_datetime(data['time'], unit='s')
+        df.set_index('time', drop=True, inplace=True)
+
+    for col in df.columns:
+        if df[col].dtype == np.int64:
+            df[col] = df[col].astype(np.int32)
+
+    return df
+
+
+def update_dataset(ds, platform, deployment, lat, lon, depth, attrs):
+    """
+
+    :param ds:
+    :param platform:
+    :param deployment:
+    :param lat:
+    :param lon:
+    :param depth:
+    :param attrs:
+    :return:
+    """
+    # add a default station identifier as a coordinate variable to the data set
+    ds.coords['station'] = np.int32(0)
+    ds = ds.expand_dims('station', axis=None)
+
+    # add the geospatial coordinates using the station identifier from above as the dimension
+    geo_coords = xr.Dataset({
+        'lat': ('station', [lat]),
+        'lon': ('station', [lon]),
+        'z': ('station', [depth[0]])
+    }, coords={'station': [np.int32(0)]})
+
+    # merge the geospatial coordinates into the data set
+    ds = xr.merge([ds, geo_coords])
+
+    # Convert time from nanoseconds to seconds since 1970
+    ds['time'] = ds.time.values.astype(float) / 10.0 ** 9
+
+    # update the global attributes with deployment specific details
+    attrs['global'] = dict_update(attrs['global'], {
+        'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment)),
+        'date_created': datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:00Z"),
+        'geospatial_lat_max': lat,
+        'geospatial_lat_min': lat,
+        'geospatial_lon_max': lon,
+        'geospatial_lon_min': lon,
+        'geospatial_vertical_max': depth[2],
+        'geospatial_vertical_min': depth[1],
+        'geospatial_vertical_positive': 'down',
+        'geospatial_vertical_units': 'm'
+    })
+
+    # assign the updated attributes to the global metadata and the individual variables
+    ds.attrs = attrs['global']
+    for v in ds.variables:
+        if v not in ['time', 'lat', 'lon', 'z', 'station']:
+            ds[v].attrs = dict_update(attrs[v], {'coordinates': 'time lat lon z'})
+        else:
+            ds[v].attrs = attrs[v]
+
+    # return the data set for further work
+    return ds
 
 
 def json_sub2df(infile, sub):
@@ -205,6 +347,21 @@ def dict_update(source, overrides):
         else:
             source[key] = overrides[key]
     return source
+
+
+def epoch_time(time_string):
+    """
+    Convert a date/time string into a Unix epoch time stamp (seconds since 1970-01-01)
+
+    :param time_string: Input date/time string in ISO-8601 format.
+    :return epts: The date/time string value converted into a Unix epoch time stamp
+    """
+    # convert the date and time string into a pandas datetime64 object
+    dt = pd.Timestamp(time_string)
+
+    # calculate the epoch time as seconds since 1970-01-01 in UTC
+    epts = dt.value / 1e9
+    return epts
 
 
 def inputs(args=None):
