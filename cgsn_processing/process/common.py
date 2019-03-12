@@ -5,12 +5,14 @@ import collections
 import datetime
 import json
 import numpy as np
+import os
 import pandas as pd
 import pickle
 import re
 import sys
 import xarray as xr
 
+from dateutil import rrule
 from pathlib import Path
 
 # Create a Global dictionary with Basic Information about the moorings
@@ -148,10 +150,7 @@ def json2df(infile):
     Read in a JSON formatted data file and return the results as a panda dataframe.
     """
     jf = Path(infile)
-    try:
-        # test to see if the file exists
-        jf.resolve()
-    except FileNotFoundError:
+    if not jf.is_file():
         # if not, return an empty data frame
         print("JSON data file {0} was not found, returning empty data frame".format(infile))
         return pd.DataFrame()
@@ -200,6 +199,45 @@ def json_obj2df(data, sub):
             df[col] = df[col].astype(np.int32)
 
     return df
+
+
+def colocated_ctd(infile, ctd_name):
+    """
+    Using the instrument name and datetime information from the instrument file name, find the co-located CTD data
+    to use in further processing steps.
+
+    :param infile:
+    :param ctd_name:
+    :param window:
+    :return:
+    """
+    # using the source instrument's full path information, split out the path and file name.
+    instrmt_path, instrmt_file = os.path.split(infile)
+
+    # data files are named with with either a date stamp, or a date+time stamp followed by the instrument name. set the
+    # instrument name and file date accordingly.
+    x = re.match(r'([\d]{8}|[\d]{8}_[\d]{6}).([\w]*).json', instrmt_file)
+    if x:
+        if len(x.group(1)) == 8:
+            instrmt_date = datetime.datetime.strptime(x.group(1), '%Y%m%d')
+        else:
+            instrmt_date = datetime.datetime.strptime(x.group(1), '%Y%m%d_%H%M%S')
+        instrmt_name = x.group(2)
+    else:
+        # cannot determine instrument name and date, exit the function
+        return None
+
+    ctd = pd.DataFrame()
+    dt = datetime.timedelta(days=1)
+    for dt in rrule.rrule(rrule.DAILY, dtstart=instrmt_date - dt, until=instrmt_date + dt):
+        dt_str = dt.strftime('%Y%m%d')
+        ctd_file = f'{dt_str}.{ctd_name}.json'
+        ctd_path = re.sub(instrmt_name + '[\d]*', ctd_name, instrmt_path)
+        df = json2df(os.path.join(ctd_path, ctd_file))
+        if not df.empty:
+            ctd = pd.concat((ctd, df), sort=False)
+
+    return ctd
 
 
 def update_dataset(ds, platform, deployment, lat, lon, depth, attrs):
@@ -390,13 +428,14 @@ def inputs(args=None):
     parser.add_argument("-d", "--deployment", dest="deployment", type=str, required=True)
     parser.add_argument("-lt", "--latitude", dest="latitude", type=float, required=True)
     parser.add_argument("-lg", "--longitude", dest="longitude", type=float, required=True)
-    parser.add_argument("-dp", "--depth", dest="depth", type=float, required=False)
+    parser.add_argument("-dp", "--depth", dest="depth", type=float, required=True)
     parser.add_argument("-bs", "--bin_size", dest="bin_size", type=float, required=False)
+    parser.add_argument("-bd", "--blanking_distance", dest="blanking_distance", type=float, required=False)
     parser.add_argument("-cf", "--coeff_file", dest="coeff_file", type=str, required=False)
     parser.add_argument("-sn", "--serial_number", dest="serial", type=str, required=False)
     parser.add_argument("-df", "--devfile", dest="devfile", type=str, required=False)
     parser.add_argument("-u", "--csvurl", dest="csvurl", type=str, required=False)
-    parser.add_argument("-s", "--switch", dest="switch", type=int, default=0)
+    parser.add_argument("-s", "--switch", dest="switch", type=str, required=False)
 
     # parse the input arguments and create a parser object
     return parser.parse_args(args)
