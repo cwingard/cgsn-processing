@@ -267,7 +267,7 @@ def update_dataset(ds, platform, deployment, lat, lon, depth, attrs):
     ds = xr.merge([ds, geo_coords])
 
     # Convert time from nanoseconds to seconds since 1970
-    ds['time'] = ds.time.values.astype(float) / 10.0 ** 9
+    ds['time'] = dt64_epoch(ds.time)
 
     # update the global attributes with deployment specific details
     attrs['global'] = dict_update(attrs['global'], {
@@ -387,6 +387,18 @@ def dict_update(source, overrides):
     return source
 
 
+def dt64_epoch(dt64):
+    """
+    Convert a panda or xarray date/time value represented as a datetime64 object (nanoseconds since 1970) to a float,
+    representing an epoch time stamp (seconds since 1970-01-01).
+
+    :param dt64: panda or xarray datatime64 object
+    :return epts: epoch time as seconds since 1970-01-01
+    """
+    epts = dt64.values.astype(float) / 10.0 ** 9
+    return epts
+
+
 def epoch_time(time_string):
     """
     Convert a date/time string into a Unix epoch time stamp (seconds since 1970-01-01)
@@ -398,7 +410,7 @@ def epoch_time(time_string):
     dt = pd.Timestamp(time_string)
 
     # calculate the epoch time as seconds since 1970-01-01 in UTC
-    epts = dt.value / 1e9
+    epts = dt64_epoch(dt)
     return epts
 
 

@@ -11,8 +11,8 @@ import os
 import pandas as pd
 import xarray as xr
 
-from cgsn_processing.process.common import ENCODING, inputs, dict_update, epoch_time, json2obj, json_obj2df, \
-    colocated_ctd, update_dataset
+from cgsn_processing.process.common import ENCODING, inputs, dict_update, dt64_epoch, epoch_time, json2obj, \
+    json_obj2df, colocated_ctd, update_dataset
 from cgsn_processing.process.configs.attr_adcp import ADCP, PD0, PD8, DERIVED
 from gsw import z_from_p
 from pyseas.data.generic_functions import magnetic_declination
@@ -194,7 +194,7 @@ def main(argv=None):
 
         # combine it all into one data set
         adcp = xr.merge([glbl, fx, bd, vbl, rtc, vel, cor, echo, back, per])
-        adcp['time'] = adcp.time.values.astype(float) / 10.0 ** 9  # Convert from nanoseconds to seconds since 1970
+        adcp['time'] = dt64_epoch(adcp.time)  # Convert from a datetime64 object to seconds since 1970
         adcp_attrs = PD0    # use the PD0 attributes
 
     elif adcp_type.lower() == 'pd8':
@@ -262,7 +262,7 @@ def main(argv=None):
 
         # combine it all into one data set
         adcp = xr.merge([glbl, vbl, bd, vel, echo, back])
-        adcp['time'] = adcp.time.values.astype(float) / 10.0 ** 9  # Convert from nanoseconds to seconds since 1970
+        adcp['time'] = dt64_epoch(adcp.time)  # Convert from a datetime64 object to seconds since 1970
         adcp_attrs = PD8    # use the PD8 attributes
     else:
         # Unknown ADCP type, exiting function

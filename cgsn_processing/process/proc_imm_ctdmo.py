@@ -44,7 +44,7 @@ def main(argv=None):
 
     # create a data frame with the raw CTD data
     ctd = json_obj2df(data, 'ctd')
-    ctd.drop(columns='ctd_time', inplace=True)  # ctd_time is duplicated by the time variable, will preserve there
+    ctd.pop('ctd_time')  # ctd_time is duplicated by the time variable, remove as variable and use time
 
     # convert the raw measurements from counts to scientific units
     ctd['conductivity'] = ctd['raw_conductivity'] / 100000.0 - 0.5
