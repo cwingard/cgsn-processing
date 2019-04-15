@@ -19,7 +19,7 @@ ADCP = {
                     'waves (i.e., Doppler shifts). This instrument is also referred to as an Acoustic Doppler' +
                     'Current Profiler (ADCP).'),
         'project': 'Ocean Observatories Initiative',
-        'institution': 'Coastal Endurance (CE) Array and Coastal and Global Scale Nodes (CGSN)',
+        'institution': 'Coastal Endurance Array (EA) and Coastal and Global Scale Nodes (CGSN)',
         'acknowledgement': 'National Science Foundation',
         'references': 'http://oceanobservatories.org',
         'creator_name': 'Ocean Observatories Initiative',
@@ -548,34 +548,39 @@ PD0 = {
     },
 
     # velocity packets
-    'eastward': {
-        'long_name': 'Eastward Velocity',
+    'eastward_seawater_velocity_est': {
+        'long_name': 'Estimated Eastward Seawater Velocity',
         'comment': ('A velocity profile includes water velocity (speed & direction) throughout the depth range of an ' +
                     'ADCP sensor. This instance is the eastward seawater velocity component uncorrected for magnetic ' +
-                    'declination as reported by the instrument.'),
+                    'declination as reported by the instrument. Considered an estimate of the true eastward velocity ' +
+                    'component while uncorrected for magnetic declination.'),
+        'standard_name': 'eastward_sea_water_velocity',
         'data_product_identifier': 'VELPROF-VLE_L0',
         'units': 'mm/s',
         '_FillValue': np.int32(-32768)
     },
-    'northward': {
-        'long_name': 'Northward Velocity',
+    'northward_seawater_velocity_est': {
+        'long_name': 'Estimated Northward Seawater Velocity',
         'comment': ('A velocity profile includes water velocity (speed & direction) throughout the depth range of an ' +
                     'ADCP sensor. This instance is the northward seawater velocity component uncorrected for ' +
-                    'magnetic declination as reported by the instrument.'),
+                    'magnetic declination as reported by the instrument. Considered an estimate of the true ' +
+                    'northward velocity component while uncorrected for magnetic declination.'),
+        'standard_name': 'northward_sea_water_velocity',
         'data_product_identifier': 'VELPROF-VLN_L0',
         'units': 'mm/s',
         '_FillValue': np.int32(-32768)
     },
-    'vertical': {
-        'long_name': 'Vertical Velocity',
+    'vertical_seawater_velocity': {
+        'long_name': 'Estimated Vertical Seawater Velocity',
         'comment': ('A velocity profile includes water velocity (speed & direction) throughout the depth range of an ' +
                     'ADCP sensor. This instance is the vertical seawater velocity component as reported by the ' +
                     'instrument'),
+        'standard_name': 'upward_sea_water_velocity',
         'data_product_identifier': 'VELPROF-VLU_L0',
         'units': 'mm/s',
         '_FillValue': np.int32(-32768)
     },
-    'error': {
+    'error_velocity': {
         'long_name': 'Error Velocity',
         'comment': ('A velocity profile includes water velocity (speed & direction) throughout the depth range of an ' +
                     'ADCP sensor. This instance is the error velocity component as reported by the instrument.'),
@@ -585,25 +590,25 @@ PD0 = {
     },
 
     # correlation magnitudes
-    'magnitude_beam1': {
+    'correlation_magnitude_beam1': {
         'long_name': 'Correlation Magnitude Beam 1',
         'comment': ('Magnitude of the normalized echo auto-correlation at the lag used for estimating the Doppler ' +
                     'phase change. 0 represents no correlation and 255 represents perfect correlation.'),
         'units': 'counts'
     },
-    'magnitude_beam2': {
+    'correlation_magnitude_beam2': {
         'long_name': 'Correlation Magnitude Beam 2',
         'comment': ('Magnitude of the normalized echo auto-correlation at the lag used for estimating the Doppler ' +
                     'phase change. 0 represents no correlation and 255 represents perfect correlation.'),
         'units': 'counts'
     },
-    'magnitude_beam3': {
+    'correlation_magnitude_beam3': {
         'long_name': 'Correlation Magnitude Beam 3',
         'comment': ('Magnitude of the normalized echo auto-correlation at the lag used for estimating the Doppler ' +
                     'phase change. 0 represents no correlation and 255 represents perfect correlation.'),
         'units': 'counts'
     },
-    'magnitude_beam4': {
+    'correlation_magnitude_beam4': {
         'long_name': 'Correlation Magnitude Beam 4',
         'comment': ('Magnitude of the normalized echo auto-correlation at the lag used for estimating the Doppler ' +
                     'phase change. 0 represents no correlation and 255 represents perfect correlation.'),
@@ -611,28 +616,28 @@ PD0 = {
     },
 
     # echo intensities
-    'intensity_beam1': {
+    'echo_intensity_beam1': {
         'long_name': 'Echo Intensity Beam 1',
         'comment': ('Echo Intensity is the acoustic return signal per beam that is output directly from the ADCP. ' +
                     'This is the raw measurement used to calculate the echo intensity data product for the beam.'),
         'data_product_identifier': 'ECHOINT-B1_L0',
         'units': 'counts'
     },
-    'intensity_beam2': {
+    'echo_intensity_beam2': {
         'long_name': 'Echo Intensity Beam 2',
         'comment': ('Echo Intensity is the acoustic return signal per beam that is output directly from the ADCP. ' +
                     'This is the raw measurement used to calculate the echo intensity data product for the beam.'),
         'data_product_identifier': 'ECHOINT-B2_L0',
         'units': 'counts'
     },
-    'intensity_beam3': {
+    'echo_intensity_beam3': {
         'long_name': 'Echo Intensity Beam 3',
         'comment': ('Echo Intensity is the acoustic return signal per beam that is output directly from the ADCP. ' +
                     'This is the raw measurement used to calculate the echo intensity data product for the beam.'),
         'data_product_identifier': 'ECHOINT-B3_L0',
         'units': 'counts'
     },
-    'intensity_beam4': {
+    'echo_intensity_beam4': {
         'long_name': 'Echo Intensity Beam 4',
         'comment': ('Echo Intensity is the acoustic return signal per beam that is output directly from the ADCP. ' +
                     'This is the raw measurement used to calculate the echo intensity data product for the beam.'),
@@ -641,25 +646,25 @@ PD0 = {
     },
 
     # percent good
-    'good_3beam': {
-        'long_name': 'Percent Good 3Beam',
-        'comment': ('Percentage of good 3-beam solutions in an ensemble average (successful velocity calculations ' +
-                    'using 3-beams).'),
+    'percent_good_3beam': {
+        'long_name': 'Percent Good 3 Beams',
+        'comment': ('Percentage of velocity data collected in an ensemble average that were calculated with just 3 ' +
+                    'beams.'),
         'units': 'percent'
     },
-    'transforms_reject': {
+    'percent_transforms_reject': {
         'long_name': 'Percent Transforms Rejected',
         'comment': ('Percentage of transformations rejected in an ensemble average (error velocity that was higher ' +
                     'than the WE-command setting)'),
         'units': 'percent'
     },
-    'bad_beams': {
+    'percent_bad_beams': {
         'long_name': 'Percent Bad Beams',
         'comment': ('Percentage of velocity data collected in an ensemble average that were rejected because not ' +
                     'enough beams had good data.'),
         'units': 'percent'
     },
-    'good_4beam': {
+    'percent_good_4beam': {
         'long_name': 'Percent Good 4 Beams',
         'comment': 'Percentage of velocity data collected in an ensemble average that were calculated with all 4 beams',
         'units': 'percent'
@@ -705,48 +710,55 @@ PD8 = {
     },
 
     # velocity packets
-    'direction': {
-        'long_name': 'Water Velocity Direction',
+    'seawater_velocity_direction_est': {
+        'long_name': 'Estimated Seawater Velocity Direction',
         'comment': ('Profile indicating direction water is travelling to. Corrected for instrument heading, pitch and ',
-                    'roll, but uncorrected for magnetic declination.'),
+                    'roll, but uncorrected for magnetic declination. Considered an estimate of the true velocity ' +
+                    'direction while uncorrected for magnetic declination.'),
         'units': 'degrees',
         '_FillValue': np.nan
     },
-    'magnitude': {
-        'long_name': 'Water Velocity Magnitude',
-        'comment': ('Profile of water current velocities. Corrected for instrument heading, pitch and roll, but ',
-                    'uncorrected for magnetic declination.'),
+    'seawater_velocity_magnitude_est': {
+        'long_name': 'Estimated Seawater Velocity Magnitude',
+        'comment': ('Profile of water current velocities. Corrected for instrument heading, pitch and roll, but ' +
+                    'uncorrected for magnetic declination. Considered an estimate of the true velocity magnitude ' +
+                    'while uncorrected for magnetic declination.'),
         'units': 'mm/s',
         '_FillValue': np.nan
     },
-    'eastward': {
-        'long_name': 'Eastward Velocity',
+    'eastward_seawater_velocity_est': {
+        'long_name': 'Estimated Eastward Seawater Velocity',
         'comment': ('A velocity profile includes water velocity (speed & direction) throughout the depth range of an ' +
                     'ADCP sensor. This instance is the eastward seawater velocity component uncorrected for magnetic ' +
-                    'declination as reported by the instrument.'),
+                    'declination as reported by the instrument. Considered an estimate of the true eastward velocity ' +
+                    'component while uncorrected for magnetic declination.'),
+        'standard_name': 'eastward_sea_water_velocity',
         'data_product_identifier': 'VELPROF-VLE_L0',
         'units': 'mm/s',
         '_FillValue': np.int32(-32768)
     },
-    'northward': {
-        'long_name': 'Northward Velocity',
+    'northward_seawater_velocity_est': {
+        'long_name': 'Estimated Northward Seawater Velocity',
         'comment': ('A velocity profile includes water velocity (speed & direction) throughout the depth range of an ' +
                     'ADCP sensor. This instance is the northward seawater velocity component uncorrected for ' +
-                    'magnetic declination as reported by the instrument.'),
+                    'magnetic declination as reported by the instrument. Considered an estimate of the true ' +
+                    'northward velocity component while uncorrected for magnetic declination.'),
+        'standard_name': 'northward_sea_water_velocity',
         'data_product_identifier': 'VELPROF-VLN_L0',
         'units': 'mm/s',
         '_FillValue': np.int32(-32768)
     },
-    'vertical': {
-        'long_name': 'Vertical Velocity',
+    'vertical_seawater_velocity': {
+        'long_name': 'Vertical Seawater Velocity',
         'comment': ('A velocity profile includes water velocity (speed & direction) throughout the depth range of an ' +
                     'ADCP sensor. This instance is the vertical seawater velocity component as reported by the ' +
                     'instrument'),
+        'standard_name': 'upward_sea_water_velocity',
         'data_product_identifier': 'VELPROF-VLU_L0',
         'units': 'mm/s',
         '_FillValue': np.int32(-32768)
     },
-    'error': {
+    'error_velocity': {
         'long_name': 'Error Velocity',
         'comment': ('A velocity profile includes water velocity (speed & direction) throughout the depth range of an ' +
                     'ADCP sensor. This instance is the error velocity component as reported by the instrument.'),
@@ -756,28 +768,28 @@ PD8 = {
     },
 
     # echo intensities
-    'intensity_beam1': {
+    'echo_intensity_beam1': {
         'long_name': 'Echo Intensity Beam 1',
         'comment': ('Echo Intensity is the acoustic return signal per beam that is output directly from the ADCP. ' +
                     'This is the raw measurement used to calculate the echo intensity data product for the beam.'),
         'data_product_identifier': 'ECHOINT-B1_L0',
         'units': 'counts'
     },
-    'intensity_beam2': {
+    'echo_intensity_beam2': {
         'long_name': 'Echo Intensity Beam 2',
         'comment': ('Echo Intensity is the acoustic return signal per beam that is output directly from the ADCP. ' +
                     'This is the raw measurement used to calculate the echo intensity data product for the beam.'),
         'data_product_identifier': 'ECHOINT-B2_L0',
         'units': 'counts'
     },
-    'intensity_beam3': {
+    'echo_intensity_beam3': {
         'long_name': 'Echo Intensity Beam 3',
         'comment': ('Echo Intensity is the acoustic return signal per beam that is output directly from the ADCP. ' +
                     'This is the raw measurement used to calculate the echo intensity data product for the beam.'),
         'data_product_identifier': 'ECHOINT-B3_L0',
         'units': 'counts'
     },
-    'intensity_beam4': {
+    'echo_intensity_beam4': {
         'long_name': 'Echo Intensity Beam 4',
         'comment': ('Echo Intensity is the acoustic return signal per beam that is output directly from the ADCP. ' +
                     'This is the raw measurement used to calculate the echo intensity data product for the beam.'),
@@ -813,8 +825,10 @@ DERIVED = {
         'long_name': 'Internal Real Time Clock',
         'comment': ('Date and time stamp from the ADCP''s real-time clock for when the ensemble measurement began.' +
                     'Combines data from, and replaces, the data from the two real_time_clock arrays contained in' +
-                    'the variable leader section of the raw data'),
-        # 'units': ''    # deliberately left blank, no units for this value, this is a string representation
+                    'the variable leader section of the raw data. The data is then converted to a Unix epoch time ' +
+                    'stamp (seconds since 1970-01-01)'),
+        'units': 'seconds since 1970-01-01 00:00:00 0:00',
+        'calendar': 'gregorian'
     },
     'backscatter_beam1': {
         'long_name': 'Estimated Acoustic Backscatter Beam 1',
@@ -862,7 +876,7 @@ DERIVED = {
                     'and scaled to standard units of m/s.'),
         'standard_name': 'eastward_sea_water_velocity',
         'data_product_identifier': 'VELPROF-VLE_L1',
-        'ancillary_variables': 'eastward, northward, time, lat, lon, z',
+        'ancillary_variables': 'eastward_seawater_velocity_est, northward_seawater_velocity_est, time, lat, lon, z',
         'units': 'm/s',
         '_FillValue': np.nan
     },
@@ -872,25 +886,8 @@ DERIVED = {
                     'and scaled to standard units of m/s.'),
         'standard_name': 'northward_sea_water_velocity',
         'data_product_identifier': 'VELPROF-VLN_L1',
-        'ancillary_variables': 'eastward, northward, time, lat, lon, z',
+        'ancillary_variables': 'eastward_seawater_velocity_est, northward_seawater_velocity_est, time, lat, lon, z',
         'units': 'm/s',
         '_FillValue': np.nan
     },
-    'vertical_seawater_velocity': {
-        'long_name': 'Vertical Seawater Velocity',
-        'comment': 'Vertical sea water velocity component scaled to standard units of m/s.',
-        'standard_name': 'upward_sea_water_velocity',
-        'data_product_identifier': 'VELPROF-VLU_L1',
-        'ancillary_variables': 'vertical',
-        'units': 'm/s',
-        '_FillValue': np.nan
-    },
-    'error_velocity': {
-        'long_name': 'Error Velocity',
-        'comment': 'Error velocity component scaled to standard units of m/s.',
-        'data_product_identifier': 'VELPROF-EVL_L1',
-        'ancillary_variables': 'error',
-        'units': 'm/s',
-        '_FillValue': np.nan
-    }
 }

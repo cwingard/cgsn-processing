@@ -7,7 +7,7 @@ def readme():
 
 setup(
     name='cgsn_processing',
-    version='0.1.0',
+    version='0.1.1',
     description=(
         'Collection of processing modules for converting JSON data '
         'from the OOI Endurance, Global and Pioneer moorings to NetCDF.'
@@ -33,6 +33,7 @@ setup(
         'pandas',
         'netCDF4',
         'jinja2',
+        'pyseas',
         'pytz',
         'pyaxiom',
         'requests',
