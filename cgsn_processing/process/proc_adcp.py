@@ -62,7 +62,7 @@ def main(argv=None):
         # test to see if the CTD covers our time of interest for this ADCP file
         coverage = ctd_time.min() <= time.min() and ctd_time.max() >= time.max()
 
-        # reset initial estimate of deployment depth based if we have full coverage
+        # reset initial estimate of deployment depth based on if we have full coverage
         if coverage:
             dbar = np.interp(time, ctd_time, ctd.pressure.values)
             depth_m = -1 * z_from_p(dbar, lat)
@@ -90,7 +90,8 @@ def main(argv=None):
         vbl = xr.Dataset.from_dataframe(df)
 
         # drop real-time clock arrays 1 and 2, rewriting the data as an ISO 8601 combined date and time string and
-        # convert to a Unix epoch time.
+        # convert to a Unix epoch time. note, the two arrays are identical with the exception of the milliseconds field
+        # added to the real-time clock array 2. will use the second array to create a single real time clock variable.
         rtc = []
         for ts in vbl['real_time_clock2'].values:
             rtc_string = "{:2d}{:02d}{:02d}{:02d}T{:02d}{:02d}{:02d}.{:03d}Z".format(ts[0], ts[1], ts[2], ts[3],
@@ -212,7 +213,7 @@ def main(argv=None):
         if not depth_flag:
             bin_depths = bin_depths.repeat(time.size, axis=0)
 
-        # create the bin depths date set
+        # create the bin depths data set
         bd = xr.Dataset({
             'bin_depths': (['time', 'bin_number'], bin_depths)
         }, coords={'time': (['time'], pd.to_datetime(time, unit='s')), 'bin_number': bin_number})
@@ -264,6 +265,7 @@ def main(argv=None):
         adcp = xr.merge([glbl, vbl, bd, vel, echo, back])
         adcp['time'] = dt64_epoch(adcp.time)  # Convert from a datetime64 object to seconds since 1970
         adcp_attrs = PD8    # use the PD8 attributes
+
     else:
         # Unknown ADCP type, exiting function
         return None

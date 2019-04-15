@@ -40,11 +40,13 @@ def main(argv=None):
     status = json_obj2df(data, 'status')
     status['status_time'] = epoch_time(status['date_time_string'].values[0])
     status.drop(columns='date_time_string', inplace=True)
+    status.rename(columns={'main_battery': 'main_battery_voltage', 'lithium_battery': 'lithium_battery_voltage'},
+                  inplace=True)
     prange = status['pressure_range'].values[0]  # extract the pressure range from the data frame
 
     # create a data frame with the raw CTD data
     ctd = json_obj2df(data, 'ctd')
-    ctd.pop('ctd_time')  # ctd_time is duplicated by the time variable, remove as variable and use time
+    del ctd['ctd_time']  # ctd_time is duplicated by the time variable, remove as variable and use time
 
     # convert the raw measurements from counts to scientific units
     ctd['conductivity'] = ctd['raw_conductivity'] / 100000.0 - 0.5

@@ -554,6 +554,7 @@ PD0 = {
                     'ADCP sensor. This instance is the eastward seawater velocity component uncorrected for magnetic ' +
                     'declination as reported by the instrument. Considered an estimate of the true eastward velocity ' +
                     'component while uncorrected for magnetic declination.'),
+        'standard_name': 'eastward_sea_water_velocity',
         'data_product_identifier': 'VELPROF-VLE_L0',
         'units': 'mm/s',
         '_FillValue': np.int32(-32768)
@@ -564,6 +565,7 @@ PD0 = {
                     'ADCP sensor. This instance is the northward seawater velocity component uncorrected for ' +
                     'magnetic declination as reported by the instrument. Considered an estimate of the true ' +
                     'northward velocity component while uncorrected for magnetic declination.'),
+        'standard_name': 'northward_sea_water_velocity',
         'data_product_identifier': 'VELPROF-VLN_L0',
         'units': 'mm/s',
         '_FillValue': np.int32(-32768)
@@ -573,6 +575,7 @@ PD0 = {
         'comment': ('A velocity profile includes water velocity (speed & direction) throughout the depth range of an ' +
                     'ADCP sensor. This instance is the vertical seawater velocity component as reported by the ' +
                     'instrument'),
+        'standard_name': 'upward_sea_water_velocity',
         'data_product_identifier': 'VELPROF-VLU_L0',
         'units': 'mm/s',
         '_FillValue': np.int32(-32768)
@@ -644,9 +647,9 @@ PD0 = {
 
     # percent good
     'percent_good_3beam': {
-        'long_name': 'Percent Good 3Beam',
-        'comment': ('Percentage of good 3-beam solutions in an ensemble average (successful velocity calculations ' +
-                    'using 3-beams).'),
+        'long_name': 'Percent Good 3 Beams',
+        'comment': ('Percentage of velocity data collected in an ensemble average that were calculated with just 3 ' +
+                    'beams.'),
         'units': 'percent'
     },
     'percent_transforms_reject': {

@@ -100,9 +100,9 @@ def join_df(df1, df2):
     Join two data frames, padding missing values with the appropriate fill value. Recasting data types in the joined
     data frames back to their original settings from prior to the join.
 
-    :param df1:
-    :param df2:
-    :return:
+    :param df1: primary dataframe to merge the secondary dataframe into
+    :param df2: secondary dataframe
+    :return joined: combined primary and secondary dataframes
     """
     # capture the data types in the original data frames
     orig = df1.dtypes.to_dict()
@@ -206,10 +206,9 @@ def colocated_ctd(infile, ctd_name):
     Using the instrument name and datetime information from the instrument file name, find the co-located CTD data
     to use in further processing steps.
 
-    :param infile:
-    :param ctd_name:
-    :param window:
-    :return:
+    :param infile: instrument file name with the full, absolute path
+    :param ctd_name: name of the CTD file to match to the instrument file name
+    :return ctd: CTD data covering the time period of interest for input file
     """
     # using the source instrument's full path information, split out the path and file name.
     instrmt_path, instrmt_file = os.path.split(infile)
@@ -242,15 +241,18 @@ def colocated_ctd(infile, ctd_name):
 
 def update_dataset(ds, platform, deployment, lat, lon, depth, attrs):
     """
+    Updates a data set with global and variable level metadata attributes and sets appropriate dimensions and
+    coordinate axes.
 
-    :param ds:
-    :param platform:
-    :param deployment:
-    :param lat:
-    :param lon:
-    :param depth:
-    :param attrs:
-    :return:
+    :param ds: Data set to update
+    :param platform: Platform name
+    :param deployment: Deployment name
+    :param lat: Deployment latitude in decimal degrees North
+    :param lon: Deployment longitude in decimal degrees East
+    :param depth: Array indicating deployment depth and the vertical minimum and maximum extent of the depth range for
+                  the instrument in this data set
+    :param attrs: Global and variable level attributes for the data set
+    :return ds: The updated data set
     """
     # add a default station identifier as a coordinate variable to the data set
     ds.coords['station'] = np.int32(0)
@@ -410,7 +412,7 @@ def epoch_time(time_string):
     dt = pd.Timestamp(time_string)
 
     # calculate the epoch time as seconds since 1970-01-01 in UTC
-    epts = dt64_epoch(dt)
+    epts = dt.value / 10.0 ** 9
     return epts
 
 
