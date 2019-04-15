@@ -92,7 +92,7 @@ CTD = {
         'units': 'counts',
         '_FillValue': -9999999,
     },
-    'memory_free': {
+    'sample_slots_free': {
         'long_name': 'Number of Free Samples',
         'comment': 'Number of free samples available for recording, representing the memory available in the unit',
         'units': 'counts',

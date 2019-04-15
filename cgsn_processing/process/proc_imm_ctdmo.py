@@ -40,7 +40,9 @@ def main(argv=None):
     status = json_obj2df(data, 'status')
     status['status_time'] = epoch_time(status['date_time_string'].values[0])
     status.drop(columns='date_time_string', inplace=True)
-    status.rename(columns={'main_battery': 'main_battery_voltage', 'lithium_battery': 'lithium_battery_voltage'},
+    status.rename(columns={'main_battery': 'main_battery_voltage',
+                           'lithium_battery': 'lithium_battery_voltage',
+                           'memory_free': 'sample_slots_free'},
                   inplace=True)
     prange = status['pressure_range'].values[0]  # extract the pressure range from the data frame
 
