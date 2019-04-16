@@ -34,7 +34,8 @@ ENCODING = {
     'lat': {'_FillValue': False},
     'lon': {'_FillValue': False},
     'z': {'_FillValue': False},
-    'station': {'dtype': np.int32}
+    'station': {'dtype': np.int32},
+    'deploy_id': {'dtype': str}
 }
 
 

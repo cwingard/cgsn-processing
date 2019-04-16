@@ -50,6 +50,9 @@ def main(argv=None):
     ctd = json_obj2df(data, 'ctd')
     del ctd['ctd_time']  # ctd_time is duplicated by the time variable, remove as variable and use time
 
+    # add the deployment id, used to subset data sets
+    ctd['deploy_id'] = deployment
+
     # convert the raw measurements from counts to scientific units
     ctd['conductivity'] = ctd['raw_conductivity'] / 100000.0 - 0.5
     ctd['temperature'] = ctd['raw_temperature'] / 10000.0 - 10.0
