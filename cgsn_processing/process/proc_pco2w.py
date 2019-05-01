@@ -7,19 +7,15 @@
 @brief Calculate the pCO2 of water from the SAMI2-pCO2 (PCO2W) instrument
 """
 import numpy as np
+import os
 import pandas as pd
 import pickle
-import os
-import re
 
 from datetime import datetime, timedelta
-from pocean.utils import dict_update
-from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMTs
 from pytz import timezone
 
-from cgsn_parsers.parsers.common import dcl_to_epoch
-from cgsn_processing.process.common import Coefficients, inputs, json2df, df2omtdf
-from cgsn_processing.process.configs.attr_pco2w import PCO2W
+from cgsn_processing.process.common import Coefficients, ENCODING, inputs, dict_update, json2df, update_dataset
+from cgsn_processing.process.configs.attr_pco2w import GLOBAL, PCO2W
 from cgsn_processing.process.finding_calibrations import find_calibration
 
 from pyseas.data.co2_functions import co2_blank, co2_thermistor, co2_pco2wat
@@ -107,23 +103,26 @@ def main(argv=None):
     lon = args.longitude
     depth = args.depth
 
-    # load the json data file and return a panda dataframe
-    df = json2df(infile)
-    if df.empty:
-        # This is an empty file, end processing
+    # load the json data file as a panda dataframe for further processing
+    data = json2df(infile)
+    if not data:
+        # json data file was empty, exiting
         return None
+
+    # set the deployment id as a variable
+    data['deploy_id'] = deployment
 
     # initialize the calibrations data class
     coeff_file = os.path.abspath(args.coeff_file)
-    cal = Calibrations(coeff_file)  # initialize calibration class
+    cal = Calibrations(coeff_file)
 
-    # check for the source of calibration coeffs and load accordingly
+    # check for the source of calibration coefficients and load accordingly
     if os.path.isfile(coeff_file):
         # we always want to use this file if it exists
         cal.load_coeffs()
     else:
         # load from the CI hosted CSV files
-        csv_url = find_calibration('PCO2W', args.serial, (df.time.values.astype('int64') * 10 ** -9)[0])
+        csv_url = find_calibration('PCO2W', args.serial, (data.time.values.astype('int64') * 10 ** -9)[0])
         if csv_url:
             cal.read_csv(csv_url)
             cal.save_coeffs()
@@ -132,84 +131,86 @@ def main(argv=None):
             return None
 
     # initialize the pCO2 blanks class
-    blank_file = os.path.abspath(args.devfile)
-    blank = Blanks(blank_file, -9999.9, -9999.9)
+    blank_file = os.path.join(os.path.dirname(infile), 'pco2w.blank_coeffs.pkl')
+    blank = Blanks(blank_file, np.nan, np.nan)
 
     # check for the source of pCO2 blanks and load accordingly
     if os.path.isfile(blank_file):
         # we always want to use this file if it exists
         blank.load_blanks()
     else:
-        # Create one using defaults of 1
+        # Create one using defaults of 1.0 for the blanks
         blank.save_blanks()
 
-    # convert the raw battery voltage and thermistor values from counts
-    # to V and degC, respectively
-    df['thermistor'] = co2_thermistor(df['thermistor_raw'])
-    df['voltage_battery'] = ph_battery(df['voltage_raw'])
+    # convert the raw battery voltage and thermistor values from counts to V and degC, respectively
+    data.rename(columns={'voltage_raw': 'raw_battery_voltage',
+                         'thermistor_raw': 'raw_thermistor'}, inplace=True)
+    data['thermistor'] = co2_thermistor(data['raw_thermistor'])
+    data['battery_voltage'] = ph_battery(data['raw_battery_voltage'])
 
-    # compare the instrument clock to the GPS based DCL time stamp
-    # --> PCO2W uses the OSX date format of seconds since 1904-01-01
+    # reset the data type and units for the record time to make sure the value is correctly represented and can be
+    # calculated against. the PCO2W uses the OSX date format of seconds since 1904-01-01. here we convert to seconds
+    # since 1970-01-01. also, compare the instrument clock to the GPS based DCL time stamp (if present, does not apply
+    # if this is an IMM hosted instrument).
+    rct = data['record_time'].astype(np.uint32).values * 1.0    # convert to a float
     mac = datetime.strptime("01-01-1904", "%m-%d-%Y")
     ept = datetime.strptime("01-01-1970", "%m-%d-%Y")
+    record_time = []
     offset = []
-    for i in range(len(df['time'])):
-        proc = ept + timedelta(seconds=dcl_to_epoch(df['process_date_time'][i]))
-        proc.replace(tzinfo=timezone('UTC'))                # DCL sample processing time
-        rec = mac + timedelta(seconds=df['record_time'][i].astype(np.uint32) * 1.)
-        rec.replace(tzinfo=timezone('UTC'))                 # SAMI record time
-        offset.append((proc - rec).total_seconds())
+    for i in range(len(data['time'])):
+        rec = mac + timedelta(seconds=rct[i])
+        rec.replace(tzinfo=timezone('UTC'))
+        record_time.append((rec - ept).total_seconds())
+        if 'process_date_time' in data.columns:
+            offset.append((rec - data['time'][i]).total_seconds())
 
-    df['time_offset'] = offset
+    data['record_time'] = record_time   # replace the instrument time stamp
+    if offset:
+        data['time_offset'] = offset    # add the estimated instrument clock offset
 
     # calculate pCO2
     pCO2 = []
     k434 = []
     k620 = []
 
-    for i in range(len(df['record_type'])):
-        if df['record_type'][i] == 4:
+    for i in range(len(data)):
+        if data['record_type'][i] == 4:
             # this is a light measurement, calculate the pCO2 concentration
-            if blank.k434 == -9999.9 and blank.k620 == -9999.9:
+            if np.isnan(blank.k434) and np.isnan(blank.k620):
                 # We don't have a blank to use in the calculation
-                pCO2.append(-9999.9)
+                pCO2.append(np.nan)
             else:
-                p = co2_pco2wat(df['ratio_434'][i], df['ratio_620'][i], df['thermistor'][i], cal.coeffs['calt'],
-                            cal.coeffs['cala'], cal.coeffs['calb'], cal.coeffs['calc'],
-                            blank.k434, blank.k620)
+                p = co2_pco2wat(data['ratio_434'][i], data['ratio_620'][i], data['thermistor'][i], cal.coeffs['calt'],
+                                cal.coeffs['cala'], cal.coeffs['calb'], cal.coeffs['calc'],
+                                blank.k434, blank.k620)
                 pCO2.append(p.item())
 
             # record the blanks used
             k434.append(blank.k434)
             k620.append(blank.k620)
 
-        if df['record_type'][i] == 5:
+        if data['record_type'][i] == 5:
             # this is a dark measurement, no pCO2 measurement, update and save the new blanks
-            blank.k434 = co2_blank(df['ratio_434'][i])
-            blank.k620 = co2_blank(df['ratio_620'][i])
+            blank.k434 = co2_blank(data['ratio_434'][i])
+            blank.k620 = co2_blank(data['ratio_620'][i])
             blank.save_blanks()
 
-            pCO2.append(-9999.9)
+            pCO2.append(np.nan)
             k434.append(blank.k434)
             k620.append(blank.k620)
 
-    # add the resulting data to the dataframe
-    df['pCO2'] = pCO2
-    df['k434'] = k434
-    df['k620'] = k620
+    # add the resulting data to the data frame and convert to an xarray data set
+    data['pCO2'] = pCO2
+    data['k434'] = k434
+    data['k620'] = k620
+    pCO2 = data.to_xarray()
 
-    # convert the dataframe to a format suitable for the pocean OMTs
-    df['deploy_id'] = deployment
-    df = df2omtdf(df, lat, lon, depth)
+    # update the metadata and setup the data set for export to NetCDF
+    attrs = dict_update(GLOBAL, PCO2W)      # merge global and pCO2 attribute dictionaries into a single dictionary
+    pCO2 = update_dataset(pCO2, platform, deployment, lat, lon, [depth, depth, depth], attrs)
 
-    # add to the global attributes for the PCO2W
-    attrs = PCO2W
-    attrs['global'] = dict_update(attrs['global'], {
-        'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
-    })
-
-    nc = OMTs.from_dataframe(df, outfile, attributes=attrs)
-    nc.close()
+    # save the file
+    pCO2.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
 
 
 if __name__ == '__main__':

@@ -6,6 +6,7 @@
 @author Christopher Wingard
 @brief Attributes for the METBK variables
 """
+import numpy as np
 
 GLOBAL = {
     'global': {
@@ -38,7 +39,10 @@ GLOBAL = {
         'units': 'seconds since 1970-01-01 00:00:00 0:00',
         'axis': 'T',
         'calendar': 'gregorian',
-        'comment': 'Derived from the SBE 37-IM MicroCAT internal clock.'
+        'comment': ('Derived from either the DCL data logger GPS referenced clock, or the internal instrument clock ' +
+                    'if this is an IMM hosted instrument. For instruments attached to a DCL, the instrument''s ' +
+                    'internal clock is cross-compared to the GPS clock to determine the internal clock''s time ' +
+                    'offset and drift.')
     },
     'lon': {
         'long_name': 'Longitude',
@@ -88,72 +92,68 @@ PHSEN = {
         'long_name': 'DI Blank Reference Intensity at 434 nm',
         'comment': ('Optical absorbance reference intensity at 434 nm. Measured with deionized water. Reference and ' +
                     'signal intensities range between 0 and 4096. Values should be greater than ~1500. Lower ' +
-                    'intensities will result in higher noise in absorbance and thus pH measurements.'),
+                    'intensities will result in higher noise in the absorbance and pH measurements.'),
         'units': 'counts',
-        'fill_value': -9999999,
+        '_FillValue': -9999999,
     },
     'blank_signal_434': {
         'long_name': 'DI Blank Signal Intensity at 434 nm',
         'comment': ('Optical absorbance signal intensity at 434 nm. Measured with deionized water. Reference and ' +
                     'signal intensities range between 0 and 4096. Values should be greater than ~1500. Lower ' +
-                    'intensities will result in higher noise in absorbance and thus pH measurements.'),
+                    'intensities will result in higher noise in the absorbance and pH measurements.'),
         'units': 'counts',
-        'fill_value': -9999999,
+        '_FillValue': -9999999,
     },
     'blank_refrnc_578': {
         'long_name': 'DI Blank Reference Intensity at 578 nm',
         'comment': ('Optical absorbance reference intensity at 578 nm. Measured with deionized water. Reference and ' +
                     'signal intensities range between 0 and 4096. Values should be greater than ~1500. Lower ' +
-                    'intensities will result in higher noise in absorbance and thus pH measurements.'),
+                    'intensities will result in higher noise in the absorbance and pH measurements.'),
         'units': 'counts',
-        'fill_value': -9999999,
+        '_FillValue': -9999999,
     },
     'blank_signal_578': {
         'long_name': 'DI Blank Signal Intensity at 578 nm',
         'comment': ('Optical absorbance signal intensity at 578 nm. Measured with deionized water. Reference and ' +
                     'signal intensities range between 0 and 4096. Values should be greater than ~1500. Lower ' +
-                    'intensities will result in higher noise in absorbance and thus pH measurements.'),
+                    'intensities will result in higher noise in the absorbance and pH measurements.'),
         'units': 'counts',
-        'fill_value': -9999999,
+        '_FillValue': -9999999,
     },
     'reference_434': {
         'long_name': 'Reference Intensity at 434 nm',
         'comment': ('Optical absorbance reference intensity at 434 nm. Reference and signal intensities range ' +
                     'between 0 and 4096. Values should be greater than ~1500. Lower intensities will result in ' +
-                    'higher noise in absorbance and thus pH measurements.'),
-        'units': 'counts',
-        'fill_value': -9999999,
+                    'higher noise in the absorbance and pH measurements.'),
+        'units': 'counts'
     },
     'signal_434': {
         'long_name': 'Signal Intensity at 434 nm',
         'comment': ('Optical absorbance signal intensity at 434 nm. Reference and signal intensities range between 0 ' +
                     'and 4096. Values should be greater than ~1500. Lower intensities will result in higher noise in ' +
-                    'absorbance and thus pH measurements.'),
+                    'the absorbance and pH measurements.'),
         'data_product_identifier': 'PH434SI_L0',
-        'units': 'counts',
-        'fill_value': -9999999,
+        'units': 'counts'
     },
     'reference_578': {
         'long_name': 'Reference Intensity at 578 nm',
         'comment': ('Optical absorbance reference intensity at 578 nm. Reference and signal intensities range ' +
                     'between 0 and 4096. Values should be greater than ~1500. Lower intensities will result in ' +
-                    'higher noise in absorbance and thus pH measurements.'),
-        'units': 'counts',
-        'fill_value': -9999999,
+                    'higher noise in the absorbance and pH measurements.'),
+        'units': 'counts'
     },
     'signal_578': {
         'long_name': 'Signal Intensity at 578 nm',
         'comment': ('Optical absorbance signal intensity at 578 nm. Reference and signal intensities range between 0 ' +
                     'and 4096. Values should be greater than ~1500. Lower intensities will result in higher noise in ' +
-                    'absorbance and thus pH measurements.'),
+                    'the absorbance and pH measurements.'),
         'data_product_identifier': 'PH578SI_L0',
-        'units': 'counts',
-        'fill_value': -9999999,
+        'units': 'counts'
     },
     'record_number': {
         'long_name': 'IMM Record Number',
         'comment': 'Inductive modem record number',
-        'units': 'counts'
+        # 'units': ''    # deliberately left blank, no units for this value
     },
     'record_length': {
         'long_name': 'Record Length',
@@ -162,7 +162,7 @@ PHSEN = {
     },
     'record_type': {
         'long_name': 'Record Type',
-        'comment': 'Data and control record type. For the SAMI2-pH sensor the record type is 10',
+        'comment': 'Data and control record type. For the SAMI2-pH sensor, the record type is 10',
         # 'units': ''    # deliberately left blank, no units for this value
     },
     'record_time': {
@@ -173,12 +173,12 @@ PHSEN = {
     },
     'raw_thermistor_start': {
         'long_name': 'Raw Thermistor Temperature, Measurement Start',
-        'comment': 'Thermistor resistivity measured in counts at the start of the measurement',
+        'comment': 'Thermistor resistivity measured in counts at the start of the measurement cycle.',
         'units': 'counts'
     },
     'raw_thermistor_end': {
         'long_name': 'Raw Thermistor Temperature, Measurement End',
-        'comment': 'Thermistor resistivity measured in counts at the end of the measurement',
+        'comment': 'Thermistor resistivity measured in counts at the end of the measurement cycle.',
         'units': 'counts'
     },
     'raw_battery_voltage': {
@@ -196,7 +196,7 @@ PHSEN = {
                     'cycle'),
         'standard_name': 'seawater_temperature',
         'units': 'degree_Celsius',
-        'ancillary_variables': 'raw_thermistor_start',
+        'ancillary_variables': 'raw_thermistor_start'
     },
     'thermistor_end': {
         'long_name': 'Thermistor Temperature, Measurement End',
@@ -206,7 +206,7 @@ PHSEN = {
                     'variable represents the thermistor temperature measured at the end of the measurement cycle'),
         'standard_name': 'seawater_temperature',
         'units': 'degree_Celsius',
-        'ancillary_variables': 'raw_thermistor_start'
+        'ancillary_variables': 'raw_thermistor_end'
     },
     'battery_voltage': {
         'long_name': 'Battery Voltage',
@@ -219,7 +219,8 @@ PHSEN = {
         'long_name': 'Internal Clock Offset',
         'comment': ('Difference between the internal clock and the external GPS-based data logger clock. Offset ' +
                     'can be used to determine instrument clock offset and drift over the course of a deployment'),
-        'units': 'seconds'
+        'units': 'seconds',
+        'ancillary_variables': 'record_time, time'
     },
     'pH': {
         'long_name': 'Seawater pH',
@@ -228,6 +229,7 @@ PHSEN = {
         'standard_name': 'sea_water_ph_reported_on_total_scale',
         'data_product_identifier': 'PHWATER_L1',
         'units': '1',
+        '_FillValue': np.nan,
         'ancillary_variables': ('blank_refrnc_434, blank_signal_434, blank_refrnc_578, blank_signal_578, ' +
                                 'reference_434, signal_434, reference_578, signal_578, thermistor_start, ' +
                                 'thermistor_end')

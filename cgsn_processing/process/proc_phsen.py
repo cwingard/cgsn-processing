@@ -8,12 +8,14 @@
 """
 import numpy as np
 import os
+import pandas as pd
 import xarray as xr
 
 from datetime import datetime, timedelta
+from gsw import SP_from_C
 from pytz import timezone
 
-from cgsn_processing.process.common import ENCODING, inputs, json2df, dict_update, update_dataset
+from cgsn_processing.process.common import ENCODING, colocated_ctd, inputs, json2df, dict_update, update_dataset
 from cgsn_processing.process.configs.attr_phsen import GLOBAL, PHSEN
 
 from pyseas.data.ph_functions import ph_battery, ph_thermistor, ph_calc_phwater
@@ -29,8 +31,12 @@ def main(argv=None):
     lat = args.latitude
     lon = args.longitude
     depth = args.depth
+    if args.dev_file:
+        ctd_name = args.devfile  # name of co-located CTD
+    else:
+        ctd_name = None
 
-    # load the json data file as a panda dataframe for further processing
+    # load the json data file as a panda data frame for further processing
     data = json2df(infile)
     if not data:
         # json data file was empty, exiting
@@ -84,6 +90,25 @@ def main(argv=None):
     slope = np.ones(nrec) * 0.9698
     offset = np.ones(nrec) * 0.2484
     salinity = np.ones(nrec) * 34.0
+
+    # check for data from a co-located CTD and test to see if it covers our time range of interest. will use the
+    # salinity data from the CTD in the pH calculation, if available.
+    ctd = pd.DataFrame()
+    if ctd_name:
+        ctd = colocated_ctd(infile, ctd_name)
+
+    if not ctd.empty:
+        # set the CTD and pH time to the same units
+        ctd_time = ctd.time.values.astype(float) / 10.0 ** 9
+        ph_time = data.time.values.astype(float) / 10.0 ** 9
+
+        # test to see if the CTD covers our time of interest for this ADCP file
+        coverage = ctd_time.min() <= ph_time.min() and ctd_time.max() >= ph_time.max()
+
+        # reset initial estimate of in-situ salinity if we have full coverage
+        if coverage:
+            salinity = SP_from_C(ctd.conductivity * 10.0, ctd.temperature, ctd.pressure)
+            salinity = np.interp(ph_time, ctd_time, salinity)
 
     # calculate the pH
     data['pH'] = ph_calc_phwater(refnc, light, therm, ea434, eb434, ea578, eb578, slope, offset, salinity)

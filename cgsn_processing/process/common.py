@@ -3,6 +3,7 @@
 import argparse
 import collections
 import datetime
+import glob
 import json
 import numpy as np
 import os
@@ -34,7 +35,7 @@ ENCODING = {
     'lat': {'_FillValue': False},
     'lon': {'_FillValue': False},
     'z': {'_FillValue': False},
-    'station': {'dtype': np.int32},
+    'station': {'dtype': str},
     'deploy_id': {'dtype': str}
 }
 
@@ -213,29 +214,31 @@ def colocated_ctd(infile, ctd_name):
     """
     # using the source instrument's full path information, split out the path and file name.
     instrmt_path, instrmt_file = os.path.split(infile)
+    instrmt_name = os.path.basename(instrmt_path)
 
-    # data files are named with with either a date stamp, or a date+time stamp followed by the instrument name. set the
-    # instrument name and file date accordingly.
+    # data files are named with either a date stamp, or a date+time stamp followed by the instrument name.
     x = re.match(r'([\d]{8}|[\d]{8}_[\d]{6}).([\w]*).json', instrmt_file)
-    if x:
+    if x:   # extract the date from the file name
         if len(x.group(1)) == 8:
             instrmt_date = datetime.datetime.strptime(x.group(1), '%Y%m%d')
         else:
             instrmt_date = datetime.datetime.strptime(x.group(1), '%Y%m%d_%H%M%S')
-        instrmt_name = x.group(2)
     else:
-        # cannot determine instrument name and date, exit the function
+        # cannot determine date of the instrument file, exit the function
         return None
 
+    # given the date, find our co-located ctd data files
     ctd = pd.DataFrame()
-    dt = datetime.timedelta(days=1)
-    for dt in rrule.rrule(rrule.DAILY, dtstart=instrmt_date - dt, until=instrmt_date + dt):
+    tdelta = datetime.timedelta(days=1)
+    for dt in rrule.rrule(rrule.DAILY, dtstart=instrmt_date - tdelta, until=instrmt_date + tdelta):
         dt_str = dt.strftime('%Y%m%d')
-        ctd_file = f'{dt_str}.{ctd_name}.json'
-        ctd_path = re.sub(instrmt_name + '[\d]*', ctd_name, instrmt_path)
-        df = json2df(os.path.join(ctd_path, ctd_file))
-        if not df.empty:
-            ctd = pd.concat((ctd, df), sort=False)
+        ctd_path = re.sub(instrmt_name, ctd_name, instrmt_path)
+        ctd_file = f'{dt_str}.*.json'
+        co_located = glob.glob((ctd_path + '/' + ctd_file))
+        if co_located:
+            df = json2df(os.path.abspath(co_located[0]))
+            if not df.empty:
+                ctd = pd.concat((ctd, df), sort=False)
 
     return ctd
 
@@ -256,7 +259,7 @@ def update_dataset(ds, platform, deployment, lat, lon, depth, attrs):
     :return ds: The updated data set
     """
     # add a default station identifier as a coordinate variable to the data set
-    ds.coords['station'] = np.int32(0)
+    ds.coords['station'] = platform.upper()
     ds = ds.expand_dims('station', axis=None)
 
     # add the geospatial coordinates using the station identifier from above as the dimension
@@ -264,7 +267,7 @@ def update_dataset(ds, platform, deployment, lat, lon, depth, attrs):
         'lat': ('station', [lat]),
         'lon': ('station', [lon]),
         'z': ('station', [depth[0]])
-    }, coords={'station': [np.int32(0)]})
+    }, coords={'station': [platform.upper()]})
 
     # merge the geospatial coordinates into the data set
     ds = xr.merge([ds, geo_coords])
