@@ -187,7 +187,7 @@ PHSEN = {
                     'external power is applied'),
         'units': 'counts'
     },
-    'thermistor_start': {
+    'thermistor_temperature_start': {
         'long_name': 'Thermistor Temperature, Measurement Start',
         'comment': ('Thermistor temperature refers to the internal instrument temperature of the pH sensor, as ' +
                     'measured by the thermistor. It is used to determine salinity and temperature dependent molar ' +
@@ -198,7 +198,7 @@ PHSEN = {
         'units': 'degree_Celsius',
         'ancillary_variables': 'raw_thermistor_start'
     },
-    'thermistor_end': {
+    'thermistor_temperature_end': {
         'long_name': 'Thermistor Temperature, Measurement End',
         'comment': ('Thermistor temperature refers to the internal instrument temperature of the pH sensor, as ' +
                     'measured by the thermistor. It is used to determine salinity and temperature dependent molar ' +
@@ -227,11 +227,11 @@ PHSEN = {
         'comment': ('pH is a measurement of the concentration of hydrogen ions in a solution. pH ranges from acidic ' +
                     'to basic on a scale from 0 to 14 with 7 being neutral.'),
         'standard_name': 'sea_water_ph_reported_on_total_scale',
-        'data_product_identifier': 'PHWATER_L1',
+        'data_product_identifier': 'PHWATER_L2',
         'units': '1',
         '_FillValue': np.nan,
         'ancillary_variables': ('blank_refrnc_434, blank_signal_434, blank_refrnc_578, blank_signal_578, ' +
-                                'reference_434, signal_434, reference_578, signal_578, thermistor_start, ' +
-                                'thermistor_end')
+                                'reference_434, signal_434, reference_578, signal_578, thermistor_temperature_start, ' +
+                                'thermistor_temperature_end')
     }
 }

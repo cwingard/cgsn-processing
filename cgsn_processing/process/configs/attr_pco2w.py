@@ -165,7 +165,7 @@ PCO2W = {
     'ratio_434': {
         'long_name': 'Optical Absorbance Ratio at 434 nm',
         'comment': ('Optical absorbance ratio at 434 nm and report in counts. During a measurement cycle, this value ' +
-                    'is used in the calculation of pCO2. During a blank measurement (approximately every 3.5 days), ' +
+                    'is used in the calculation of pCO2. During a blank measurement (approximately every few days), ' +
                     'this value is used to determine the blank intensity ratio at 434 nm.'),
         'data_product_identifier': 'CO2ABS1_L0',
         'units': 'counts'
@@ -173,7 +173,7 @@ PCO2W = {
     'ratio_620': {
         'long_name': 'Optical Absorbance Ratio at 620 nm',
         'comment': ('Optical absorbance ratio at 620 nm and report in counts. During a measurement cycle, this value ' +
-                    'is used in the calculation of pCO2. During a blank measurement (approximately every 3.5 days), ' +
+                    'is used in the calculation of pCO2. During a blank measurement (approximately every few days), ' +
                     'this value is used to determine the blank intensity ratio at 620 nm.'),
         'data_product_identifier': 'CO2ABS2_L0',
         'units': 'counts'
@@ -244,7 +244,7 @@ PCO2W = {
         'comment': 'Thermistor resistivity measured in counts.',
         'units': 'counts'
     },
-    'thermistor_start': {
+    'thermistor_temperature': {
         'long_name': 'Thermistor Temperature',
         'comment': ('Thermistor temperature refers to the internal instrument temperature of the pCO2 sensor, as ' +
                     'measured by the thermistor. It is used in the determination of pCO2.'),
@@ -256,7 +256,7 @@ PCO2W = {
         'long_name': 'Blank Intensity Ratio at 434 nm',
         'comment': ('Ratio of the measured optical absorbance ratio at 434 nm where the sample volume is filled with ' +
                     'deionized water. These blank measurements are used to track and correct instrument drift over ' +
-                    'the course of a deployment and are collected approximately every 3.5 days.'),
+                    'the course of a deployment and are collected every few days.'),
         'units': '1',
         '_FillValue': np.nan,
         'ancillary_variables': 'ratio_434'
@@ -265,7 +265,7 @@ PCO2W = {
         'long_name': 'Blank Intensity Ratio at 620 nm',
         'comment': ('Ratio of the measured optical absorbance ratio at 620 nm where the sample volume is filled with ' +
                     'deionized water. These blank measurements are used to track and correct instrument drift over ' +
-                    'the course of a deployment and are collected approximately every 3.5 days.'),
+                    'the course of a deployment and are collected every few days.'),
         'units': '1',
         '_FillValue': np.nan,
         'ancillary_variables': 'ratio_620'
@@ -281,6 +281,6 @@ PCO2W = {
         'data_product_identifier': 'PCO2WAT_L1',
         'units': 'uatm',
         '_FillValue': np.nan,
-        'ancillary_variables': 'ratio_434, ratio_620, thermistor, k434, k620'
+        'ancillary_variables': 'ratio_434, ratio_620, thermistor_temperature, k434, k620'
     }
 }

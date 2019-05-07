@@ -74,7 +74,7 @@ class Calibrations(Coefficients):
         coeffs = {}
         
         # read in the calibration data
-        data = pd.read_csv(csv_url, usecols=[0,1,2])
+        data = pd.read_csv(csv_url, usecols=[0, 1, 2])
         for idx, row in data.iterrows():
             if row[1] == 'CC_cala':
                 coeffs['cala'] = np.float(row[2])

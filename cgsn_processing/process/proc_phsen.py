@@ -50,8 +50,8 @@ def main(argv=None):
                          'thermistor_end': 'raw_thermistor_end',
                          'voltage_battery': 'raw_battery_voltage'},
                 inplace=True)
-    data['thermistor_start'] = ph_thermistor(data['raw_thermistor_start'])
-    data['thermistor_end'] = ph_thermistor(data['raw_thermistor_end'])
+    data['thermistor_temperature_start'] = ph_thermistor(data['raw_thermistor_start'])
+    data['thermistor_temperature_end'] = ph_thermistor(data['raw_thermistor_end'])
     data['battery_voltage'] = ph_battery(data['raw_battery_voltage'])
 
     # reset the data type and units for the record time to make sure the value is correctly represented and can be
@@ -79,16 +79,10 @@ def main(argv=None):
     light = np.array(np.vstack(data.pop('light_measurements').values), dtype='int32')
 
     # create an average temperature value to be used in calculating the pH
-    therm = data[['thermistor_start', 'thermistor_end']].astype(float).mean(axis=1).values
+    therm = data[['thermistor_temperature_start', 'thermistor_temperature_end']].astype(float).mean(axis=1).values
 
-    # set factory default calibration values
+    # setup default salinity values to use if no co-located CTD is available
     nrec = len(data['time'])
-    ea434 = np.ones(nrec) * 17533.
-    eb434 = np.ones(nrec) * 2229.
-    ea578 = np.ones(nrec) * 101.
-    eb578 = np.ones(nrec) * 38502.
-    slope = np.ones(nrec) * 0.9698
-    offset = np.ones(nrec) * 0.2484
     salinity = np.ones(nrec) * 34.0
 
     # check for data from a co-located CTD and test to see if it covers our time range of interest. will use the
@@ -98,11 +92,11 @@ def main(argv=None):
         ctd = colocated_ctd(infile, ctd_name)
 
     if not ctd.empty:
-        # set the CTD and pH time to the same units
+        # set the CTD and pH time to the same units of seconds since 1970-01-01
         ctd_time = ctd.time.values.astype(float) / 10.0 ** 9
         ph_time = data.time.values.astype(float) / 10.0 ** 9
 
-        # test to see if the CTD covers our time of interest for this ADCP file
+        # test to see if the CTD covers our time of interest for this pH file
         coverage = ctd_time.min() <= ph_time.min() and ctd_time.max() >= ph_time.max()
 
         # reset initial estimate of in-situ salinity if we have full coverage
@@ -110,8 +104,9 @@ def main(argv=None):
             salinity = SP_from_C(ctd.conductivity * 10.0, ctd.temperature, ctd.pressure)
             salinity = np.interp(ph_time, ctd_time, salinity)
 
-    # calculate the pH
-    data['pH'] = ph_calc_phwater(refnc, light, therm, ea434, eb434, ea578, eb578, slope, offset, salinity)
+    # add the salinity to the data set and calculate the pH
+    data['salinity'] = salinity
+    data['pH'] = ph_calc_phwater(refnc, light, therm, salinity)
 
     # now we need to reset the light and reference arrays to named variables that will be more meaningful and useful in
     # the final data files
