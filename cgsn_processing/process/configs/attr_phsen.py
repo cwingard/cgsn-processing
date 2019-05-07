@@ -222,6 +222,17 @@ PHSEN = {
         'units': 'seconds',
         'ancillary_variables': 'record_time, time'
     },
+    'salinity': {
+        'long_name': 'Practical Salinity',
+        'standard_name': 'sea_water_practical_salinity',
+        'units': '1',
+        'comment': ('Salinity is generally defined as the concentration of dissolved salt in a parcel of seawater. ' +
+                    'Practical Salinity is a more specific unitless quantity calculated from the conductivity of ' +
+                    'seawater and adjusted for temperature and pressure. It is approximately equivalent to Absolute ' +
+                    'Salinity (the mass fraction of dissolved salt in seawater) but they are not interchangeable.' +
+                    'Data pulled from a co-located CTD if available. Otherwise set to a default value if 34.'),
+        'data_product_identifier': 'PRACSAL_L2'
+    },
     'pH': {
         'long_name': 'Seawater pH',
         'comment': ('pH is a measurement of the concentration of hydrogen ions in a solution. pH ranges from acidic ' +
