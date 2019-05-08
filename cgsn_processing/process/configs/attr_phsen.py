@@ -229,8 +229,8 @@ PHSEN = {
         'comment': ('Salinity is generally defined as the concentration of dissolved salt in a parcel of seawater. ' +
                     'Practical Salinity is a more specific unitless quantity calculated from the conductivity of ' +
                     'seawater and adjusted for temperature and pressure. It is approximately equivalent to Absolute ' +
-                    'Salinity (the mass fraction of dissolved salt in seawater) but they are not interchangeable.' +
-                    'Data pulled from a co-located CTD if available. Otherwise set to a default value if 34.'),
+                    'Salinity (the mass fraction of dissolved salt in seawater) but they are not interchangeable. ' +
+                    'Data from a co-located CTD, if available. Otherwise, uses a default value of 34 psu.'),
         'data_product_identifier': 'PRACSAL_L2'
     },
     'pH': {
@@ -243,6 +243,6 @@ PHSEN = {
         '_FillValue': np.nan,
         'ancillary_variables': ('blank_refrnc_434, blank_signal_434, blank_refrnc_578, blank_signal_578, ' +
                                 'reference_434, signal_434, reference_578, signal_578, thermistor_temperature_start, ' +
-                                'thermistor_temperature_end')
+                                'thermistor_temperature_end, salinity')
     }
 }
