@@ -113,7 +113,7 @@ def main(argv=None):
     data['deploy_id'] = deployment
 
     # initialize the calibrations data class
-    coeff_file = os.path.abspath(args.coeff_file)
+    coeff_file = os.path.join(os.path.dirname(infile), 'pco2w.calibration_coeffs.pkl')
     cal = Calibrations(coeff_file)
 
     # check for the source of calibration coefficients and load accordingly
@@ -145,7 +145,7 @@ def main(argv=None):
     # convert the raw battery voltage and thermistor values from counts to V and degC, respectively
     data.rename(columns={'voltage_raw': 'raw_battery_voltage',
                          'thermistor_raw': 'raw_thermistor'}, inplace=True)
-    data['thermistor'] = co2_thermistor(data['raw_thermistor'])
+    data['thermistor_temperature'] = co2_thermistor(data['raw_thermistor'])
     data['battery_voltage'] = ph_battery(data['raw_battery_voltage'])
 
     # reset the data type and units for the record time to make sure the value is correctly represented and can be
@@ -162,7 +162,7 @@ def main(argv=None):
         rec.replace(tzinfo=timezone('UTC'))
         record_time.append((rec - ept).total_seconds())
         if 'process_date_time' in data.columns:
-            offset.append((rec - data['time'][i]).total_seconds())
+            offset.append((rec - data['time'][i]).total_seconds() - 300)    # with correction for processing time
 
     data['record_time'] = record_time   # replace the instrument time stamp
     if offset:
@@ -180,8 +180,8 @@ def main(argv=None):
                 # We don't have a blank to use in the calculation
                 pCO2.append(np.nan)
             else:
-                p = co2_pco2wat(data['ratio_434'][i], data['ratio_620'][i], data['thermistor'][i], cal.coeffs['calt'],
-                                cal.coeffs['cala'], cal.coeffs['calb'], cal.coeffs['calc'],
+                p = co2_pco2wat(data['ratio_434'][i], data['ratio_620'][i], data['thermistor_temperature'][i],
+                                cal.coeffs['calt'], cal.coeffs['cala'], cal.coeffs['calb'], cal.coeffs['calc'],
                                 blank.k434, blank.k620)
                 pCO2.append(p.item())
 
