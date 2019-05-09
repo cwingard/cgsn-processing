@@ -219,9 +219,8 @@ def main(argv=None):
         }, coords={'time': (['time'], pd.to_datetime(time, unit='s')), 'bin_number': bin_number})
 
         # correct the eastward and northward velocity components for magnetic declination
-        u_cor, v_cor = magnetic_correction(np.array(data['velocity']['eastward']),
-                                           np.array(data['velocity']['northward']),
-                                           theta)
+        u_cor, v_cor = magnetic_correction(theta, np.array(data['velocity']['eastward']),
+                                           np.array(data['velocity']['northward']))
 
         # create the 2D velocity and echo intensity data sets
         vel = xr.Dataset({

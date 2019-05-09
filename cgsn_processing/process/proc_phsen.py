@@ -8,157 +8,142 @@
 """
 import numpy as np
 import os
-import re
+import pandas as pd
+import xarray as xr
 
 from datetime import datetime, timedelta
-from pyaxiom.netcdf.sensors import TimeSeries
+from gsw import SP_from_C
 from pytz import timezone
 
-from cgsn_processing.process.common import inputs, json2df
-from cgsn_processing.process.configs.attr_phsen import PHSEN
+from cgsn_processing.process.common import ENCODING, colocated_ctd, inputs, json2df, dict_update, update_dataset
+from cgsn_processing.process.configs.attr_phsen import GLOBAL, PHSEN
 
 from pyseas.data.ph_functions import ph_battery, ph_thermistor, ph_calc_phwater
 
 
 def main(argv=None):
-    # load  the input arguments
+    # load the input arguments
     args = inputs(argv)
     infile = os.path.abspath(args.infile)
-    outpath, outfile = os.path.split(args.outfile)
+    outfile = os.path.abspath(args.outfile)
     platform = args.platform
     deployment = args.deployment
     lat = args.latitude
     lon = args.longitude
-    depth = args.depth    # utilize the switch option to set the deployment depth
+    depth = args.depth
+    if args.dev_file:
+        ctd_name = args.devfile  # name of co-located CTD
+    else:
+        ctd_name = None
 
-    # load the json data file and return a panda data frame
-    df = json2df(infile)
-    if df.empty:
-        # there was no data in this file, ending early
+    # load the json data file as a panda data frame for further processing
+    data = json2df(infile)
+    if not data:
+        # json data file was empty, exiting
         return None
 
-    # set the depth and deployment id
-    df['depth'] = depth
-    df['deploy_id'] = deployment
+    # set the deployment id as a variable
+    data['deploy_id'] = deployment
 
-    # convert the raw battery voltage and thermistor values from counts
-    # to V and degC, respectively
-    df['thermistor_start'] = ph_thermistor(df['thermistor_start'])
-    therm = ph_thermistor(df['thermistor_end'])
-    df['thermistor_end'] = therm
-    df['voltage_battery'] = ph_battery(df['voltage_battery'])
+    # convert the raw battery voltage and thermistor values from counts to V and degC, respectively
+    data.rename(columns={'thermistor_start': 'raw_thermistor_start',
+                         'thermistor_end': 'raw_thermistor_end',
+                         'voltage_battery': 'raw_battery_voltage'},
+                inplace=True)
+    data['thermistor_temperature_start'] = ph_thermistor(data['raw_thermistor_start'])
+    data['thermistor_temperature_end'] = ph_thermistor(data['raw_thermistor_end'])
+    data['battery_voltage'] = ph_battery(data['raw_battery_voltage'])
 
-    # compare the instrument clock to the GPS based DCL time stamp
-    # --> PHSEN uses the OSX date format of seconds since 1904-01-01
+    # reset the data type and units for the record time to make sure the value is correctly represented and can be
+    # calculated against. the PHSEN uses the OSX date format of seconds since 1904-01-01. here we convert to seconds
+    # since 1970-01-01. also, compare the instrument clock to the GPS based DCL time stamp (if present, does not apply
+    # if this is an IMM hosted instrument).
+    rct = data['record_time'].astype(np.uint32).values * 1.0    # convert to a float
     mac = datetime.strptime("01-01-1904", "%m-%d-%Y")
+    ept = datetime.strptime("01-01-1970", "%m-%d-%Y")
+    record_time = []
     offset = []
-    for i in range(len(df['time'])):
-        rec = mac + timedelta(seconds=df['record_time'][i].astype(np.float64))
+    for i in range(len(data['time'])):
+        rec = mac + timedelta(seconds=rct[i])
         rec.replace(tzinfo=timezone('UTC'))
-        offset.append((rec - df['time'][i]).total_seconds())
+        record_time.append((rec - ept).total_seconds())
+        if 'dcl_date_time_string' in data.columns:
+            offset.append((rec - data['time'][i]).total_seconds())
 
-    df['time_offset'] = offset
+    data['record_time'] = record_time   # replace the instrument time stamp
+    if offset:
+        data['time_offset'] = offset    # add the estimated instrument clock offset
 
-    # set default calibration values (could later roll this into a coefficients file)
-    nrec = len(df['time'])
-    ea434 = np.ones(nrec) * 17533.
-    eb434 = np.ones(nrec) * 2229.
-    ea578 = np.ones(nrec) * 101.
-    eb578 = np.ones(nrec) * 38502.
-    slope = np.ones(nrec) * 0.9698
-    offset = np.ones(nrec) * 0.2484
-    salinity = np.ones(nrec) * 33.0
+    # extract the reference and light measurement arrays from the data frame
+    refnc = np.array(np.vstack(data.pop('reference_measurements').values), dtype='int32')
+    light = np.array(np.vstack(data.pop('light_measurements').values), dtype='int32')
 
-    # calculate the pH (with some cursing and grumbling about the Object dtype pandas use for arrays)
-    refnc = np.array(np.vstack(df['reference_measurements'].values), dtype='int32')
-    light = np.array(np.vstack(df['light_measurements'].values), dtype='int32')
+    # create an average temperature value to be used in calculating the pH
+    therm = data[['thermistor_temperature_start', 'thermistor_temperature_end']].astype(float).mean(axis=1).values
 
-    df['pH'] = ph_calc_phwater(refnc, light, therm, ea434, eb434, ea578, eb578, slope, offset, salinity)
+    # setup default salinity values to use if no co-located CTD is available
+    nrec = len(data['time'])
+    salinity = np.ones(nrec) * 34.0
 
-    # now we need to reset the light and reference arrays to variables that are more meaningful and useful
-    refnc = np.atleast_3d(refnc)      # 4 sets of 4 seawater plus DI measurements (blanks)
-    refnc = np.reshape(refnc, (nrec, 4, 4))
-    fill = np.ones((nrec, 19)) * -999999999
-    df['blank_refrnc_434'] = np.concatenate((refnc[:, :, 0], fill), axis=1).tolist()  # DI blank reference, 434 nm
-    df['blank_signal_434'] = np.concatenate((refnc[:, :, 1], fill), axis=1).tolist()  # DI blank signal, 434 nm
-    df['blank_refrnc_578'] = np.concatenate((refnc[:, :, 2], fill), axis=1).tolist()  # DI blank reference, 578 nm
-    df['blank_signal_578'] = np.concatenate((refnc[:, :, 3], fill), axis=1).tolist()  # DI blank signal, 578 nm
+    # check for data from a co-located CTD and test to see if it covers our time range of interest. will use the
+    # salinity data from the CTD in the pH calculation, if available.
+    ctd = pd.DataFrame()
+    if ctd_name:
+        ctd = colocated_ctd(infile, ctd_name)
+
+    if not ctd.empty:
+        # set the CTD and pH time to the same units of seconds since 1970-01-01
+        ctd_time = ctd.time.values.astype(float) / 10.0 ** 9
+        ph_time = data.time.values.astype(float) / 10.0 ** 9
+
+        # test to see if the CTD covers our time of interest for this pH file
+        coverage = ctd_time.min() <= ph_time.min() and ctd_time.max() >= ph_time.max()
+
+        # reset initial estimate of in-situ salinity if we have full coverage
+        if coverage:
+            salinity = SP_from_C(ctd.conductivity * 10.0, ctd.temperature, ctd.pressure)
+            salinity = np.interp(ph_time, ctd_time, salinity)
+
+    # add the salinity to the data set and calculate the pH
+    data['salinity'] = salinity
+    data['pH'] = ph_calc_phwater(refnc, light, therm, salinity)
+
+    # now we need to reset the light and reference arrays to named variables that will be more meaningful and useful in
+    # the final data files
+    refnc = np.atleast_3d(refnc)
+    refnc = np.reshape(refnc, (nrec, 4, 4))   # 4 sets of 4 DI water measurements (blanks)
+    fill = np.ones((nrec, 19)) * -9999999     # fill value to pad the reference measurements to same shape as light
+    blank_refrnc_434 = np.concatenate((refnc[:, :, 0], fill), axis=1)  # DI blank reference, 434 nm
+    blank_signal_434 = np.concatenate((refnc[:, :, 1], fill), axis=1)  # DI blank signal, 434 nm
+    blank_refrnc_578 = np.concatenate((refnc[:, :, 2], fill), axis=1)  # DI blank reference, 578 nm
+    blank_signal_578 = np.concatenate((refnc[:, :, 3], fill), axis=1)  # DI blank signal, 578 nm
 
     light = np.atleast_3d(light)
-    light = np.reshape(light, (nrec, 23, 4))
-    df['reference_434'] = light[:, :, 0].tolist()   # reference signal, 434 nm
-    df['signal_434'] = light[:, :, 1].tolist()   # signal intensity, 434 nm (PH434SI_L0)
-    df['reference_578'] = light[:, :, 2].tolist()   # reference signal, 578 nm
-    df['signal_578'] = light[:, :, 3].tolist()   # signal intensity, 578 nm (PH578SI_L0)
+    light = np.reshape(light, (nrec, 23, 4))  # 4 sets of 23 seawater measurements
+    reference_434 = light[:, :, 0]            # reference signal, 434 nm
+    signal_434 = light[:, :, 1]               # signal intensity, 434 nm (PH434SI_L0)
+    reference_578 = light[:, :, 2]            # reference signal, 578 nm
+    signal_578 = light[:, :, 3]               # signal intensity, 578 nm (PH578SI_L0)
 
-    # Setup the global attributes for the NetCDF file and create the NetCDF TimeSeries object
-    global_attributes = {
-        'title': 'Seawater pH from PHSEN',
-        'summary': (
-            'Measures the seawater pH from the Sunburst Sensors SAMI2-pH Instrument).'
-        ),
-        'project': 'Ocean Observatories Initiative',
-        'institution': 'Coastal and Global Scales Nodes, (CGSN)',
-        'acknowledgement': 'National Science Foundation',
-        'references': 'http://oceanobservatories.org',
-        'creator_name': 'Christopher Wingard',
-        'creator_email': 'cwingard@coas.oregonstate.edu',
-        'creator_url': 'http://oceanobservatories.org',
-        'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
-    }
-    ts = TimeSeries(
-        output_directory=outpath,
-        latitude=lat,
-        longitude=lon,
-        station_name=platform,
-        global_attributes=global_attributes,
-        times=df.time.values.astype(np.int64) * 10**-9,
-        verticals=df.depth.values,
-        output_filename=outfile,
-        vertical_positive='down')
+    # create a data set with the reference and light measurements
+    ds = xr.Dataset({
+        'blank_refrnc_434': (['time', 'measurements'], blank_refrnc_434.astype('int32')),
+        'blank_signal_434': (['time', 'measurements'], blank_signal_434.astype('int32')),
+        'blank_refrnc_578': (['time', 'measurements'], blank_refrnc_578.astype('int32')),
+        'blank_signal_578': (['time', 'measurements'], blank_signal_578.astype('int32')),
+        'reference_434': (['time', 'measurements'], reference_434.astype('int32')),
+        'signal_434': (['time', 'measurements'], signal_434.astype('int32')),
+        'reference_578': (['time', 'measurements'], reference_578.astype('int32')),
+        'signal_578': (['time', 'measurements'], signal_578.astype('int32'))
+    }, coords={'time': data['time'], 'measurements': np.arange(0, 23).astype('int32')})
 
-    nc = ts._nc     # create a netCDF4 object from the TimeSeries object
+    # merge the data sets together and create the final data set with full attributes
+    pH = xr.merge([data, ds])
+    attrs = dict_update(GLOBAL, PHSEN)      # merge global pH attribute dictionaries into a single dictionary
+    pH = update_dataset(pH, platform, deployment, lat, lon, [depth, depth, depth], attrs)
 
-    # create a new dimension for the 23 measurements in the 4 light arrays (will use fill values to pad out the
-    # reference arrays to have a single common dimension
-    nc.createDimension('measurements', size=23)
-    d = nc.createVariable('measurements', 'i', ('measurements',))
-    d.setncatts(PHSEN['measurements'])
-    d[:] = np.arange(0, 23).tolist()
-
-    # add the data from the data frame and set the attributes
-    for c in df.columns:
-        # skip the coordinate variables, if present, already added above via TimeSeries
-        if c in ['time', 'lat', 'lon', 'depth']:
-            # print("Skipping axis '{}' (already in file)".format(c))
-            continue
-
-        if c in ['light_measurements', 'reference_measurements']:
-            # print("Skipping '{}' (will be represented by more meaningful variables)".format(c))
-            continue
-
-        # create the netCDF.Variable object for the date/time and deploy_id strings
-        if c == 'dcl_date_time_string':
-            d = nc.createVariable(c, 'S23', ('time',))
-            d.setncatts(PHSEN[c])
-            d[:] = df[c].values
-        elif c == 'deploy_id':
-            d = nc.createVariable(c, 'S6', ('time',))
-            d.setncatts(PHSEN[c])
-            d[:] = df[c].values
-        # create the netCDF.Variable object for the blank and measurement arrays
-        elif c in ['blank_refrnc_434', 'blank_signal_434', 'blank_refrnc_578', 'blank_signal_578',
-                   'reference_434', 'signal_434', 'reference_578', 'signal_578']:
-            d = nc.createVariable(c, 'i', ('time', 'measurements',))
-            d.setncatts(PHSEN[c])
-            d[:] = np.array(np.vstack(df[c].values), dtype='int32')
-        else:
-            # use the TimeSeries object to add the variables
-            ts.add_variable(c, df[c].values, fillvalue=-999999999, attributes=PHSEN[c])
-
-    # synchronize the data with the netCDF file and close it
-    nc.sync()
-    nc.close()
+    # save the file
+    pH.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
 
 
 if __name__ == '__main__':
