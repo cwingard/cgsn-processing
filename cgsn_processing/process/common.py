@@ -210,8 +210,12 @@ def colocated_ctd(infile, ctd_name):
 
     :param infile: instrument file name with the full, absolute path
     :param ctd_name: name of the CTD file to match to the instrument file name
-    :return ctd: CTD data covering the time period of interest for input file
+    :return ctd: CTD data covering the time period of interest for input file, will be an empty data frame
+                 if no co-located CTD data can be found.
     """
+    # create an empty ctd dataframe for use below
+    ctd = pd.DataFrame()
+
     # using the source instrument's full path information, split out the path and file name.
     instrmt_path, instrmt_file = os.path.split(infile)
     instrmt_name = os.path.basename(instrmt_path)
@@ -225,10 +229,9 @@ def colocated_ctd(infile, ctd_name):
             instrmt_date = datetime.datetime.strptime(x.group(1), '%Y%m%d_%H%M%S')
     else:
         # cannot determine date of the instrument file, exit the function
-        return None
+        return ctd
 
     # given the date, find our co-located ctd data files
-    ctd = pd.DataFrame()
     tdelta = datetime.timedelta(days=1)
     for dt in rrule.rrule(rrule.DAILY, dtstart=instrmt_date - tdelta, until=instrmt_date + tdelta):
         dt_str = dt.strftime('%Y%m%d')
