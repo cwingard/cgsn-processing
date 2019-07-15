@@ -38,7 +38,7 @@ def main(argv=None):
 
     # load the json data file as a panda data frame for further processing
     data = json2df(infile)
-    if not data:
+    if data.empty:
         # json data file was empty, exiting
         return None
 

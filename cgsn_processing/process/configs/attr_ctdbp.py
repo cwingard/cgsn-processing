@@ -12,7 +12,7 @@ GLOBAL = {
     # global attributes
     'global': {
         'title': 'CTD',
-        'summary': ('CTD Data'),
+        'summary': ('Conductivity, Temperature and Pressure (CTD) Data'),
         'project': 'Ocean Observatories Initiative',
         'institution': 'Coastal and Global Scale Nodes (CGSN)',
         'acknowledgement': 'National Science Foundation',
@@ -34,6 +34,7 @@ GLOBAL = {
         'long_name': 'Station Identifier'
     },
     'time': {
+        'long_name': 'Time',
         'standard_name': 'time',
         'units': 'seconds since 1970-01-01 00:00:00 0:00',
         'axis': 'T',
@@ -73,29 +74,29 @@ CTDBP = {
     'sensor_time': {
         'long_name': 'CTD Date and Time',
         'standard_name': 'time',
+        'units': 'seconds since 1970-01-01 00:00:00 0:00',
         'comment': ('Internal CTD clock date and time stamp, recorded when the instrument begins the measurement. It ' +
                     'is expected that this value will drift from the true time by some degree over the course of ' +
                     'a deployment. Cross-comparisons to other systems will be required to account for the offset ' +
                     'and drift.'),
-        'units': 'seconds since 1970-01-01 00:00:00 0:00',
         'calendar': 'gregorian'
     },
     'conductivity': {
-        'long_name': 'Seawater Conductivity',
+        'long_name': 'Sea Water Conductivity',
         'standard_name': 'sea_water_electrical_conductivity',
         'units': 'mS cm-1',
-        'comment': ('Seawater conductivity refers to the ability of seawater to conduct electricity. The presence of ' +
-                    'ions, such as salt, increases the electrical conducting ability of seawater. As such, ' +
+        'comment': ('Sea water conductivity refers to the ability of seawater to conduct electricity. The presence ' +
+                    'of  ions, such as salt, increases the electrical conducting ability of seawater. As such, ' +
                     'conductivity can be used as a proxy for determining the quantity of salt in a sample of ' +
                     'seawater.'),
         'data_product_identifier': 'CONDWAT_L1',
         '_FillValue': np.nan
     },
     'temperature': {
-        'long_name': 'Seawater Temperature',
+        'long_name': 'Sea Water Temperature',
         'standard_name': 'sea_water_temperature',
         'units': 'degree_Celsius',
-        'comment': 'Seawater temperature at the sensor.',
+        'comment': 'Sea water temperature is the in situ temperature of the sea water.',
         'data_product_identifier': 'TEMPWAT_L1',
         '_FillValue': np.nan
     },
@@ -103,11 +104,10 @@ CTDBP = {
         'long_name': 'Seawater Pressure',
         'standard_name': 'sea_water_pressure_due_to_sea_water',
         'units': 'dbar',
-        'comment': (
-                    'Seawater Pressure refers to the pressure exerted on a sensor in situ by the weight of the column ' +
-                    'of seawater above it. It is calculated by subtracting one standard atmosphere from the absolute ' +
-                    'pressure at the sensor to remove the weight of the atmosphere on top of the water column. The ' +
-                    'pressure at a sensor in situ provides a metric of the depth of that sensor.'),
+        'comment': ('Seawater Pressure refers to the pressure exerted on a sensor in situ by the weight of the ' +
+                    'column of seawater above it. It is calculated by subtracting one standard atmosphere from the ' +
+                    'absolute pressure at the sensor to remove the weight of the atmosphere on top of the water ' +
+                    'column. The pressure at a sensor in situ provides a metric of the depth of that sensor.'),
         'data_product_identifier': 'PRESWAT_L1',
         '_FillValue': np.nan
     },
@@ -116,94 +116,224 @@ CTDBP = {
         'long_name': 'Practical Salinity',
         'standard_name': 'sea_water_practical_salinity',
         'units': '1',
-        'comment': ('Salinity is generally defined as the concentration of dissolved salt in a parcel of seawater. ' +
+        'comment': ('Salinity is generally defined as the concentration of dissolved salt in a parcel of sea water. ' +
                     'Practical Salinity is a more specific unitless quantity calculated from the conductivity of ' +
-                    'seawater and adjusted for temperature and pressure. It is approximately equivalent to Absolute ' +
-                    'Salinity (the mass fraction of dissolved salt in seawater) but they are not interchangeable.'),
+                    'sea water and adjusted for temperature and pressure. It is approximately equivalent to Absolute ' +
+                    'Salinity (the mass fraction of dissolved salt in sea water), but they are not interchangeable.'),
         'data_product_identifier': 'PRACSAL_L2',
         'ancillary_variables': 'conductivity, temperature, pressure',
         '_FillValue': np.nan
     },
     'density': {
-        'long_name': 'In-Situ Seawater Density',
+        'long_name': 'In-Situ Sea Water Density',
         'standard_name': 'sea_water_density',
         'units': 'kg m-3',
-        'comment': ('Seawater Density is defined as mass per unit volume and is calculated from the conductivity, ' +
-                    'temperature and depth of a seawater sample using the TEOS-10 equation.'),
+        'comment': ('Sea water Density is the in situ density and is defined as mass per unit volume. It is ' +
+                    'calculated from the conductivity, temperature and depth of a sea water sample.'),
         'data_product_identifier': 'DENSITY_L2',
-        'ancillary_variables': 'lon, lat, pressure, temperature, salinity',
+        'ancillary_variables': 'lon, lat, conductivity, temperature, pressure',
         '_FillValue': np.nan
     },
 
     # attributes associated with the status message output from a CTDBP connected to an inductive modem (IMM)
     'status_time': {
         'long_name': 'Status Update Time',
-        '_FillValue': np.nan,
         'units': 'seconds since 1970-01-01 00:00:00 0:00',
+        'comment': 'Date and time the CTD status was queried.',
         'calendar': 'gregorian',
-        'comment': 'Date and time the CTD status was queried.'
+        '_FillValue': np.nan
     },
     'serial_number': {
         'long_name': 'Serial Number',
-        '_FillValue': -9999999,
         # 'units': ''    # deliberately left blank, no units for this value
+        'comment': 'Instrument serial number.',
+        '_FillValue': -9999999,
     },
     'main_battery_voltage': {
         'long_name': 'Main Battery Voltage',
         'units': 'V',
+        'comment': 'Voltage of either the internal battery pack or externally supplied power, whichever is greater.',
         '_FillValue': np.nan
     },
     'lithium_battery_voltage': {
         'long_name': 'Lithium Battery Voltage',
         'units': 'V',
+        'comment': 'Voltage of the internal battery cell, used to maintain the clock and firmware settings.',
         '_FillValue': np.nan
     },
     'samples_recorded': {
         'long_name': 'Number of Samples Recorded',
-        'comment': 'Number of samples recorded during the deployment',
         'units': 'counts',
-        '_FillValue': -9999999,
+        'comment': 'Number of samples recorded during the deployment',
+        '_FillValue': -9999999
     },
     'sample_slots_free': {
         'long_name': 'Number of Free Sample Slots Remaining',
-        'comment': 'Number of free samples available for recording, representing the memory available in the unit',
         'units': 'counts',
-        '_FillValue': -9999999,
+        'comment': 'Number of free samples available for recording, representing the memory available in the unit',
+        '_FillValue': -9999999
     },
-    'main_current': {},
-    'pump_current': {},
-    'oxy_current': {},
-    'eco_current': {},
+    'main_current': {
+        'long_name': 'Main Current',
+        'units': 'mA',
+        'comment': 'Total current draw on the system, encompassing all functions and external sensors.',
+        '_FillValue': -9999999
+    },
+    'pump_current': {
+        'long_name': 'Pump Current',
+        'units': 'mA',
+        'comment': 'Current draw from the system by the external pump.',
+        '_FillValue': -9999999
+    },
+    'oxy_current': {
+        'long_name': 'Oxygen Sensor Current',
+        'units': 'mA',
+        'comment': 'Current draw from the system by the external Aanderaa Optode (DOSTA) instrument.',
+        '_FillValue': -9999999
+    },
+    'eco_current': {
+        'long_name': 'WET Labs ECO Sensor Current',
+        'units': 'mA',
+        'comment': 'Current draw from the system by the external WET Labs ECO (FLORD) instrument.',
+        '_FillValue': -9999999
+    },
 
     # attributes associated with a CTDBP hosted by a DCL
     'time_offset': {
         'long_name': 'Internal Clock Offset',
+        'units': 'seconds',
         'comment': ('Difference between the internal CTD clock and the external GPS-based data logger clock. Can ' +
                     'be used to determine instrument clock offset and drift over the course of a deployment'),
-        'units': 'seconds',
-        'ancillary_variables': 'ctd_time, time'
+        'ancillary_variables': 'sensor_time, time'
     },
 
     # Values recorded by the different CTDBP configurations
-    # --> with an Aanderaa Optode (DOSTA)
+    # --> equipped with an Aanderaa Optode (DOSTA)
+    'raw_oxygen_phase': {
+        'long_name': 'Raw Optode Phase',
+        'units': 'Volts',
+        'comment': ('The Aanderaa optode measures oxygen by exciting a special platinum porphyrin complex embedded ' +
+                    'in a gas permeable foil with modulated blue light. The Optode measures the phase shift of a ' +
+                    'returned red light. By linearizing and temperature compensating, with an incorporated ' +
+                    'temperature sensor, the absolute O2 concentration is determined. This value is recorded by the ' +
+                    'SBE 16Plus as an analog voltage signal.'),
+        'data_product_identifier': 'DOCONCS-VLT_L0',
+        '_FillValue': np.nan
+    },
+    'oxygen_phase': {
+        'long_name': 'Optode Calibrated Phase',
+        'units': 'degrees',
+        'comment': ('Calibrated phase shift measurement reported in degrees of the red light when the sensing foil ' +
+                    'is excited with modulated blue light.'),
+        'data_product_identifier': 'DOCONCS-DEG_L0',
+        'ancillary_variables': 'raw_oxygen_phase',
+        '_FillValue': np.nan
+    },
+    'raw_oxygen_thermistor': {
+        'long_name': 'Raw Optode Thermistor',
+        'units': 'Volts',
+        'comment': ('The Aanderaa optode includes an integrated internal thermistor to measure the temperature at ' +
+                    'the sensing foil. This value is recorded by the SBE 16Plus as an analog voltage signal.'),
+        '_FillValue': np.nan
+    },
+    'oxygen_thermistor': {
+        'long_name': 'Optode Thermistor Temperature',
+        'standard_name': 'temperature_of_sensor_for_oxygen_in_sea_water',
+        'units': 'degree_Celsius',
+        'comment': ('Aanderaa optode internal thermistor temperature used in calculation of the absolute oxygen ' +
+                    'concentration. This is not the in situ sea water temperature, though it will be very close.'),
+        'ancillary_variables': 'raw_oxygen_thermistor',
+        '_FillValue': np.nan
+    },
     'oxygen_concentration': {
-        'units': 'umol/L'
+        'long_name': 'Dissolved Oxygen Concentration',
+        'standard_name': 'mole_concentration_of_dissolved_molecular_oxygen_in_sea_water',
+        'units': 'umol/L',
+        'comment': ('Mole concentration of dissolved oxygen per unit volume, also known as Molarity, as measured by ' +
+                    'an Aanderaa optode oxygen sensor.'),
+        'data_product_identifier': 'DOCONCS-L1',
+        'ancillary_variables': 'oxygen_phase, oxygen_thermistor',
+        '_FillValue': np.nan
+    },
+    'oxygen_concentration_corrected': {
+        'long_name': 'Corrected Dissolved Oxygen Concentration',
+        'standard_name': 'moles_of_oxygen_per_unit_mass_in_sea_water',
+        'units': 'umol/kg',
+        'comment': ('Dissolved oxygen concentration corrected for the effects of pressure and salinity on the ' +
+                    'sensor, and reported as the mole concentration per unit mass.'),
+        'data_product_identifier': 'DOXYGEN_L2',
+        'ancillary_variables': 'oxygen_concentration, pressure, temperature, salinity, lat, lon',
+        '_FillValue': np.nan
     },
 
     # --> with WET Labs ECO Triplet (FLORT)
     'raw_backscatter': {
-        'units': 'counts'
+        'long_name': 'Raw Optical Backscatter',
+        'units': 'counts',
+        'comment': 'Raw optical backscatter at 700 nm measurements as recorded by the Sea-Bird SBE 16Plus.',
+        'data_product_identifier': 'FLUBSCT_L0',
+        '_FillValue': np.nan
     },
     'raw_chlorophyll': {
-        'units': 'counts'
+        'long_name': 'Raw Chlorophyll Fluorescence',
+        'units': 'counts',
+        'comment': ('Raw chlorophyll fluorescence (470 nm excitation/ 695 nm emission) measurements as recorded by ' +
+                    'the Sea-Bird SBE 16Plus.'),
+        'data_product_identifier': 'CHLAFLO_L0',
+        '_FillValue': np.nan
     },
     'raw_cdom': {
-        'units': 'counts'
+        'long_name': 'Raw CDOM Fluorescence',
+        'units': 'counts',
+        'comment': ('Raw CDOM fluorescence (370 nm excitation/ 460 nm emission) measurements as recorded by ' +
+                    'the Sea-Bird SBE 16Plus.'),
+        'data_product_identifier': 'CDOMFLO_L0',
+        '_FillValue': np.nan
     },
-
-    # --> with an Aanderaa Optode (DOSTA) and a WET Labs FLNTU (FLORD) (IMM Hosted)
-    'raw_oxy_calphase': {},
-    'raw_oxy_temp': {},
-    'raw_chlorophyll': {},
-    'raw_backscatter': {}
+    'estimated_chlorophyll': {
+        'long_name': 'Estimated Chlorophyll Concentration',
+        'standard_name': 'mass_concentration_of_chlorophyll_in_sea_water',
+        'units': 'ug L-1',
+        'comment': ('Estimated chlorophyll concentration based upon a calibration curve derived from a fluorescent ' +
+                    'proxy approximately equal to 25 ug/l of a Thalassiosira weissflogii phytoplankton culture. ' +
+                    'This measurement is considered to be an estimate only of the true chlorophyll concentration.'),
+        'data_product_identifier': 'CHLAFLO_L1',
+        'ancillary_variables': 'raw_chlorophyll',
+        '_FillValue': np.nan
+    },
+    'fluorometric_cdom': {
+        'long_name': 'Fluorometric CDOM Concentration',
+        'standard_name': ('concentration_of_colored_dissolved_organic_matter_in_sea_water_expressed_as_equivalent_' +
+                          'mass_fraction_of_quinine_sulfate_dihydrate'),
+        'units': 'ppb',
+        'comment': ('More commonly referred to as Chromophoric Dissolved Organic Matter (CDOM). CDOM plays an ' +
+                    'important role in the carbon cycling and biogeochemistry of coastal waters. It occurs naturally ' +
+                    'in aquatic environments primarily as a result of tannins released from decaying plant and ' +
+                    'animal matter, and can enter coastal areas in river run-off containing organic materials ' +
+                    'leached from soils.'),
+        'data_product_identifier': 'CDOMFLO_L1',
+        'ancillary_variables': 'raw_cdom',
+        '_FillValue': np.nan
+    },
+    'beta_700': {
+        'long_name': 'Volume Scattering Function at 700 nm',
+        'standard_name': 'volume_scattering_function_of_radiative_flux_in_sea_water',
+        'units': 'm-1 sr-1',
+        'comment': ('Radiative flux is the sum of shortwave and longwave radiative fluxes. Scattering of radiation ' +
+                    'is its deflection from its incident path without loss of energy. The volume scattering function ' +
+                    'is the intensity (flux per unit solid angle) of scattered radiation per unit length of ' +
+                    'scattering medium, normalised by the incident radiation flux.'),
+        'data_product_identifier': 'FLUBSCT_L1',
+        'ancillary_variables': 'raw_backscatter',
+        '_FillValue': np.nan
+    },
+    'bback': {
+        'long_name': 'Total Optical Backscatter at 700 nm',
+        'units': 'm-1',
+        'comment': ('Total (particulate + water) optical backscatter at 700 nm, derived from the Volume Scattering ' +
+                    'Function and corrected for effects of temperature and salinity.'),
+        'data_product_identifier': 'FLUBSCT_L2',
+        'ancillary_variables': 'beta_700, temperature, salinity',
+        '_FillValue': np.nan
+    },
 }
