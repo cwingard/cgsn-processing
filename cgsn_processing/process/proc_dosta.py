@@ -31,7 +31,7 @@ class Calibrations(Coefficients):
 
     def read_csv(self, csv_url):
         """
-        Reads the values from an DOSTA calibration file already parsed and stored on Github as a CSV files. Note,
+        Reads the values from a DOSTA calibration file already parsed and stored on Github as a CSV file. Note,
         the formatting of those files puts some constraints on this process. If someone has a cleaner method,
         I'm all in favor...
         """

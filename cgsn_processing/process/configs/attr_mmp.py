@@ -49,7 +49,7 @@ MMP = {
     },
     'psu': {
         'long_name': 'Practical Salinity',
-        'standard_name': 'sea_water_salinity',
+        'standard_name': 'sea_water_practical_salinity',
         'units': '1',
         'valid_min': '0',
         'valid_max': '40'

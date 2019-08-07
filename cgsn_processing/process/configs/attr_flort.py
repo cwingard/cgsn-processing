@@ -82,7 +82,7 @@ FLORT = {
     },
     'salinity': {
         'long_name': 'Practical Salinity',
-        'standard_name': 'sea_water_salinity',
+        'standard_name': 'sea_water_practical_salinity',
         'units': '1',
         'comment': 'Interpolated into record from co-located CTD'
     },

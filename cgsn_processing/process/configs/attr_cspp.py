@@ -73,7 +73,7 @@ CSPP_CTDPF = {
     },
     'salinity': {
         'long_name': 'Practical Salinity',
-        'standard_name': 'sea_water_salinity',
+        'standard_name': 'sea_water_practical_salinity',
         'units': '1',
     },
     'in_situ_density': {
@@ -186,7 +186,7 @@ CSPP_FLORT = {
     },
     'salinity': {
         'long_name': 'Practical Salinity',
-        'standard_name': 'sea_water_salinity',
+        'standard_name': 'sea_water_practical_salinity',
         'units': '1',
         'comment': 'Interpolated into record from co-located CTD'
     },
@@ -292,7 +292,7 @@ CSPP_NUTNR = {
     },
     'salinity': {
         'long_name': 'Practical Salinity',
-        'standard_name': 'sea_water_salinity',
+        'standard_name': 'sea_water_practical_salinity',
         'units': '1',
         'comment': 'Interpolated into record from co-located CTD'
     },
@@ -433,7 +433,7 @@ CSPP_OPTAA = {
     },
     'salinity': {
         'long_name': 'Practical Salinity',
-        'standard_name': 'sea_water_salinity',
+        'standard_name': 'sea_water_practical_salinity',
         'units': '1',
         'comment': 'Interpolated into record from co-located CTD'
     }

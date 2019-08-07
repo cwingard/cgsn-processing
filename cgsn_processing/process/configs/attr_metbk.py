@@ -120,7 +120,7 @@ METBK = {
     },
     'psu': {
         'long_name': 'Practical Salinity',
-        'standard_name': 'sea_water_salinity',
+        'standard_name': 'sea_water_practical_salinity',
         'units': '1',
         'coordinates': 'time z_ct longitude latitude',
         'sensor_mount': 'mounted on mooring subsurface bridle',

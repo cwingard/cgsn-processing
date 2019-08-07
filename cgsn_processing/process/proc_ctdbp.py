@@ -97,7 +97,8 @@ def main(argv=None):
         status.drop(columns='date_time_string', inplace=True)
         status.rename(columns={'main_battery': 'main_battery_voltage',
                                'lithium_battery': 'lithium_battery_voltage',
-                               'memory_free': 'sample_slots_free'},
+                               'memory_free': 'sample_slots_free',
+                               'eco_current': 'flr_current'},
                       inplace=True)
 
         # create a data frame with the CTD, DOSTA and FLORD data
@@ -159,7 +160,7 @@ def main(argv=None):
 
         # compute the L0 to L1 conversions
         ctd['oxygen_phase'] = do2_phase_volt_to_degree(ctd['raw_oxygen_phase'])
-        ctd['oxygen_thermistor'] = do2_therm_volt_to_degc(ctd['raw_oxygen_thermistor'])
+        ctd['oxygen_thermistor_temperature'] = do2_therm_volt_to_degc(ctd['raw_oxygen_thermistor'])
         ctd['oxygen_concentration'] = do2_phase_to_doxy(ctd['oxygen_phase'], ctd['oxygen_thermistor'],
                                                         opt.coeffs['svu_cal_coeffs'], opt.coeffs['two_point_coeffs'])
         ctd['estimated_chlorophyll'] = flo_scale_and_offset(ctd['raw_chlorophyll'], opt.coeffs['dark_chla'],
@@ -188,8 +189,9 @@ def main(argv=None):
     if ctd_type in ['flort', 'imm']:
         # calculate the total optical backscatter, corrected for in-situ salinity, from the volume scattering
         # coefficient (Beta) at 700 nm.
-        ctd['bback'] = flo_bback_total(ctd['beta_700'], ctd['temperature'], ctd['salinity'],
-                                       flr.coeffs['scatter_angle'], flr.coeffs['wavelength'], flr.coeffs['chi_factor'])
+        ctd['total_optical_backscatter'] = flo_bback_total(ctd['beta_700'], ctd['temperature'], ctd['salinity'],
+                                                           flr.coeffs['scatter_angle'], flr.coeffs['wavelength'],
+                                                           flr.coeffs['chi_factor'])
 
     # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
     attrs = dict_update(GLOBAL, CTDBP)

@@ -11,8 +11,8 @@ import numpy as np
 GLOBAL = {
     # global attributes
     'global': {
-        'title': 'CTD',
-        'summary': ('Conductivity, Temperature and Pressure (CTD) Data'),
+        'title': 'Conductivity, Temperature and Depth (CTD) Data',
+        'summary': 'Moored CTD time series data sets.',
         'project': 'Ocean Observatories Initiative',
         'institution': 'Coastal and Global Scale Nodes (CGSN)',
         'acknowledgement': 'National Science Foundation',
@@ -49,14 +49,16 @@ GLOBAL = {
         'standard_name': 'longitude',
         'units': 'degrees_east',
         'axis': 'X',
-        'comment': 'Mooring deployment location, surveyed after deployment to determine center of watch circle.'
+        'comment': ('Mooring deployment location, surveyed after deployment to determine the anchor location and ' +
+                    'the center of the watch circle.')
     },
     'lat': {
         'long_name': 'Latitude',
         'standard_name': 'latitude',
         'units': 'degrees_north',
         'axis': 'Y',
-        'comment': 'Mooring deployment location, surveyed after deployment to determine center of watch circle.'
+        'comment': ('Mooring deployment location, surveyed after deployment to determine the anchor location and ' +
+                    'the center of the watch circle.')
     },
     'z': {
         'long_name': 'Depth',
@@ -76,7 +78,7 @@ CTDBP = {
         'standard_name': 'time',
         'units': 'seconds since 1970-01-01 00:00:00 0:00',
         'comment': ('Internal CTD clock date and time stamp, recorded when the instrument begins the measurement. It ' +
-                    'is expected that this value will drift from the true time by some degree over the course of ' +
+                    'is expected that this value will drift from the true time by some amount over the course of ' +
                     'a deployment. Cross-comparisons to other systems will be required to account for the offset ' +
                     'and drift.'),
         'calendar': 'gregorian'
@@ -86,7 +88,7 @@ CTDBP = {
         'standard_name': 'sea_water_electrical_conductivity',
         'units': 'mS cm-1',
         'comment': ('Sea water conductivity refers to the ability of seawater to conduct electricity. The presence ' +
-                    'of  ions, such as salt, increases the electrical conducting ability of seawater. As such, ' +
+                    'of ions, such as salt, increases the electrical conducting ability of seawater. As such, ' +
                     'conductivity can be used as a proxy for determining the quantity of salt in a sample of ' +
                     'seawater.'),
         'data_product_identifier': 'CONDWAT_L1',
@@ -131,7 +133,7 @@ CTDBP = {
         'comment': ('Sea water Density is the in situ density and is defined as mass per unit volume. It is ' +
                     'calculated from the conductivity, temperature and depth of a sea water sample.'),
         'data_product_identifier': 'DENSITY_L2',
-        'ancillary_variables': 'lon, lat, conductivity, temperature, pressure',
+        'ancillary_variables': 'lon, lat, salinity, temperature, pressure',
         '_FillValue': np.nan
     },
 
@@ -177,70 +179,70 @@ CTDBP = {
         'long_name': 'Main Current',
         'units': 'mA',
         'comment': 'Total current draw on the system, encompassing all functions and external sensors.',
-        '_FillValue': -9999999
+        '_FillValue': np.nan
     },
     'pump_current': {
         'long_name': 'Pump Current',
         'units': 'mA',
         'comment': 'Current draw from the system by the external pump.',
-        '_FillValue': -9999999
+        '_FillValue': np.nan
     },
     'oxy_current': {
         'long_name': 'Oxygen Sensor Current',
         'units': 'mA',
-        'comment': 'Current draw from the system by the external Aanderaa Optode (DOSTA) instrument.',
-        '_FillValue': -9999999
+        'comment': 'Current draw from the system by the external optode oxygen (DOSTA) sensor.',
+        '_FillValue': np.nan
     },
-    'eco_current': {
-        'long_name': 'WET Labs ECO Sensor Current',
+    'flr_current': {
+        'long_name': 'Fluorometer Sensor Current',
         'units': 'mA',
-        'comment': 'Current draw from the system by the external WET Labs ECO (FLORD) instrument.',
-        '_FillValue': -9999999
+        'comment': 'Current draw from the system by the external two-channel fluorometer (FLORD) sensor.',
+        '_FillValue': np.nan
     },
 
     # attributes associated with a CTDBP hosted by a DCL
     'time_offset': {
         'long_name': 'Internal Clock Offset',
         'units': 'seconds',
-        'comment': ('Difference between the internal CTD clock and the external GPS-based data logger clock. Can ' +
-                    'be used to determine instrument clock offset and drift over the course of a deployment'),
+        'comment': ('Difference between the internal CTD clock and the external GPS-based data logger (DCL) clock. ' +
+                    'Can be used to determine instrument clock offset and drift over the course of a deployment'),
         'ancillary_variables': 'sensor_time, time'
     },
 
     # Values recorded by the different CTDBP configurations
-    # --> equipped with an Aanderaa Optode (DOSTA)
+    # --> equipped with an optode (DOSTA)
     'raw_oxygen_phase': {
         'long_name': 'Raw Optode Phase',
-        'units': 'Volts',
-        'comment': ('The Aanderaa optode measures oxygen by exciting a special platinum porphyrin complex embedded ' +
-                    'in a gas permeable foil with modulated blue light. The Optode measures the phase shift of a ' +
+        'units': 'V',
+        'comment': ('The optode measures oxygen by exciting a special platinum porphyrin complex embedded in a ' +
+                    'gas permeable foil with modulated blue light. The Optode measures the phase shift of a ' +
                     'returned red light. By linearizing and temperature compensating, with an incorporated ' +
                     'temperature sensor, the absolute O2 concentration is determined. This value is recorded by the ' +
-                    'SBE 16Plus as an analog voltage signal.'),
+                    'CTD as an analog voltage signal.'),
         'data_product_identifier': 'DOCONCS-VLT_L0',
         '_FillValue': np.nan
     },
     'oxygen_phase': {
         'long_name': 'Optode Calibrated Phase',
         'units': 'degrees',
-        'comment': ('Calibrated phase shift measurement reported in degrees of the red light when the sensing foil ' +
-                    'is excited with modulated blue light.'),
+        'comment': ('Calibrated phase shift, measurement reported in degrees, of the red light when the sensing ' +
+                    'foil is excited with modulated blue light.'),
         'data_product_identifier': 'DOCONCS-DEG_L0',
         'ancillary_variables': 'raw_oxygen_phase',
         '_FillValue': np.nan
     },
     'raw_oxygen_thermistor': {
         'long_name': 'Raw Optode Thermistor',
-        'units': 'Volts',
-        'comment': ('The Aanderaa optode includes an integrated internal thermistor to measure the temperature at ' +
-                    'the sensing foil. This value is recorded by the SBE 16Plus as an analog voltage signal.'),
+        'units': 'V',
+        'comment': ('The optode includes an integrated internal thermistor to measure the temperature at ' +
+                    'the sensing foil. This value is recorded by the CTD as an analog voltage signal.'),
         '_FillValue': np.nan
     },
-    'oxygen_thermistor': {
+    'oxygen_thermistor_temperature': {
         'long_name': 'Optode Thermistor Temperature',
         'standard_name': 'temperature_of_sensor_for_oxygen_in_sea_water',
         'units': 'degree_Celsius',
-        'comment': ('Aanderaa optode internal thermistor temperature used in calculation of the absolute oxygen ' +
+        'comment': ('Optode internal thermistor temperature used in calculation of the absolute oxygen ' +
                     'concentration. This is not the in situ sea water temperature, though it will be very close.'),
         'ancillary_variables': 'raw_oxygen_thermistor',
         '_FillValue': np.nan
@@ -248,9 +250,9 @@ CTDBP = {
     'oxygen_concentration': {
         'long_name': 'Dissolved Oxygen Concentration',
         'standard_name': 'mole_concentration_of_dissolved_molecular_oxygen_in_sea_water',
-        'units': 'umol/L',
+        'units': 'umol L-1',
         'comment': ('Mole concentration of dissolved oxygen per unit volume, also known as Molarity, as measured by ' +
-                    'an Aanderaa optode oxygen sensor.'),
+                    'an optode oxygen sensor.'),
         'data_product_identifier': 'DOCONCS-L1',
         'ancillary_variables': 'oxygen_phase, oxygen_thermistor',
         '_FillValue': np.nan
@@ -258,8 +260,8 @@ CTDBP = {
     'oxygen_concentration_corrected': {
         'long_name': 'Corrected Dissolved Oxygen Concentration',
         'standard_name': 'moles_of_oxygen_per_unit_mass_in_sea_water',
-        'units': 'umol/kg',
-        'comment': ('Dissolved oxygen concentration corrected for the effects of pressure and salinity on the ' +
+        'units': 'umol kg-1',
+        'comment': ('Dissolved oxygen concentration corrected for the effects of density and salinity on the ' +
                     'sensor, and reported as the mole concentration per unit mass.'),
         'data_product_identifier': 'DOXYGEN_L2',
         'ancillary_variables': 'oxygen_concentration, pressure, temperature, salinity, lat, lon',
@@ -270,7 +272,7 @@ CTDBP = {
     'raw_backscatter': {
         'long_name': 'Raw Optical Backscatter',
         'units': 'counts',
-        'comment': 'Raw optical backscatter at 700 nm measurements as recorded by the Sea-Bird SBE 16Plus.',
+        'comment': 'Raw optical backscatter at 700 nm measurements as recorded by the CTD.',
         'data_product_identifier': 'FLUBSCT_L0',
         '_FillValue': np.nan
     },
@@ -278,15 +280,15 @@ CTDBP = {
         'long_name': 'Raw Chlorophyll Fluorescence',
         'units': 'counts',
         'comment': ('Raw chlorophyll fluorescence (470 nm excitation/ 695 nm emission) measurements as recorded by ' +
-                    'the Sea-Bird SBE 16Plus.'),
+                    'the CTD.'),
         'data_product_identifier': 'CHLAFLO_L0',
         '_FillValue': np.nan
     },
     'raw_cdom': {
         'long_name': 'Raw CDOM Fluorescence',
         'units': 'counts',
-        'comment': ('Raw CDOM fluorescence (370 nm excitation/ 460 nm emission) measurements as recorded by ' +
-                    'the Sea-Bird SBE 16Plus.'),
+        'comment': ('Raw chromophoric dissolved organic matter (CDOM) fluorescence (370 nm excitation/ 460 nm ' +
+                    'emission) measurements as recorded by the CTD.'),
         'data_product_identifier': 'CDOMFLO_L0',
         '_FillValue': np.nan
     },
@@ -295,7 +297,7 @@ CTDBP = {
         'standard_name': 'mass_concentration_of_chlorophyll_in_sea_water',
         'units': 'ug L-1',
         'comment': ('Estimated chlorophyll concentration based upon a calibration curve derived from a fluorescent ' +
-                    'proxy approximately equal to 25 ug/l of a Thalassiosira weissflogii phytoplankton culture. ' +
+                    'proxy approximately equal to 25 ug/L of a Thalassiosira weissflogii phytoplankton culture. ' +
                     'This measurement is considered to be an estimate only of the true chlorophyll concentration.'),
         'data_product_identifier': 'CHLAFLO_L1',
         'ancillary_variables': 'raw_chlorophyll',
@@ -327,8 +329,9 @@ CTDBP = {
         'ancillary_variables': 'raw_backscatter',
         '_FillValue': np.nan
     },
-    'bback': {
+    'total_optical_backscatter': {
         'long_name': 'Total Optical Backscatter at 700 nm',
+        'standard_name': 'volume_backwards_scattering_coefficient_of_radiative_flux_in_sea_water',
         'units': 'm-1',
         'comment': ('Total (particulate + water) optical backscatter at 700 nm, derived from the Volume Scattering ' +
                     'Function and corrected for effects of temperature and salinity.'),
