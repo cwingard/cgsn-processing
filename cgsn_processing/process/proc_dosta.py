@@ -6,6 +6,7 @@
 @author Christopher Wingard
 @brief Creates a NetCDF dataset for the dissolved oxygen from the JSON formatted source data
 """
+import json
 import numpy as np
 import os
 import pandas as pd
@@ -43,11 +44,11 @@ class Calibrations(Coefficients):
         for idx, row in cal.iterrows():
             # scale and offset correction factors from a two-point calibration
             if row[1] == 'CC_conc_coef':
-                coeffs['two_point_coeffs'] = row[2]
+                coeffs['two_point_coeffs'] = np.array(json.loads(row[2]))
 
             # Stern-Volmer-Uchida calibration coefficients from a multipoint factory calibration
             if row[1] == 'CC_csv':
-                coeffs['svu_cal_coeffs'] = row[2]
+                coeffs['svu_cal_coeffs'] = np.array(json.loads(row[2]))
 
         # save the resulting dictionary
         self.coeffs = coeffs

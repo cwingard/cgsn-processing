@@ -36,7 +36,7 @@ GLOBAL = {
     'time': {
         'long_name': 'Time',
         'standard_name': 'time',
-        'units': 'seconds since 1970-01-01 00:00:00 0:00',
+        'units': 'seconds since 1970-01-01 00:00:00.00',
         'axis': 'T',
         'calendar': 'gregorian',
         'comment': ('Derived from either the DCL data logger GPS referenced clock, or the internal instrument clock ' +
@@ -76,7 +76,7 @@ CTDBP = {
     'sensor_time': {
         'long_name': 'CTD Date and Time',
         'standard_name': 'time',
-        'units': 'seconds since 1970-01-01 00:00:00 0:00',
+        'units': 'seconds since 1970-01-01 00:00:00.00',
         'comment': ('Internal CTD clock date and time stamp, recorded when the instrument begins the measurement. It ' +
                     'is expected that this value will drift from the true time by some amount over the course of ' +
                     'a deployment. Cross-comparisons to other systems will be required to account for the offset ' +
@@ -140,7 +140,7 @@ CTDBP = {
     # attributes associated with the status message output from a CTDBP connected to an inductive modem (IMM)
     'status_time': {
         'long_name': 'Status Update Time',
-        'units': 'seconds since 1970-01-01 00:00:00 0:00',
+        'units': 'seconds since 1970-01-01 00:00:00.00',
         'comment': 'Date and time the CTD status was queried.',
         'calendar': 'gregorian',
         '_FillValue': np.nan
@@ -274,7 +274,7 @@ CTDBP = {
         'units': 'counts',
         'comment': 'Raw optical backscatter at 700 nm measurements as recorded by the CTD.',
         'data_product_identifier': 'FLUBSCT_L0',
-        '_FillValue': np.nan
+        '_FillValue': -9999999
     },
     'raw_chlorophyll': {
         'long_name': 'Raw Chlorophyll Fluorescence',
@@ -282,7 +282,7 @@ CTDBP = {
         'comment': ('Raw chlorophyll fluorescence (470 nm excitation/ 695 nm emission) measurements as recorded by ' +
                     'the CTD.'),
         'data_product_identifier': 'CHLAFLO_L0',
-        '_FillValue': np.nan
+        '_FillValue': -9999999
     },
     'raw_cdom': {
         'long_name': 'Raw CDOM Fluorescence',
@@ -290,7 +290,7 @@ CTDBP = {
         'comment': ('Raw chromophoric dissolved organic matter (CDOM) fluorescence (370 nm excitation/ 460 nm ' +
                     'emission) measurements as recorded by the CTD.'),
         'data_product_identifier': 'CDOMFLO_L0',
-        '_FillValue': np.nan
+        '_FillValue': -9999999
     },
     'estimated_chlorophyll': {
         'long_name': 'Estimated Chlorophyll Concentration',
