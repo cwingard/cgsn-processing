@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-@package cgsn_processing.process.proc_ctdbp
-@file cgsn_processing/process/proc_ctdbp.py
+@package cgsn_processing.process.proc_imm_ctdbp
+@file cgsn_processing/process/proc_imm_ctdbp.py
 @author Christopher Wingard
-@brief Creates a NetCDF dataset for the CTDBP data from the JSON formatted data
+@brief Creates a NetCDF dataset for the CTDBP data transferred via the IMM from the JSON formatted data
 """
 import os
 import re
@@ -60,7 +60,7 @@ def main(argv=None):
     nrows, _ = ctd.shape
     sensor_time = []
     for i in range(nrows):
-        dt = ctd['date_time_string'][i]  # convert date/time string into an a usable format
+        dt = ctd['date_time_string'][i]  # convert date/time string into a usable format
         sensor_time.append(epoch_time(dt[:2] + '-' + dt[2:5] + '-' + dt[5:9] + ' ' + dt[9:]))
     ctd['sensor_time'] = sensor_time
     ctd.drop(columns={'serial_number', 'date_time_string'}, inplace=True)
@@ -91,7 +91,7 @@ def main(argv=None):
     ctd_raw = update_dataset(ctd_raw, platform, deployment, lat, lon, [depth, depth, depth], attrs)
 
     # save the data
-    outfile = re.sub('.nc$', '.raw.nc', outfile)
+    outfile = re.sub('.nc$', '_raw.nc', outfile)
     ctd_raw.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
 
     # grab the calibration coefficients for the two sensors: FLORD
@@ -108,7 +108,7 @@ def main(argv=None):
             flr.save_coeffs()
         else:
             # If we cannot find the calibration coefficients we are done, do not attempt to create a processed file
-            print('A source for the FLORD calibration coefficients for {} could not be found.')
+            print('A source for the FLORD calibration coefficients for {} could not be found.', flord_serial)
             return None
 
     # grab the calibration coefficients for the two sensors: DOSTA
@@ -125,7 +125,7 @@ def main(argv=None):
             opt.save_coeffs()
         else:
             # If we cannot find the calibration coefficients we are done, do not attempt to create a processed file
-            print('A source for the DOSTA calibration coefficients for {} could not be found.')
+            print('A source for the DOSTA calibration coefficients for {} could not be found.', dosta_serial)
             return None
 
     # convert the raw measurements from volts to engineering units
@@ -156,7 +156,7 @@ def main(argv=None):
     ctd_proc = update_dataset(ctd_proc, platform, deployment, lat, lon, [depth, depth, depth], attrs)
 
     # save the data
-    outfile = re.sub('.raw.nc$', '.proc.nc', outfile)
+    outfile = re.sub('_raw.nc$', '_proc.nc', outfile)
     ctd_proc.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
 
 

@@ -84,7 +84,7 @@ def main(argv=None):
         ctd_raw = update_dataset(ctd_raw, platform, deployment, lat, lon, [depth, depth, depth], attrs)
 
         # save the data file with raw FLORT values
-        outfile = re.sub('.nc$', '.raw.nc', outfile)
+        outfile = re.sub('.nc$', '_raw.nc', outfile)
         ctd_raw.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
 
         # now grab the calibration coefficients for the FLORT (if they exist)
@@ -101,7 +101,7 @@ def main(argv=None):
                 flr.save_coeffs()
             else:
                 # If we cannot find the calibration coefficients we are done, do not attempt to create a processed file
-                print('A source for the FLORT calibration coefficients for {} could not be found.')
+                print('A source for the FLORT calibration coefficients for {} could not be found.', args.serial)
                 return None
 
         ctd['estimated_chlorophyll'] = flo_scale_and_offset(ctd['raw_chlorophyll'], flr.coeffs['dark_chla'],
@@ -122,7 +122,7 @@ def main(argv=None):
         ctd_proc = update_dataset(ctd_proc, platform, deployment, lat, lon, [depth, depth, depth], attrs)
 
         # save the processed data
-        outfile = re.sub('.raw.nc$', '.proc.nc', outfile)
+        outfile = re.sub('_raw.nc$', '_proc.nc', outfile)
         ctd_proc.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
 
 
