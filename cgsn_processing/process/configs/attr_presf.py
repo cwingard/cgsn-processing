@@ -44,7 +44,7 @@ PRESF = {
         'valid_max': '1000',
     },
     'pressure_temp': {
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'absolute_pressure': {
         'units': 'psi'
@@ -55,6 +55,6 @@ PRESF = {
     'seawater_temperature': {
         'long_name': 'Sea Water Temperature',
         'standard_name': 'sea_water_temperature',
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     }
 }

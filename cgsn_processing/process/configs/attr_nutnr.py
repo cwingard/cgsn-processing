@@ -56,13 +56,13 @@ ISUS = {
     'rms_error': {
     },
     'temperature_internal': {
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'temperature_spectrometer': {
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'temperature_lamp': {
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'lamp_on_time': {
         'units': 's'
@@ -97,7 +97,7 @@ ISUS = {
     'temperature': {
         'long_name': 'Sea Water Temperature',
         'standard_name': 'sea_water_temperature',
-        'units': 'degree_Celsius',
+        'units': 'degrees_Celsius',
         'comment': 'Interpolated into record from co-located CTD'
     },
     'salinity': {
@@ -185,13 +185,13 @@ SUNA = {
         'units': 'counts'
     },
     'temperature_internal': {
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'temperature_spectrometer': {
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'temperature_lamp': {
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'lamp_on_time': {
         'units': 's'
@@ -224,7 +224,7 @@ SUNA = {
     'temperature': {
         'long_name': 'Sea Water Temperature',
         'standard_name': 'sea_water_temperature',
-        'units': 'degree_Celsius',
+        'units': 'degrees_Celsius',
         'comment': 'Interpolated into record from co-located CTD'
     },
     'salinity': {

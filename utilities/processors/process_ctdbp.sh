@@ -7,9 +7,10 @@
 # C. Wingard 2017-01-24
 
 # Parse the command line inputs
-if [ $# -ne 7 ]; then
+if [ $# -ne 9 ]; then
     echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the CTDBP"
-    echo " directory name, the deployment depth and the name of the file to process."
+    echo " directory name, the deployment depth, the serial number of the FLORT (if applicable), a switch to"
+    echo " indicate the configuration of the CTDBP (solo, dosta or flort) and the name of the file to process."
     echo ""
     echo "     example: $0 ce07shsm D00004 44.63929 -124.30404 mfn/ctdbp 87 0 dosta 20161012.ctdbp2.json"
     exit 1
@@ -19,7 +20,7 @@ DEPLOY=${2^^}
 LAT=$3; LON=$4
 CTDBP=${5,,}
 DEPTH=$6
-SERIAL=${7^^}
+SERIAL=$7
 SWITCH=$8
 FILE=`basename $9`
 

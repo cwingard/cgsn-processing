@@ -249,7 +249,7 @@ PCO2W = {
         'comment': ('Thermistor temperature refers to the internal instrument temperature of the pCO2 sensor, as ' +
                     'measured by the thermistor. It is used in the determination of pCO2.'),
         'standard_name': 'seawater_temperature',
-        'units': 'degree_Celsius',
+        'units': 'degrees_Celsius',
         'ancillary_variables': 'raw_thermistor'
     },
     'k434': {

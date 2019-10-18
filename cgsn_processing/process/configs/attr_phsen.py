@@ -195,7 +195,7 @@ PHSEN = {
                     'variable represents the thermistor temperature measured at the beginning of the measurement ' +
                     'cycle'),
         'standard_name': 'seawater_temperature',
-        'units': 'degree_Celsius',
+        'units': 'degrees_Celsius',
         'ancillary_variables': 'raw_thermistor_start'
     },
     'thermistor_temperature_end': {
@@ -205,7 +205,7 @@ PHSEN = {
                     'absorptivities in the seawater sample in order to make an accurate pH estimation. This ' +
                     'variable represents the thermistor temperature measured at the end of the measurement cycle'),
         'standard_name': 'seawater_temperature',
-        'units': 'degree_Celsius',
+        'units': 'degrees_Celsius',
         'ancillary_variables': 'raw_thermistor_end'
     },
     'battery_voltage': {

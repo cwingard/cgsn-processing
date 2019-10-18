@@ -60,7 +60,7 @@ SPKIR = {
         'units': '1'
     },
     'internal_temperature': {
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'irradiance': {
         'long_name': 'Downwelling Spectral Irradiance',

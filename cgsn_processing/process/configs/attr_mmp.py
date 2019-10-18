@@ -45,7 +45,7 @@ MMP = {
     'temperature': {
         'long_name': 'Sea Water Temperature',
         'standard_name': 'sea_water_temperature',
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'psu': {
         'long_name': 'Practical Salinity',

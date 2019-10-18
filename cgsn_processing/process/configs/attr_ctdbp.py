@@ -97,7 +97,7 @@ CTDBP = {
     'temperature': {
         'long_name': 'Sea Water Temperature',
         'standard_name': 'sea_water_temperature',
-        'units': 'degree_Celsius',
+        'units': 'degrees_Celsius',
         'comment': 'Sea water temperature is the in situ temperature of the sea water.',
         'data_product_identifier': 'TEMPWAT_L1',
         '_FillValue': np.nan
@@ -241,7 +241,7 @@ CTDBP = {
     'oxygen_thermistor_temperature': {
         'long_name': 'Optode Thermistor Temperature',
         'standard_name': 'temperature_of_sensor_for_oxygen_in_sea_water',
-        'units': 'degree_Celsius',
+        'units': 'degrees_Celsius',
         'comment': ('Optode internal thermistor temperature used in calculation of the absolute oxygen ' +
                     'concentration. This is not the in situ sea water temperature, though it will be very close.'),
         'ancillary_variables': 'raw_oxygen_thermistor',
