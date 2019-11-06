@@ -143,7 +143,7 @@ CTD = {
     'temperature': {
         'long_name': 'Seawater Temperature',
         'standard_name': 'sea_water_temperature',
-        'units': 'degree_Celsius',
+        'units': 'degrees_Celsius',
         'comment': 'Seawater temperature at the sensor.',
         'data_product_identifier': 'TEMPWAT_L1',
         'ancillary_variables': 'raw_temperature',

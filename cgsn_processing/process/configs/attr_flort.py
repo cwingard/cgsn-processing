@@ -77,12 +77,12 @@ FLORT = {
     'temperature': {
         'long_name': 'Sea Water Temperature',
         'standard_name': 'sea_water_temperature',
-        'units': 'degree_Celsius',
+        'units': 'degrees_Celsius',
         'comment': 'Interpolated into record from co-located CTD'
     },
     'salinity': {
         'long_name': 'Practical Salinity',
-        'standard_name': 'sea_water_salinity',
+        'standard_name': 'sea_water_practical_salinity',
         'units': '1',
         'comment': 'Interpolated into record from co-located CTD'
     },

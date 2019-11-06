@@ -171,7 +171,7 @@ PD0 = {
     'error_vel_threshold': {
         'long_name': 'Error Velocity Threshold',
         'comment': 'Threshold value used to flag water-current data as good or bad.',
-        'units': 'mm/s'
+        'units': 'mm s-1'
     },
     'coord_transform_type': {
         'long_name': 'Coordinate Transform Type',
@@ -338,7 +338,7 @@ PD0 = {
     'speed_of_sound': {
         'comment': 'Contains either manual or calculated speed of sound',
         'long_name': 'Speed of Sound',
-        'units': 'm/s',
+        'units': 'm s-1',
     },
     'transducer_depth': {
         'long_name': 'Transducer Depth',
@@ -369,7 +369,7 @@ PD0 = {
     'temperature': {
         'long_name': 'Transducer Temperature',
         'comment': 'Measured temperature at the transducer face, reported in centidegree Celsius.',
-        'units': 'cdegree_Celsius'
+        'units': 'cdegrees_Celsius'
     },
     'mpt_minutes': {
         'long_name': 'MPT Minutes',
@@ -556,7 +556,7 @@ PD0 = {
                     'component while uncorrected for magnetic declination.'),
         'standard_name': 'eastward_sea_water_velocity',
         'data_product_identifier': 'VELPROF-VLE_L0',
-        'units': 'mm/s',
+        'units': 'mm s-1',
         '_FillValue': np.int32(-32768)
     },
     'northward_seawater_velocity_est': {
@@ -567,7 +567,7 @@ PD0 = {
                     'northward velocity component while uncorrected for magnetic declination.'),
         'standard_name': 'northward_sea_water_velocity',
         'data_product_identifier': 'VELPROF-VLN_L0',
-        'units': 'mm/s',
+        'units': 'mm s-1',
         '_FillValue': np.int32(-32768)
     },
     'vertical_seawater_velocity': {
@@ -577,7 +577,7 @@ PD0 = {
                     'instrument'),
         'standard_name': 'upward_sea_water_velocity',
         'data_product_identifier': 'VELPROF-VLU_L0',
-        'units': 'mm/s',
+        'units': 'mm s-1',
         '_FillValue': np.int32(-32768)
     },
     'error_velocity': {
@@ -585,7 +585,7 @@ PD0 = {
         'comment': ('A velocity profile includes water velocity (speed & direction) throughout the depth range of an ' +
                     'ADCP sensor. This instance is the error velocity component as reported by the instrument.'),
         'data_product_identifier': 'VELPROF-EVL_L0',
-        'units': 'mm/s',
+        'units': 'mm s-1',
         '_FillValue': np.int32(-32768)
     },
 
@@ -686,7 +686,7 @@ PD8 = {
     'speed_of_sound': {
         'comment': 'Contains calculated speed of sound based on transducer temperature and default salinity',
         'long_name': 'Speed of Sound',
-        'units': 'm/s',
+        'units': 'm s-1',
     },
     'heading': {
         'long_name': 'Heading',
@@ -706,7 +706,7 @@ PD8 = {
     'temperature': {
         'long_name': 'Transducer Temperature',
         'comment': 'Measured temperature at the transducer face.',
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
 
     # velocity packets
@@ -723,7 +723,7 @@ PD8 = {
         'comment': ('Profile of water current velocities. Corrected for instrument heading, pitch and roll, but ' +
                     'uncorrected for magnetic declination. Considered an estimate of the true velocity magnitude ' +
                     'while uncorrected for magnetic declination.'),
-        'units': 'mm/s',
+        'units': 'mm s-1',
         '_FillValue': np.nan
     },
     'eastward_seawater_velocity_est': {
@@ -734,7 +734,7 @@ PD8 = {
                     'component while uncorrected for magnetic declination.'),
         'standard_name': 'eastward_sea_water_velocity',
         'data_product_identifier': 'VELPROF-VLE_L0',
-        'units': 'mm/s',
+        'units': 'mm s-1',
         '_FillValue': np.int32(-32768)
     },
     'northward_seawater_velocity_est': {
@@ -745,7 +745,7 @@ PD8 = {
                     'northward velocity component while uncorrected for magnetic declination.'),
         'standard_name': 'northward_sea_water_velocity',
         'data_product_identifier': 'VELPROF-VLN_L0',
-        'units': 'mm/s',
+        'units': 'mm s-1',
         '_FillValue': np.int32(-32768)
     },
     'vertical_seawater_velocity': {
@@ -755,7 +755,7 @@ PD8 = {
                     'instrument'),
         'standard_name': 'upward_sea_water_velocity',
         'data_product_identifier': 'VELPROF-VLU_L0',
-        'units': 'mm/s',
+        'units': 'mm s-1',
         '_FillValue': np.int32(-32768)
     },
     'error_velocity': {
@@ -763,7 +763,7 @@ PD8 = {
         'comment': ('A velocity profile includes water velocity (speed & direction) throughout the depth range of an ' +
                     'ADCP sensor. This instance is the error velocity component as reported by the instrument.'),
         'data_product_identifier': 'VELPROF-EVL_L0',
-        'units': 'mm/s',
+        'units': 'mm s-1',
         '_FillValue': np.int32(-32768)
     },
 
@@ -873,21 +873,21 @@ DERIVED = {
     'eastward_seawater_velocity': {
         'long_name': 'Eastward Seawater Velocity',
         'comment': ('Eastward sea water velocity component in Earth coordinates corrected for magnetic declination ' +
-                    'and scaled to standard units of m/s.'),
+                    'and scaled to standard units of m s-1.'),
         'standard_name': 'eastward_sea_water_velocity',
         'data_product_identifier': 'VELPROF-VLE_L1',
         'ancillary_variables': 'eastward_seawater_velocity_est, northward_seawater_velocity_est, time, lat, lon, z',
-        'units': 'm/s',
+        'units': 'm s-1',
         '_FillValue': np.nan
     },
     'northward_seawater_velocity': {
         'long_name': 'Northward Seawater Velocity',
         'comment': ('Northward sea water velocity component in Earth coordinates corrected for magnetic declination ' +
-                    'and scaled to standard units of m/s.'),
+                    'and scaled to standard units of m s-1.'),
         'standard_name': 'northward_sea_water_velocity',
         'data_product_identifier': 'VELPROF-VLN_L1',
         'ancillary_variables': 'eastward_seawater_velocity_est, northward_seawater_velocity_est, time, lat, lon, z',
-        'units': 'm/s',
+        'units': 'm s-1',
         '_FillValue': np.nan
     },
 }

@@ -40,7 +40,7 @@ def main(argv=None):
 
     # load the json data file as a json formatted object for further processing
     data = json2obj(infile)
-    if not data:
+    if data.empty:
         # json data file was empty, exiting
         return None
 

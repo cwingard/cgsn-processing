@@ -6,70 +6,337 @@
 @author Christopher Wingard
 @brief Attributes for the CTDBP variables
 """
-CTDBP = {
+import numpy as np
+
+GLOBAL = {
+    # global attributes
+    'global': {
+        'title': 'Conductivity, Temperature and Depth (CTD) Data',
+        'summary': 'Moored CTD time series data sets.',
+        'project': 'Ocean Observatories Initiative',
+        'institution': 'Coastal and Global Scale Nodes (CGSN)',
+        'acknowledgement': 'National Science Foundation',
+        'references': 'http://oceanobservatories.org',
+        'creator_name': 'Ocean Observatories Initiative',
+        'creator_email': 'helpdesk@oceanobservatories.org',
+        'creator_url': 'http://oceanobservatories.org',
+        'featureType': 'timeSeries',
+        'cdm_data_type': 'Station',
+        'Conventions': 'CF-1.6'
+    },
     'deploy_id': {
         'long_name': 'Deployment ID',
-        'standard_name': 'deployment_id',
-        'units': '1',
-        'coordinates': 'time z longitude latitude',
-        'grid_mapping': 'crs',
-        'platform': 'platform',
-        'ancillary_variables': 'platform',
-        'coverage_content_type': 'physicalMeasurement'
+        'comment': ('Mooring deployment ID. Useful for differentiating data by deployment, ' +
+                    'allowing for overlapping deployments in the data sets.')
     },
-    'dcl_date_time_string': {
-        'long_name': 'DCL Date and Time Stamp',
-        'standard_name': 'dcl_date_time_string',
-        'units': '1',
-        'coordinates': 'time z longitude latitude',
-        'grid_mapping': 'crs',
-        'platform': 'platform',
-        'ancillary_variables': 'platform',
-        'coverage_content_type': 'physicalMeasurement'
+    'station': {
+        'cf_role': 'timeseries_id',
+        'long_name': 'Station Identifier'
     },
-    'ctd_date_time_string': {
-        'long_name': 'CTD Date and Time Stamp',
-        'standard_name': 'ctd_date_time_string',
-        'units': '1',
-        'coordinates': 'time z longitude latitude',
-        'grid_mapping': 'crs',
-        'platform': 'platform',
-        'ancillary_variables': 'platform',
-        'coverage_content_type': 'physicalMeasurement'
+    'time': {
+        'long_name': 'Time',
+        'standard_name': 'time',
+        'units': 'seconds since 1970-01-01 00:00:00.00',
+        'axis': 'T',
+        'calendar': 'gregorian',
+        'comment': ('Derived from either the DCL data logger GPS referenced clock, or the internal instrument clock ' +
+                    'if this is an IMM hosted instrument. For instruments attached to a DCL, the instrument''s ' +
+                    'internal clock is cross-compared to the GPS clock to determine the internal clock''s time ' +
+                    'offset and drift.')
     },
-    'temperature': {
-        'units': 'degrees_Celsius'
+    'lon': {
+        'long_name': 'Longitude',
+        'standard_name': 'longitude',
+        'units': 'degrees_east',
+        'axis': 'X',
+        'comment': ('Mooring deployment location, surveyed after deployment to determine the anchor location and ' +
+                    'the center of the watch circle.')
+    },
+    'lat': {
+        'long_name': 'Latitude',
+        'standard_name': 'latitude',
+        'units': 'degrees_north',
+        'axis': 'Y',
+        'comment': ('Mooring deployment location, surveyed after deployment to determine the anchor location and ' +
+                    'the center of the watch circle.')
+    },
+    'z': {
+        'long_name': 'Depth',
+        'standard_name': 'depth',
+        'units': 'm',
+        'comment': 'Instrument deployment depth',
+        'positive': 'down',
+        'axis': 'Z'
+    }
+}
+
+CTDBP = {
+    # attributes for all instances of the CTDBP, regardless of system used to log data or instrument(s) attached.
+    # --> reported values
+    'sensor_time': {
+        'long_name': 'CTD Date and Time',
+        'standard_name': 'time',
+        'units': 'seconds since 1970-01-01 00:00:00.00',
+        'comment': ('Internal CTD clock date and time stamp, recorded when the instrument begins the measurement. It ' +
+                    'is expected that this value will drift from the true time by some amount over the course of ' +
+                    'a deployment. Cross-comparisons to other systems will be required to account for the offset ' +
+                    'and drift.'),
+        'calendar': 'gregorian'
     },
     'conductivity': {
-        'units': 'S/m'
+        'long_name': 'Sea Water Conductivity',
+        'standard_name': 'sea_water_electrical_conductivity',
+        'units': 'mS cm-1',
+        'comment': ('Sea water conductivity refers to the ability of seawater to conduct electricity. The presence ' +
+                    'of ions, such as salt, increases the electrical conducting ability of seawater. As such, ' +
+                    'conductivity can be used as a proxy for determining the quantity of salt in a sample of ' +
+                    'seawater.'),
+        'data_product_identifier': 'CONDWAT_L1',
+        '_FillValue': np.nan
+    },
+    'temperature': {
+        'long_name': 'Sea Water Temperature',
+        'standard_name': 'sea_water_temperature',
+        'units': 'degrees_Celsius',
+        'comment': 'Sea water temperature is the in situ temperature of the sea water.',
+        'data_product_identifier': 'TEMPWAT_L1',
+        '_FillValue': np.nan
     },
     'pressure': {
-        'units': 'dbar'
+        'long_name': 'Seawater Pressure',
+        'standard_name': 'sea_water_pressure_due_to_sea_water',
+        'units': 'dbar',
+        'comment': ('Seawater Pressure refers to the pressure exerted on a sensor in situ by the weight of the ' +
+                    'column of seawater above it. It is calculated by subtracting one standard atmosphere from the ' +
+                    'absolute pressure at the sensor to remove the weight of the atmosphere on top of the water ' +
+                    'column. The pressure at a sensor in situ provides a metric of the depth of that sensor.'),
+        'data_product_identifier': 'PRESWAT_L1',
+        '_FillValue': np.nan
     },
-    'oxygen_concentration': {
-        'units': 'umol/L'
-    },
-    'raw_backscatter': {
-        'units': 'counts'
-    },
-    'raw_chlorophyll': {
-        'units': 'counts'
-    },
-    'raw_cdom': {
-        'units': 'counts'
-    },
-    'psu': {
+    # --> derived values
+    'salinity': {
         'long_name': 'Practical Salinity',
-        'standard_name': 'sea_water_salinity',
+        'standard_name': 'sea_water_practical_salinity',
         'units': '1',
-        'valid_min': '0',
-        'valid_max': '40'
+        'comment': ('Salinity is generally defined as the concentration of dissolved salt in a parcel of sea water. ' +
+                    'Practical Salinity is a more specific unitless quantity calculated from the conductivity of ' +
+                    'sea water and adjusted for temperature and pressure. It is approximately equivalent to Absolute ' +
+                    'Salinity (the mass fraction of dissolved salt in sea water), but they are not interchangeable.'),
+        'data_product_identifier': 'PRACSAL_L2',
+        'ancillary_variables': 'conductivity, temperature, pressure',
+        '_FillValue': np.nan
     },
-    'rho': {
-        'long_name': 'In-Situ Seawater Density',
+    'density': {
+        'long_name': 'In-Situ Sea Water Density',
         'standard_name': 'sea_water_density',
         'units': 'kg m-3',
-        'valid_min': '0',
-        'valid_max': '35'
-    }
+        'comment': ('Sea water Density is the in situ density and is defined as mass per unit volume. It is ' +
+                    'calculated from the conductivity, temperature and depth of a sea water sample.'),
+        'data_product_identifier': 'DENSITY_L2',
+        'ancillary_variables': 'lon, lat, salinity, temperature, pressure',
+        '_FillValue': np.nan
+    },
+
+    # attributes associated with the status message output from a CTDBP connected to an inductive modem (IMM)
+    'status_time': {
+        'long_name': 'Status Update Time',
+        'units': 'seconds since 1970-01-01 00:00:00.00',
+        'comment': 'Date and time the CTD status was queried.',
+        'calendar': 'gregorian',
+        '_FillValue': np.nan
+    },
+    'serial_number': {
+        'long_name': 'Serial Number',
+        # 'units': ''    # deliberately left blank, no units for this value
+        'comment': 'Instrument serial number.',
+        '_FillValue': -9999999,
+    },
+    'main_battery_voltage': {
+        'long_name': 'Main Battery Voltage',
+        'units': 'V',
+        'comment': 'Voltage of either the internal battery pack or externally supplied power, whichever is greater.',
+        '_FillValue': np.nan
+    },
+    'lithium_battery_voltage': {
+        'long_name': 'Lithium Battery Voltage',
+        'units': 'V',
+        'comment': 'Voltage of the internal battery cell, used to maintain the clock and firmware settings.',
+        '_FillValue': np.nan
+    },
+    'samples_recorded': {
+        'long_name': 'Number of Samples Recorded',
+        'units': 'counts',
+        'comment': 'Number of samples recorded during the deployment',
+        '_FillValue': -9999999
+    },
+    'sample_slots_free': {
+        'long_name': 'Number of Free Sample Slots Remaining',
+        'units': 'counts',
+        'comment': 'Number of free samples available for recording, representing the memory available in the unit',
+        '_FillValue': -9999999
+    },
+    'main_current': {
+        'long_name': 'Main Current',
+        'units': 'mA',
+        'comment': 'Total current draw on the system, encompassing all functions and external sensors.',
+        '_FillValue': np.nan
+    },
+    'pump_current': {
+        'long_name': 'Pump Current',
+        'units': 'mA',
+        'comment': 'Current draw from the system by the external pump.',
+        '_FillValue': np.nan
+    },
+    'oxy_current': {
+        'long_name': 'Oxygen Sensor Current',
+        'units': 'mA',
+        'comment': 'Current draw from the system by the external optode oxygen (DOSTA) sensor.',
+        '_FillValue': np.nan
+    },
+    'flr_current': {
+        'long_name': 'Fluorometer Sensor Current',
+        'units': 'mA',
+        'comment': 'Current draw from the system by the external two-channel fluorometer (FLORD) sensor.',
+        '_FillValue': np.nan
+    },
+
+    # attributes associated with a CTDBP hosted by a DCL
+    'time_offset': {
+        'long_name': 'Internal Clock Offset',
+        'units': 'seconds',
+        'comment': ('Difference between the internal CTD clock and the external GPS-based data logger (DCL) clock. ' +
+                    'Can be used to determine instrument clock offset and drift over the course of a deployment'),
+        'ancillary_variables': 'sensor_time, time'
+    },
+
+    # Values recorded by the different CTDBP configurations
+    # --> equipped with an optode (DOSTA)
+    'raw_oxygen_phase': {
+        'long_name': 'Raw Optode Phase',
+        'units': 'V',
+        'comment': ('The optode measures oxygen by exciting a special platinum porphyrin complex embedded in a ' +
+                    'gas permeable foil with modulated blue light. The Optode measures the phase shift of a ' +
+                    'returned red light. By linearizing and temperature compensating, with an incorporated ' +
+                    'temperature sensor, the absolute O2 concentration is determined. This value is recorded by the ' +
+                    'CTD as an analog voltage signal.'),
+        'data_product_identifier': 'DOCONCS-VLT_L0',
+        '_FillValue': np.nan
+    },
+    'oxygen_phase': {
+        'long_name': 'Optode Calibrated Phase',
+        'units': 'degrees',
+        'comment': ('Calibrated phase shift, measurement reported in degrees, of the red light when the sensing ' +
+                    'foil is excited with modulated blue light.'),
+        'data_product_identifier': 'DOCONCS-DEG_L0',
+        'ancillary_variables': 'raw_oxygen_phase',
+        '_FillValue': np.nan
+    },
+    'raw_oxygen_thermistor': {
+        'long_name': 'Raw Optode Thermistor',
+        'units': 'V',
+        'comment': ('The optode includes an integrated internal thermistor to measure the temperature at ' +
+                    'the sensing foil. This value is recorded by the CTD as an analog voltage signal.'),
+        '_FillValue': np.nan
+    },
+    'oxygen_thermistor_temperature': {
+        'long_name': 'Optode Thermistor Temperature',
+        'standard_name': 'temperature_of_sensor_for_oxygen_in_sea_water',
+        'units': 'degrees_Celsius',
+        'comment': ('Optode internal thermistor temperature used in calculation of the absolute oxygen ' +
+                    'concentration. This is not the in situ sea water temperature, though it will be very close.'),
+        'ancillary_variables': 'raw_oxygen_thermistor',
+        '_FillValue': np.nan
+    },
+    'oxygen_concentration': {
+        'long_name': 'Dissolved Oxygen Concentration',
+        'standard_name': 'mole_concentration_of_dissolved_molecular_oxygen_in_sea_water',
+        'units': 'umol L-1',
+        'comment': ('Mole concentration of dissolved oxygen per unit volume, also known as Molarity, as measured by ' +
+                    'an optode oxygen sensor.'),
+        'data_product_identifier': 'DOCONCS-L1',
+        'ancillary_variables': 'oxygen_phase, oxygen_thermistor',
+        '_FillValue': np.nan
+    },
+    'oxygen_concentration_corrected': {
+        'long_name': 'Corrected Dissolved Oxygen Concentration',
+        'standard_name': 'moles_of_oxygen_per_unit_mass_in_sea_water',
+        'units': 'umol kg-1',
+        'comment': ('Dissolved oxygen concentration corrected for the effects of density and salinity on the ' +
+                    'sensor, and reported as the mole concentration per unit mass.'),
+        'data_product_identifier': 'DOXYGEN_L2',
+        'ancillary_variables': 'oxygen_concentration, pressure, temperature, salinity, lat, lon',
+        '_FillValue': np.nan
+    },
+
+    # --> with WET Labs ECO Triplet (FLORT)
+    'raw_backscatter': {
+        'long_name': 'Raw Optical Backscatter',
+        'units': 'counts',
+        'comment': 'Raw optical backscatter at 700 nm measurements as recorded by the CTD.',
+        'data_product_identifier': 'FLUBSCT_L0',
+        '_FillValue': -9999999
+    },
+    'raw_chlorophyll': {
+        'long_name': 'Raw Chlorophyll Fluorescence',
+        'units': 'counts',
+        'comment': ('Raw chlorophyll fluorescence (470 nm excitation/ 695 nm emission) measurements as recorded by ' +
+                    'the CTD.'),
+        'data_product_identifier': 'CHLAFLO_L0',
+        '_FillValue': -9999999
+    },
+    'raw_cdom': {
+        'long_name': 'Raw CDOM Fluorescence',
+        'units': 'counts',
+        'comment': ('Raw chromophoric dissolved organic matter (CDOM) fluorescence (370 nm excitation/ 460 nm ' +
+                    'emission) measurements as recorded by the CTD.'),
+        'data_product_identifier': 'CDOMFLO_L0',
+        '_FillValue': -9999999
+    },
+    'estimated_chlorophyll': {
+        'long_name': 'Estimated Chlorophyll Concentration',
+        'standard_name': 'mass_concentration_of_chlorophyll_in_sea_water',
+        'units': 'ug L-1',
+        'comment': ('Estimated chlorophyll concentration based upon a calibration curve derived from a fluorescent ' +
+                    'proxy approximately equal to 25 ug/L of a Thalassiosira weissflogii phytoplankton culture. ' +
+                    'This measurement is considered to be an estimate only of the true chlorophyll concentration.'),
+        'data_product_identifier': 'CHLAFLO_L1',
+        'ancillary_variables': 'raw_chlorophyll',
+        '_FillValue': np.nan
+    },
+    'fluorometric_cdom': {
+        'long_name': 'Fluorometric CDOM Concentration',
+        'standard_name': ('concentration_of_colored_dissolved_organic_matter_in_sea_water_expressed_as_equivalent_' +
+                          'mass_fraction_of_quinine_sulfate_dihydrate'),
+        'units': 'ppb',
+        'comment': ('More commonly referred to as Chromophoric Dissolved Organic Matter (CDOM). CDOM plays an ' +
+                    'important role in the carbon cycling and biogeochemistry of coastal waters. It occurs naturally ' +
+                    'in aquatic environments primarily as a result of tannins released from decaying plant and ' +
+                    'animal matter, and can enter coastal areas in river run-off containing organic materials ' +
+                    'leached from soils.'),
+        'data_product_identifier': 'CDOMFLO_L1',
+        'ancillary_variables': 'raw_cdom',
+        '_FillValue': np.nan
+    },
+    'beta_700': {
+        'long_name': 'Volume Scattering Function at 700 nm',
+        'standard_name': 'volume_scattering_function_of_radiative_flux_in_sea_water',
+        'units': 'm-1 sr-1',
+        'comment': ('Radiative flux is the sum of shortwave and longwave radiative fluxes. Scattering of radiation ' +
+                    'is its deflection from its incident path without loss of energy. The volume scattering function ' +
+                    'is the intensity (flux per unit solid angle) of scattered radiation per unit length of ' +
+                    'scattering medium, normalised by the incident radiation flux.'),
+        'data_product_identifier': 'FLUBSCT_L1',
+        'ancillary_variables': 'raw_backscatter',
+        '_FillValue': np.nan
+    },
+    'total_optical_backscatter': {
+        'long_name': 'Total Optical Backscatter at 700 nm',
+        'standard_name': 'volume_backwards_scattering_coefficient_of_radiative_flux_in_sea_water',
+        'units': 'm-1',
+        'comment': ('Total (particulate + water) optical backscatter at 700 nm, derived from the Volume Scattering ' +
+                    'Function and corrected for effects of temperature and salinity.'),
+        'data_product_identifier': 'FLUBSCT_L2',
+        'ancillary_variables': 'beta_700, temperature, salinity',
+        '_FillValue': np.nan
+    },
 }

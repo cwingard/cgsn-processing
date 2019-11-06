@@ -34,13 +34,13 @@ DOSTA = {
         'units': '1'
     },
     'estimated_oxygen_concentration': {
-        'units': 'umol/L'
+        'units': 'umol L-1'
     },
     'estimated_oxygen_saturation': {
         'units': 'percent'
     },
     'optode_temperature': {
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'calibrated_phase': {
         'units': 'degree'

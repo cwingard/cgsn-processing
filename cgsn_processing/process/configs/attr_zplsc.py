@@ -61,7 +61,7 @@ ZPLSC = {
     },
     'temperature': {
         'long_name': 'Internal Temperature',
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'channel_1_freq': {
         'long_name': 'Frequency Channel 1',

@@ -6,97 +6,125 @@
 @author Christopher Wingard
 @brief Creates a NetCDF dataset for the CTDBP data from the JSON formatted data
 """
-import numpy as np
 import os
 import re
+import xarray as xr
 
 from gsw import SP_from_C, SA_from_SP, CT_from_t, rho
-from pyaxiom.netcdf.sensors import TimeSeries
 
-from cgsn_processing.process.common import inputs, json2df
-from cgsn_processing.process.configs.attr_ctdbp import CTDBP
+from cgsn_processing.process.common import ENCODING, inputs, dict_update, epoch_time, json2df, update_dataset
+from cgsn_processing.process.finding_calibrations import find_calibration
+from cgsn_processing.process.configs.attr_ctdbp import GLOBAL, CTDBP
+
+from cgsn_processing.process.proc_flort import Calibrations as FLORT_Calibrations
+
+from pyseas.data.do2_functions import do2_salinity_correction
+from pyseas.data.flo_functions import flo_scale_and_offset, flo_bback_total
 
 
 def main(argv=None):
     # load the input arguments
     args = inputs(argv)
     infile = os.path.abspath(args.infile)
-    outpath, outfile = os.path.split(args.outfile)
+    outfile = os.path.abspath(args.outfile)
     platform = args.platform
     deployment = args.deployment
     lat = args.latitude
     lon = args.longitude
     depth = args.depth
+    ctd_type = args.switch
+    ctd_type = ctd_type.lower()
 
-    # load the json data file and return a panda dataframe
-    df = json2df(infile)
-    if df.empty:
-        # there was no data in this file, ending early
+    if ctd_type not in ['solo', 'dosta', 'flort']:
+        raise ValueError('The CTDBP type must be a string set as either solo, dosta or flort (case insensitive).')
+
+    # load the json data file as a panda data frame for further processing
+    ctd = json2df(infile)
+    if ctd.empty:
+        # json data file was empty, exiting
         return None
 
-    df['depth'] = depth
-    df['deploy_id'] = deployment
+    ctd['sensor_time'] = epoch_time(ctd['ctd_date_time_string'].values[0])
+    ctd.drop(columns=['ctd_date_time_string', 'dcl_date_time_string'], inplace=True)
+
+    # add the deployment id, used to subset data sets
+    ctd['deploy_id'] = deployment
 
     # calculate the practical salinity of the seawater from the temperature and conductivity measurements
-    df['psu'] = SP_from_C(df['conductivity'] * 10.0, df['temperature'], df['pressure'])
+    ctd['salinity'] = SP_from_C(ctd['conductivity'] * 10.0, ctd['temperature'], ctd['pressure'])
+
     # calculate the in-situ density of the seawater from the absolute salinity and conservative temperature
-    sa = SA_from_SP(df['psu'], df['pressure'], lon, lat)                 # absolute salinity
-    ct = CT_from_t(sa, df['temperature'], df['pressure'])    # conservative temperature
-    df['rho'] = rho(sa, ct, df['pressure'])                              # density
+    sa = SA_from_SP(ctd['salinity'], ctd['pressure'], lon, lat)  # absolute salinity
+    ct = CT_from_t(sa, ctd['temperature'], ctd['pressure'])      # conservative temperature
+    ctd['density'] = rho(sa, ct, ctd['pressure'])                # density
 
-    # TODO: If CTD with attached FLORT, add code to convert raw counts to scientific units
+    if ctd_type in ['solo', 'dosta']:
+        if ctd_type == 'dosta':
+            # apply temperature, salinity and pressure corrections to dissolved oxygen measurement
+            ctd['oxygen_concentration_corrected'] = do2_salinity_correction(ctd['oxygen_concentration'],
+                                                                            ctd['pressure'],
+                                                                            ctd['temperature'], ctd['salinity'], lat,
+                                                                            lon)
+        # create an xarray data set from the data frame
+        ctd = xr.Dataset.from_dataframe(ctd)
 
-    # Setup the global attributes for the NetCDF file and create a timeseries object
-    global_attributes = {
-        'title': 'CTD Data Records',
-        'summary': (
-            'Records the CTD data, plus any attached sensors for the Mooring NSIF and MFN platforms'
-        ),
-        'project': 'Ocean Observatories Initiative',
-        'institution': 'Coastal and Global Scales Nodes, (CGSN)',
-        'acknowledgement': 'National Science Foundation',
-        'references': 'http://oceanobservatories.org',
-        'creator_name': 'Christopher Wingard',
-        'creator_email': 'cwingard@coas.oregonstate.edu',
-        'creator_url': 'http://oceanobservatories.org',
-        'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
-    }
-    ts = TimeSeries(
-        output_directory=outpath,
-        latitude=lat,
-        longitude=lon,
-        station_name=platform,
-        global_attributes=global_attributes,
-        times=df.time.values.astype(np.int64) * 10**-9,
-        verticals=df.depth.values,
-        output_filename=outfile,
-        vertical_positive='down')
+        # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
+        attrs = dict_update(GLOBAL, CTDBP)
+        ctd = update_dataset(ctd, platform, deployment, lat, lon, [depth, depth, depth], attrs)
 
-    # add the data from the data frame and set the attributes
-    nc = ts._nc     # create a netCDF4 object from the TimeSeries object
+        # save the data
+        ctd.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
 
-    for c in df.columns:
-        # skip the coordinate variables, if present, already added above via TimeSeries
-        if c in ['time', 'latitude', 'longitude', 'depth']:
-            # print("Skipping axis '{}' (already in file)".format(c))
-            continue
+    if ctd_type == 'flort':
+        # create an xarray data set from the data frame
+        ctd_raw = xr.Dataset.from_dataframe(ctd)
 
-        # create the netCDF.Variable object for the date/time string
-        if c in ['dcl_date_time_string', 'ctd_date_time_string']:
-            d = nc.createVariable(c, 'S23', ('time',))
-            d.setncatts(CTDBP[c])
-            d[:] = df[c].values
-        elif c == 'deploy_id':
-            d = nc.createVariable(c, 'S6', ('time',))
-            d.setncatts(CTDBP[c])
-            d[:] = df[c].values
+        # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
+        attrs = dict_update(GLOBAL, CTDBP)
+        ctd_raw = update_dataset(ctd_raw, platform, deployment, lat, lon, [depth, depth, depth], attrs)
+
+        # save the data file with raw FLORT values
+        outfile = re.sub('.nc$', '_raw.nc', outfile)
+        ctd_raw.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+
+        # now grab the calibration coefficients for the FLORT (if they exist)
+        flort_coeff = os.path.join(os.path.dirname(infile), 'ctdbp-flort.cal_coeffs.pkl')
+        flr = FLORT_Calibrations(flort_coeff)  # initialize calibration class
+        if os.path.isfile(flort_coeff):
+            # we always want to use this file if it exists
+            flr.load_coeffs()
         else:
-            # use the TimeSeries object to add the variables
-            ts.add_variable(c, df[c].values, fillvalue=-999999999, attributes=CTDBP[c])
+            # load from the CI hosted CSV files
+            csv_url = find_calibration('FLORT', args.serial, (ctd.time.values.astype('int64') * 10 ** -9)[0])
+            if csv_url:
+                flr.read_csv(csv_url)
+                flr.save_coeffs()
+            else:
+                # If we cannot find the calibration coefficients we are done, do not attempt to create a processed file
+                print('A source for the FLORT calibration coefficients for {} could not be found.', args.serial)
+                return None
 
-    # synchronize the data with the netCDF file and close it
-    nc.sync()
-    nc.close()
+        ctd['estimated_chlorophyll'] = flo_scale_and_offset(ctd['raw_chlorophyll'], flr.coeffs['dark_chla'],
+                                                            flr.coeffs['scale_chla'])
+        ctd['fluorometric_cdom'] = flo_scale_and_offset(ctd['raw_cdom'], flr.coeffs['dark_cdom'],
+                                                        flr.coeffs['scale_cdom'])
+        ctd['beta_700'] = flo_scale_and_offset(ctd['raw_backscatter'], flr.coeffs['dark_beta'],
+                                               flr.coeffs['scale_beta'])
+        ctd['total_optical_backscatter'] = flo_bback_total(ctd['beta_700'], ctd['temperature'], ctd['salinity'],
+                                                           flr.coeffs['scatter_angle'], flr.coeffs['wavelength'],
+                                                           flr.coeffs['chi_factor'])
+
+        # create an xarray data set from the data frame
+        ctd_proc = xr.Dataset.from_dataframe(ctd)
+
+        # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
+        attrs = dict_update(GLOBAL, CTDBP)
+        ctd_proc = update_dataset(ctd_proc, platform, deployment, lat, lon, [depth, depth, depth], attrs)
+
+        # save the processed data
+        outfile = re.sub('_raw.nc$', '_proc.nc', outfile)
+        ctd_proc.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+
 
 if __name__ == '__main__':
     main()

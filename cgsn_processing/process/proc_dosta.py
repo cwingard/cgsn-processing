@@ -6,14 +6,52 @@
 @author Christopher Wingard
 @brief Creates a NetCDF dataset for the dissolved oxygen from the JSON formatted source data
 """
+import json
 import numpy as np
 import os
+import pandas as pd
 import re
 
 from pyaxiom.netcdf.sensors import TimeSeries
 
-from cgsn_processing.process.common import inputs, json2df
+from cgsn_processing.process.common import Coefficients, inputs, json2df
 from cgsn_processing.process.configs.attr_dosta import DOSTA
+
+
+class Calibrations(Coefficients):
+    def __init__(self, coeff_file, csv_url=None):
+        """
+        Loads the DOSTA factory and secondary 2-point calibration coefficients. Values come from either a serialized
+        object created per instrument and deployment (calibration coefficients do not change in the middle of a
+        deployment), or from parsed CSV files maintained on GitHub by the OOI CI team.
+        """
+        # assign the inputs
+        Coefficients.__init__(self, coeff_file)
+        self.csv_url = csv_url
+        self.coeffs = {}
+
+    def read_csv(self, csv_url):
+        """
+        Reads the values from a DOSTA calibration file already parsed and stored on Github as a CSV file. Note,
+        the formatting of those files puts some constraints on this process. If someone has a cleaner method,
+        I'm all in favor...
+        """
+        # create the device file dictionary and assign values
+        coeffs = {}
+
+        # read in the calibration data
+        cal = pd.read_csv(csv_url, usecols=[0, 1, 2])
+        for idx, row in cal.iterrows():
+            # scale and offset correction factors from a two-point calibration
+            if row[1] == 'CC_conc_coef':
+                coeffs['two_point_coeffs'] = np.array(json.loads(row[2]))
+
+            # Stern-Volmer-Uchida calibration coefficients from a multipoint factory calibration
+            if row[1] == 'CC_csv':
+                coeffs['svu_cal_coeffs'] = np.array(json.loads(row[2]))
+
+        # save the resulting dictionary
+        self.coeffs = coeffs
 
 
 def main(argv=None):

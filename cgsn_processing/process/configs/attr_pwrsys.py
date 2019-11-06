@@ -180,7 +180,7 @@ PWRSYS = {
     'battery_bank1_temperature': {
         'long_name': 'Battery Bank 1 Temperature',
         'standard_name': 'battery_bank_1_temperature',
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'battery_bank1_voltage': {
         'long_name': 'Battery Bank 1 Voltage',
@@ -195,7 +195,7 @@ PWRSYS = {
     'battery_bank2_temperature': {
         'long_name': 'Battery Bank 2 Temperature',
         'standard_name': 'battery_bank_2_temperature',
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'battery_bank2_voltage': {
         'long_name': 'Battery Bank 2 Voltage',
@@ -210,7 +210,7 @@ PWRSYS = {
     'battery_bank3_temperature': {
         'long_name': 'Battery Bank 3 Temperature',
         'standard_name': 'battery_bank_2_temperature',
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'battery_bank3_voltage': {
         'long_name': 'Battery Bank 3 Voltage',
@@ -225,7 +225,7 @@ PWRSYS = {
     'battery_bank4_temperature': {
         'long_name': 'Battery Bank 4 Temperature',
         'standard_name': 'battery_bank_4_temperature',
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'battery_bank4_voltage': {
         'long_name': 'Battery Bank 4 Voltage',
@@ -260,7 +260,7 @@ PWRSYS = {
     'internal_temperature': {
         'long_name': 'Internal Temperature',
         'standard_name': 'Internal Temperature',
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'fuel_cell_volume': {
         'long_name': 'Fuel Cell Volume',
@@ -305,7 +305,7 @@ PWRSYS = {
     'cvt_temperature': {
         'long_name': 'CVT Temperature',
         'standard_name': 'cvt_temperature',
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'error_flag3': {
         'long_name': 'Error Flag 3',

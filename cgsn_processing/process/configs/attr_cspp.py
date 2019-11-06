@@ -64,7 +64,7 @@ CSPP_CTDPF = {
     'temperature': {
         'long_name': 'Sea Water Temperature',
         'standard_name': 'sea_water_temperature',
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'pressure': {
         'long_name': 'Sea Water Pressure',
@@ -73,7 +73,7 @@ CSPP_CTDPF = {
     },
     'salinity': {
         'long_name': 'Practical Salinity',
-        'standard_name': 'sea_water_salinity',
+        'standard_name': 'sea_water_practical_salinity',
         'units': '1',
     },
     'in_situ_density': {
@@ -105,7 +105,7 @@ CSPP_DOSTA = {
         'units': 'percent'
     },
     'optode_temperature': {
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'calibrated_phase': {
         'units': 'degree'
@@ -181,12 +181,12 @@ CSPP_FLORT = {
     'temperature': {
         'long_name': 'Sea Water Temperature',
         'standard_name': 'sea_water_temperature',
-        'units': 'degree_Celsius',
+        'units': 'degrees_Celsius',
         'comment': 'Interpolated into record from co-located CTD'
     },
     'salinity': {
         'long_name': 'Practical Salinity',
-        'standard_name': 'sea_water_salinity',
+        'standard_name': 'sea_water_practical_salinity',
         'units': '1',
         'comment': 'Interpolated into record from co-located CTD'
     },
@@ -243,13 +243,13 @@ CSPP_NUTNR = {
         'units': 'counts'
     },
     'temperature_internal': {
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'temperature_spectrometer': {
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'temperature_lamp': {
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'lamp_on_time': {
         'units': 's'
@@ -287,12 +287,12 @@ CSPP_NUTNR = {
     'temperature': {
        'long_name': 'Sea Water Temperature',
        'standard_name': 'sea_water_temperature',
-       'units': 'degree_Celsius',
+       'units': 'degrees_Celsius',
        'comment': 'Interpolated into record from co-located CTD'
     },
     'salinity': {
         'long_name': 'Practical Salinity',
-        'standard_name': 'sea_water_salinity',
+        'standard_name': 'sea_water_practical_salinity',
         'units': '1',
         'comment': 'Interpolated into record from co-located CTD'
     },
@@ -343,7 +343,7 @@ CSPP_OPTAA = {
     'external_temp': {
         'long_name': 'In-Situ Temperature',
         'standard_name': 'seawater_temperature',
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'internal_temp_raw': {
         'long_name': 'Raw Internal Temperature',
@@ -351,7 +351,7 @@ CSPP_OPTAA = {
     },
     'internal_temp': {
         'long_name': 'Instrument Temperature',
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'c_reference_dark': {
         'long_name': 'C Channel Dark Reference',
@@ -428,12 +428,12 @@ CSPP_OPTAA = {
     'temperature': {
         'long_name': 'Sea Water Temperature',
         'standard_name': 'sea_water_temperature',
-        'units': 'degree_Celsius',
+        'units': 'degrees_Celsius',
         'comment': 'Interpolated into record from co-located CTD'
     },
     'salinity': {
         'long_name': 'Practical Salinity',
-        'standard_name': 'sea_water_salinity',
+        'standard_name': 'sea_water_practical_salinity',
         'units': '1',
         'comment': 'Interpolated into record from co-located CTD'
     }
@@ -485,7 +485,7 @@ CSPP_SPKIR = {
         'units': '1'
     },
     'internal_temperature': {
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'irradiance': {
         'long_name': 'Downwelling Spectral Irradiance',
@@ -523,7 +523,7 @@ CSPP_VELPT = {
         'units': 'dbar'
     },
     'temperature': {
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'velocity_east': {
         'units': 'cm s-1'
@@ -565,7 +565,7 @@ CSPP_WINCH = {
         'units': 'cm s-1'
     },
     'temperature': {
-        'units': 'degree_Celsius'
+        'units': 'degrees_Celsius'
     },
     'voltage': {
         'units': 'V'
