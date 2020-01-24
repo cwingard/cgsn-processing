@@ -31,7 +31,7 @@ def main(argv=None):
     lat = args.latitude
     lon = args.longitude
     depth = args.depth
-    if args.dev_file:
+    if args.devfile:
         ctd_name = args.devfile  # name of co-located CTD
     else:
         ctd_name = None
@@ -138,7 +138,8 @@ def main(argv=None):
     }, coords={'time': data['time'], 'measurements': np.arange(0, 23).astype('int32')})
 
     # merge the data sets together and create the final data set with full attributes
-    pH = xr.merge([data, ds])
+    data_dataset = xr.Dataset.from_dataframe(data)
+    pH = xr.merge([data_dataset, ds])
     attrs = dict_update(GLOBAL, PHSEN)      # merge global pH attribute dictionaries into a single dictionary
     pH = update_dataset(pH, platform, deployment, lat, lon, [depth, depth, depth], attrs)
 
