@@ -704,8 +704,9 @@ PD8 = {
         'units': 'degrees'
     },
     'temperature': {
-        'long_name': 'Transducer Temperature',
-        'comment': 'Measured temperature at the transducer face.',
+        'long_name': 'Sea Water Temperature',
+        'standard_name': 'sea_water_temperature',
+        'comment': 'In-situ sea water temperature measured at the transducer face.',
         'units': 'degrees_Celsius'
     },
 
@@ -795,6 +796,90 @@ PD8 = {
                     'This is the raw measurement used to calculate the echo intensity data product for the beam.'),
         'data_product_identifier': 'ECHOINT-B4_L0',
         'units': 'counts'
+    }
+}
+
+PD12 = {
+    'imm_record_number': {
+        'long_name': 'IMM Record Number',
+        'comment': 'Inductive modem record number',
+        # 'units': ''    # deliberately left blank, no units for this value
+    },
+    'ensemble_number': {
+        'long_name': 'Ensemble Number',
+        'comment': 'Sequential number of the ensemble to which the data applies',
+        # 'units': ''    # deliberately left blank, no units for this value
+    },
+    'firmware_version': {
+        'long_name': 'Firmware Version',
+        'comment': 'Version number of current CPU firmware',
+        # 'units': ''    # deliberately left blank, no units for this value
+    },
+    'firmware_revision': {
+        'long_name': 'Firmware Revision',
+        'comment': 'Revision number of current CPU firmware',
+        # 'units': ''    # deliberately left blank, no units for this value
+    },
+    'heading': {
+        'long_name': 'Heading',
+        'comment': 'Measured heading of the ADCP, uncorrected for magnetic declination',
+        'units': 'degrees'
+    },
+    'pitch': {
+        'long_name': 'Pitch',
+        'comment': 'Measured pitch of the ADCP.',
+        'units': 'degrees'
+    },
+    'roll': {
+        'long_name': 'Roll',
+        'comment': 'Measured roll of the ADCP',
+        'units': 'degrees'
+    },
+    'temperature': {
+        'long_name': 'Sea Water Temperature',
+        'standard_name': 'sea_water_temperature',
+        'comment': 'In-situ sea water temperature measured at the transducer face.',
+        'units': 'degrees_Celsius'
+    },
+    'pressure': {
+        'long_name': 'Seawater Pressure',
+        'standard_name': 'sea_water_pressure_due_to_sea_water',
+        'comment': 'ADCP pressure sensor value. Reported in decaPascals',
+        'units': 'daPa'
+    },
+
+    # velocity packets
+    'eastward_seawater_velocity_est': {
+        'long_name': 'Estimated Eastward Seawater Velocity',
+        'comment': ('A velocity profile includes water velocity (speed & direction) throughout the depth range of an ' +
+                    'ADCP sensor. This instance is the eastward seawater velocity component uncorrected for magnetic ' +
+                    'declination as reported by the instrument. Considered an estimate of the true eastward velocity ' +
+                    'component while uncorrected for magnetic declination.'),
+        'standard_name': 'eastward_sea_water_velocity',
+        'data_product_identifier': 'VELPROF-VLE_L0',
+        'units': 'mm s-1',
+        '_FillValue': np.int32(-32768)
+    },
+    'northward_seawater_velocity_est': {
+        'long_name': 'Estimated Northward Seawater Velocity',
+        'comment': ('A velocity profile includes water velocity (speed & direction) throughout the depth range of an ' +
+                    'ADCP sensor. This instance is the northward seawater velocity component uncorrected for ' +
+                    'magnetic declination as reported by the instrument. Considered an estimate of the true ' +
+                    'northward velocity component while uncorrected for magnetic declination.'),
+        'standard_name': 'northward_sea_water_velocity',
+        'data_product_identifier': 'VELPROF-VLN_L0',
+        'units': 'mm s-1',
+        '_FillValue': np.int32(-32768)
+    },
+    'vertical_seawater_velocity': {
+        'long_name': 'Vertical Seawater Velocity',
+        'comment': ('A velocity profile includes water velocity (speed & direction) throughout the depth range of an ' +
+                    'ADCP sensor. This instance is the vertical seawater velocity component as reported by the ' +
+                    'instrument'),
+        'standard_name': 'upward_sea_water_velocity',
+        'data_product_identifier': 'VELPROF-VLU_L0',
+        'units': 'mm s-1',
+        '_FillValue': np.int32(-32768)
     }
 }
 

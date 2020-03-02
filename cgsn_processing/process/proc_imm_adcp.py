@@ -12,8 +12,9 @@ import pandas as pd
 import xarray as xr
 
 from cgsn_processing.process.common import ENCODING, inputs, dict_update, dt64_epoch, epoch_time, json2obj, \
-    json_obj2df, colocated_ctd, update_dataset
+    update_dataset
 from cgsn_processing.process.configs.attr_adcp import ADCP, PD12, DERIVED
+from gsw.conversions import z_from_p
 from pyseas.data.generic_functions import magnetic_declination
 from pyseas.data.adcp_functions import magnetic_correction, adcp_bin_depths
 
@@ -27,6 +28,7 @@ def main(argv=None):
     deployment = args.deployment
     lat = args.latitude
     lon = args.longitude
+    depth = args.depth
 
     # arguments for calculating the bin_depths
     bin_size = args.bin_size
@@ -46,70 +48,50 @@ def main(argv=None):
     df['deploy_id'] = deployment
     glbl = xr.Dataset.from_dataframe(df)
 
+    # drop real-time clock values (already used to create the time variable) and the unit ID (only used if more
+    # than 1 ADCP is installed on the IMM chain.
+    for k in ['year', 'month', 'day', 'hour', 'minute', 'second', 'csecond', 'unit_id']:
+        del data[k]
+
     # determine the magnetic declination for later use in correcting the eastward and northward velocity components
     theta = magnetic_declination(lat, lon, time)
 
-    # convert the pressure record to meters from kPa
-    depth = data['pressure']
+    # convert the ADCP pressure record to depth in meters (positive down from surface) from daPa
+    depth_m = -1 * z_from_p(np.array(data['pressure']) / 1000., lat)
 
-    # calculate the bin_depths
+    # calculate the bin depths
+    bin_size = bin_size * data['subsample'][0]
+    blanking_distance = blanking_distance * data['start_bin'][0]
     num_bins = data['bins'][0]
-    bin_depths = adcp_bin_depths(blanking_distance, bin_size, num_bins, 1, depth)
-
-    # remap the bin_depths to a 2D array to correspond to the time and bin_number coordinate axes.
-    bin_depths = bin_depths.repeat(time.size, axis=0)
+    bin_number = np.array(range(1, num_bins))
+    bin_depths = adcp_bin_depths(blanking_distance, bin_size, bin_number, 1, depth_m)
 
     # create the bin depths data set
     bd = xr.Dataset({
         'bin_depths': (['time', 'bin_number'], bin_depths)
-    }, coords={'time': (['time'], pd.to_datetime(time, unit='s')), 'bin_number': num_bins})
+    }, coords={'time': (['time'], pd.to_datetime(time, unit='s')), 'bin_number': bin_number})
 
     # correct the eastward and northward velocity components for magnetic declination
-    u_cor, v_cor = magnetic_correction(theta, np.array(data['velocity']['eastward']),
-                                       np.array(data['velocity']['northward']))
+    u_cor, v_cor = magnetic_correction(theta, np.array(data['eastward_velocity']), np.array(data['northward_velocity']))
 
     # create the 2D velocity and echo intensity data sets
     vel = xr.Dataset({
-        'seawater_velocity_direction_est': (['time', 'bin_number'],
-                                            np.array(data['velocity']['direction']).astype(np.float)),
-        'seawater_velocity_magnitude_est': (['time', 'bin_number'],
-                                            np.array(data['velocity']['magnitude']).astype(np.float)),
         'eastward_seawater_velocity_est': (['time', 'bin_number'],
-                                           np.array(data['velocity']['eastward']).astype(np.int32)),
-        'eastward_seawater_velocity': (['time', 'bin_number'], u_cor),
+                                           np.array(data['eastward_velocity']).astype(np.int32)),
+        'eastward_seawater_velocity': (['time', 'bin_number'], u_cor / 1000.),
         'northward_seawater_velocity_est': (['time', 'bin_number'],
-                                            np.array(data['velocity']['northward']).astype(np.int32)),
-        'northward_seawater_velocity': (['time', 'bin_number'], v_cor),
+                                            np.array(data['northward_velocity']).astype(np.int32)),
+        'northward_seawater_velocity': (['time', 'bin_number'], v_cor / 1000.),
         'vertical_seawater_velocity': (['time', 'bin_number'],
-                                       np.array(data['velocity']['vertical']).astype(np.int32)),
-        'error_velocity': (['time', 'bin_number'], np.array(data['velocity']['error']).astype(np.int32))
-    }, coords={'time': (['time'], pd.to_datetime(time, unit='s')),
-               'bin_number': bin_number})
-
-    echo = xr.Dataset({
-        'echo_intensity_beam1': (['time', 'bin_number'],
-                                 np.array(data['echo']['intensity_beam1']).astype(np.int32)),
-        'echo_intensity_beam2': (['time', 'bin_number'],
-                                 np.array(data['echo']['intensity_beam2']).astype(np.int32)),
-        'echo_intensity_beam3': (['time', 'bin_number'],
-                                 np.array(data['echo']['intensity_beam3']).astype(np.int32)),
-        'echo_intensity_beam4': (['time', 'bin_number'],
-                                 np.array(data['echo']['intensity_beam4']).astype(np.int32))
-    }, coords={'time': (['time'], pd.to_datetime(time, unit='s')),
-               'bin_number': bin_number})
-
-    back = xr.Dataset({
-        'backscatter_beam1': (['time', 'bin_number'], np.array(data['echo']['intensity_beam1']) * 0.45),
-        'backscatter_beam2': (['time', 'bin_number'], np.array(data['echo']['intensity_beam2']) * 0.45),
-        'backscatter_beam3': (['time', 'bin_number'], np.array(data['echo']['intensity_beam3']) * 0.45),
-        'backscatter_beam4': (['time', 'bin_number'], np.array(data['echo']['intensity_beam4']) * 0.45),
+                                       np.array(data['vertical_velocity']).astype(np.int32)),
+        'error_velocity': (['time', 'bin_number'], np.array(data['error_velocity']).astype(np.int32))
     }, coords={'time': (['time'], pd.to_datetime(time, unit='s')),
                'bin_number': bin_number})
 
     # combine it all into one data set
-    adcp = xr.merge([glbl, vbl, bd, vel, echo, back])
+    adcp = xr.merge([glbl, bd, vel])
     adcp['time'] = dt64_epoch(adcp.time)  # Convert from a datetime64 object to seconds since 1970
-    adcp_attrs = PD8    # use the PD8 attributes
+    adcp_attrs = PD12    # use the PD12 attributes
 
     # Compute the vertical extent of the data for the global metadata attributes
     vmax = adcp.bin_depths.max().values
