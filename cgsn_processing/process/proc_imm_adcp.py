@@ -1,22 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-@package cgsn_processing.process.proc_adcp
-@file cgsn_processing/process/proc_adcp.py
+@package cgsn_processing.process.proc_imm_adcp
+@file cgsn_processing/process/proc_imm_adcp.py
 @author Christopher Wingard
-@brief Creates a NetCDF dataset for ADCP from JSON formatted source data
+@brief Creates a NetCDF dataset for ADCP data recorded in PD12 format via an inductive modem link
 """
 import numpy as np
 import os
 import pandas as pd
 import xarray as xr
 
-from cgsn_processing.process.common import ENCODING, inputs, dict_update, dt64_epoch, epoch_time, json2obj, \
-    update_dataset
+from cgsn_processing.process.common import ENCODING, inputs, dict_update, dt64_epoch, json2obj, update_dataset
 from cgsn_processing.process.configs.attr_adcp import ADCP, PD12, DERIVED
 from gsw.conversions import z_from_p
 from pyseas.data.generic_functions import magnetic_declination
-from pyseas.data.adcp_functions import magnetic_correction, adcp_bin_depths
+from pyseas.data.adcp_functions import magnetic_correction, adcp_bin_depth
 
 
 def main(argv=None):
@@ -30,7 +29,7 @@ def main(argv=None):
     lon = args.longitude
     depth = args.depth
 
-    # arguments for calculating the bin_depths
+    # arguments for calculating the bin_depth
     bin_size = args.bin_size
     blanking_distance = args.blanking_distance
 
@@ -40,7 +39,7 @@ def main(argv=None):
         # json data file was empty, exiting
         return None
 
-    # create the time coordinate array and setup a data frame with the global values used above
+    # create the time coordinate array and setup a data set with the global values used above
     time = np.array(data['time'])
     df = pd.DataFrame()
     df['time'] = pd.to_datetime(time, unit='s')
@@ -49,7 +48,7 @@ def main(argv=None):
     glbl = xr.Dataset.from_dataframe(df)
 
     # drop real-time clock values (already used to create the time variable) and the unit ID (only used if more
-    # than 1 ADCP is installed on the IMM chain.
+    # than 1 ADCP is installed on the IMM chain).
     for k in ['year', 'month', 'day', 'hour', 'minute', 'second', 'csecond', 'unit_id']:
         del data[k]
 
@@ -60,15 +59,14 @@ def main(argv=None):
     depth_m = -1 * z_from_p(np.array(data['pressure']) / 1000., lat)
 
     # calculate the bin depths
-    bin_size = bin_size * data['subsample'][0]
     blanking_distance = blanking_distance * data['start_bin'][0]
     num_bins = data['bins'][0]
-    bin_number = np.array(range(1, num_bins))
-    bin_depths = adcp_bin_depths(blanking_distance, bin_size, bin_number, 1, depth_m)
+    bin_number = np.array(range(0, num_bins)) + 1
+    bin_depth = adcp_bin_depth(blanking_distance, bin_size, bin_number, 1, depth_m)
 
     # create the bin depths data set
     bd = xr.Dataset({
-        'bin_depths': (['time', 'bin_number'], bin_depths)
+        'bin_depth': (['time', 'bin_number'], bin_depth)
     }, coords={'time': (['time'], pd.to_datetime(time, unit='s')), 'bin_number': bin_number})
 
     # correct the eastward and northward velocity components for magnetic declination
@@ -88,17 +86,24 @@ def main(argv=None):
     }, coords={'time': (['time'], pd.to_datetime(time, unit='s')),
                'bin_number': bin_number})
 
-    # combine it all into one data set
-    adcp = xr.merge([glbl, bd, vel])
+    # convert the remaining data to a data set
+    df = pd.DataFrame(data)
+    df['time'] = pd.to_datetime(df.time, unit='s')
+    df.index = df['time']
+    ds = xr.Dataset.from_dataframe(df)
+    ds = ds.drop_vars(['start_bin', 'bins', 'northward_velocity', 'eastward_velocity', 'vertical_velocity',
+                       'error_velocity'])
+
+    # re-combine it all back into one data set
+    adcp = xr.merge([glbl, ds, bd, vel])
     adcp['time'] = dt64_epoch(adcp.time)  # Convert from a datetime64 object to seconds since 1970
-    adcp_attrs = PD12    # use the PD12 attributes
 
     # Compute the vertical extent of the data for the global metadata attributes
-    vmax = adcp.bin_depths.max().values
-    vmin = adcp.bin_depths.min().values
+    vmax = adcp.bin_depth.max().values
+    vmin = adcp.bin_depth.min().values
 
     # add to the global attributes for the ADCP
-    attrs = dict_update(ADCP, adcp_attrs)   # merge default and PD12
+    attrs = dict_update(ADCP, PD12)   # merge default and PD12
     attrs = dict_update(attrs, DERIVED)     # add the derived attributes
     adcp = update_dataset(adcp, platform, deployment, lat, lon, [depth, vmin, vmax], attrs)
 

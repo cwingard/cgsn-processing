@@ -16,7 +16,7 @@ from cgsn_processing.process.common import ENCODING, inputs, dict_update, dt64_e
 from cgsn_processing.process.configs.attr_adcp import ADCP, PD0, PD8, DERIVED
 from gsw import z_from_p
 from pyseas.data.generic_functions import magnetic_declination
-from pyseas.data.adcp_functions import magnetic_correction, adcp_bin_depths
+from pyseas.data.adcp_functions import magnetic_correction, adcp_bin_depth
 
 
 def main(argv=None):
@@ -31,7 +31,7 @@ def main(argv=None):
     depth = args.depth
     adcp_type = args.switch
 
-    # optional/default arguments for calculating the bin_depths
+    # optional/default arguments for calculating the bin_depth
     bin_size = args.bin_size
     blanking_distance = args.blanking_distance
     ctd_name = args.devfile  # name of co-located CTD
@@ -107,7 +107,7 @@ def main(argv=None):
         vbl['ensemble_number'] = vbl['ensemble_number'] + (vbl['ensemble_number_increment'] * 65535)
         vbl = vbl.drop(['ensemble_number_increment'])   # drop the sub-components
 
-        # calculate the bin_depths so we can plot our data in geo-spatial coordinates, pulling required data from the
+        # calculate the bin_depth so we can plot our data in geo-spatial coordinates, pulling required data from the
         # data file (pressure is a special case, need to find the optimal source)
         blanking_distance = fx.bin_1_distance.values[0]
         bin_size = fx.depth_cell_length.values[0]
@@ -121,16 +121,16 @@ def main(argv=None):
             depth_m = -1 * z_from_p(vbl.pressure.values / 1000., lat)
             depth_flag = True  # full time-based array of depth values
 
-        # calculate the bin_depths
-        bin_depths = adcp_bin_depths(blanking_distance, bin_size, bin_number, orientation, depth_m)
+        # calculate the bin_depth
+        bin_depth = adcp_bin_depth(blanking_distance, bin_size, bin_number, orientation, depth_m)
 
-        # remap the bin_depths to a 2D array to correspond to the time and bin_number coordinate axes.
+        # remap the bin_depth to a 2D array to correspond to the time and bin_number coordinate axes.
         if not depth_flag:
-            bin_depths = bin_depths.repeat(time.size, axis=0)
+            bin_depth = bin_depth.repeat(time.size, axis=0)
 
         # create the bin depths date set
         bd = xr.Dataset({
-            'bin_depths': (['time', 'bin_number'], bin_depths)
+            'bin_depth': (['time', 'bin_number'], bin_depth)
         }, coords={'time': (['time'], pd.to_datetime(time, unit='s')), 'bin_number': bin_number})
 
         # correct the eastward and northward velocity components for magnetic declination
@@ -206,16 +206,16 @@ def main(argv=None):
         # pull the bin number out of the velocity data set
         bin_number = np.array(data['velocity']['bin_number'][0]).astype(np.int32)
 
-        # calculate the bin_depths
-        bin_depths = adcp_bin_depths(blanking_distance, bin_size, bin_number, 1, depth_m)
+        # calculate the bin_depth
+        bin_depth = adcp_bin_depth(blanking_distance, bin_size, bin_number, 1, depth_m)
 
-        # remap the bin_depths to a 2D array to correspond to the time and bin_number coordinate axes.
+        # remap the bin_depth to a 2D array to correspond to the time and bin_number coordinate axes.
         if not depth_flag:
-            bin_depths = bin_depths.repeat(time.size, axis=0)
+            bin_depth = bin_depth.repeat(time.size, axis=0)
 
         # create the bin depths data set
         bd = xr.Dataset({
-            'bin_depths': (['time', 'bin_number'], bin_depths)
+            'bin_depth': (['time', 'bin_number'], bin_depth)
         }, coords={'time': (['time'], pd.to_datetime(time, unit='s')), 'bin_number': bin_number})
 
         # correct the eastward and northward velocity components for magnetic declination
@@ -270,8 +270,8 @@ def main(argv=None):
         return None
 
     # Compute the vertical extent of the data for the global metadata attributes
-    vmax = adcp.bin_depths.max().values
-    vmin = adcp.bin_depths.min().values
+    vmax = adcp.bin_depth.max().values
+    vmin = adcp.bin_depth.min().values
 
     # add to the global attributes for the ADCP
     attrs = dict_update(ADCP, adcp_attrs)   # merge default and PD0 attribute dictionaries into a single dictionary

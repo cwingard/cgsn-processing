@@ -39,8 +39,9 @@ ADCP = {
         'long_name': 'Station Identifier'
     },
     'time': {
+        'long_name': 'Time',
         'standard_name': 'time',
-        'units': 'seconds since 1970-01-01 00:00:00 0:00',
+        'units': 'seconds since 1970-01-01 00:00:00Z',
         'axis': 'T',
         'calendar': 'gregorian',
         'comment': 'Derived from the data logger''s GPS conditioned, real-time clock'
@@ -368,6 +369,7 @@ PD0 = {
     },
     'temperature': {
         'long_name': 'Transducer Temperature',
+        'standard_name': 'sea_water_temperature',
         'comment': 'Measured temperature at the transducer face, reported in centidegree Celsius.',
         'units': 'cdegrees_Celsius'
     },
@@ -538,7 +540,9 @@ PD0 = {
     },
     'pressure': {
         'long_name': 'Pressure',
-        'comment': 'ADCP pressure sensor value. Reported in decaPascals',
+        'standard_name': 'sea_water_pressure_due_to_sea_water',
+        'comment': ('ADCP pressure sensor value. Reported in decaPascals. If the value is 0, the unit is not '
+                    'equipped with a pressure sensor'),
         'units': 'daPa'
     },
     'pressure_variance': {
@@ -844,7 +848,7 @@ PD12 = {
     'pressure': {
         'long_name': 'Seawater Pressure',
         'standard_name': 'sea_water_pressure_due_to_sea_water',
-        'comment': 'ADCP pressure sensor value. Reported in decaPascals',
+        'comment': 'ADCP pressure sensor value.',
         'units': 'daPa'
     },
 
@@ -880,23 +884,29 @@ PD12 = {
         'data_product_identifier': 'VELPROF-VLU_L0',
         'units': 'mm s-1',
         '_FillValue': np.int32(-32768)
+    },
+    'error_velocity': {
+        'long_name': 'Error Velocity',
+        'comment': ('A velocity profile includes water velocity (speed & direction) throughout the depth range of an ' +
+                    'ADCP sensor. This instance is the error velocity component as reported by the instrument.'),
+        'data_product_identifier': 'VELPROF-EVL_L0',
+        'units': 'mm s-1',
+        '_FillValue': np.int32(-32768)
     }
 }
 
 DERIVED = {
     # derived values
-    'bin_depths': {
+    'bin_depth': {
         'long_name': 'Bin Depths',
-        'comment': ('Depths of the velocity bins estimated from the measured ADCP pressure and associated parameters ' +
-                    'from the unit''s configuration. Used with a downward looking ADCP.'),
-        'ancillary_variables': 'pressure,depth_cell_length,sysconfig_vertical_orientation,bin_1_distance,num_cells,z',
+        'comment': ('Depths of the velocity bins estimated from either the measured ADCP pressure, ' +
+                    'or the deployment depth, and associated parameters from the unit''s configuration.'),
         'units': 'm'
     },
     'bin_heights': {
         'long_name': 'Bin Heights',
-        'comment': ('Height of the velocity bins above the bottom, estimated from the measured ADCP pressure and ' +
-                    'associated parameters from the unit''s configuration. Used with an upward looking ADCP.'),
-        'ancillary_variables': 'pressure,depth_cell_length,sysconfig_vertical_orientation,bin_1_distance,num_cells,z',
+        'comment': ('Height of the velocity bins above the bottom, estimated from either the measured ADCP pressure, ' +
+                    'or the deployment depth, and associated parameters from the unit''s configuration.'),
         'units': 'm'
     },
     'ping_period': {
