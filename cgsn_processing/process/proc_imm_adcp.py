@@ -15,8 +15,7 @@ from cgsn_processing.process.common import ENCODING, inputs, dict_update, dt64_e
 from cgsn_processing.process.configs.attr_adcp import ADCP, PD12, DERIVED
 from gsw.conversions import z_from_p
 from pyseas.data.generic_functions import magnetic_declination
-from pyseas.data.adcp_functions import magnetic_correction, adcp_bin_depth
-
+from pyseas.data.adcp_functions import magnetic_correction, adcp_bin_depths
 
 def main(argv=None):
     # load the input arguments
@@ -59,10 +58,10 @@ def main(argv=None):
     depth_m = -1 * z_from_p(np.array(data['pressure']) / 1000., lat)
 
     # calculate the bin depths
-    blanking_distance = blanking_distance * data['start_bin'][0]
+    blanking_distance = blanking_distance + bin_size * data['start_bin'][0]
     num_bins = data['bins'][0]
     bin_number = np.array(range(0, num_bins)) + 1
-    bin_depth = adcp_bin_depth(blanking_distance, bin_size, bin_number, 1, depth_m)
+    bin_depth = adcp_bin_depths(blanking_distance, bin_size, bin_number, 1, depth_m)
 
     # create the bin depths data set
     bd = xr.Dataset({

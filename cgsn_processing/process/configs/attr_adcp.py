@@ -368,9 +368,9 @@ PD0 = {
         'units': '1'
     },
     'temperature': {
-        'long_name': 'Transducer Temperature',
+        'long_name': 'Sea Water Temperature',
         'standard_name': 'sea_water_temperature',
-        'comment': 'Measured temperature at the transducer face, reported in centidegree Celsius.',
+        'comment': 'In-situ sea water temperature measured at the transducer face, reported in centidegree Celsius.',
         'units': 'cdegrees_Celsius'
     },
     'mpt_minutes': {
