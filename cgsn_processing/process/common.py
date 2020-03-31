@@ -300,6 +300,11 @@ def update_dataset(ds, platform, deployment, lat, lon, depth, attrs):
         else:
             ds[v].attrs = attrs[v]
 
+    # reset all integers set as long, or int64, as an int32. ERDDAP doesn't like longs
+    for v in ds.variables:
+        if ds[v].dtype == np.int64:
+            ds[v] = ds[v].astype(np.int32)
+
     # return the data set for further work
     return ds
 

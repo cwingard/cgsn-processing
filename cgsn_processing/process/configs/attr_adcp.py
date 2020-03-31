@@ -39,8 +39,9 @@ ADCP = {
         'long_name': 'Station Identifier'
     },
     'time': {
+        'long_name': 'Time',
         'standard_name': 'time',
-        'units': 'seconds since 1970-01-01 00:00:00 0:00',
+        'units': 'seconds since 1970-01-01 00:00:00Z',
         'axis': 'T',
         'calendar': 'gregorian',
         'comment': 'Derived from the data logger''s GPS conditioned, real-time clock'
@@ -367,8 +368,9 @@ PD0 = {
         'units': '1'
     },
     'temperature': {
-        'long_name': 'Transducer Temperature',
-        'comment': 'Measured temperature at the transducer face, reported in centidegree Celsius.',
+        'long_name': 'Sea Water Temperature',
+        'standard_name': 'sea_water_temperature',
+        'comment': 'In-situ sea water temperature measured at the transducer face, reported in centidegree Celsius.',
         'units': 'cdegrees_Celsius'
     },
     'mpt_minutes': {
@@ -538,7 +540,9 @@ PD0 = {
     },
     'pressure': {
         'long_name': 'Pressure',
-        'comment': 'ADCP pressure sensor value. Reported in decaPascals',
+        'standard_name': 'sea_water_pressure_due_to_sea_water',
+        'comment': ('ADCP pressure sensor value. Reported in decaPascals. If the value is 0, the unit is not '
+                    'equipped with a pressure sensor'),
         'units': 'daPa'
     },
     'pressure_variance': {
@@ -704,8 +708,9 @@ PD8 = {
         'units': 'degrees'
     },
     'temperature': {
-        'long_name': 'Transducer Temperature',
-        'comment': 'Measured temperature at the transducer face.',
+        'long_name': 'Sea Water Temperature',
+        'standard_name': 'sea_water_temperature',
+        'comment': 'In-situ sea water temperature measured at the transducer face.',
         'units': 'degrees_Celsius'
     },
 
@@ -798,20 +803,110 @@ PD8 = {
     }
 }
 
+PD12 = {
+    'imm_record_number': {
+        'long_name': 'IMM Record Number',
+        'comment': 'Inductive modem record number',
+        # 'units': ''    # deliberately left blank, no units for this value
+    },
+    'ensemble_number': {
+        'long_name': 'Ensemble Number',
+        'comment': 'Sequential number of the ensemble to which the data applies',
+        # 'units': ''    # deliberately left blank, no units for this value
+    },
+    'firmware_version': {
+        'long_name': 'Firmware Version',
+        'comment': 'Version number of current CPU firmware',
+        # 'units': ''    # deliberately left blank, no units for this value
+    },
+    'firmware_revision': {
+        'long_name': 'Firmware Revision',
+        'comment': 'Revision number of current CPU firmware',
+        # 'units': ''    # deliberately left blank, no units for this value
+    },
+    'heading': {
+        'long_name': 'Heading',
+        'comment': 'Measured heading of the ADCP, uncorrected for magnetic declination',
+        'units': 'degrees'
+    },
+    'pitch': {
+        'long_name': 'Pitch',
+        'comment': 'Measured pitch of the ADCP.',
+        'units': 'degrees'
+    },
+    'roll': {
+        'long_name': 'Roll',
+        'comment': 'Measured roll of the ADCP',
+        'units': 'degrees'
+    },
+    'temperature': {
+        'long_name': 'Sea Water Temperature',
+        'standard_name': 'sea_water_temperature',
+        'comment': 'In-situ sea water temperature measured at the transducer face.',
+        'units': 'degrees_Celsius'
+    },
+    'pressure': {
+        'long_name': 'Seawater Pressure',
+        'standard_name': 'sea_water_pressure_due_to_sea_water',
+        'comment': 'ADCP pressure sensor value.',
+        'units': 'daPa'
+    },
+
+    # velocity packets
+    'eastward_seawater_velocity_est': {
+        'long_name': 'Estimated Eastward Seawater Velocity',
+        'comment': ('A velocity profile includes water velocity (speed & direction) throughout the depth range of an ' +
+                    'ADCP sensor. This instance is the eastward seawater velocity component uncorrected for magnetic ' +
+                    'declination as reported by the instrument. Considered an estimate of the true eastward velocity ' +
+                    'component while uncorrected for magnetic declination.'),
+        'standard_name': 'eastward_sea_water_velocity',
+        'data_product_identifier': 'VELPROF-VLE_L0',
+        'units': 'mm s-1',
+        '_FillValue': np.int32(-32768)
+    },
+    'northward_seawater_velocity_est': {
+        'long_name': 'Estimated Northward Seawater Velocity',
+        'comment': ('A velocity profile includes water velocity (speed & direction) throughout the depth range of an ' +
+                    'ADCP sensor. This instance is the northward seawater velocity component uncorrected for ' +
+                    'magnetic declination as reported by the instrument. Considered an estimate of the true ' +
+                    'northward velocity component while uncorrected for magnetic declination.'),
+        'standard_name': 'northward_sea_water_velocity',
+        'data_product_identifier': 'VELPROF-VLN_L0',
+        'units': 'mm s-1',
+        '_FillValue': np.int32(-32768)
+    },
+    'vertical_seawater_velocity': {
+        'long_name': 'Vertical Seawater Velocity',
+        'comment': ('A velocity profile includes water velocity (speed & direction) throughout the depth range of an ' +
+                    'ADCP sensor. This instance is the vertical seawater velocity component as reported by the ' +
+                    'instrument'),
+        'standard_name': 'upward_sea_water_velocity',
+        'data_product_identifier': 'VELPROF-VLU_L0',
+        'units': 'mm s-1',
+        '_FillValue': np.int32(-32768)
+    },
+    'error_velocity': {
+        'long_name': 'Error Velocity',
+        'comment': ('A velocity profile includes water velocity (speed & direction) throughout the depth range of an ' +
+                    'ADCP sensor. This instance is the error velocity component as reported by the instrument.'),
+        'data_product_identifier': 'VELPROF-EVL_L0',
+        'units': 'mm s-1',
+        '_FillValue': np.int32(-32768)
+    }
+}
+
 DERIVED = {
     # derived values
-    'bin_depths': {
+    'bin_depth': {
         'long_name': 'Bin Depths',
-        'comment': ('Depths of the velocity bins estimated from the measured ADCP pressure and associated parameters ' +
-                    'from the unit''s configuration. Used with a downward looking ADCP.'),
-        'ancillary_variables': 'pressure,depth_cell_length,sysconfig_vertical_orientation,bin_1_distance,num_cells,z',
+        'comment': ('Depths of the velocity bins estimated from either the measured ADCP pressure, ' +
+                    'or the deployment depth, and associated parameters from the unit''s configuration.'),
         'units': 'm'
     },
     'bin_heights': {
         'long_name': 'Bin Heights',
-        'comment': ('Height of the velocity bins above the bottom, estimated from the measured ADCP pressure and ' +
-                    'associated parameters from the unit''s configuration. Used with an upward looking ADCP.'),
-        'ancillary_variables': 'pressure,depth_cell_length,sysconfig_vertical_orientation,bin_1_distance,num_cells,z',
+        'comment': ('Height of the velocity bins above the bottom, estimated from either the measured ADCP pressure, ' +
+                    'or the deployment depth, and associated parameters from the unit''s configuration.'),
         'units': 'm'
     },
     'ping_period': {
