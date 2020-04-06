@@ -16,7 +16,7 @@ from cgsn_processing.process.common import ENCODING, inputs, dict_update, dt64_e
 from cgsn_processing.process.configs.attr_adcp import ADCP, PD0, PD8, DERIVED
 from gsw import z_from_p
 from pyseas.data.generic_functions import magnetic_declination
-from pyseas.data.adcp_functions import magnetic_correction, adcp_bin_depth
+from pyseas.data.adcp_functions import magnetic_correction, adcp_bin_depths
 
 
 def main(argv=None):
@@ -122,7 +122,7 @@ def main(argv=None):
             depth_flag = True  # full time-based array of depth values
 
         # calculate the bin_depth
-        bin_depth = adcp_bin_depth(blanking_distance, bin_size, bin_number, orientation, depth_m)
+        bin_depth = adcp_bin_depths(blanking_distance, bin_size, bin_number, orientation, depth_m)
 
         # remap the bin_depth to a 2D array to correspond to the time and bin_number coordinate axes.
         if not depth_flag:
