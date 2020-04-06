@@ -76,6 +76,11 @@ class Coefficients(object):
         with open(self.coeff_file, 'r') as f:
             coeffs = json.load(f)
 
+        # JSON loads arrays as lists. We need to convert those to arrays for our work
+        for c in coeffs:
+            if isinstance(coeffs[c], list):
+                coeffs[c] = np.asarray(coeffs[c])
+
         self.coeffs = coeffs
 
     def save_coeffs(self):

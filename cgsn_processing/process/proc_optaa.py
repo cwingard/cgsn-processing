@@ -15,7 +15,7 @@ import re
 import requests
 import xarray as xr
 
-from cgsn_processing.process.common import Coefficients, inputs, json2obj, dt64_epoch, update_dataset, ENCODING
+from cgsn_processing.process.common import Coefficients, inputs, json2obj, update_dataset, ENCODING
 from cgsn_processing.process.configs.attr_optaa import OPTAA
 from cgsn_processing.process.finding_calibrations import find_calibration
 
@@ -305,11 +305,6 @@ def main(argv=None):
     if os.path.isfile(coeff_file):
         # we always want to use this file if it exists
         dev.load_coeffs()
-        ndarrays = ['a_wavelengths', 'c_wavelengths', 'a_offsets', 'c_offsets',
-                    'temp_bins', 'tc_array', 'ta_array']
-        for nd in ndarrays:
-            # JSON stores arrays as lists, convert to arrays
-            dev.coeffs[nd] = np.asarray(dev.coeffs[nd])
     else:
         # load from the CI hosted CSV files
         csv_url = find_calibration('OPTAA', str(data['serial_number'][0]), data['time'][0])
