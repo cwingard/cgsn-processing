@@ -404,7 +404,7 @@ def main(argv=None):
     proc = update_dataset(burst, platform, deployment, lat, lon, [depth, depth, depth], OPTAA)
     proc['wavelength_number'].attrs['actual_wavelengths'] = data['num_wavelengths'][0]
 
-    # save the proc data to disk
+    # save the processed data (median averaged every 30 minutes) to disk
     procfile = re.sub('.nc$', '_proc.nc', outfile)
     proc.to_netcdf(procfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
 

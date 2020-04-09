@@ -106,12 +106,14 @@ OPTAA = {
                     'and may even change for a particular sensor over time if servicing requires a replacement ' +
                     'of the filter set. The actual number of wavelengths for this sensor is represented here ' +
                     'by the attribute actual_wavelengths.')
+        # 'actual_wavelengths': ''  # deliberately left blank, created during the processing
     },
     'a_wavelengths': {
         'long_name': 'A Channel Wavelengths',
         'standard_name': 'radiation_wavelength',
         'units': 'nm',
-        'comment': ('Absorbance measurement wavelengths, specific to the filter wheel set installed in the AC-S.'),
+        'comment': ('Absorbance channel measurement wavelengths, specific to the filter wheel set installed in ' +
+                    'the AC-S.'),
         '_FillValue': FILL_NAN,
     },
     'a_reference_dark': {
@@ -137,7 +139,7 @@ OPTAA = {
     'a_signal_raw': {
         'long_name': 'A Channel Raw Signal',
         'units': 'counts',
-        'comment': ('A channel signal detector raw ounts (while the lamp is turned on). Used in conversion ' +
+        'comment': ('A channel signal detector raw counts (while the lamp is turned on). Used in conversion ' +
                     'of the raw a channel measurements to absorbance estimates.'),
         'data_product_identifier': 'OPTASIG_L0',
         '_FillValue': FILL_INT,
@@ -146,7 +148,8 @@ OPTAA = {
         'long_name': 'C Channel Wavelengths',
         'standard_name': 'radiation_wavelength',
         'units': 'nm',
-        'comment': ('Attenuation measurement wavelengths, specific to the filter wheel set installed in the AC-S.'),
+        'comment': ('Attenuation channel measurement wavelengths, specific to the filter wheel set installed in ' +
+                    'the AC-S.'),
         '_FillValue': FILL_NAN,
     },
     'c_reference_dark': {
@@ -227,7 +230,7 @@ OPTAA = {
         'comment': ('The optical absorption coefficient corrected for the effects of temperature and salinity, ' +
                     'with the baseline effects due to scattering at 715 nm removed.'),
         'data_product_identifier': 'OPTABSN_L2',
-        'ancillary_variables': 'oxygen_concentration, pressure, temperature, salinity, lat, lon',
+        'ancillary_variables': 'a_wavelengths apd_ts',
         '_FillValue': FILL_NAN,
     },
     'cpd': {
