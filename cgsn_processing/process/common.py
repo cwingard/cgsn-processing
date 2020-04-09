@@ -38,6 +38,10 @@ ENCODING = {
     'deploy_id': {'dtype': str}
 }
 
+# Create global default fill values
+FILL_INT = -9999999
+FILL_NAN = np.nan
+
 class NumpyEncoder(json.JSONEncoder):
     """
     Special json encoder for numpy types, where we have nested numpy arrays in a dictionary.

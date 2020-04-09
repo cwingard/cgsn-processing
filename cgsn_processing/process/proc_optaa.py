@@ -15,7 +15,7 @@ import re
 import requests
 import xarray as xr
 
-from cgsn_processing.process.common import Coefficients, inputs, json2obj, update_dataset, ENCODING
+from cgsn_processing.process.common import Coefficients, inputs, json2obj, update_dataset, ENCODING, FILL_INT
 from cgsn_processing.process.configs.attr_optaa import OPTAA
 from cgsn_processing.process.finding_calibrations import find_calibration
 
@@ -171,7 +171,7 @@ def apply_dev(optaa, coeffs):
     c_ref = optaa['c_reference_raw']
     c_sig = optaa['c_signal_raw']
     npackets = a_ref.shape[0]
-    wvlngth = a_ref[0, :].values != -9999999
+    wvlngth = a_ref[0, :].values != FILL_INT
 
     # initialize the output arrays
     apd = a_ref * np.nan
@@ -347,7 +347,7 @@ def main(argv=None):
     # padded to 100 as the dimensional array.
     wavelength_number = np.arange(100).astype(np.int32)  # used as a dimensional variable
     pad = 100 - dev.coeffs['num_wavelengths']
-    fill_int = (np.ones(pad) * -9999999).astype(np.int32)
+    fill_int = (np.ones(pad) * FILL_INT).astype(np.int32)
     a_wavelengths = np.concatenate([dev.coeffs['a_wavelengths'], fill_int * np.nan])
     c_wavelengths = np.concatenate([dev.coeffs['c_wavelengths'], fill_int * np.nan])
     ac = xr.Dataset({

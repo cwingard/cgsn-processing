@@ -6,7 +6,7 @@
 @author Christopher Wingard
 @brief Attributes for the OPTAA variables
 """
-import numpy as np
+from cgsn_processing.process.common import FILL_INT, FILL_NAN
 
 OPTAA = {
     'global': {
@@ -111,7 +111,7 @@ OPTAA = {
         'standard_name': 'radiation_wavelength',
         'units': 'nm',
         'comment': ('Absorbance measurement wavelengths, specific to the filter wheel set installed in the AC-S.'),
-        '_FillValue': np.nan,
+        '_FillValue': FILL_NAN,
     },
     'a_reference_dark': {
         'long_name': 'A Channel Dark Reference',
@@ -125,7 +125,7 @@ OPTAA = {
         'comment': ('A channel reference detector raw counts (while the lamp is turned on). Used in conversion ' +
                     'of the raw a channel measurements to absorbance estimates.'),
         'data_product_identifier': 'OPTAREF_L0',
-        '_FillValue': -9999999,
+        '_FillValue': FILL_INT,
     },
     'a_signal_dark': {
         'long_name': 'A Channel Dark Signal',
@@ -139,14 +139,14 @@ OPTAA = {
         'comment': ('A channel signal detector raw ounts (while the lamp is turned on). Used in conversion ' +
                     'of the raw a channel measurements to absorbance estimates.'),
         'data_product_identifier': 'OPTASIG_L0',
-        '_FillValue': -9999999,
+        '_FillValue': FILL_INT,
     },
     'c_wavelengths': {
         'long_name': 'C Channel Wavelengths',
         'standard_name': 'radiation_wavelength',
         'units': 'nm',
         'comment': ('Attenuation measurement wavelengths, specific to the filter wheel set installed in the AC-S.'),
-        '_FillValue': np.nan,
+        '_FillValue': FILL_NAN,
     },
     'c_reference_dark': {
         'long_name': 'C Channel Dark Reference',
@@ -160,7 +160,7 @@ OPTAA = {
         'comment': ('C channel reference detector raw counts (while the lamp is turned on). Used in conversion ' +
                     'of the raw c channel measurements to attenuation estimates.'),
         'data_product_identifier': 'OPTCREF_L0',
-        '_FillValue': -9999999,
+        '_FillValue': FILL_INT,
     },
     'c_signal_dark': {
         'long_name': 'C Channel Dark Signal',
@@ -174,7 +174,7 @@ OPTAA = {
         'comment': ('C channel signal detector raw counts (while the lamp is turned on). Used in conversion ' +
                     'of the raw c channel measurements to attenuation estimates.'),
         'data_product_identifier': 'OPTCSIG_L0',
-        '_FillValue': -9999999,
+        '_FillValue': FILL_INT,
     },
 
     # Derived values in the processed data set
@@ -209,7 +209,7 @@ OPTAA = {
                     'optical importance.'),
         'ancillary_variables': ('a_wavelengths internal_temp a_signal_raw a_reference_raw ' +
                                 'a_signal_dark a_reference_dark'),
-        '_FillValue': np.nan,
+        '_FillValue': FILL_NAN,
     },
     'apd_ts': {
         'long_name': 'Particulate and Dissolved Absorbance with TS Correction',
@@ -218,7 +218,7 @@ OPTAA = {
                     'This dataset assumes a constant salinity of 33 psu, given the overall negligible effects of ' +
                     'salinity (as opposed to temperature) on the absorption coefficient.'),
         'ancillary_variables': 'a_wavelengths external_temp apd',
-        '_FillValue': np.nan,
+        '_FillValue': FILL_NAN,
     },
     'apd_ts_s': {
         'long_name': 'Particulate and Dissolved Absorbance with TS and Scatter Correction',
@@ -227,7 +227,7 @@ OPTAA = {
                     'with the baseline effects due to scattering at 715 nm removed.'),
         'data_product_identifier': 'OPTABSN_L2',
         'ancillary_variables': 'oxygen_concentration, pressure, temperature, salinity, lat, lon',
-        '_FillValue': np.nan,
+        '_FillValue': FILL_NAN,
     },
     'cpd': {
         'long_name': 'Particulate and Dissolved Attenuation',
@@ -239,7 +239,7 @@ OPTAA = {
                     'optical importance.'),
         'ancillary_variables': ('c_wavelengths internal_temp c_signal_raw c_reference_raw ' +
                                 'c_signal_dark c_reference_dark'),
-        '_FillValue': np.nan,
+        '_FillValue': FILL_NAN,
     },
     'cpd_ts': {
         'long_name': 'Particulate and Dissolved Attenuation with TS Correction',
@@ -249,6 +249,6 @@ OPTAA = {
                     'salinity (as opposed to temperature) on the attenuation coefficient.'),
         'data_product_identifier': 'OPTATTN_L2',
         'ancillary_variables': 'c_wavelengths external_temp cpd',
-        '_FillValue': np.nan,
+        '_FillValue': FILL_NAN,
     }
 }
