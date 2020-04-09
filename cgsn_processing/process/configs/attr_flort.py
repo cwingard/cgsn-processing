@@ -10,7 +10,7 @@
 FLORT = {
     'global': {
         'project': 'Ocean Observatories Initiative',
-        'institution': 'Coastal and Global Scales Nodes (CGSN)',
+        'institution': 'Coastal and Global Scale Nodes (CGSN)',
         'acknowledgement': 'National Science Foundation',
         'references': 'http://oceanobservatories.org',
         'creator_name': 'Christopher Wingard',

@@ -12,10 +12,11 @@ OPTAA = {
     'global': {
         'title': 'Optical Absorbance and Attenuation from OPTAA',
         'summary': (
-            'Measures the absorabance and attenuation of particulate and dissolved matter the WET Labs AC-S.'
+            'Measures the absorabance and attenuation of particulate and dissolved organic matter with ' +
+            'the Sea-Bird Scientific Spectral Absorption and Attenuation Sensor (AC-S).'
         ),
         'project': 'Ocean Observatories Initiative',
-        'institution': 'Coastal and Global Scales Nodes, (CGSN)',
+        'institution': 'Coastal and Global Scale Nodes, (CGSN)',
         'acknowledgement': 'National Science Foundation',
         'references': 'http://oceanobservatories.org',
         'creator_name': 'Ocean Observatories Initiative',
