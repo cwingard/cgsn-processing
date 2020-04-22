@@ -11,11 +11,47 @@ import os
 import pandas as pd
 import xarray as xr
 
-from cgsn_processing.process.common import ENCODING, inputs, dict_update, dt64_epoch, json2obj, update_dataset
+from cgsn_processing.process.common import Coefficients, ENCODING, inputs, dict_update, json2obj, update_dataset
 from cgsn_processing.process.configs.attr_adcp import ADCP, PD12, DERIVED
+from cgsn_processing.process.finding_calibrations import find_calibration
+
 from gsw.conversions import z_from_p
 from pyseas.data.generic_functions import magnetic_declination
 from pyseas.data.adcp_functions import magnetic_correction, adcp_bin_depths
+
+class Calibrations(Coefficients):
+    def __init__(self, coeff_file, csv_url=None):
+        """
+        Loads the ADCP calibration coefficients for a unit. Values come from either a serialized object created per
+        instrument and deployment (calibration coefficients do not change in the middle of a deployment),
+        or from parsed CSV files maintained on GitHub by the OOI CI team.
+        """
+        # assign the inputs
+        Coefficients.__init__(self, coeff_file)
+        self.csv_url = csv_url
+
+    def read_csv(self, csv_url):
+        """
+        Reads the values from a CSV file in the GitHub asset management repository. Note, the formatting of those
+        files puts some constraints on this process. If someone has a cleaner method, I'm all in favor...
+        """
+        # create the device file dictionary and assign values
+        coeffs = {}
+
+        # read in the calibration data
+        cal = pd.read_csv(csv_url, usecols=[0, 1, 2])
+        for idx, row in cal.iterrows():
+            # bin size, distance to the first bin and orientation
+            if row[1] == 'CC_bin_size':
+                coeffs['bin_size'] = row[2]
+            if row[1] == 'CC_dist_first_bin':
+                coeffs['distance_first_bin'] = row[2]
+            if row[1] == 'CC_orientation':
+                coeffs['orientation'] = row[2]
+
+        # save the resulting dictionary
+        self.coeffs = coeffs
+
 
 def main(argv=None):
     # load the input arguments
@@ -27,10 +63,8 @@ def main(argv=None):
     lat = args.latitude
     lon = args.longitude
     depth = args.depth
-
-    # arguments for calculating the bin_depth
-    bin_size = args.bin_size
-    blanking_distance = args.blanking_distance
+    serial = args.serial
+    coeff_file = os.path.abspath(args.coeff_file)
 
     # load the json data file as a json formatted object for further processing
     data = json2obj(infile)
@@ -44,7 +78,23 @@ def main(argv=None):
     df['time'] = pd.to_datetime(time, unit='s')
     df.set_index('time', drop=True, inplace=True)
     df['deploy_id'] = deployment
+    df['serial_number'] = serial
     glbl = xr.Dataset.from_dataframe(df)
+
+    # check for the source of calibration coeffs and load accordingly
+    dev = Calibrations(coeff_file)  # initialize calibration class
+    if os.path.isfile(coeff_file):
+        # we always want to use this file if it exists
+        dev.load_coeffs()
+    else:
+        # load from the CI hosted CSV files
+        csv_url = find_calibration('ADCP', serial, (df.time.values.astype('int64') * 10 ** -9)[0])
+        if csv_url:
+            dev.read_csv(csv_url)
+            dev.save_coeffs()
+        else:
+            print('A source for the ADCP calibration coefficients for {} could not be found'.format(infile))
+            return None
 
     # drop real-time clock values (already used to create the time variable) and the unit ID (only used if more
     # than 1 ADCP is installed on the IMM chain).
@@ -58,10 +108,10 @@ def main(argv=None):
     depth_m = -1 * z_from_p(np.array(data['pressure']) / 1000., lat)
 
     # calculate the bin depths
-    blanking_distance = blanking_distance + bin_size * data['start_bin'][0]
     num_bins = data['bins'][0]
     bin_number = np.array(range(0, num_bins)) + 1
-    bin_depth = adcp_bin_depths(blanking_distance, bin_size, bin_number, 1, depth_m)
+    bin_depth = adcp_bin_depths(dev.coeffs['distance_first_bin'], dev.coeffs['bin_size'], bin_number,
+                                dev.coeffs['orientation'], depth_m)
 
     # create the bin depths data set
     bd = xr.Dataset({
@@ -95,7 +145,6 @@ def main(argv=None):
 
     # re-combine it all back into one data set
     adcp = xr.merge([glbl, ds, bd, vel])
-    adcp['time'] = dt64_epoch(adcp.time)  # Convert from a datetime64 object to seconds since 1970
 
     # Compute the vertical extent of the data for the global metadata attributes
     vmax = adcp.bin_depth.max().values
