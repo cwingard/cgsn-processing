@@ -27,7 +27,7 @@ class Calibrations(Coefficients):
         or from parsed CSV files maintained on GitHub by the OOI CI team.
         """
         # assign the inputs
-        Coefficients.__init__(self, coeff_file)
+        super().__init__(coeff_file)
         self.csv_url = csv_url
 
     def read_csv(self, csv_url):
