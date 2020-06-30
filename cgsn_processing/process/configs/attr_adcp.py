@@ -809,6 +809,11 @@ PD12 = {
         'comment': 'Inductive modem record number',
         # 'units': ''    # deliberately left blank, no units for this value
     },
+    'serial_number': {
+        'long_name': 'Serial Number',
+        'comment': 'Serial Number',
+        # 'units': ''    # deliberately left blank, no units for this value
+    },
     'ensemble_number': {
         'long_name': 'Ensemble Number',
         'comment': 'Sequential number of the ensemble to which the data applies',
