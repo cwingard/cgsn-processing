@@ -212,29 +212,29 @@ VEL3D = {
     },
     'correlation_beam1': {
         'long_name': 'Percent Correlation Beam 1',
-        'comment': ('Correlation is a measure of the similarity of two pulse echoes being measured by the Doppler ' +
-                    'instrument. Zero correlation means nothing at all is similar between the two echoes, where as ' +
-                    'a correlation of 100 means the two echoes are identical. We want high correlation because it ' +
-                    'gives us confidence the system measured the two pulses it originally sent out and is determining '+
-                    'a valid phase shift.'),
+        'comment': ('Percent correlation, for beam 1, is a measure of the similarity of two pulse echoes being ' +
+                    'measured by the Doppler instrument. Zero correlation means nothing at all is similar between ' +
+                    'the two echoes, where as a correlation of 100 means the two echoes are identical. We want high ' +
+                    'correlation because it gives us confidence the system measured the two pulses it originally ' +
+                    'sent out and is determining a valid phase shift.'),
         'units': 'percent'
     },
     'correlation_beam2': {
         'long_name': 'Percent Correlation Beam 2',
-        'comment': ('Correlation is a measure of the similarity of two pulse echoes being measured by the Doppler ' +
-                    'instrument. Zero correlation means nothing at all is similar between the two echoes, where as ' +
-                    'a correlation of 100 means the two echoes are identical. We want high correlation because it ' +
-                    'gives us confidence the system measured the two pulses it originally sent out and is determining '+
-                    'a valid phase shift.'),
+        'comment': ('Percent correlation, for beam 2, is a measure of the similarity of two pulse echoes being ' +
+                    'measured by the Doppler instrument. Zero correlation means nothing at all is similar between ' +
+                    'the two echoes, where as a correlation of 100 means the two echoes are identical. We want high ' +
+                    'correlation because it gives us confidence the system measured the two pulses it originally ' +
+                    'sent out and is determining a valid phase shift.'),
         'units': 'percent'
     },
     'correlation_beam3': {
         'long_name': 'Percent Correlation Beam 3',
-        'comment': ('Correlation is a measure of the similarity of two pulse echoes being measured by the Doppler ' +
-                    'instrument. Zero correlation means nothing at all is similar between the two echoes, where as ' +
-                    'a correlation of 100 means the two echoes are identical. We want high correlation because it ' +
-                    'gives us confidence the system measured the two pulses it originally sent out and is determining '+
-                    'a valid phase shift.'),
+        'comment': ('Percent correlation, for beam 3, is a measure of the similarity of two pulse echoes being ' +
+                    'measured by the Doppler instrument. Zero correlation means nothing at all is similar between ' +
+                    'the two echoes, where as a correlation of 100 means the two echoes are identical. We want high ' +
+                    'correlation because it gives us confidence the system measured the two pulses it originally ' +
+                    'sent out and is determining a valid phase shift.'),
         'units': 'percent'
     }
 }

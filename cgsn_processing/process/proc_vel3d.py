@@ -87,13 +87,13 @@ def main(argv=None):
 
     # convert the pressure record to depth and calculate mean, min and max depths
     z = z_from_p(vel3d.pressure.values, lat)
-    vmin = np.min(z)
-    vmax = np.max(z)
+    zmin = np.min(z)
+    zmax = np.max(z)
     z = np.mean(z)
 
     # apply magnetic declination correction to the eastward and northward velocity
     # components and scale from mm/s to m/s
-    theta = magnetic_declination(lat, lon, dt64_epoch(vel3d['time']), depth)
+    theta = magnetic_declination(lat, lon, dt64_epoch(vel3d['time']), z)
     magvar = np.vectorize(magnetic_correction)
     east, north = magvar(theta, vel3d.velocity_east / 1000., vel3d.velocity_north / 1000.)
 
@@ -102,7 +102,7 @@ def main(argv=None):
     vel3d['velocity_north_corrected'] = (['time'], north)
 
     # update the data set with appropriate metadata
-    vel3d = update_dataset(vel3d, platform, deployment, lat, lon, [z, vmin, vmax], VEL3D)
+    vel3d = update_dataset(vel3d, platform, deployment, lat, lon, [z, zmin, zmax], VEL3D)
 
     # save the file
     vel3d.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
