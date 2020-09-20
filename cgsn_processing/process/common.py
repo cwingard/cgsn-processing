@@ -244,6 +244,7 @@ def colocated_ctd(infile, ctd_name):
     # using the source instrument's full path information, split out the path and file name.
     instrmt_path, instrmt_file = os.path.split(infile)
     instrmt_name = os.path.basename(instrmt_path)
+    ctd_path = re.sub(instrmt_name, ctd_name, instrmt_path)
 
     # data files are named with either a date stamp, or a date+time stamp followed by the instrument name.
     x = re.match(r'([\d]{8}|[\d]{8}_[\d]{6}).([\w]*).json', instrmt_file)
@@ -260,7 +261,6 @@ def colocated_ctd(infile, ctd_name):
     tdelta = datetime.timedelta(days=1)
     for dt in rrule.rrule(rrule.DAILY, dtstart=instrmt_date - tdelta, until=instrmt_date + tdelta):
         dt_str = dt.strftime('%Y%m%d')
-        ctd_path = re.sub(instrmt_name, ctd_name, instrmt_path)
         ctd_file = f'{dt_str}.*.json'
         co_located = glob.glob((ctd_path + '/' + ctd_file))
         if co_located:
@@ -480,6 +480,7 @@ def inputs(args=None):
     parser.add_argument("-lt", "--latitude", dest="latitude", type=float, required=True)
     parser.add_argument("-lg", "--longitude", dest="longitude", type=float, required=True)
     parser.add_argument("-dp", "--depth", dest="depth", type=float, required=True)
+    parser.add_argument("-ba", "--burst_average", dest="burst", default=False, action='store_true')
     parser.add_argument("-bs", "--bin_size", dest="bin_size", type=float, required=False)
     parser.add_argument("-bd", "--blanking_distance", dest="blanking_distance", type=float, required=False)
     parser.add_argument("-cf", "--coeff_file", dest="coeff_file", type=str, required=False)
