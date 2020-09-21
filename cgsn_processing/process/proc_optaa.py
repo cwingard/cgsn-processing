@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-@package cgsn_parsers.process.proc_optaa
-@file cgsn_parsers/process/proc_optaa
+@package cgsn_processing.process.proc_optaa
+@file cgsn_processing/process/proc_optaa
 @author Initially by Russell Desiderio with rewriting by Christopher Wingard
 @brief Reads in the parsed OPTAA data and applies the calibration, temperature, salinity and scattering corrections
     to the data, saving the resulting data to NetCDF files for further review
@@ -177,7 +177,7 @@ def apply_dev(optaa, coeffs):
     c_ref = optaa['c_reference_raw']
     c_sig = optaa['c_signal_raw']
     npackets = a_ref.shape[0]
-    wvlngth = ~np.isnan(optaa['a_wavelengths'].values)
+    wvlngth = ~np.isnan(optaa['a_wavelengths'].values)[0, :]
 
     # initialize the output arrays
     apd = a_ref * np.nan
@@ -322,6 +322,11 @@ def estimate_chl_poc(optaa, coeffs):
 
 def calculate_ratios(optaa, coeffs):
     """
+    Calculate pigment ratios to use in analyzing community composition and/or
+    bloom health. As these ratios are subject to the effects of biofouling it
+    is expected that these values will start to become chaotic with noise
+    dominating the signal. Thus these ratios can also serve as biofouling
+    indicators.
 
     :param optaa: xarray dataset with the scatter corrected absorbance data.
     :param coeffs: Factory calibration coefficients in a dictionary structure
@@ -339,27 +344,40 @@ def calculate_ratios(optaa, coeffs):
     optaa['ratio_cdom'] = apg[:, m412] / apg[:, m440]
     optaa['ratio_carotenoids'] = apg[:, m490] / apg[:, m440]
     optaa['ratio_phycobilins'] = apg[:, m530] / apg[:, m440]
-    optaa['ratio_qband'] = apg[:, m676] / apg[:, m440]
+    optaa['ratio_soret'] = apg[:, m676] / apg[:, m440]
 
     return optaa
 
 
 def proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, **kwargs):
     """
+    Main OPTAA processing function. Loads the JSON formatted parsed data and
+    applies appropriate calibration coefficients to convert the raw, parsed
+    data into engineering units. If no calibration coefficients are available,
+    filled variables are returned and a dataset processing level attribute is
+    set to "parsed".
 
-    :param infile:
-    :param coeff_file:
-    :param platform:
-    :param deployment:
-    :param lat:
-    :param lon:
-    :param depth:
+    :param infile: JSON formatted parsed data file
+    :param coeff_file: JSON formatted data file with the factory calibration
+        coefficients. Will attempt to download the calibration coefficients
+         and create this file if it does not exist.
+    :param platform: Name of the mooring the instrument is mounted on.
+    :param deployment: Name of the deployment for the input data file.
+    :param lat: Latitude of the mooring deployment.
+    :param lon: Longittude of the mooring deployment.
+    :param depth: Depth of the platform the instrument is mounted on.
 
-    :param kwargs:
-        ctd_name:
-        burst:
+    :param kwargs: Optional keyword arguments
 
-    :return optaa:
+        ctd_name: Name of directory with data from a co-located CTD. This
+            data will be used to apply temeprature and salinity corrections
+            to the data. Otherwise, defaults are used with salinity set to
+            33 psu and temperature from the OPTAAs external temperature
+            sensor.
+        burst: Boolean flag to indicate whether or not to apply burst
+            averaging to the data. Default is to not apply burst averaging.
+
+    :return optaa: An xarray dataset with the processed OPTAA data
     """
     # parse the keyword arguments
     ctd_name = None
@@ -405,7 +423,7 @@ def proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, **kwar
         raise Exception('Number of wavelengths mismatch between ac-s data and the device file.')
 
     # create the time coordinate array and setup a base data frame
-    optaa_time = np.array(data['time'])
+    optaa_time = data['time']
     df = pd.DataFrame()
     df['time'] = pd.to_datetime(optaa_time, unit='s')
     df.set_index('time', drop=True, inplace=True)
@@ -455,7 +473,7 @@ def proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, **kwar
     df['ratio_cdom'] = empty_data
     df['ratio_carotenoids'] = empty_data
     df['ratio_phycobilins'] = empty_data
-    df['ratio_qband'] = empty_data
+    df['ratio_soret'] = empty_data
 
     # convert the data frame to an xarray dataset
     ds = xr.Dataset.from_dataframe(df)
@@ -466,7 +484,7 @@ def proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, **kwar
     num_wavelengths = np.array(data['a_signal_raw']).shape[1]
     pad = 100 - num_wavelengths
     fill_nan = np.ones(pad) * FILL_NAN
-    fill_int = np.ones(pad) * FILL_INT
+    fill_int = (np.ones(pad) * FILL_INT).astype(np.int32)
     a_wavelengths = np.concatenate([dev.coeffs['a_wavelengths'], fill_nan])
     c_wavelengths = np.concatenate([dev.coeffs['c_wavelengths'], fill_nan])
     empty_data = np.concatenate([np.array(data['a_signal_raw']).astype(np.int32),
@@ -504,9 +522,17 @@ def proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, **kwar
     raw = raw.dropna(dim='time', subset=['elapsed_run_time'])
 
     # apply a median average to the burst (if desired, set by the burst flag) and add the deployment ID
+    int_arrays = ['a_signal_raw', 'a_reference_raw', 'c_signal_raw', 'c_reference_raw']
     if burst:
-        raw = raw.resample(time='15Min', keep_attrs=True, base=55, loffset='5Min').median()
+        # suppress warnings for now. In the first case, changes suggested cause a ValueError and the second
+        # warning is expected given we are averaging before calculating some of the values
+        warnings.filterwarnings(action='ignore', category=FutureWarning)
+        warnings.filterwarnings(action='ignore', message='All-NaN slice encountered')
+
+        # resample to a 15 minute interval and shift the clock to make sure we capture data the time "correctly"
+        raw = raw.resample(time='15Min', keep_attrs=True, base=55, loffset='5Min').median(dim='time')
         raw['deploy_id'] = xr.Variable('time', np.atleast_1d(deployment).astype(np.str))
+
     else:
         raw['deploy_id'] = xr.Variable('time', np.tile(deployment, len(raw.time)).astype(np.str))
 
@@ -516,6 +542,13 @@ def proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, **kwar
         raw = update_dataset(raw, platform, deployment, lat, lon, [depth, depth, depth], OPTAA)
         raw['wavelength_number'].attrs['actual_wavelengths'] = data['num_wavelengths'][0]
         raw.attrs['processing_level'] = 'parsed'
+
+        # if we used burst averaging, reset fill values and attributes for the raw a and c signal and reference values
+        if burst:
+            for k in raw.variables:
+                if k in int_arrays:
+                    raw[k].attrs['_FillValue'] = FILL_NAN
+                    raw[k] = raw[k].where(raw[k] > -1000)
 
         # return the final dataset, with processed data filled since the calibration data is missing
         warnings.warn('Calibration data is missing. Processed data is filled with either a NaN or -9999999.')
@@ -536,15 +569,23 @@ def proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, **kwar
     # update the data set with the appropriate attributes
     proc = update_dataset(proc, platform, deployment, lat, lon, [depth, depth, depth], OPTAA)
 
+    # if we used burst averaging, reset fill values and attributes for the raw a and c signal and reference values
+    if burst:
+        for k in proc.variables:
+            if k in int_arrays:
+                proc[k].attrs['_FillValue'] = FILL_NAN
+                proc[k] = proc[k].where(raw[k] > -1000)
+
     # return the final processed dataset
     return proc
 
 
 def main(argv=None):
     """
+    Command line function to process the OPTAA data using the proc_optaa
+    function. Command line arguments are parsed and passed to the function.
 
-    :param argv:
-    :return:
+    :param argv: List of command line arguments
     """
     # load the input arguments
     args = inputs(argv)
