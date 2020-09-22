@@ -344,7 +344,7 @@ def calculate_ratios(optaa, coeffs):
     optaa['ratio_cdom'] = apg[:, m412] / apg[:, m440]
     optaa['ratio_carotenoids'] = apg[:, m490] / apg[:, m440]
     optaa['ratio_phycobilins'] = apg[:, m530] / apg[:, m440]
-    optaa['ratio_soret'] = apg[:, m676] / apg[:, m440]
+    optaa['ratio_qband'] = apg[:, m676] / apg[:, m440]
 
     return optaa
 
@@ -473,7 +473,7 @@ def proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, **kwar
     df['ratio_cdom'] = empty_data
     df['ratio_carotenoids'] = empty_data
     df['ratio_phycobilins'] = empty_data
-    df['ratio_soret'] = empty_data
+    df['ratio_qband'] = empty_data
 
     # convert the data frame to an xarray dataset
     ds = xr.Dataset.from_dataframe(df)
@@ -568,6 +568,8 @@ def proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, **kwar
 
     # update the data set with the appropriate attributes
     proc = update_dataset(proc, platform, deployment, lat, lon, [depth, depth, depth], OPTAA)
+    proc['wavelength_number'].attrs['actual_wavelengths'] = data['num_wavelengths'][0]
+    proc.attrs['processing_level'] = 'processed'
 
     # if we used burst averaging, reset fill values and attributes for the raw a and c signal and reference values
     if burst:

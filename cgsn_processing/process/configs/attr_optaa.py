@@ -336,16 +336,16 @@ OPTAA = {
         '_FillValue': FILL_NAN,
         'processing_level': 'processed'
     },
-    'ratio_soret': {
-        'long_name': 'Soret to Q Band Chlorophyll Absorbance Ratio',
+    'ratio_qband': {
+        'long_name': 'Chlorophyll Q Band to Soret Band Absorbance Ratio',
         # 'units': ''    # deliberately left blank, no units for this value
         'comment': ('The Soret and the Q bands represent the two main absorption bands of chlorophyll. The former '
                     'covers absorption in the blue region of the spectrum, while the latter covers absorption in the '
                     'red region. A decrease in the ratio of the intensity of the Soret band at 440 nm to that of the Q '
                     'band at 676 nm may indicate a change in phytoplankton community structure. All phytoplankton '
-                    'contain chlorophyll a as the primary light harvesting pigment, but green algae and dinoflagellates '
-                    'contain chlorophyll b and c, respectively, which are spectrally redshifted compared to '
-                    'chlorophyll a.'),
+                    'contain chlorophyll a as the primary light harvesting pigment, but green algae and '
+                    'dinoflagellates contain chlorophyll b and c, respectively, which are spectrally redshifted '
+                    'compared to chlorophyll a.'),
         'ancillary_variables': 'apd_ts_s',
         '_FillValue': FILL_NAN,
         'processing_level': 'processed'
