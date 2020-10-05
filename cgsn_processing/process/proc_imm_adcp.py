@@ -88,7 +88,7 @@ def main(argv=None):
         dev.load_coeffs()
     else:
         # load from the CI hosted CSV files
-        csv_url = find_calibration('ADCP', serial, (df.time.values.astype('int64') * 10 ** -9)[0])
+        csv_url = find_calibration('ADCP', serial, (df.index.values.astype('int64') * 10 ** -9)[0])
         if csv_url:
             dev.read_csv(csv_url)
             dev.save_coeffs()
