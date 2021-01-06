@@ -349,7 +349,7 @@ def calculate_ratios(optaa, coeffs):
     return optaa
 
 
-def proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, **kwargs):
+def proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, ctd_name=None, burst=None):
     """
     Main OPTAA processing function. Loads the JSON formatted parsed data and
     applies appropriate calibration coefficients to convert the raw, parsed
@@ -359,38 +359,23 @@ def proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, **kwar
 
     :param infile: JSON formatted parsed data file
     :param coeff_file: JSON formatted data file with the factory calibration
-        coefficients. Will attempt to download the calibration coefficients
-         and create this file if it does not exist.
+           coefficients. Will attempt to download the calibration coefficients
+           and create this file if it does not exist.
     :param platform: Name of the mooring the instrument is mounted on.
     :param deployment: Name of the deployment for the input data file.
     :param lat: Latitude of the mooring deployment.
     :param lon: Longittude of the mooring deployment.
     :param depth: Depth of the platform the instrument is mounted on.
-
-    :param kwargs: Optional keyword arguments
-
-        ctd_name: Name of directory with data from a co-located CTD. This
-            data will be used to apply temeprature and salinity corrections
-            to the data. Otherwise, defaults are used with salinity set to
-            33 psu and temperature from the OPTAAs external temperature
-            sensor.
-        burst: Boolean flag to indicate whether or not to apply burst
-            averaging to the data. Default is to not apply burst averaging.
+    :param ctd_name: Name of directory with data from a co-located CTD. This
+           data will be used to apply temeprature and salinity corrections
+           to the data. Otherwise, defaults are used with salinity set to
+           33 psu and temperature from the OPTAAs external temperature
+           sensor.
+    :param burst: Boolean flag to indicate whether or not to apply burst
+           averaging to the data. Default is to not apply burst averaging.
 
     :return optaa: An xarray dataset with the processed OPTAA data
     """
-    # parse the keyword arguments
-    ctd_name = None
-    burst = None
-    for key, value in kwargs.items():
-        if key not in ['burst', 'ctd_name']:
-            raise KeyError('Unknown keyword (%s) argument.' % key)
-        else:
-            if key == 'burst':
-                burst = value
-            if key == 'ctd_name':
-                ctd_name = value
-
     # load the json data file as a dictionary object for further processing
     data = json2obj(infile)
     if not data:
@@ -428,29 +413,6 @@ def proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, **kwar
     df['time'] = pd.to_datetime(optaa_time, unit='s')
     df.set_index('time', drop=True, inplace=True)
 
-    # setup default temperature and salinity values to use if no co-located CTD is available
-    salinity = None
-    temperature = None
-
-    # check for data from a co-located CTD and test to see if it covers our time range of interest. will use the
-    # temperature and salinity data from the CTD in the corrections, if available.
-    ctd = pd.DataFrame()
-    if ctd_name:
-        ctd = colocated_ctd(infile, ctd_name)
-
-    if not ctd.empty:
-        # set the CTD and pH time to the same units of seconds since 1970-01-01
-        ctd_time = ctd.time.values.astype(float) / 10.0 ** 9
-
-        # test to see if the CTD covers our time of interest for this optaa file
-        coverage = ctd_time.min() <= min(optaa_time) and ctd_time.max() >= max(optaa_time)
-
-        # reset initial estimates of in-situ temperature and salinity if we have full coverage
-        if coverage:
-            temperature = np.mean(np.interp(optaa_time, ctd_time, ctd.temperature))
-            salinity = SP_from_C(ctd.conductivity * 10.0, ctd.temperature, ctd.pressure)
-            salinity = np.mean(np.interp(optaa_time, ctd_time, salinity))
-
     # setup and load the 1D parsed data
     df['z'] = depth
     empty_data = np.atleast_1d(data['serial_number']).astype(np.int32) * np.nan
@@ -474,6 +436,32 @@ def proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, **kwar
     df['ratio_carotenoids'] = empty_data
     df['ratio_phycobilins'] = empty_data
     df['ratio_qband'] = empty_data
+
+    # check for data from a co-located CTD and test to see if it covers our time range of interest. will use the
+    # temperature and salinity data from the CTD in the corrections, if available.
+    df['ctd_temperature'] = empty_data
+    df['ctd_salinity'] = empty_data
+    temperature = None
+    salinity = None
+    ctd = pd.DataFrame()
+    if ctd_name:
+        ctd = colocated_ctd(infile, ctd_name)
+
+    if not ctd.empty:
+        # set the CTD and pH time to the same units of seconds since 1970-01-01
+        ctd_time = ctd.time.values.astype(float) / 10.0 ** 9
+
+        # test to see if the CTD covers our time of interest for this optaa file
+        coverage = ctd_time.min() <= min(optaa_time) and ctd_time.max() >= max(optaa_time)
+
+        # reset initial estimates of in-situ temperature and salinity if we have full coverage
+        if coverage:
+            temperature = np.mean(np.interp(optaa_time, ctd_time, ctd.temperature))
+            df['ctd_temperature'] = temperature
+
+            salinity = SP_from_C(ctd.conductivity * 10.0, ctd.temperature, ctd.pressure)
+            salinity = np.mean(np.interp(optaa_time, ctd_time, salinity))
+            df['ctd_salinity'] = salinity
 
     # convert the data frame to an xarray dataset
     ds = xr.Dataset.from_dataframe(df)
@@ -606,8 +594,9 @@ def main(argv=None):
         ctd_name = None
 
     # process the OPTAA data and save the results to disk
-    optaa = proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, burst=burst, ctd_name=ctd_name)
-    optaa.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+    optaa = proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, ctd_name, burst)
+    if optaa:
+        optaa.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
 
 
 if __name__ == '__main__':

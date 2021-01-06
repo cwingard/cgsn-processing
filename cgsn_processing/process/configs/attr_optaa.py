@@ -32,6 +32,11 @@ OPTAA = {
         'comment': ('Mooring deployment ID. Useful for differentiating data by deployment, '
                     'allowing for overlapping deployments in the data sets.')
     },
+    'profile_id': {
+        'long_name': 'Profile ID',
+        'comment': ('CSPP profile ID. Identifies the unique profile per the site and deployment. Useful for '
+                    'differentiating profiles in the data sets.'),
+    },
     'station': {
         'cf_role': 'timeseries_id',
         'long_name': 'Station Identifier'
@@ -102,7 +107,7 @@ OPTAA = {
     'elapsed_run_time': {
         'long_name': 'Elapsed Run Time',
         'units': 'ms',
-        'comment': ('Time in milliseconds since the instrument was powered on.'),
+        'comment': 'Time in milliseconds since the instrument was powered on.',
         'processing_level': 'parsed'
     },
     'wavelength_number': {
@@ -199,18 +204,53 @@ OPTAA = {
         'processing_level': 'parsed'
     },
 
+    # Data from a co-located CTD, if available, interpolated into the data set
+    'ctd_depth': {
+        'long_name': 'Profiler Depth',
+        'standard_name': 'depth',
+        'units': 'm',
+        'comment': 'Depth of the profiler, with the data interpolated into the OPTAA record from a co-located CTD.',
+        'positive': 'down',
+        '_FillValue': FILL_NAN,
+        'processing_level': 'processed'
+    },
+    'ctd_temperature': {
+        'long_name': 'Sea Water Temperature',
+        'standard_name': 'sea_water_temperature',
+        'units': 'degrees_Celsius',
+        'comment': ('Sea water temperature is the in situ temperature of the sea water. Data is interpolated into '
+                    'the OPTAA record from a co-located CTD.'),
+        'data_product_identifier': 'TEMPWAT_L1',
+        '_FillValue': FILL_NAN,
+        'processing_level': 'processed'
+    },
+    'ctd_salinity': {
+        'long_name': 'Practical Salinity',
+        'standard_name': 'sea_water_practical_salinity',
+        'units': '1',
+        'comment': ('Salinity is generally defined as the concentration of dissolved salt in a parcel of sea water. '
+                    'Practical Salinity is a more specific unitless quantity calculated from the conductivity of '
+                    'sea water and adjusted for temperature and pressure. It is approximately equivalent to Absolute '
+                    'Salinity (the mass fraction of dissolved salt in sea water), but they are not interchangeable. '
+                    'Data is interpolated into the OPTAA record from a co-located CTD.'),
+        'data_product_identifier': 'PRACSAL_L2',
+        '_FillValue': FILL_NAN,
+        'processing_level': 'processed'
+    },
+
     # Derived values in the processed data set
     'pressure': {
         'long_name': 'Pressure',
         'units': 'dbar',
         'comment': ('Seawater pressure, measured at the top of the pressure housing. If the unit is not equipped '
-                    'with a pressure sensor, the values will all be reported as 0.'),
+                    'with a pressure sensor, the values will be filled with a NaN.'),
         'ancillary_variables': 'pressure_raw',
+        '_FillValue': FILL_NAN,
         'processing_level': 'processed'
     },
     'external_temp': {
         'long_name': 'In-Situ Temperature',
-        'standard_name': 'seawater_temperature',
+        'standard_name': 'sea_water_temperature',
         'units': 'degrees_Celsius',
         'comment': ('In-situ sea water temperature measurements from the sensor mounted at the top of the '
                     'AC-S pressure housing.'),
@@ -220,7 +260,7 @@ OPTAA = {
     'internal_temp': {
         'long_name': 'Internal Instrument Temperature',
         'units': 'degrees_Celsius',
-        'comment': ('Internal instrument temperature, used to convert raw absorbance and attenuation measurements.'),
+        'comment': 'Internal instrument temperature, used to convert raw absorbance and attenuation measurements.',
         'ancillary_variables': 'internal_temp_raw',
         'processing_level': 'processed'
     },
