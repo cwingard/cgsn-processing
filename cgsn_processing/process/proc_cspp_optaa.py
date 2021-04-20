@@ -30,7 +30,7 @@ def proc_cspp_optaa(infile, coeff_file, platform, deployment, lat, lon, depth):
     raw parsed data into engineering units. If no calibration coefficients are
     available, filled variables are returned and the dataset processing level
     attribute is set to "parsed". If the calibration coefficients are available,
-    the the dataset processing level attribute is set to "processed".
+    then the dataset processing level attribute is set to "processed".
 
     :param infile: JSON formatted parsed data file
     :param coeff_file: JSON formatted data file with the factory calibration
@@ -221,12 +221,12 @@ def main(argv=None):
     args = inputs(argv)
     infile = os.path.abspath(args.infile)
     outfile = os.path.abspath(args.outfile)
-    coeff_file = os.path.abspath(args.coeff_file)
     platform = args.platform
     deployment = args.deployment
     lat = args.latitude
     lon = args.longitude
     depth = args.depth
+    coeff_file = os.path.abspath(args.coeff_file)
 
     # process the OPTAA data and save the results to disk
     optaa = proc_cspp_optaa(infile, coeff_file, platform, deployment, lat, lon, depth)

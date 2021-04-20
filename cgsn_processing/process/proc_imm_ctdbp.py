@@ -64,7 +64,7 @@ def main(argv=None):
         sensor_time.append(epoch_time(dt[:2] + '-' + dt[2:5] + '-' + dt[5:9] + ' ' + dt[9:]))
     ctd['sensor_time'] = sensor_time
     ctd.drop(columns={'serial_number', 'date_time_string'}, inplace=True)
-    ctd.rename(columns={'raw_oxy_calphase': 'raw_oxygen_phase',
+    ctd.rename(columns={'raw_oxy_calphase': 'raw_calibrated_phase',
                         'raw_oxy_temp': 'raw_oxygen_thermistor'},
                inplace=True)
 
@@ -95,7 +95,7 @@ def main(argv=None):
     ctd_raw.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
 
     # grab the calibration coefficients for the two sensors: FLORD
-    flord_coeff = os.path.join(os.path.dirname(infile), 'ctdbp-flord.cal_coeffs.pkl')
+    flord_coeff = os.path.join(os.path.dirname(infile), 'ctdbp-flord.cal_coeffs.json')
     flr = FLORD_Calibrations(flord_coeff)  # initialize calibration class
     if os.path.isfile(flord_coeff):
         # we always want to use this file if it exists
@@ -112,7 +112,7 @@ def main(argv=None):
             return None
 
     # grab the calibration coefficients for the two sensors: DOSTA
-    dosta_coeff = os.path.join(os.path.dirname(infile), 'ctdbp-dosta.cal_coeffs.pkl')
+    dosta_coeff = os.path.join(os.path.dirname(infile), 'ctdbp-dosta.cal_coeffs.jaon')
     opt = DOSTA_Calibrations(dosta_coeff)  # initialize calibration class
     if os.path.isfile(dosta_coeff):
         # we always want to use this file if it exists
@@ -129,7 +129,7 @@ def main(argv=None):
             return None
 
     # convert the raw measurements from volts to engineering units
-    ctd['oxygen_phase'] = do2_phase_volt_to_degree(ctd['raw_oxygen_phase'])
+    ctd['calibrated_phase'] = do2_phase_volt_to_degree(ctd['raw_calibrated_phase'])
     ctd['oxygen_thermistor_temperature'] = do2_therm_volt_to_degc(ctd['raw_oxygen_thermistor'])
     ctd['estimated_chlorophyll'] = flo_scale_and_offset(ctd['raw_chlorophyll'], flr.coeffs['dark_chla'],
                                                         flr.coeffs['scale_chla'])
@@ -137,7 +137,7 @@ def main(argv=None):
                                            flr.coeffs['scale_beta'])
 
     # apply temperature, salinity and pressure corrections to the dissolved oxygen measurement
-    ctd['oxygen_concentration'] = do2_phase_to_doxy(ctd['oxygen_phase'], ctd['oxygen_thermistor_temperature'],
+    ctd['svu_oxygen_concentration'] = do2_phase_to_doxy(ctd['calibrated_phase'], ctd['oxygen_thermistor_temperature'],
                                                     opt.coeffs['svu_cal_coeffs'], opt.coeffs['two_point_coeffs'])
     ctd['oxygen_concentration_corrected'] = do2_salinity_correction(ctd['oxygen_concentration'], ctd['pressure'],
                                                                     ctd['temperature'], ctd['salinity'], lat, lon)

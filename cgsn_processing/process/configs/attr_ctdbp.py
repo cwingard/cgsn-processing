@@ -211,18 +211,19 @@ CTDBP = {
 
     # Values recorded by the different CTDBP configurations
     # --> equipped with an optode (DOSTA)
-    'raw_oxygen_phase': {
-        'long_name': 'Raw Optode Phase',
+    'raw_calibrated_phase': {
+        'long_name': 'Raw Calibrated Phase Difference',
         'units': 'V',
         'comment': ('The optode measures oxygen by exciting a special platinum porphyrin complex embedded in a ' +
                     'gas permeable foil with modulated blue light. The Optode measures the phase shift of a ' +
-                    'returned red light. By linearizing and temperature compensating, with an incorporated ' +
-                    'temperature sensor, the absolute O2 concentration is determined. This value is recorded by the ' +
+                    'returned red light. To convert the raw calibrated phase difference reported in V to degrees, '
+                    ''
+                    'This value is recorded by the ' +
                     'CTD as an analog voltage signal.'),
         'data_product_identifier': 'DOCONCS-VLT_L0',
         '_FillValue': np.nan
     },
-    'oxygen_phase': {
+    'calibrated_phase': {
         'long_name': 'Optode Calibrated Phase',
         'units': 'degrees',
         'comment': ('Calibrated phase shift, measurement reported in degrees, of the red light when the sensing ' +
