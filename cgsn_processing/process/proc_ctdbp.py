@@ -6,23 +6,22 @@
 @author Christopher Wingard
 @brief Creates a NetCDF dataset for the CTDBP data from the JSON formatted data
 """
-import os
 import numpy as np
+import os
 import xarray as xr
 
 from gsw import SP_from_C, SA_from_SP, CT_from_t, rho
 
-from cgsn_processing.process.common import ENCODING, inputs, dict_update, epoch_time, json2df, update_dataset
+from cgsn_processing.process.common import ENCODING, inputs, epoch_time, json2df, update_dataset
 from cgsn_processing.process.finding_calibrations import find_calibration
-from cgsn_processing.process.configs.attr_ctdbp import GLOBAL, CTDBP
-
+from cgsn_processing.process.configs.attr_ctdbp import CTDBP
 from cgsn_processing.process.proc_flort import Calibrations
 
 from pyseas.data.do2_functions import do2_salinity_correction
 from pyseas.data.flo_functions import flo_scale_and_offset, flo_bback_total
 
 
-def proc_ctdbp(infile, platform, deployment, lat, lon, depth, ctd_type, flort_serial=None):
+def proc_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
     """
     Processing function for the different versions of CTDBP. Loads the JSON
     formatted parsed data and applies appropriate calibration coefficients to
@@ -38,9 +37,23 @@ def proc_ctdbp(infile, platform, deployment, lat, lon, depth, ctd_type, flort_se
     :param lat: Latitude of the mooring deployment.
     :param lon: Longitude of the mooring deployment.
     :param depth: Depth of the platform the instrument is mounted on.
-    :param flort_serial: The serial number of the attached FLORT (optional input)
+
+    :kwarg ctd_type: Set the type of CTD: solo, with a dosta, or with a flort attached
+    :kwarg flort_serial: The serial number of the attached FLORT (optional input)
+
     :return ctdbp: An xarray dataset with the processed CTDBP data
     """
+    # process the variable length keyword arguments
+    ctd_type = None
+    flort_serial = None
+    for key, value in kwargs.items():
+        if key == 'ctd_type':
+            ctd_type = value
+            if ctd_type:
+                ctd_type = ctd_type.lower()
+        if key == 'flort_serial':
+            flort_serial = value
+
     if ctd_type not in ['solo', 'dosta', 'flort']:
         raise ValueError('The CTDBP type must be a string set as either solo, dosta or flort (case insensitive).')
 
@@ -75,64 +88,56 @@ def proc_ctdbp(infile, platform, deployment, lat, lon, depth, ctd_type, flort_se
         ctd = xr.Dataset.from_dataframe(ctd)
 
         # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
-        attrs = dict_update(GLOBAL, CTDBP)
-        ctd = update_dataset(ctd, platform, deployment, lat, lon, [depth, depth, depth], attrs)
+        ctd = update_dataset(ctd, platform, deployment, lat, lon, [depth, depth, depth], CTDBP)
         ctd.attrs['processing_level'] = 'processed'
         return ctd
 
     if ctd_type == 'flort':
         # create empty variables for the processed FLORT data
-        ctd['estimated_chlorophyll'] = ctd['raw_chlorophyll'] * np.NaN
-        ctd['fluorometric_cdom'] = ctd['raw_cdom'] * np.NaN
-        ctd['beta_700'] = ctd['raw_backscatter'] * np.NaN
-        ctd['total_optical_backscatter'] = ctd['beta_700'] * np.NaN
-
-        # create an xarray data set from the data frame
-        raw = xr.Dataset.from_dataframe(ctd)
-
-        # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
-        attrs = dict_update(GLOBAL, CTDBP)
-
-        # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
-        raw = update_dataset(raw, platform, deployment, lat, lon, [depth, depth, depth], attrs)
+        ctd['estimated_chlorophyll'] = ctd['raw_chlorophyll'] * np.nan
+        ctd['fluorometric_cdom'] = ctd['raw_cdom'] * np.nan
+        ctd['beta_700'] = ctd['raw_backscatter'] * np.nan
+        ctd['total_optical_backscatter'] = ctd['beta_700'] * np.nan
+        proc_flag = False
 
         # now grab the calibration coefficients for the FLORT (if they exist)
-        flort_coeff = os.path.join(os.path.dirname(infile), 'ctdbp-flort.cal_coeffs.json')
-        flr = Calibrations(flort_coeff)  # initialize calibration class
-        if os.path.isfile(flort_coeff):
+        coeff_file = os.path.join(os.path.dirname(infile), 'flort.cal_coeffs.json')
+        flr = Calibrations(coeff_file)  # initialize calibration class
+        if os.path.isfile(coeff_file):
             # we always want to use this file if it exists
             flr.load_coeffs()
+            proc_flag = True
         else:
             # load from the CI hosted CSV files
             csv_url = find_calibration('FLORT', flort_serial, (ctd.time.values.astype('int64') * 10 ** -9)[0])
             if csv_url:
                 flr.read_csv(csv_url)
                 flr.save_coeffs()
-            else:
-                # If we cannot find the calibration coefficients we are done, do not attempt to create a processed file
-                print('A source for the FLORT calibration coefficients for {} could not be found.', flort_serial)
-                raw.attrs['processing_level'] = 'parsed'
-                return raw
+                proc_flag = True
 
         # if calibration coefficients are available, process the FLORT data
-        ctd['estimated_chlorophyll'] = flo_scale_and_offset(ctd['raw_chlorophyll'], flr.coeffs['dark_chla'],
-                                                            flr.coeffs['scale_chla'])
-        ctd['fluorometric_cdom'] = flo_scale_and_offset(ctd['raw_cdom'], flr.coeffs['dark_cdom'],
-                                                        flr.coeffs['scale_cdom'])
-        ctd['beta_700'] = flo_scale_and_offset(ctd['raw_backscatter'], flr.coeffs['dark_beta'],
-                                               flr.coeffs['scale_beta'])
-        ctd['total_optical_backscatter'] = flo_bback_total(ctd['beta_700'], ctd['temperature'], ctd['salinity'],
-                                                           flr.coeffs['scatter_angle'], flr.coeffs['wavelength'],
-                                                           flr.coeffs['chi_factor'])
+        if proc_flag:
+            ctd['estimated_chlorophyll'] = flo_scale_and_offset(ctd['raw_chlorophyll'], flr.coeffs['dark_chla'],
+                                                                flr.coeffs['scale_chla'])
+            ctd['fluorometric_cdom'] = flo_scale_and_offset(ctd['raw_cdom'], flr.coeffs['dark_cdom'],
+                                                            flr.coeffs['scale_cdom'])
+            ctd['beta_700'] = flo_scale_and_offset(ctd['raw_backscatter'], flr.coeffs['dark_beta'],
+                                                   flr.coeffs['scale_beta'])
+            ctd['total_optical_backscatter'] = flo_bback_total(ctd['beta_700'], ctd['temperature'], ctd['salinity'],
+                                                               flr.coeffs['scatter_angle'], flr.coeffs['wavelength'],
+                                                               flr.coeffs['chi_factor'])
 
-        # create an xarray data set from the data frame with the processed data
-        proc = xr.Dataset.from_dataframe(ctd)
+        # create an xarray data set from the data frame
+        ctd = xr.Dataset.from_dataframe(ctd)
+        if proc_flag:
+            ctd.attrs['processing_level'] = 'processed'
+        else:
+            ctd.attrs['processing_level'] = 'parsed'
 
         # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
-        attrs = dict_update(GLOBAL, CTDBP)
-        proc = update_dataset(proc, platform, deployment, lat, lon, [depth, depth, depth], attrs)
-        proc.attrs['processing_level'] = 'parsed'
-        return proc
+        ctd = update_dataset(ctd, platform, deployment, lat, lon, [depth, depth, depth], CTDBP)
+
+        return ctd
 
 
 def main(argv=None):
@@ -152,16 +157,13 @@ def main(argv=None):
     lon = args.longitude
     depth = args.depth
     ctd_type = args.switch
-    ctd_type = ctd_type.lower()
-    if args.serial:
-        flort_serial = args.serial  # name of co-located CTD
-    else:
-        flort_serial = None
+    flort_serial = args.serial  # serial number of the FLORT
 
     # process the CTDBP data and save the results to disk
-    ctdbp = proc_ctdbp(infile, platform, deployment, lat, lon, depth, ctd_type, flort_serial)
+    ctdbp = proc_ctdbp(infile, platform, deployment, lat, lon, depth, ctd_type=ctd_type, flort_serial=flort_serial)
     if ctdbp:
         ctdbp.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+
 
 if __name__ == '__main__':
     main()

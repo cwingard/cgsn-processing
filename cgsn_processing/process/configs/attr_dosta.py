@@ -6,11 +6,13 @@
 @author Christopher Wingard
 @brief Attributes for the dissolved oxygen (DOSTA) sensor
 """
-GLOBAL = {
+import numpy as np
+
+DOSTA = {
     # global attributes
     'global': {
         'title': 'Dissolved Oxygen (DOSTA) Data',
-        'summary': 'Moored dissolved oxygen time series data data from the Aaderaa Optode dissolved oxygen sensor.',
+        'summary': 'Dissolved oxygen concentrations from the Aaderaa Optode dissolved oxygen sensor.',
         'project': 'Ocean Observatories Initiative',
         'institution': 'Coastal and Global Scale Nodes (CGSN)',
         'acknowledgement': 'National Science Foundation',
@@ -62,15 +64,13 @@ GLOBAL = {
         'comment': 'Instrument deployment depth',
         'positive': 'down',
         'axis': 'Z'
-    }
-}
-
-DOSTA = {
-    # dataset attributes
+    },
+    # dataset attributes --> parsed data
     'product_number': {
         'long_name': 'Product Number',
         'comment': 'Optode product number, usually model 4831 for OOI systems.',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': ''    # deliberately left blank, no units for this value,
+        'processing_level': 'parsed'
     },
     'serial_number': {
         'long_name': 'Serial Number',
@@ -84,6 +84,7 @@ DOSTA = {
         'comment': ('Mole concentration of dissolved oxygen per unit volume, also known as Molarity, as measured by '
                     'an optode oxygen sensor. Computed on-board the sensor using internal calibration coefficients.'),
         'data_product_identifier': 'DOCONCS_L1',
+        'processing_level': 'parsed'
     },
     'oxygen_saturation': {
         'long_name': 'Dissolved Oxygen Saturation',
@@ -91,6 +92,7 @@ DOSTA = {
         'comment': ('Oxygen saturation is the percentage of dissolved oxygen relative to the absolute solubility of '
                     'oxygen at a particular water temperature. Computed on-board the sensor using internal calibration '
                     'coefficients.'),
+        'processing_level': 'parsed'
     },
     'oxygen_thermistor_temperature': {
         'long_name': 'Optode Thermistor Temperature',
@@ -99,6 +101,7 @@ DOSTA = {
         'comment': ('Optode internal thermistor temperature used in calculation of the absolute oxygen ' 
                     'concentration. This is not the in-situ sea water temperature, though it will be very close.'),
         'ancillary_variables': 'raw_oxygen_thermistor',
+        'processing_level': 'parsed'
     },
     'calibrated_phase': {
         'long_name': 'Calibrated Phase Difference',
@@ -108,53 +111,53 @@ DOSTA = {
                     'returned red light. By linearizing and temperature compensating, with an incorporated '
                     'temperature sensor, the absolute O2 concentration can be determined.'),
         'data_product_identifier': 'DOCONCS-VLT_L0',
+        'processing_level': 'parsed'
     },
     'compensated_phase': {
         'long_name': 'Temperature Compensated Calibrated Phase Difference',
         'units': 'degrees',
         'comment': 'Temperature compensated (using the temperature data from an onboard thermistor) calibrated phase '
                    'difference.',
-        'ancillary_variables': 'oxygen_thermistor_temperature, calibrated_phase'
+        'ancillary_variables': 'oxygen_thermistor_temperature, calibrated_phase',
+        'processing_level': 'parsed'
     },
     'blue_phase': {
         'long_name': 'Blue Phase Measurement',
         'units': 'degree',
         'comment': ('Phase measurement with blue excitation light of the returned signal after the luminophore '
-                   'quenching'),
+                    'quenching'),
+        'processing_level': 'parsed'
     },
     'red_phase': {
         'long_name': 'Red Phase Measurement',
         'units': 'degree',
-        'comment': 'Phase measurement with red excitation light of the returned signal after the luminophore quenching'
+        'comment': ('Phase measurement, with red excitation light, of the returned signal after the luminophore '
+                    'quenching'),
+        'processing_level': 'parsed'
     },
     'blue_amplitude': {
         'long_name': 'Blue Amplitude Measurement',
         'units': 'mV',
-        'comment': ('Amplitude measurement with blue excitation light of the returned signal after the luminophore '
-                   'quenching')
+        'comment': ('Amplitude measurement, with blue excitation light, of the returned signal after the luminophore '
+                    'quenching'),
+        'processing_level': 'parsed'
     },
     'red_amplitude': {
         'long_name': 'Red Amplitude Measurement',
         'units': 'mV',
-        'comment': ('Amplitude measurement with red excitation light of the returned signal after the luminophore '
-                   'quenching'),
+        'comment': ('Amplitude measurement, with red excitation light, of the returned signal after the luminophore '
+                    'quenching'),
+        'processing_level': 'parsed'
     },
     'raw_oxygen_thermistor': {
         'long_name': 'Raw Optode Thermistor Temperature',
         'units': 'mV',
         'comment': ('The optode includes an integrated internal thermistor to measure the temperature at '
                     'the sensing foil.'),
+        'processing_level': 'parsed'
     },
-    # co-located CTD data
-    'temperature': {
-        'long_name': 'Sea Water Temperature',
-        'standard_name': 'sea_water_temperature',
-        'units': 'degrees_Celsius',
-        'comment': ('Sea water temperature is the in situ temperature of the sea water. Measurements are from a '
-                    'co-located CTD'),
-        'data_product_identifier': 'TEMPWAT_L1'
-    },
-    'pressure': {
+    # dataset attributes --> co-located CTD data
+    'ctd_pressure': {
         'long_name': 'Sea Water Pressure',
         'standard_name': 'sea_water_pressure_due_to_sea_water',
         'units': 'dbar',
@@ -163,9 +166,21 @@ DOSTA = {
                     'absolute pressure at the sensor to remove the weight of the atmosphere on top of the water ' 
                     'column. The pressure at a sensor in situ provides a metric of the depth of that sensor. '
                     'Measurements are from a co-located CTD.'),
-        'data_product_identifier': 'PRESWAT_L1'
+        'data_product_identifier': 'PRESWAT_L1',
+        '_FillValue': np.nan,
+        'processing_level': 'processed'
     },
-    'salinity': {
+    'ctd_temperature': {
+        'long_name': 'Sea Water Temperature',
+        'standard_name': 'sea_water_temperature',
+        'units': 'degrees_Celsius',
+        'comment': ('Sea water temperature is the in situ temperature of the sea water. Measurements are from a '
+                    'co-located CTD'),
+        'data_product_identifier': 'TEMPWAT_L1',
+        '_FillValue': np.nan,
+        'processing_level': 'processed'
+    },
+    'ctd_salinity': {
         'long_name': 'Sea Water Practical Salinity',
         'standard_name': 'sea_water_practical_salinity',
         'units': '1',
@@ -174,9 +189,11 @@ DOSTA = {
                     'sea water and adjusted for temperature and pressure. It is approximately equivalent to Absolute ' 
                     'Salinity (the mass fraction of dissolved salt in sea water), but they are not interchangeable. '
                     'Measurements are from a co-located CTD.'),
-        'data_product_identifier': 'PRACSAL_L2'
+        'data_product_identifier': 'PRACSAL_L2',
+        '_FillValue': np.nan,
+        'processing_level': 'processed'
     },
-    # --> derived values
+    # dataset attributes --> derived values
     'svu_oxygen_concentration': {
         'long_name': 'Dissolved Oxygen Concentration',
         'standard_name': 'mole_concentration_of_dissolved_molecular_oxygen_in_sea_water',
@@ -186,7 +203,9 @@ DOSTA = {
                     'but is recomputed using factory calibration coefficients, the calibrated phase values and '
                     'the optode thermistor temperature via the Stern-Volmer-Uchida equation.'),
         'data_product_identifier': 'DOCONCS_L1',
-        'ancillary_variables': 'oxygen_thermistor_temperature, calibrated_phase'
+        'ancillary_variables': 'oxygen_thermistor_temperature, calibrated_phase',
+        '_FillValue': np.nan,
+        'processing_level': 'processed'
     },
     'oxygen_concentration_corrected': {
         'long_name': 'Corrected Dissolved Oxygen Concentration',
@@ -197,6 +216,8 @@ DOSTA = {
                      'the dissolved oxygen concentration for the effects of salinity, temperature, and pressure with '
                      'data from a co-located CTD.'),
         'data_product_identifier': 'DOXYGEN_L2',
-        'ancillary_variables': 'svu_oxygen_concentration, temperature, pressure, salinity, lat, lon'
+        'ancillary_variables': 'svu_oxygen_concentration, ctd_temperature, ctd_pressure, ctd_salinity, lat, lon',
+        '_FillValue': np.nan,
+        'processing_level': 'processed'
     }
 }
