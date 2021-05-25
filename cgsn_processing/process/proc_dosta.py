@@ -10,12 +10,15 @@ import json
 import numpy as np
 import os
 import pandas as pd
-import re
+import warnings
+import xarray as xr
 
-from pyaxiom.netcdf.sensors import TimeSeries
-
-from cgsn_processing.process.common import Coefficients, inputs, json2df
+from cgsn_processing.process.common import Coefficients, inputs, json2df, colocated_ctd, update_dataset, ENCODING
 from cgsn_processing.process.configs.attr_dosta import DOSTA
+from cgsn_processing.process.finding_calibrations import find_calibration
+
+from pyseas.data.do2_functions import do2_phase_to_doxy, do2_salinity_correction
+from gsw import SP_from_C
 
 
 class Calibrations(Coefficients):
@@ -54,6 +57,140 @@ class Calibrations(Coefficients):
         self.coeffs = coeffs
 
 
+def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
+    """
+    Main DOSTA processing function. Loads the JSON formatted parsed data and
+    applies appropriate calibration coefficients to convert the raw, parsed
+    data into engineering units. If calibration coefficients are available,
+    the oxygen concentration is recalculated from the calibrated phase and
+    thermistor temperature and the dataset processing level attribute is set
+    to "processed". Otherwise, filled variables are returned and the dataset
+    processing level attribute is set to "parsed".
+
+    :param infile: JSON formatted parsed data file
+    :param platform: Name of the mooring the instrument is mounted on.
+    :param deployment: Name of the deployment for the input data file.
+    :param lat: Latitude of the mooring deployment.
+    :param lon: Longitude of the mooring deployment.
+    :param depth: Depth of the platform the instrument is mounted on.
+
+    :kwargs ctd_name: Name of directory with data from a co-located CTD. This
+           data will be used to apply salinity and density corrections to the
+           data. Otherwise the salinity corrected oxygen concentration is
+           filled with NaN's
+    :kwargs burst: Boolean flag to indicate whether or not to apply burst
+           averaging to the data. Default is to not apply burst averaging.
+
+    :return dosta: An xarray dataset with the processed DOSTA data
+    """
+    # process the variable length keyword arguments
+    ctd_name = kwargs.get('ctd_name')
+    burst = kwargs.get('burst')
+
+    # load the instrument calibration data
+    coeff_file = os.path.join(os.path.dirname(infile), 'dosta.cal_coeffs.json')
+    dev = Calibrations(coeff_file)  # initialize calibration class
+    proc_flag = False
+
+    # load the json data file as a dictionary object for further processing
+    dosta = json2df(infile)
+    if dosta.empty:
+        # json data file was empty, exiting
+        return None
+
+    # check for the source of calibration coeffs and load accordingly
+    if os.path.isfile(coeff_file):
+        # we always want to use this file if it already exists
+        dev.load_coeffs()
+        proc_flag = True
+    else:
+        # load from the CI hosted CSV files
+        csv_url = find_calibration('DOSTA', str(dosta['serial_number'][0]), dosta['time'][0])
+        if csv_url:
+            dev.read_csv(csv_url)
+            dev.save_coeffs()
+            proc_flag = True
+
+    # clean up dataframe and rename selected variables
+    empty_data = np.atleast_1d(dosta['serial_number']).astype(np.int32) * np.nan
+    dosta.drop(columns=['dcl_date_time_string'], inplace=True)
+    dosta.rename(columns={'estimated_oxygen_concentration': 'oxygen_concentration',
+                          'estimated_oxygen_saturation': 'oxygen_saturation',
+                          'optode_temperature': 'oxygen_thermistor_temperature',
+                          'temp_compensated_phase': 'compensated_phase',
+                          'raw_temperature': 'raw_oxygen_thermistor'}, inplace=True)
+
+    # processed variables to be created if a device file and a co-located CTD is available
+    dosta['svu_oxygen_concentration'] = empty_data
+    dosta['oxygen_concentration_corrected'] = empty_data
+
+    # recompute the oxygen concentration from the calibrated phase, optode thermistor temperature and the calibration
+    # coefficients
+    if proc_flag:
+        svu = do2_phase_to_doxy(dosta['calibrated_phase'], dosta['oxygen_thermistor_temperature'],
+                                dev.coeffs['svu_cal_coeffs'], dev.coeffs['two_point_coeffs'])
+        dosta['svu_oxygen_concentration'] = svu
+
+    # check for data from a co-located CTD and test to see if it covers our time range of interest.
+    dosta['ctd_pressure'] = empty_data
+    dosta['ctd_temperature'] = empty_data
+    dosta['ctd_salinity'] = empty_data
+    ctd = pd.DataFrame()
+    if ctd_name:
+        ctd = colocated_ctd(infile, ctd_name)
+
+    if proc_flag and not ctd.empty:
+        # set the CTD and DOSTA time to the same units of seconds since 1970-01-01
+        ctd_time = ctd.time.values.astype(float) / 10.0 ** 9
+
+        # test to see if the CTD covers our time of interest for this DOSTA file
+        coverage = ctd_time.min() <= dosta['time'].min() and ctd_time.max() >= dosta['time'].max()
+
+        # interpolate the CTD data if we have full coverage
+        if coverage:
+            pressure = np.interp(dosta['time'], ctd_time, ctd.pressure)
+            dosta['ctd_pressure'] = pressure
+
+            temperature = np.interp(dosta['time'], ctd_time, ctd.temperature)
+            dosta['ctd_temperature'] = temperature
+
+            salinity = SP_from_C(ctd.conductivity * 10.0, ctd.temperature, ctd.pressure)
+            salinity = np.interp(dosta['time'], ctd_time, salinity)
+            dosta['ctd_salinity'] = salinity
+
+            # calculate the pressure and salinity corrected oxygen concentration
+            dosta['oxygen_concentration_corrected'] = do2_salinity_correction(dosta['svu_oxygen_concentration'],
+                                                                              dosta['pressure'], dosta['temperature'],
+                                                                              dosta['salinity'], lat, lon)
+
+    # create an xarray data set from the data frame
+    dosta = xr.Dataset.from_dataframe(dosta)
+
+    # apply burst averaging if selected
+    if burst:
+        # suppress warnings for now, the changes suggested cause a ValueError
+        warnings.filterwarnings(action='ignore', category=FutureWarning)
+
+        # resample to a 15 minute interval and shift the clock to make sure we capture the time "correctly"
+        dosta = dosta.resample(time='15Min', keep_attrs=True, base=55, loffset='5Min').median(dim='time')
+
+        # reset original integer values
+        int_arrays = ['product_number', 'serial_number']
+        for k in dosta.variables:
+            if k in int_arrays:
+                dosta[k] = dosta[k].astype(np.int32)
+
+    # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
+    dosta['deploy_id'] = xr.Variable('time', np.atleast_1d(deployment).astype(np.str))
+    dosta = update_dataset(dosta, platform, deployment, lat, lon, [depth, depth, depth], DOSTA)
+    if proc_flag:
+        dosta.attrs['processing_level'] = 'processed'
+    else:
+        dosta.attrs['processing_level'] = 'parsed'
+
+    return dosta
+
+
 def main(argv=None):
     # load the input arguments
     args = inputs(argv)
@@ -64,69 +201,14 @@ def main(argv=None):
     lat = args.latitude
     lon = args.longitude
     depth = args.depth
+    ctd_name = args.devfile  # name of co-located CTD
+    burst = args.burst
 
-    # load the json data file and return a panda dataframe
-    df = json2df(infile)
-    if df.empty:
-        # there was no data in this file, ending early
-        return None
+    # process the CTDBP data and save the results to disk
+    dosta = proc_dosta(infile, platform, deployment, lat, lon, depth, ctd_name=ctd_name, burst=burst)
+    if dosta:
+        dosta.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
 
-    df['depth'] = depth
-    df['deploy_id'] = deployment
-
-    # TODO: Add code to recompute the oxygen concentration from a colocated CTD.
-
-    # Setup the global attributes for the NetCDF file and create the NetCDF timeseries object
-    global_attributes = {
-        'title': 'Oxygen Concentration and Raw Phase Data',
-        'summary': (
-            'Records computed oxygen concentration data as well as raw phase data from the Aanderaa Optode'
-        ),
-        'project': 'Ocean Observatories Initiative',
-        'institution': 'Coastal and Global Scales Nodes, (CGSN)',
-        'acknowledgement': 'National Science Foundation',
-        'references': 'http://oceanobservatories.org',
-        'creator_name': 'Christopher Wingard',
-        'creator_email': 'cwingard@coas.oregonstate.edu',
-        'creator_url': 'http://oceanobservatories.org',
-        'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
-    }
-    ts = TimeSeries(
-        output_directory=outpath,
-        latitude=lat,
-        longitude=lon,
-        station_name=platform,
-        global_attributes=global_attributes,
-        times=df.time.values.astype(np.int64) * 10**-9,
-        verticals=df.depth.values,
-        output_filename=outfile,
-        vertical_positive='down')
-
-    # add the data from the data frame and set the attributes
-    nc = ts._nc     # create a netCDF4 object from the TimeSeries object
-
-    for c in df.columns:
-        # skip the coordinate variables, if present, already added above via TimeSeries
-        if c in ['time', 'latitude', 'longitude', 'depth']:
-            # print("Skipping axis '{}' (already in file)".format(c))
-            continue
-
-        # create the netCDF.Variable object for the date/time string
-        if c == 'date_time_string':
-            d = nc.createVariable(c, 'S23', ('time',))
-            d.setncatts(DOSTA[c])
-            d[:] = df[c].values
-        elif c == 'deploy_id':
-            d = nc.createVariable(c, 'S6', ('time',))
-            d.setncatts(DOSTA[c])
-            d[:] = df[c].values
-        else:
-            # use the TimeSeries object to add the variables
-            ts.add_variable(c, df[c].values, fillvalue=-999999999, attributes=DOSTA[c])
-
-    # synchronize the data with the netCDF file and close it
-    nc.sync()
-    nc.close()
 
 if __name__ == '__main__':
     main()

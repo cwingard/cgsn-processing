@@ -6,7 +6,8 @@
 @author Christopher Wingard
 @brief Attributes for the OPTAA variables
 """
-from cgsn_processing.process.common import FILL_INT, FILL_NAN
+import numpy as np
+from cgsn_processing.process.common import FILL_INT
 
 OPTAA = {
     # global attributes and metadata variables and attributes
@@ -127,7 +128,7 @@ OPTAA = {
         'units': 'nm',
         'comment': ('Absorbance channel measurement wavelengths, specific to the filter wheel set installed in '
                     'the AC-S.'),
-        '_FillValue': FILL_NAN,
+        '_FillValue': np.nan,
         'processing_level': 'parsed'
     },
     'a_reference_dark': {
@@ -168,7 +169,7 @@ OPTAA = {
         'units': 'nm',
         'comment': ('Attenuation channel measurement wavelengths, specific to the filter wheel set installed in '
                     'the AC-S.'),
-        '_FillValue': FILL_NAN,
+        '_FillValue': np.nan,
         'processing_level': 'parsed'
     },
     'c_reference_dark': {
@@ -205,36 +206,40 @@ OPTAA = {
     },
 
     # Data from a co-located CTD, if available, interpolated into the data set
-    'ctd_depth': {
-        'long_name': 'Profiler Depth',
-        'standard_name': 'depth',
-        'units': 'm',
-        'comment': 'Depth of the profiler, with the data interpolated into the OPTAA record from a co-located CTD.',
-        'positive': 'down',
-        '_FillValue': FILL_NAN,
+    'ctd_pressure': {
+        'long_name': 'Sea Water Pressure',
+        'standard_name': 'sea_water_pressure_due_to_sea_water',
+        'units': 'dbar',
+        'comment': ('Sea Water Pressure refers to the pressure exerted on a sensor in situ by the weight of the ' 
+                    'column of seawater above it. It is calculated by subtracting one standard atmosphere from the ' 
+                    'absolute pressure at the sensor to remove the weight of the atmosphere on top of the water ' 
+                    'column. The pressure at a sensor in situ provides a metric of the depth of that sensor. '
+                    'Measurements are from a co-located CTD.'),
+        'data_product_identifier': 'PRESWAT_L1',
+        '_FillValue': np.nan,
         'processing_level': 'processed'
     },
     'ctd_temperature': {
         'long_name': 'Sea Water Temperature',
         'standard_name': 'sea_water_temperature',
         'units': 'degrees_Celsius',
-        'comment': ('Sea water temperature is the in situ temperature of the sea water. Data is interpolated into '
-                    'the OPTAA record from a co-located CTD.'),
+        'comment': ('Sea water temperature is the in situ temperature of the sea water. Measurements are from a '
+                    'co-located CTD'),
         'data_product_identifier': 'TEMPWAT_L1',
-        '_FillValue': FILL_NAN,
+        '_FillValue': np.nan,
         'processing_level': 'processed'
     },
     'ctd_salinity': {
-        'long_name': 'Practical Salinity',
+        'long_name': 'Sea Water Practical Salinity',
         'standard_name': 'sea_water_practical_salinity',
         'units': '1',
-        'comment': ('Salinity is generally defined as the concentration of dissolved salt in a parcel of sea water. '
-                    'Practical Salinity is a more specific unitless quantity calculated from the conductivity of '
-                    'sea water and adjusted for temperature and pressure. It is approximately equivalent to Absolute '
+        'comment': ('Salinity is generally defined as the concentration of dissolved salt in a parcel of sea water. ' 
+                    'Practical Salinity is a more specific unitless quantity calculated from the conductivity of ' 
+                    'sea water and adjusted for temperature and pressure. It is approximately equivalent to Absolute ' 
                     'Salinity (the mass fraction of dissolved salt in sea water), but they are not interchangeable. '
-                    'Data is interpolated into the OPTAA record from a co-located CTD.'),
+                    'Measurements are from a co-located CTD.'),
         'data_product_identifier': 'PRACSAL_L2',
-        '_FillValue': FILL_NAN,
+        '_FillValue': np.nan,
         'processing_level': 'processed'
     },
 
@@ -245,11 +250,11 @@ OPTAA = {
         'comment': ('Seawater pressure, measured at the top of the pressure housing. If the unit is not equipped '
                     'with a pressure sensor, the values will be filled with a NaN.'),
         'ancillary_variables': 'pressure_raw',
-        '_FillValue': FILL_NAN,
+        '_FillValue': np.nan,
         'processing_level': 'processed'
     },
     'external_temp': {
-        'long_name': 'In-Situ Temperature',
+        'long_name': 'External Instrument Temperature',
         'standard_name': 'sea_water_temperature',
         'units': 'degrees_Celsius',
         'comment': ('In-situ sea water temperature measurements from the sensor mounted at the top of the '
@@ -274,7 +279,7 @@ OPTAA = {
                     'optical importance.'),
         'ancillary_variables': ('a_wavelengths internal_temp a_signal_raw a_reference_raw '
                                 'a_signal_dark a_reference_dark'),
-        '_FillValue': FILL_NAN,
+        '_FillValue': np.nan,
         'processing_level': 'processed'
     },
     'apd_ts': {
@@ -284,7 +289,7 @@ OPTAA = {
                     'This dataset assumes a constant salinity of 33 psu, given the overall negligible effects of '
                     'salinity (as opposed to temperature) on the absorption coefficient.'),
         'ancillary_variables': 'a_wavelengths external_temp apd',
-        '_FillValue': FILL_NAN,
+        '_FillValue': np.nan,
         'processing_level': 'processed'
     },
     'apd_ts_s': {
@@ -294,7 +299,7 @@ OPTAA = {
                     'with the baseline effects due to scattering at 715 nm removed.'),
         'data_product_identifier': 'OPTABSN_L2',
         'ancillary_variables': 'a_wavelengths apd_ts',
-        '_FillValue': FILL_NAN,
+        '_FillValue': np.nan,
         'processing_level': 'processed'
     },
     'cpd': {
@@ -307,7 +312,7 @@ OPTAA = {
                     'optical importance.'),
         'ancillary_variables': ('c_wavelengths internal_temp c_signal_raw c_reference_raw '
                                 'c_signal_dark c_reference_dark'),
-        '_FillValue': FILL_NAN,
+        '_FillValue': np.nan,
         'processing_level': 'processed'
     },
     'cpd_ts': {
@@ -318,7 +323,7 @@ OPTAA = {
                     'salinity (as opposed to temperature) on the attenuation coefficient.'),
         'data_product_identifier': 'OPTATTN_L2',
         'ancillary_variables': 'c_wavelengths external_temp cpd',
-        '_FillValue': FILL_NAN,
+        '_FillValue': np.nan,
         'processing_level': 'processed'
     },
     'estimated_chlorophyll': {
@@ -330,7 +335,7 @@ OPTAA = {
                     'This method has been shown to be significantly related to extracted chlorophyll concentrations '
                     'and is robust in response to mild to moderate biofouling.'),
         'ancillary_variables': 'apd_ts_s',
-        '_FillValue': FILL_NAN,
+        '_FillValue': np.nan,
         'processing_level': 'processed'
     },
     'estimated_poc': {
@@ -341,7 +346,7 @@ OPTAA = {
                     'calculation is not robust in response to biofouling and is expected to breakdown as biofouling '
                     'begins to dominate the signal.'),
         'ancillary_variables': 'cpd_ts',
-        '_FillValue': FILL_NAN,
+        '_FillValue': np.nan,
         'processing_level': 'processed'
     },
     'ratio_cdom': {
@@ -351,7 +356,7 @@ OPTAA = {
                     'chlorophyll absorption at 440 nm. Ratios greater than 1 indicate a preponderance of CDOM '
                     'absorption relative to chlorophyll.'),
         'ancillary_variables': 'apd_ts_s',
-        '_FillValue': FILL_NAN,
+        '_FillValue': np.nan,
         'processing_level': 'processed'
     },
     'ratio_carotenoids': {
@@ -362,7 +367,7 @@ OPTAA = {
                     'in phytoplankton community composition in addition to changes in light history or bloom health '
                     'and age.'),
         'ancillary_variables': 'apd_ts_s',
-        '_FillValue': FILL_NAN,
+        '_FillValue': np.nan,
         'processing_level': 'processed'
     },
     'ratio_phycobilins': {
@@ -373,7 +378,7 @@ OPTAA = {
                     'phycobilins as accessory light harvesting pigments. An increasing phycobilin to chlorophyll ratio '
                     'may indicate a shift in phytoplankton community composition.'),
         'ancillary_variables': 'apd_ts_s',
-        '_FillValue': FILL_NAN,
+        '_FillValue': np.nan,
         'processing_level': 'processed'
     },
     'ratio_qband': {
@@ -387,7 +392,7 @@ OPTAA = {
                     'dinoflagellates contain chlorophyll b and c, respectively, which are spectrally redshifted '
                     'compared to chlorophyll a.'),
         'ancillary_variables': 'apd_ts_s',
-        '_FillValue': FILL_NAN,
+        '_FillValue': np.nan,
         'processing_level': 'processed'
     }
 }

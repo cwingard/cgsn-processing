@@ -19,7 +19,7 @@ import xarray as xr
 from gsw import SP_from_C
 
 from cgsn_processing.process.common import Coefficients, inputs, json2obj, colocated_ctd, \
-    update_dataset, ENCODING, FILL_INT, FILL_NAN
+    update_dataset, ENCODING, FILL_INT
 from cgsn_processing.process.configs.attr_optaa import OPTAA
 from cgsn_processing.process.finding_calibrations import find_calibration
 
@@ -349,7 +349,7 @@ def calculate_ratios(optaa, coeffs):
     return optaa
 
 
-def proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, ctd_name=None, burst=None):
+def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
     """
     Main OPTAA processing function. Loads the JSON formatted parsed data and
     applies appropriate calibration coefficients to convert the raw, parsed
@@ -358,33 +358,36 @@ def proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, ctd_na
     set to "parsed".
 
     :param infile: JSON formatted parsed data file
-    :param coeff_file: JSON formatted data file with the factory calibration
-           coefficients. Will attempt to download the calibration coefficients
-           and create this file if it does not exist.
     :param platform: Name of the mooring the instrument is mounted on.
     :param deployment: Name of the deployment for the input data file.
     :param lat: Latitude of the mooring deployment.
-    :param lon: Longittude of the mooring deployment.
+    :param lon: Longitude of the mooring deployment.
     :param depth: Depth of the platform the instrument is mounted on.
-    :param ctd_name: Name of directory with data from a co-located CTD. This
+
+    :kwargs ctd_name: Name of directory with data from a co-located CTD. This
            data will be used to apply temeprature and salinity corrections
            to the data. Otherwise, defaults are used with salinity set to
            33 psu and temperature from the OPTAAs external temperature
            sensor.
-    :param burst: Boolean flag to indicate whether or not to apply burst
+    :kwargs burst: Boolean flag to indicate whether or not to apply burst
            averaging to the data. Default is to not apply burst averaging.
 
     :return optaa: An xarray dataset with the processed OPTAA data
     """
+    # process the variable length keyword arguments
+    ctd_name = kwargs.get('ctd_name')
+    burst = kwargs.get('burst')
+
+    # load the instrument calibration data
+    coeff_file = os.path.join(os.path.dirname(infile), 'optaa.cal_coeffs.json')
+    dev = Calibrations(coeff_file)  # initialize calibration class
+    proc_flag = False
+
     # load the json data file as a dictionary object for further processing
     data = json2obj(infile)
     if not data:
         # json data file was empty, exiting
         return None
-
-    # load the instrument calibration data
-    dev = Calibrations(coeff_file)  # initialize calibration class
-    proc_flag = False
 
     # check for the source of calibration coeffs and load accordingly
     if os.path.isfile(coeff_file):
@@ -414,7 +417,6 @@ def proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, ctd_na
     df.set_index('time', drop=True, inplace=True)
 
     # setup and load the 1D parsed data
-    df['z'] = depth
     empty_data = np.atleast_1d(data['serial_number']).astype(np.int32) * np.nan
     # raw data parsed from the data file
     df['serial_number'] = np.atleast_1d(data['serial_number']).astype(np.int32)
@@ -437,8 +439,8 @@ def proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, ctd_na
     df['ratio_phycobilins'] = empty_data
     df['ratio_qband'] = empty_data
 
-    # check for data from a co-located CTD and test to see if it covers our time range of interest. will use the
-    # temperature and salinity data from the CTD in the corrections, if available.
+    # check for data from a co-located CTD and test to see if it covers our time range of interest.
+    df['ctd_pressure'] = empty_data
     df['ctd_temperature'] = empty_data
     df['ctd_salinity'] = empty_data
     temperature = None
@@ -448,7 +450,7 @@ def proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, ctd_na
         ctd = colocated_ctd(infile, ctd_name)
 
     if not ctd.empty:
-        # set the CTD and pH time to the same units of seconds since 1970-01-01
+        # set the CTD and OPTAA time to the same units of seconds since 1970-01-01
         ctd_time = ctd.time.values.astype(float) / 10.0 ** 9
 
         # test to see if the CTD covers our time of interest for this optaa file
@@ -456,6 +458,9 @@ def proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, ctd_na
 
         # reset initial estimates of in-situ temperature and salinity if we have full coverage
         if coverage:
+            pressure = np.mean(np.interp(optaa_time, ctd_time, ctd.pressure))
+            df['ctd_pressure'] = pressure
+
             temperature = np.mean(np.interp(optaa_time, ctd_time, ctd.temperature))
             df['ctd_temperature'] = temperature
 
@@ -463,7 +468,7 @@ def proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, ctd_na
             salinity = np.mean(np.interp(optaa_time, ctd_time, salinity))
             df['ctd_salinity'] = salinity
 
-    # convert the data frame to an xarray dataset
+    # convert the 1D data frame to an xarray dataset
     ds = xr.Dataset.from_dataframe(df)
 
     # create the 2D arrays from the raw a and c channel measurements using the number of wavelengths
@@ -471,7 +476,7 @@ def proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, ctd_na
     wavelength_number = np.arange(100).astype(np.int32)  # used as a dimensional variable
     num_wavelengths = np.array(data['a_signal_raw']).shape[1]
     pad = 100 - num_wavelengths
-    fill_nan = np.ones(pad) * FILL_NAN
+    fill_nan = np.ones(pad) * np.nan
     fill_int = (np.ones(pad) * FILL_INT).astype(np.int32)
     a_wavelengths = np.concatenate([dev.coeffs['a_wavelengths'], fill_nan])
     c_wavelengths = np.concatenate([dev.coeffs['c_wavelengths'], fill_nan])
@@ -480,19 +485,15 @@ def proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, ctd_na
     ac = xr.Dataset({
         # raw data parsed from the data file
         'a_wavelengths': (['time', 'wavelength_number'], np.tile(a_wavelengths, (len(optaa_time), 1))),
-        'a_signal_raw': (['time', 'wavelength_number'],
-                         np.concatenate([np.array(data['a_signal_raw']).astype(np.int32),
-                                         np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
-        'a_reference_raw': (['time', 'wavelength_number'],
-                            np.concatenate([np.array(data['a_reference_raw']).astype(np.int32),
-                                            np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
+        'a_signal_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['a_signal_raw']).astype(np.int32),
+                         np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
+        'a_reference_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['a_reference_raw']).astype(np.int32),
+                            np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
         'c_wavelengths': (['time', 'wavelength_number'], np.tile(c_wavelengths, (len(optaa_time), 1))),
-        'c_signal_raw': (['time', 'wavelength_number'],
-                         np.concatenate([np.array(data['c_signal_raw']).astype(np.int32),
-                                         np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
-        'c_reference_raw': (['time', 'wavelength_number'],
-                            np.concatenate([np.array(data['c_reference_raw']).astype(np.int32),
-                                            np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
+        'c_signal_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['c_signal_raw']).astype(np.int32),
+                         np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
+        'c_reference_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['c_reference_raw']).astype(np.int32),
+                            np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
         # processed variables to be created if a device file is available
         'apd': (['time', 'wavelength_number'], empty_data),
         'apd_ts': (['time', 'wavelength_number'], empty_data),
@@ -503,71 +504,59 @@ def proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, ctd_na
                'wavelength_number': wavelength_number})
 
     # combine the 1D and 2D datasets into a single xarray dataset
-    raw = xr.merge([ds, ac])
+    optaa = xr.merge([ds, ac])
 
     # drop the first 60 seconds worth of data from the data set per vendor recommendation
-    raw.elapsed_run_time.values = raw.elapsed_run_time.where(raw.elapsed_run_time / 1000 > 60)
-    raw = raw.dropna(dim='time', subset=['elapsed_run_time'])
+    optaa.elapsed_run_time.values = optaa.elapsed_run_time.where(optaa.elapsed_run_time / 1000 > 60)
+    optaa = optaa.dropna(dim='time', subset=['elapsed_run_time'])
 
-    # apply a median average to the burst (if desired, set by the burst flag) and add the deployment ID
-    int_arrays = ['a_signal_raw', 'a_reference_raw', 'c_signal_raw', 'c_reference_raw']
+    # apply a median average to the burst (if desired) and add the deployment ID
     if burst:
         # suppress warnings for now. In the first case, changes suggested cause a ValueError and the second
         # warning is expected given we are averaging before calculating some of the values
         warnings.filterwarnings(action='ignore', category=FutureWarning)
         warnings.filterwarnings(action='ignore', message='All-NaN slice encountered')
 
-        # resample to a 15 minute interval and shift the clock to make sure we capture data the time "correctly"
-        raw = raw.resample(time='15Min', keep_attrs=True, base=55, loffset='5Min').median(dim='time')
-        raw['deploy_id'] = xr.Variable('time', np.atleast_1d(deployment).astype(np.str))
-
+        # resample to a 15 minute interval and shift the clock to make sure we capture the time "correctly"
+        optaa = optaa.resample(time='15Min', keep_attrs=True, base=55, loffset='5Min').median(dim='time')
+        optaa['deploy_id'] = xr.Variable('time', np.atleast_1d(deployment).astype(np.str))
     else:
-        raw['deploy_id'] = xr.Variable('time', np.tile(deployment, len(raw.time)).astype(np.str))
+        optaa['deploy_id'] = xr.Variable('time', np.tile(deployment, len(optaa.time)).astype(np.str))
 
-    # if no calibration file was found, save the dataset as-is
-    if not proc_flag:  # no device file is available
-        # updating the data set with the appropriate attributes
-        raw = update_dataset(raw, platform, deployment, lat, lon, [depth, depth, depth], OPTAA)
-        raw['wavelength_number'].attrs['actual_wavelengths'] = data['num_wavelengths'][0]
-        raw.attrs['processing_level'] = 'parsed'
+    # set the processed attribute to parsed
+    optaa.attrs['processing_level'] = 'parsed'
 
-        # if we used burst averaging, reset fill values and attributes for the raw a and c signal and reference values
-        if burst:
-            for k in raw.variables:
-                if k in int_arrays:
-                    raw[k].attrs['_FillValue'] = FILL_NAN
-                    raw[k] = raw[k].where(raw[k] > -1000)
+    # if there is calibration data, apply it now
+    if proc_flag:
+        # apply the device file and the temperature, salinity and scatter corrections
+        optaa = apply_dev(optaa, dev.coeffs)
+        optaa = apply_tscorr(optaa, dev.coeffs, temperature, salinity)
+        optaa = apply_scatcorr(optaa, dev.coeffs)
 
-        # return the final dataset, with processed data filled since the calibration data is missing
-        warnings.warn('Calibration data is missing. Processed data is filled with either a NaN or -9999999.')
-        return raw
+        # estimate chlorophyll-a and POC concentrations from the absorption and attenuation data, respectively.
+        optaa = estimate_chl_poc(optaa, dev.coeffs)
 
-    # apply the device file and the temperature, salinity and scatter corrections
-    proc = apply_dev(raw, dev.coeffs)
-    proc = apply_tscorr(proc, dev.coeffs, temperature, salinity)
-    proc = apply_scatcorr(proc, dev.coeffs)
+        # calculate pigment and CDOM ratios to provide variables useful in characterizing the community structure and
+        # the status of the sensor itself (biofouling tracking).
+        optaa = calculate_ratios(optaa, dev.coeffs)
 
-    # estimate chlorophyll-a and POC concentrations from the absorption and attenuation data, respectively.
-    proc = estimate_chl_poc(proc, dev.coeffs)
-
-    # calculate pigment and CDOM ratios to provide variables useful in characterizing the community structure and
-    # the status of the sensor itself (biofouling tracking).
-    proc = calculate_ratios(proc, dev.coeffs)
+        # set the processed attribute to processed
+        optaa.attrs['processing_level'] = 'processed'
 
     # update the data set with the appropriate attributes
-    proc = update_dataset(proc, platform, deployment, lat, lon, [depth, depth, depth], OPTAA)
-    proc['wavelength_number'].attrs['actual_wavelengths'] = data['num_wavelengths'][0]
-    proc.attrs['processing_level'] = 'processed'
+    optaa = update_dataset(optaa, platform, deployment, lat, lon, [depth, depth, depth], OPTAA)
+    optaa['wavelength_number'].attrs['actual_wavelengths'] = data['num_wavelengths'][0]
 
     # if we used burst averaging, reset fill values and attributes for the raw a and c signal and reference values
+    int_arrays = ['a_signal_raw', 'a_reference_raw', 'c_signal_raw', 'c_reference_raw']
     if burst:
-        for k in proc.variables:
+        for k in optaa.variables:
             if k in int_arrays:
-                proc[k].attrs['_FillValue'] = FILL_NAN
-                proc[k] = proc[k].where(raw[k] > -1000)
+                optaa[k].attrs['_FillValue'] = np.nan
+                optaa[k] = optaa[k].where(optaa[k] > -1000)
 
     # return the final processed dataset
-    return proc
+    return optaa
 
 
 def main(argv=None):
@@ -581,20 +570,16 @@ def main(argv=None):
     args = inputs(argv)
     infile = os.path.abspath(args.infile)
     outfile = os.path.abspath(args.outfile)
-    coeff_file = os.path.abspath(args.coeff_file)
     platform = args.platform
     deployment = args.deployment
     lat = args.latitude
     lon = args.longitude
     depth = args.depth
+    ctd_name = args.devfile  # name of co-located CTD
     burst = args.burst
-    if args.devfile:
-        ctd_name = args.devfile  # name of co-located CTD
-    else:
-        ctd_name = None
 
     # process the OPTAA data and save the results to disk
-    optaa = proc_optaa(infile, coeff_file, platform, deployment, lat, lon, depth, ctd_name, burst)
+    optaa = proc_optaa(infile, platform, deployment, lat, lon, depth, ctd_name=ctd_name, burst=burst)
     if optaa:
         optaa.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
 
