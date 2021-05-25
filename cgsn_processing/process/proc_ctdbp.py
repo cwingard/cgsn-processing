@@ -44,15 +44,10 @@ def proc_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
     :return ctdbp: An xarray dataset with the processed CTDBP data
     """
     # process the variable length keyword arguments
-    ctd_type = None
-    flort_serial = None
-    for key, value in kwargs.items():
-        if key == 'ctd_type':
-            ctd_type = value
-            if ctd_type:
-                ctd_type = ctd_type.lower()
-        if key == 'flort_serial':
-            flort_serial = value
+    ctd_type = kwargs.get('ctd_type')
+    if ctd_type:
+        ctd_type = ctd_type.lower()
+    flort_serial = kwargs.get('flort_serial')
 
     if ctd_type not in ['solo', 'dosta', 'flort']:
         raise ValueError('The CTDBP type must be a string set as either solo, dosta or flort (case insensitive).')

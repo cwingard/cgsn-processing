@@ -53,13 +53,8 @@ def proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
     :return ctd: An xarray dataset with the processed CTDBP data
     """
     # process the variable length keyword arguments
-    dosta_serial = None
-    flord_serial = None
-    for key, value in kwargs.items():
-        if key == 'dosta_serial':
-            dosta_serial = value
-        if key == 'flort_serial':
-            flord_serial = value
+    dosta_serial = kwargs.get('dosta_serial')
+    flord_serial = kwargs.get('flord_serial')
 
     # load the json data file as a json formatted object for further processing
     data = json2obj(infile)
@@ -116,7 +111,7 @@ def proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
     ctd['total_optical_backscatter'] = empty_data
 
     # grab the calibration coefficients for the two sensors: DOSTA
-    dosta_coeff = os.path.join(os.path.dirname(infile), 'ctdbp-dosta.cal_coeffs.jaon')
+    dosta_coeff = os.path.join(os.path.dirname(infile), 'ctdbp-dosta.cal_coeffs.json')
     opt = DOSTA_Calibrations(dosta_coeff)  # initialize calibration class
     proc_dosta = False
     if os.path.isfile(dosta_coeff):

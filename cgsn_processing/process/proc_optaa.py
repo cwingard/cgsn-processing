@@ -375,13 +375,8 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
     :return optaa: An xarray dataset with the processed OPTAA data
     """
     # process the variable length keyword arguments
-    ctd_name = None
-    burst = None
-    for key, value in kwargs.items():
-        if key == 'ctd_name':
-            ctd_name = value
-        if key == 'burst':
-            burst = value
+    ctd_name = kwargs.get('ctd_name')
+    burst = kwargs.get('burst')
 
     # load the instrument calibration data
     coeff_file = os.path.join(os.path.dirname(infile), 'optaa.cal_coeffs.json')
