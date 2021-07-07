@@ -101,7 +101,7 @@ def main(argv=None):
 
         # reset initial estimate of in-situ salinity if we have full coverage
         if coverage:
-            salinity = SP_from_C(ctd.conductivity * 10.0, ctd.temperature, ctd.pressure)
+            salinity = SP_from_C(ctd.conductivity.values * 10.0, ctd.temperature.values, ctd.pressure.values)
             salinity = np.interp(ph_time, ctd_time, salinity)
 
     # add the salinity to the data set and calculate the pH

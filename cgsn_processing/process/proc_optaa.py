@@ -464,7 +464,7 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
             temperature = np.mean(np.interp(optaa_time, ctd_time, ctd.temperature))
             df['ctd_temperature'] = temperature
 
-            salinity = SP_from_C(ctd.conductivity * 10.0, ctd.temperature, ctd.pressure)
+            salinity = SP_from_C(ctd.conductivity.values * 10.0, ctd.temperature.values, ctd.pressure.values)
             salinity = np.mean(np.interp(optaa_time, ctd_time, salinity))
             df['ctd_salinity'] = salinity
 

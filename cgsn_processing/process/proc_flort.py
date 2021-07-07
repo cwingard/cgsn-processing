@@ -141,7 +141,7 @@ def main(argv=None):
                 ctd['pressure'] = p_from_z(-1.0000, lat)
 
         # calculate the practical salinity of the seawater from the temperature, conductivity and pressure measurements
-        ctd['psu'] = SP_from_C(ctd['conductivity'] * 10.0, ctd['temperature'], ctd['pressure'])
+        ctd['psu'] = SP_from_C(ctd['conductivity'].values * 10.0, ctd['temperature'].values, ctd['pressure'].values)
 
         # interpolate temperature and salinity data from the CTD into the FLORT record for calculations
         degC = interp1d(ctd.time.values.astype('int64'), ctd.temperature.values, bounds_error=False)

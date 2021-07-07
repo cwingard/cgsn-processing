@@ -37,10 +37,10 @@ def main(argv=None):
     df['deploy_id'] = deployment
 
     # calculate the practical salinity of the surface seawater from the temperature and conductivity measurements
-    df['psu'] = gsw.SP_from_C(df['sea_surface_conductivity'] * 10, df['sea_surface_temperature'], 0)
+    df['psu'] = gsw.SP_from_C(df['sea_surface_conductivity'].values * 10, df['sea_surface_temperature'].values, 0)
     # calculate the in-situ density of the surface seawater from the absolute salinity and conservative temperature
-    sa = gsw.SA_from_SP(df['psu'], 0.0, lon, lat)                   # absolute salinity
-    ct = gsw.CT_from_t(sa, df['sea_surface_temperature'], 0.0)      # conservative temperature
+    sa = gsw.SA_from_SP(df['psu'].values, 0.0, lon, lat)                   # absolute salinity
+    ct = gsw.CT_from_t(sa, df['sea_surface_temperature'].values, 0.0)      # conservative temperature
     df['rho'] = gsw.rho(sa, ct, 0.0)                                # density
 
     # Setup the global attributes for the NetCDF file and create the NetCDF timeseries object
