@@ -154,7 +154,7 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
             temperature = np.interp(dosta['time'], ctd_time, ctd.temperature)
             dosta['ctd_temperature'] = temperature
 
-            salinity = SP_from_C(ctd.conductivity * 10.0, ctd.temperature, ctd.pressure)
+            salinity = SP_from_C(ctd.conductivity.values * 10.0, ctd.temperature.values, ctd.pressure.values)
             salinity = np.interp(dosta['time'], ctd_time, salinity)
             dosta['ctd_salinity'] = salinity
 

@@ -50,8 +50,8 @@ def json2dataframes(j, lat=0., lon=0.):
         # calculate the practical salinity of the seawater from the temperature and conductivity measurements
         cdata['psu'] = SP_from_C(cdata['conductivity'], cdata['temperature'], cdata['pressure'])
         # calculate the in-situ density of the seawater from the absolute salinity and conservative temperature
-        sa = SA_from_SP(cdata['psu'], cdata['pressure'], lon, lat)  # absolute salinity
-        ct = CT_from_t(sa, cdata['temperature'], cdata['pressure'])  # conservative temperature
+        sa = SA_from_SP(cdata['psu'].values, cdata['pressure'].values, lon, lat)  # absolute salinity
+        ct = CT_from_t(sa, cdata['temperature'].values, cdata['pressure'].values)  # conservative temperature
         cdata['rho'] = rho(sa, ct, cdata['pressure'])  # density
 
     if adata.empty is False:

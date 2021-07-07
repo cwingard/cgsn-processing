@@ -65,12 +65,12 @@ def proc_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
     ctd['deploy_id'] = deployment
 
     # calculate the practical salinity of the seawater from the temperature and conductivity measurements
-    ctd['salinity'] = SP_from_C(ctd['conductivity'] * 10.0, ctd['temperature'], ctd['pressure'])
+    ctd['salinity'] = SP_from_C(ctd['conductivity'].values * 10.0, ctd['temperature'].values, ctd['pressure'].values)
 
     # calculate the in-situ density of the seawater from the absolute salinity and conservative temperature
-    sa = SA_from_SP(ctd['salinity'], ctd['pressure'], lon, lat)  # absolute salinity
-    ct = CT_from_t(sa, ctd['temperature'], ctd['pressure'])      # conservative temperature
-    ctd['density'] = rho(sa, ct, ctd['pressure'])                # density
+    sa = SA_from_SP(ctd['salinity'].values, ctd['pressure'].values, lon, lat)  # absolute salinity
+    ct = CT_from_t(sa, ctd['temperature'].values, ctd['pressure'].values)      # conservative temperature
+    ctd['density'] = rho(sa, ct, ctd['pressure'].values)                # density
 
     if ctd_type in ['solo', 'dosta']:
         if ctd_type == 'dosta':

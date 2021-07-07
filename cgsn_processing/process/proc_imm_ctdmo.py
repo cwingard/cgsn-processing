@@ -60,10 +60,10 @@ def main(argv=None):
     ctd['pressure'] = ctd['raw_pressure'] * prange / (0.85 * 65536.0) - 0.05 * prange
 
     # derive salinity and in-situ density
-    ctd['salinity'] = SP_from_C(ctd['conductivity'] * 10.0, ctd['temperature'], ctd['pressure'])
-    sa = SA_from_SP(ctd['salinity'], ctd['pressure'], lon, lat)  # absolute salinity from practical salinity
-    ct = CT_from_t(sa, ctd['temperature'], ctd['pressure'])      # conservative temperature
-    ctd['density'] = rho(sa, ct, ctd['pressure'])                # in-situ density
+    ctd['salinity'] = SP_from_C(ctd['conductivity'].values * 10.0, ctd['temperature'].values, ctd['pressure'].values)
+    sa = SA_from_SP(ctd['salinity'].values, ctd['pressure'].values, lon, lat)  # absolute salinity from practical salinity
+    ct = CT_from_t(sa, ctd['temperature'].values, ctd['pressure'].values)      # conservative temperature
+    ctd['density'] = rho(sa, ct, ctd['pressure'].values)                # in-situ density
 
     # join the status and ctd data together into a single data frame, keeping track of data types and fill values
     joined = join_df(ctd, status)
