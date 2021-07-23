@@ -52,15 +52,15 @@ class Calibrations(Coefficients):
             data = f.readlines()
     
         # create the coefficients dictionary and assign values, first from the header portion of the device file
-        nbin = np.int(data[8].split()[0])   # going to need this value later...
+        nbin = int(data[8].split()[0])   # going to need this value later...
         coeffs = {
-            'serial_number': np.mod(np.int(data[1].split()[0], 16), 4096),
-            'temp_calibration': np.float(data[3].split()[1]),
-            'pressure_coeff': np.array(data[4].split()[0:2]).astype(np.float),
-            'pathlength': np.float(data[6].split()[0]),
-            'num_wavelengths': np.int(data[7].split()[0]),
+            'serial_number': np.mod(int(data[1].split()[0], 16), 4096),
+            'temp_calibration': float(data[3].split()[1]),
+            'pressure_coeff': np.array(data[4].split()[0:2]).astype(float),
+            'pathlength': float(data[6].split()[0]),
+            'num_wavelengths': int(data[7].split()[0]),
             'num_temp_bins': nbin,
-            'temp_bins': np.array(data[9].split()[:-3]).astype(np.float)
+            'temp_bins': np.array(data[9].split()[:-3]).astype(float)
         }
 
         # now we assign values from the array portion of the file
@@ -72,12 +72,12 @@ class Calibrations(Coefficients):
         tc_array = []
         for line in data[10:-1]:
             line = line.split()
-            cwvl.append(np.float(re.sub('C', '', line[0])))
-            awvl.append(np.float(re.sub('A', '', line[1])))
-            coff.append(np.float(line[3]))
-            aoff.append(np.float(line[4]))
-            tc_array.append(np.array(line[5:5+nbin]).astype(np.float))
-            ta_array.append(np.array(line[nbin+5:-12]).astype(np.float))
+            cwvl.append(float(re.sub('C', '', line[0])))
+            awvl.append(float(re.sub('A', '', line[1])))
+            coff.append(float(line[3]))
+            aoff.append(float(line[4]))
+            tc_array.append(np.array(line[5:5+nbin]).astype(float))
+            ta_array.append(np.array(line[nbin+5:-12]).astype(float))
             
         # beam attenuation and absorption channel wavelengths
         coeffs['c_wavelengths'] = np.array(cwvl)
@@ -121,10 +121,10 @@ class Calibrations(Coefficients):
                 coeffs['temp_bins'] = np.array(json.loads(row[2]))
             # temperature of calibration water
             if row[1] == 'CC_tcal':
-                coeffs['temp_calibration'] = np.float(row[2])
+                coeffs['temp_calibration'] = float(row[2])
 
         # serial number, stripping off all but the numbers
-        coeffs['serial_number'] = np.int(re.sub('[^0-9]', '',  hdr.serial[0]))
+        coeffs['serial_number'] = int(re.sub('[^0-9]', '',  hdr.serial[0]))
         # number of wavelengths
         coeffs['num_wavelengths'] = len(coeffs['a_wavelengths'])
         # number of internal temperature compensation bins
@@ -139,11 +139,11 @@ class Calibrations(Coefficients):
 
         tcc = requests.get(tcc_url)
         for line in tcc.content.decode('utf-8').splitlines():
-            tc_array.append(np.array(line.split(',')).astype(np.float))
+            tc_array.append(np.array(line.split(',')).astype(float))
 
         tca = requests.get(tca_url)
         for line in tca.content.decode('utf-8').splitlines():
-            ta_array.append(np.array(line.split(',')).astype(np.float))
+            ta_array.append(np.array(line.split(',')).astype(float))
 
         coeffs['tc_array'] = np.array(tc_array)
         coeffs['ta_array'] = np.array(ta_array)
@@ -417,17 +417,17 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
     df.set_index('time', drop=True, inplace=True)
 
     # setup and load the 1D parsed data
-    empty_data = np.atleast_1d(data['serial_number']).astype(np.int32) * np.nan
+    empty_data = np.atleast_1d(data['serial_number']).astype(int) * np.nan
     # raw data parsed from the data file
-    df['serial_number'] = np.atleast_1d(data['serial_number']).astype(np.int32)
-    df['elapsed_run_time'] = np.atleast_1d(data['elapsed_run_time']).astype(np.int32)
-    df['internal_temp_raw'] = np.atleast_1d(data['internal_temp_raw']).astype(np.int32)
-    df['external_temp_raw'] = np.atleast_1d(data['external_temp_raw']).astype(np.int32)
-    df['pressure_raw'] = np.atleast_1d(data['pressure_raw']).astype(np.int32)
-    df['a_signal_dark'] = np.atleast_1d(data['a_signal_dark']).astype(np.int32)
-    df['a_reference_dark'] = np.atleast_1d(data['a_reference_dark']).astype(np.int32)
-    df['c_signal_dark'] = np.atleast_1d(data['c_signal_dark']).astype(np.int32)
-    df['c_reference_dark'] = np.atleast_1d(data['c_reference_dark']).astype(np.int32)
+    df['serial_number'] = np.atleast_1d(data['serial_number']).astype(int)
+    df['elapsed_run_time'] = np.atleast_1d(data['elapsed_run_time']).astype(int)
+    df['internal_temp_raw'] = np.atleast_1d(data['internal_temp_raw']).astype(int)
+    df['external_temp_raw'] = np.atleast_1d(data['external_temp_raw']).astype(int)
+    df['pressure_raw'] = np.atleast_1d(data['pressure_raw']).astype(int)
+    df['a_signal_dark'] = np.atleast_1d(data['a_signal_dark']).astype(int)
+    df['a_reference_dark'] = np.atleast_1d(data['a_reference_dark']).astype(int)
+    df['c_signal_dark'] = np.atleast_1d(data['c_signal_dark']).astype(int)
+    df['c_reference_dark'] = np.atleast_1d(data['c_reference_dark']).astype(int)
     # processed variables to be created if a device file is available
     df['internal_temp'] = empty_data
     df['external_temp'] = empty_data
@@ -473,26 +473,26 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # create the 2D arrays from the raw a and c channel measurements using the number of wavelengths
     # padded to 100 as the dimensional array.
-    wavelength_number = np.arange(100).astype(np.int32)  # used as a dimensional variable
+    wavelength_number = np.arange(100).astype(int)  # used as a dimensional variable
     num_wavelengths = np.array(data['a_signal_raw']).shape[1]
     pad = 100 - num_wavelengths
     fill_nan = np.ones(pad) * np.nan
-    fill_int = (np.ones(pad) * FILL_INT).astype(np.int32)
+    fill_int = (np.ones(pad) * FILL_INT).astype(int)
     a_wavelengths = np.concatenate([dev.coeffs['a_wavelengths'], fill_nan])
     c_wavelengths = np.concatenate([dev.coeffs['c_wavelengths'], fill_nan])
-    empty_data = np.concatenate([np.array(data['a_signal_raw']).astype(np.int32),
+    empty_data = np.concatenate([np.array(data['a_signal_raw']).astype(int),
                                  np.tile(fill_nan, (len(optaa_time), 1))], axis=1) * np.nan
     ac = xr.Dataset({
         # raw data parsed from the data file
         'a_wavelengths': (['time', 'wavelength_number'], np.tile(a_wavelengths, (len(optaa_time), 1))),
-        'a_signal_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['a_signal_raw']).astype(np.int32),
+        'a_signal_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['a_signal_raw']).astype(int),
                          np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
-        'a_reference_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['a_reference_raw']).astype(np.int32),
+        'a_reference_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['a_reference_raw']).astype(int),
                             np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
         'c_wavelengths': (['time', 'wavelength_number'], np.tile(c_wavelengths, (len(optaa_time), 1))),
-        'c_signal_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['c_signal_raw']).astype(np.int32),
+        'c_signal_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['c_signal_raw']).astype(int),
                          np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
-        'c_reference_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['c_reference_raw']).astype(np.int32),
+        'c_reference_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['c_reference_raw']).astype(int),
                             np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
         # processed variables to be created if a device file is available
         'apd': (['time', 'wavelength_number'], empty_data),
@@ -518,10 +518,10 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
         warnings.filterwarnings(action='ignore', message='All-NaN slice encountered')
 
         # resample to a 15 minute interval and shift the clock to make sure we capture the time "correctly"
-        optaa = optaa.resample(time='15Min', keep_attrs=True, base=55, loffset='5Min').median(dim='time')
-        optaa['deploy_id'] = xr.Variable('time', np.atleast_1d(deployment).astype(np.str))
+        optaa = optaa.resample(time='15Min', base=55, loffset='5Min').median(dim='time', keep_attrs=True)
+        optaa['deploy_id'] = xr.Variable('time', np.atleast_1d(deployment).astype(str))
     else:
-        optaa['deploy_id'] = xr.Variable('time', np.tile(deployment, len(optaa.time)).astype(np.str))
+        optaa['deploy_id'] = xr.Variable('time', np.tile(deployment, len(optaa.time)).astype(str))
 
     # set the processed attribute to parsed
     optaa.attrs['processing_level'] = 'parsed'
