@@ -32,5 +32,5 @@ fi
 # Process the file
 if [ -e $IN ]; then
     cd /home/ooiuser/code/cgsn-processing
-    python -m cgsn_processing.process.proc_wavss -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -i $IN -o $OUT
+    python -m cgsn_processing.process.proc_wavss -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp 0 -i $IN -o $OUT
 fi
