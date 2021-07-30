@@ -77,13 +77,13 @@ class Calibrations(Coefficients):
         data = pd.read_csv(csv_url, usecols=[0, 1, 2])
         for idx, row in data.iterrows():
             if row[1] == 'CC_cala':
-                coeffs['cala'] = np.float(row[2])
+                coeffs['cala'] = float(row[2])
             if row[1] == 'CC_calb':
-                coeffs['calb'] = np.float(row[2])
+                coeffs['calb'] = float(row[2])
             if row[1] == 'CC_calc':
-                coeffs['calc'] = np.float(row[2])
+                coeffs['calc'] = float(row[2])
             if row[1] == 'CC_calt':
-                coeffs['calt'] = np.float(row[2])
+                coeffs['calt'] = float(row[2])
 
         # serial number, stripping off all but the numbers
         coeffs['serial_number'] = data.serial[0]

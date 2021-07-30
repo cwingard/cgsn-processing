@@ -172,7 +172,7 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
         warnings.filterwarnings(action='ignore', category=FutureWarning)
 
         # resample to a 15 minute interval and shift the clock to make sure we capture the time "correctly"
-        dosta = dosta.resample(time='15Min', keep_attrs=True, base=55, loffset='5Min').median(dim='time')
+        dosta = dosta.resample(time='15Min', base=55, loffset='5Min').median(dim='time', keep_attrs=True)
 
         # reset original integer values
         int_arrays = ['product_number', 'serial_number']
