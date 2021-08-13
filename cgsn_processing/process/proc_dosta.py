@@ -10,7 +10,6 @@ import json
 import numpy as np
 import os
 import pandas as pd
-import warnings
 import xarray as xr
 
 from cgsn_processing.process.common import Coefficients, inputs, json2df, colocated_ctd, update_dataset, ENCODING
@@ -168,17 +167,15 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # apply burst averaging if selected
     if burst:
-        # suppress warnings for now, the changes suggested cause a ValueError
-        warnings.filterwarnings(action='ignore', category=FutureWarning)
-
         # resample to a 15 minute interval and shift the clock to make sure we capture the time "correctly"
         dosta = dosta.resample(time='15Min', base=55, loffset='5Min').median(dim='time', keep_attrs=True)
+        dosta = dosta.where(~np.isnan(dosta.serial_number), drop=True)
 
         # reset original integer values
         int_arrays = ['product_number', 'serial_number']
         for k in dosta.variables:
             if k in int_arrays:
-                dosta[k] = dosta[k].astype(np.int32)
+                dosta[k] = dosta[k].astype(np.intc)  # explicitly setting as a 32 bit integer
 
     # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
     dosta['deploy_id'] = xr.Variable('time', np.atleast_1d(deployment).astype(np.str))

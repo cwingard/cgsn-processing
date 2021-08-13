@@ -22,16 +22,16 @@ DOSTA = {
         'creator_url': 'http://oceanobservatories.org',
         'featureType': 'timeSeries',
         'cdm_data_type': 'Station',
-        'Conventions': 'CF-1.6'
+        'Conventions': 'CF-1.7'
     },
     'deploy_id': {
         'long_name': 'Deployment ID',
         'comment': ('Mooring deployment ID. Useful for differentiating data by deployment, '
                     'allowing for overlapping deployments in the data sets.')
     },
-    'station': {
+    'station_name': {
         'cf_role': 'timeseries_id',
-        'long_name': 'Station Identifier'
+        'long_name': 'station name',
     },
     'time': {
         'long_name': 'Time',

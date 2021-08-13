@@ -11,8 +11,9 @@ import numpy as np
 FLORT = {
     # global attributes
     'global': {
-        'title': 'Dissolved Oxygen (DOSTA) Data',
-        'summary': 'Dissolved oxygen concentrations from the Aaderaa Optode dissolved oxygen sensor.',
+        'title': 'Chlorophyll, CDOM and Optical Backscatter Data',
+        'summary': ('Measurements of chlorophyll and CDOM fluorescence and optical backscatter at 700 nm from the '
+                    'Sea-Bird Electronics ECO-Triplet sensor.'),
         'project': 'Ocean Observatories Initiative',
         'institution': 'Coastal and Global Scale Nodes (CGSN)',
         'acknowledgement': 'National Science Foundation',
@@ -22,16 +23,16 @@ FLORT = {
         'creator_url': 'http://oceanobservatories.org',
         'featureType': 'timeSeries',
         'cdm_data_type': 'Station',
-        'Conventions': 'CF-1.6'
+        'Conventions': 'CF-1.7'
     },
     'deploy_id': {
         'long_name': 'Deployment ID',
         'comment': ('Mooring deployment ID. Useful for differentiating data by deployment, '
                     'allowing for overlapping deployments in the data sets.')
     },
-    'station': {
+    'station_name': {
         'cf_role': 'timeseries_id',
-        'long_name': 'Station Identifier'
+        'long_name': 'station name',
     },
     'time': {
         'long_name': 'Time',
@@ -65,7 +66,7 @@ FLORT = {
         'positive': 'down',
         'axis': 'Z'
     },
-    'dcl_date_time_string': {
+    'date_time_string': {
         'long_name': 'DCL Date and Time Stamp',
         'units': '1',
     },
@@ -151,6 +152,7 @@ FLORT = {
                     'proxy approximately equal to 25 ug/l of a Thalassiosira weissflogii phytoplankton culture. '
                     'This measurement is considered to be an estimate only of the true chlorophyll concentration.'),
         'data_product_identifier': 'CHLAFLO_L1',
+        '_FillValue': np.nan,
         'ancillary_variables': 'raw_signal_chl'
     },
     'fluorometric_cdom': {
@@ -164,6 +166,7 @@ FLORT = {
                     'plant and animal matter, and can enter coastal areas in river run-off containing organic '
                     'materials leached from soils.'),
         'data_product_identifier': 'CDOMFLO_L1',
+        '_FillValue': np.nan,
         'ancillary_variables': 'raw_signal_cdom'
     },
     'beta_700': {
@@ -175,6 +178,7 @@ FLORT = {
                     'scattering function is the intensity (flux per unit solid angle) of scattered radiation per '
                     'unit length of scattering medium, normalised by the incident radiation flux.'),
         'data_product_identifier': 'FLUBSCT_L1',
+        '_FillValue': np.nan,
         'ancillary_variables': 'raw_signal_beta'
     },
     'bback': {
@@ -183,6 +187,7 @@ FLORT = {
         'comment': ('Total (particulate + water) optical backscatter at 700 nm, derived from the Volume '
                     'Scattering Function and corrected for effects of temperature and salinity.'),
         'data_product_identifier': 'FLUBSCT_L2',
+        '_FillValue': np.nan,
         'ancillary_variables': 'beta_700 ctd_temperature ctd_salinity'
     }
 }

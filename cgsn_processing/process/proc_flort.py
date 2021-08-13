@@ -162,9 +162,10 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
     if proc_flag and not ctd.empty:
         # set the CTD and FLORT time to the same units of seconds since 1970-01-01
         ctd_time = ctd.time.values.astype(float) / 10.0 ** 9
+        flr_time = flort.time.values.astype(float) / 10.0 ** 9
 
         # test to see if the CTD covers our time of interest for this FLORT file
-        coverage = ctd_time.min() <= flort['time'].min() and ctd_time.max() >= flort['time'].max()
+        coverage = ctd_time.min() <= flr_time.min() and ctd_time.max() >= flr_time.max()
 
         # interpolate the CTD data if we have full coverage
         if coverage:
@@ -185,20 +186,22 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
                 else:  # default of 1.00 m
                     ctd['pressure'] = p_from_z(-1.0000, lat)
 
-            pressure = np.interp(flort['time'], ctd_time, ctd.pressure)
+            pressure = np.interp(flort['time'], ctd['time'], ctd['pressure'])
             flort['ctd_pressure'] = pressure
             depth[1] = pressure.min()
             depth[2] = pressure.max()
 
-            temperature = np.interp(flort['time'], ctd_time, ctd.temperature)
+            temperature = np.interp(flort['time'], ctd['time'], ctd['temperature'])
             flort['ctd_temperature'] = temperature
 
             salinity = SP_from_C(ctd.conductivity.values * 10.0, ctd.temperature.values, ctd.pressure.values)
-            salinity = np.interp(flort['time'], ctd_time, salinity)
+            salinity = np.interp(flort['time'], ctd['time'], salinity)
             flort['ctd_salinity'] = salinity
 
             # calculate the pressure and salinity corrected oxygen concentration
-            flort['bback'] = flo_bback_total(flort['beta_700'], temperature, salinity, 124., 700., 1.076)
+            flort['bback'] = flo_bback_total(flort['beta_700'], temperature, salinity,
+                                             dev.coeffs['scatter_angle'], dev.coeffs['wavelength'],
+                                             dev.coeffs['chi_factor'])
 
     # create an xarray data set from the data frame
     flort = xr.Dataset.from_dataframe(flort)
@@ -207,16 +210,17 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
     if burst:
         # resample to a 15 minute interval and shift the clock to center the averaging window
         flort = flort.resample(time='900s', base=3150, loffset='450s').median(dim='time', keep_attrs=True)
+        flort = flort.where(~np.isnan(flort.raw_signal_beta), drop=True)
 
         # reset original integer values
         int_arrays = ['measurement_wavelength_beta', 'raw_signal_beta', 'measurement_wavelength_chl',
                       'raw_signal_chl', 'measurement_wavelength_cdom', 'raw_signal_cdom', 'raw_internal_temp']
         for k in flort.variables:
             if k in int_arrays:
-                flort[k] = flort[k].astype(int)
+                flort[k] = flort[k].astype(np.intc)  # explicitly setting as a 32 bit integer
 
     # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
-    flort['deploy_id'] = xr.Variable('time', np.atleast_1d(deployment).astype(np.str))
+    flort['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(flort.time)).astype(str))
     flort = update_dataset(flort, platform, deployment, lat, lon, depth, FLORT)
     if proc_flag:
         flort.attrs['processing_level'] = 'processed'
@@ -243,6 +247,7 @@ def main(argv=None):
     flort = proc_flort(infile, platform, deployment, lat, lon, depth, ctd_name=ctd_name, burst=burst)
     if flort:
         flort.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+
 
 if __name__ == '__main__':
     main()

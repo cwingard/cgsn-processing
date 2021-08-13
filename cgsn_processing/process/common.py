@@ -10,7 +10,6 @@ import os
 import pandas as pd
 import re
 import sys
-import xarray as xr
 
 from dateutil import rrule
 from pathlib import Path
@@ -34,13 +33,14 @@ ENCODING = {
     'lat': {'_FillValue': False},
     'lon': {'_FillValue': False},
     'z': {'_FillValue': False},
-    'station': {'dtype': str},
+    'station_name': {'dtype': str},
     'deploy_id': {'dtype': str}
 }
 
 # Create global default fill values
 FILL_INT = -9999999
 FILL_NAN = np.nan
+
 
 class NumpyEncoder(json.JSONEncoder):
     """
@@ -59,6 +59,7 @@ class NumpyEncoder(json.JSONEncoder):
         elif isinstance(obj,(np.ndarray,)):
             return obj.tolist()
         return json.JSONEncoder.default(self, obj)
+
 
 class Coefficients(object):
     """
@@ -273,8 +274,10 @@ def colocated_ctd(infile, ctd_name):
 
 def update_dataset(ds, platform, deployment, lat, lon, depth, attrs):
     """
-    Updates a data set with global and variable level metadata attributes and sets appropriate dimensions and
-    coordinate axes.
+    Updates a data set with global and variable level metadata attributes and
+    sets appropriate dimensions and coordinate axes based on the CF Metadata
+    Standard, version 1.7, for a single time series at a nominal fixed spatial
+    location.
 
     :param ds: Data set to update
     :param platform: Platform name
@@ -286,19 +289,13 @@ def update_dataset(ds, platform, deployment, lat, lon, depth, attrs):
     :param attrs: Global and variable level attributes for the data set
     :return ds: The updated data set
     """
-    # add a default station identifier as a coordinate variable to the data set
-    ds.coords['station'] = platform.upper()
-    ds = ds.expand_dims('station', axis=None)
-
-    # add the geospatial coordinates using the station identifier from above as the dimension
-    geo_coords = xr.Dataset({
-        'lat': ('station', [lat]),
-        'lon': ('station', [lon]),
-        'z': ('station', [depth[0]])
-    }, coords={'station': [platform.upper()]})
-
-    # merge the geospatial coordinates into the data set
-    ds = xr.merge([ds, geo_coords])
+    # add the non-dimensional coordinate variables
+    ds = ds.assign_coords({
+        'lat': lat,
+        'lon': lon,
+        'z': depth[0],
+        'station_name': platform.upper()
+    })
 
     # Convert time from nanoseconds to seconds since 1970
     ds['time'] = dt64_epoch(ds.time)
@@ -320,8 +317,8 @@ def update_dataset(ds, platform, deployment, lat, lon, depth, attrs):
     # assign the updated attributes to the global metadata and the individual variables
     ds.attrs = attrs['global']
     for v in ds.variables:
-        if v not in ['time', 'lat', 'lon', 'z', 'station']:
-            ds[v].attrs = dict_update(attrs[v], {'coordinates': 'time lat lon z'})
+        if v not in ['time', 'lat', 'lon', 'z', 'station_name']:
+            ds[v].attrs = dict_update(attrs[v], {'coordinates': 'time lat lon z station_name'})
         else:
             ds[v].attrs = attrs[v]
 
