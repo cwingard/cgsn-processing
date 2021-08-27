@@ -34,14 +34,12 @@ if [ ! -d `dirname $OUT` ]; then
     mkdir -p `dirname $OUT`
 fi
 
-COEFF="$DATA/proc/$PLATFORM/$DEPLOY/$FLORT/flort_factory_calibration.coeffs"
-
 # Process the file (if it hasn't already been done)
 if [ -e $IN ]; then
     cd /home/ooiuser/code/cgsn-processing
     {
         python -m cgsn_processing.process.proc_flort -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH \
-            -i $IN -o $OUT -cf $COEFF -sn $SERIAL -df $CTD
+            -ba -i $IN -o $OUT -sn $SERIAL -df $CTD
     } || {
         echo "$IN failed to process"
     }

@@ -378,16 +378,16 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
     ctd_name = kwargs.get('ctd_name')
     burst = kwargs.get('burst')
 
-    # load the instrument calibration data
-    coeff_file = os.path.join(os.path.dirname(infile), 'optaa.cal_coeffs.json')
-    dev = Calibrations(coeff_file)  # initialize calibration class
-    proc_flag = False
-
     # load the json data file as a dictionary object for further processing
     data = json2obj(infile)
     if not data:
         # json data file was empty, exiting
         return None
+
+    # setup the instrument calibration data object
+    coeff_file = os.path.join(os.path.dirname(infile), 'optaa.cal_coeffs.json')
+    dev = Calibrations(coeff_file)  # initialize calibration class
+    proc_flag = False
 
     # check for the source of calibration coeffs and load accordingly
     if os.path.isfile(coeff_file):
@@ -523,9 +523,6 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
     else:
         optaa['deploy_id'] = xr.Variable('time', np.tile(deployment, len(optaa.time)).astype(str))
 
-    # set the processed attribute to parsed
-    optaa.attrs['processing_level'] = 'parsed'
-
     # if there is calibration data, apply it now
     if proc_flag:
         # apply the device file and the temperature, salinity and scatter corrections
@@ -540,12 +537,9 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
         # the status of the sensor itself (biofouling tracking).
         optaa = calculate_ratios(optaa, dev.coeffs)
 
-        # set the processed attribute to processed
-        optaa.attrs['processing_level'] = 'processed'
-
     # update the data set with the appropriate attributes
     optaa = update_dataset(optaa, platform, deployment, lat, lon, [depth, depth, depth], OPTAA)
-    optaa['wavelength_number'].attrs['actual_wavelengths'] = data['num_wavelengths'][0]
+    optaa['wavelength_number'].attrs['actual_wavelengths'] = np.intc(num_wavelengths)
 
     # if we used burst averaging, reset fill values and attributes for the raw a and c signal and reference values
     int_arrays = ['a_signal_raw', 'a_reference_raw', 'c_signal_raw', 'c_reference_raw']
@@ -554,6 +548,11 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
             if k in int_arrays:
                 optaa[k].attrs['_FillValue'] = np.nan
                 optaa[k] = optaa[k].where(optaa[k] > -1000)
+
+    if proc_flag:
+        optaa.attrs['processing_level'] = 'processed'
+    else:
+        optaa.attrs['processing_level'] = 'parsed'
 
     # return the final processed dataset
     return optaa

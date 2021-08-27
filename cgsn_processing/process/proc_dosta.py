@@ -86,16 +86,16 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
     ctd_name = kwargs.get('ctd_name')
     burst = kwargs.get('burst')
 
-    # load the instrument calibration data
-    coeff_file = os.path.join(os.path.dirname(infile), 'dosta.cal_coeffs.json')
-    dev = Calibrations(coeff_file)  # initialize calibration class
-    proc_flag = False
-
     # load the json data file as a dictionary object for further processing
     dosta = json2df(infile)
     if dosta.empty:
         # json data file was empty, exiting
         return None
+
+    # setup the instrument calibration data object
+    coeff_file = os.path.join(os.path.dirname(infile), 'dosta.cal_coeffs.json')
+    dev = Calibrations(coeff_file)  # initialize calibration class
+    proc_flag = False
 
     # check for the source of calibration coeffs and load accordingly
     if os.path.isfile(coeff_file):
@@ -104,15 +104,16 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
         proc_flag = True
     else:
         # load from the CI hosted CSV files
-        csv_url = find_calibration('DOSTA', str(dosta['serial_number'][0]), dosta['time'][0])
+        sampling_time = dosta['time'][0].value / 10.0 ** 9
+        csv_url = find_calibration('DOSTA', str(dosta['serial_number'][0]), sampling_time)
         if csv_url:
             dev.read_csv(csv_url)
             dev.save_coeffs()
             proc_flag = True
 
     # clean up dataframe and rename selected variables
+    dosta.drop(columns=['date_time_string'], inplace=True)
     empty_data = np.atleast_1d(dosta['serial_number']).astype(np.int32) * np.nan
-    dosta.drop(columns=['dcl_date_time_string'], inplace=True)
     dosta.rename(columns={'estimated_oxygen_concentration': 'oxygen_concentration',
                           'estimated_oxygen_saturation': 'oxygen_saturation',
                           'optode_temperature': 'oxygen_thermistor_temperature',
@@ -122,6 +123,9 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
     # processed variables to be created if a device file and a co-located CTD is available
     dosta['svu_oxygen_concentration'] = empty_data
     dosta['oxygen_concentration_corrected'] = empty_data
+
+    # use a default depth array for later metadata settings (will update if co-located CTD data is available)
+    depth = [depth, depth, depth]
 
     # recompute the oxygen concentration from the calibrated phase, optode thermistor temperature and the calibration
     # coefficients
@@ -141,26 +145,30 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
     if proc_flag and not ctd.empty:
         # set the CTD and DOSTA time to the same units of seconds since 1970-01-01
         ctd_time = ctd.time.values.astype(float) / 10.0 ** 9
+        do_time = dosta.time.values.astype(float) / 10.0 ** 9
 
         # test to see if the CTD covers our time of interest for this DOSTA file
-        coverage = ctd_time.min() <= dosta['time'].min() and ctd_time.max() >= dosta['time'].max()
+        coverage = ctd_time.min() <= do_time.min() and ctd_time.max() >= do_time.max()
 
         # interpolate the CTD data if we have full coverage
         if coverage:
-            pressure = np.interp(dosta['time'], ctd_time, ctd.pressure)
+            pressure = np.interp(do_time, ctd_time, ctd.pressure)
             dosta['ctd_pressure'] = pressure
+            depth[1] = pressure.min()
+            depth[2] = pressure.max()
 
-            temperature = np.interp(dosta['time'], ctd_time, ctd.temperature)
+            temperature = np.interp(do_time, ctd_time, ctd.temperature)
             dosta['ctd_temperature'] = temperature
 
             salinity = SP_from_C(ctd.conductivity.values * 10.0, ctd.temperature.values, ctd.pressure.values)
-            salinity = np.interp(dosta['time'], ctd_time, salinity)
+            salinity = np.interp(do_time, ctd_time, salinity)
             dosta['ctd_salinity'] = salinity
 
             # calculate the pressure and salinity corrected oxygen concentration
-            dosta['oxygen_concentration_corrected'] = do2_salinity_correction(dosta['svu_oxygen_concentration'],
-                                                                              dosta['pressure'], dosta['temperature'],
-                                                                              dosta['salinity'], lat, lon)
+            dosta['oxygen_concentration_corrected'] = do2_salinity_correction(dosta['svu_oxygen_concentration'].values,
+                                                                              dosta['ctd_pressure'].values,
+                                                                              dosta['ctd_temperature'].values,
+                                                                              dosta['ctd_salinity'].values, lat, lon)
 
     # create an xarray data set from the data frame
     dosta = xr.Dataset.from_dataframe(dosta)
@@ -168,7 +176,7 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
     # apply burst averaging if selected
     if burst:
         # resample to a 15 minute interval and shift the clock to make sure we capture the time "correctly"
-        dosta = dosta.resample(time='15Min', base=55, loffset='5Min').median(dim='time', keep_attrs=True)
+        dosta = dosta.resample(time='900s', base=3150, loffset='450s').median(dim='time', keep_attrs=True)
         dosta = dosta.where(~np.isnan(dosta.serial_number), drop=True)
 
         # reset original integer values
@@ -178,8 +186,8 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
                 dosta[k] = dosta[k].astype(np.intc)  # explicitly setting as a 32 bit integer
 
     # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
-    dosta['deploy_id'] = xr.Variable('time', np.atleast_1d(deployment).astype(np.str))
-    dosta = update_dataset(dosta, platform, deployment, lat, lon, [depth, depth, depth], DOSTA)
+    dosta['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(dosta.time)).astype(str))
+    dosta = update_dataset(dosta, platform, deployment, lat, lon, depth, DOSTA)
     if proc_flag:
         dosta.attrs['processing_level'] = 'processed'
     else:
@@ -192,7 +200,7 @@ def main(argv=None):
     # load the input arguments
     args = inputs(argv)
     infile = os.path.abspath(args.infile)
-    outpath, outfile = os.path.split(args.outfile)
+    outfile = os.path.abspath(args.outfile)
     platform = args.platform
     deployment = args.deployment
     lat = args.latitude

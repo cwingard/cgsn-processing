@@ -101,13 +101,9 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
     :return flort: An xarray dataset with the processed FLORT data
     """
     # process the variable length keyword arguments
+    serial_number = kwargs.get('serial_number')
     ctd_name = kwargs.get('ctd_name')
     burst = kwargs.get('burst')
-
-    # load the instrument calibration data
-    coeff_file = os.path.join(os.path.dirname(infile), 'flort.cal_coeffs.json')
-    dev = Calibrations(coeff_file)  # initialize calibration class
-    proc_flag = False
 
     # load the json data file as a dictionary object for further processing
     flort = json2df(infile)
@@ -115,21 +111,28 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
         # json data file was empty, exiting
         return None
 
+    # setup the instrument calibration data object
+    coeff_file = os.path.join(os.path.dirname(infile), 'flort.cal_coeffs.json')
+    dev = Calibrations(coeff_file)  # initialize calibration class
+    proc_flag = False
+
     # check for the source of the calibration coefficients and load accordingly
-    if os.path.isfile(coeff_file):
-        # we always want to use this file if it already exists
-        dev.load_coeffs()
-        proc_flag = True
-    else:
-        # load from the CI hosted CSV files
-        csv_url = find_calibration('FLORT', str(flort['serial_number'][0]), flort['time'][0])
-        if csv_url:
-            dev.read_csv(csv_url)
-            dev.save_coeffs()
+    if serial_number:
+        if os.path.isfile(coeff_file):
+            # we always want to use this file if it already exists
+            dev.load_coeffs()
             proc_flag = True
+        else:
+            # load from the CI hosted CSV files
+            sampling_time = flort['time'][0].value / 10.0 ** 9
+            csv_url = find_calibration('FLORT', str(serial_number), sampling_time)
+            if csv_url:
+                dev.read_csv(csv_url)
+                dev.save_coeffs()
+                proc_flag = True
 
     # clean up dataframe and and create an empty data variable
-    flort.drop(columns=['flort_date_time_string'], inplace=True)
+    flort.drop(columns=['dcl_date_time_string', 'flort_date_time_string'], inplace=True)
     empty_data = np.atleast_1d(flort['time']).astype(np.int32) * np.nan
 
     # processed variables to be created if a device file and a co-located CTD is available
@@ -234,17 +237,19 @@ def main(argv=None):
     # load the input arguments
     args = inputs(argv)
     infile = os.path.abspath(args.infile)
-    outpath, outfile = os.path.split(args.outfile)
+    outfile = os.path.abspath(args.outfile)
     platform = args.platform
     deployment = args.deployment
     lat = args.latitude
     lon = args.longitude
     depth = args.depth
+    serial_number = args.serial
     ctd_name = args.devfile  # name of co-located CTD
     burst = args.burst
 
     # process the CTDBP data and save the results to disk
-    flort = proc_flort(infile, platform, deployment, lat, lon, depth, ctd_name=ctd_name, burst=burst)
+    flort = proc_flort(infile, platform, deployment, lat, lon, depth,
+                       serial_number=serial_number, ctd_name=ctd_name, burst=burst)
     if flort:
         flort.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
 

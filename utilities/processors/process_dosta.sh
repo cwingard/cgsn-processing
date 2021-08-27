@@ -33,5 +33,5 @@ fi
 # Process the file
 if [ -e $IN ]; then
     cd /home/ooiuser/code/cgsn-processing
-    python -m cgsn_processing.process.proc_dosta -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -i $IN -o $OUT
+    python -m cgsn_processing.process.proc_dosta -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -ba -i $IN -o $OUT
 fi

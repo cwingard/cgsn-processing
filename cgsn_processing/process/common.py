@@ -33,8 +33,8 @@ ENCODING = {
     'lat': {'_FillValue': False},
     'lon': {'_FillValue': False},
     'z': {'_FillValue': False},
-    'station_name': {'dtype': str},
-    'deploy_id': {'dtype': str}
+    'station': {'dtype': 'S8'},
+    'deploy_id': {'dtype': 'S6'}
 }
 
 # Create global default fill values
@@ -294,7 +294,7 @@ def update_dataset(ds, platform, deployment, lat, lon, depth, attrs):
         'lat': lat,
         'lon': lon,
         'z': depth[0],
-        'station_name': platform.upper()
+        'station': platform.upper()
     })
 
     # Convert time from nanoseconds to seconds since 1970
@@ -317,8 +317,8 @@ def update_dataset(ds, platform, deployment, lat, lon, depth, attrs):
     # assign the updated attributes to the global metadata and the individual variables
     ds.attrs = attrs['global']
     for v in ds.variables:
-        if v not in ['time', 'lat', 'lon', 'z', 'station_name']:
-            ds[v].attrs = dict_update(attrs[v], {'coordinates': 'time lat lon z station_name'})
+        if v not in ['time', 'lat', 'lon', 'z', 'station', 'wavelength_number']:
+            ds[v].attrs = dict_update(attrs[v], {'coordinates': 'time lat lon z station'})
         else:
             ds[v].attrs = attrs[v]
 

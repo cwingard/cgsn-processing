@@ -30,9 +30,9 @@ FLORT = {
         'comment': ('Mooring deployment ID. Useful for differentiating data by deployment, '
                     'allowing for overlapping deployments in the data sets.')
     },
-    'station_name': {
+    'station': {
         'cf_role': 'timeseries_id',
-        'long_name': 'station name',
+        'long_name': 'Station Name',
     },
     'time': {
         'long_name': 'Time',
@@ -65,10 +65,6 @@ FLORT = {
         'comment': 'Instrument deployment depth',
         'positive': 'down',
         'axis': 'Z'
-    },
-    'date_time_string': {
-        'long_name': 'DCL Date and Time Stamp',
-        'units': '1',
     },
     'measurement_wavelength_beta': {
         'long_name': 'Wavelength',
@@ -104,7 +100,10 @@ FLORT = {
         'data_product_identifier': 'CDOMFLO_L0'
     },
     'raw_internal_temp': {
-        'units': 'counts'
+        'long_name': 'Raw Internal Thermistor Temperature',
+        'units': 'counts',
+        'comment': ('This parameter is not defined in the instrument manual, and the exact use for it is uncertain.'
+                    'Including here it on the off-chance that it may provide some benefit at a future data.')
     },
     # dataset attributes --> co-located CTD data
     'ctd_pressure': {
@@ -117,8 +116,7 @@ FLORT = {
                     'column. The pressure at a sensor in situ provides a metric of the depth of that sensor. '
                     'Measurements are from a co-located CTD.'),
         'data_product_identifier': 'PRESWAT_L1',
-        '_FillValue': np.nan,
-        'processing_level': 'processed'
+        '_FillValue': np.nan
     },
     'ctd_temperature': {
         'long_name': 'Sea Water Temperature',
@@ -127,8 +125,7 @@ FLORT = {
         'comment': ('Sea water temperature is the in situ temperature of the sea water. Measurements are from a '
                     'co-located CTD'),
         'data_product_identifier': 'TEMPWAT_L1',
-        '_FillValue': np.nan,
-        'processing_level': 'processed'
+        '_FillValue': np.nan
     },
     'ctd_salinity': {
         'long_name': 'Sea Water Practical Salinity',
@@ -140,8 +137,7 @@ FLORT = {
                     'Salinity (the mass fraction of dissolved salt in sea water), but they are not interchangeable. '
                     'Measurements are from a co-located CTD.'),
         'data_product_identifier': 'PRACSAL_L2',
-        '_FillValue': np.nan,
-        'processing_level': 'processed'
+        '_FillValue': np.nan
     },
     # dataset attributes --> derived values
     'estimated_chlorophyll': {
