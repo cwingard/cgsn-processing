@@ -100,7 +100,7 @@ esac
 #    fi
 #done
 #$PROCESS/process_pwrsys.sh $PLATFORM $DEPLOY $LAT $LON "buoy/pwrsys" $FNAME.pwrsys.json
-#$PROCESS/process_superv_cpm.sh $PLATFORM $DEPLOY $LAT $LON "buoy/superv/cpm1" 0 $FNAME.superv.json
+#$PROCESS/process_superv.sh $PLATFORM $DEPLOY $LAT $LON "buoy/superv/cpm1" 0 $FNAME.superv.json
 #$PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LON "buoy/superv/dcl11" 0 $FNAME.superv.json
 #$PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LON "buoy/superv/dcl12" 0 $FNAME.superv.json
 
@@ -113,7 +113,7 @@ esac
 #$PROCESS/process_wavss.sh $PLATFORM $DEPLOY $LAT $LON "buoy/wavss" $FNAME.wavss.json
 
 # NSIF
-#$PROCESS/process_superv_cpm.sh $PLATFORM $DEPLOY $LAT $LON "nsif/superv/cpm2" 7 $FNAME.superv.json
+#$PROCESS/process_superv.sh $PLATFORM $DEPLOY $LAT $LON "nsif/superv/cpm2" 7 $FNAME.superv.json
 #$PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LON "nsif/superv/dcl26" 7 $FNAME.superv.json
 #$PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LON "nsif/superv/dcl27" 7 $FNAME.superv.json
 #
@@ -136,7 +136,7 @@ done
 
 if [ $MFN_FLAG == 1 ]; then
     # MFN
-#    $PROCESS/process_superv_cpm.sh $PLATFORM $DEPLOY $LAT $LON "mfn/superv/cpm3" $MFN_DEPTH $FNAME.superv.json
+#    $PROCESS/process_superv.sh $PLATFORM $DEPLOY $LAT $LON "mfn/superv/cpm3" $MFN_DEPTH $FNAME.superv.json
 #    $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LON "mfn/superv/dcl36" $MFN_DEPTH $FNAME.superv.json
 #    $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LON "mfn/superv/dcl37" $MFN_DEPTH $FNAME.superv.json
 #    $PROCESS/process_mpea.sh $PLATFORM $DEPLOY $LAT $LON "mfn/pwrsys" $MFN_DEPTH $FNAME.pwrsys.json

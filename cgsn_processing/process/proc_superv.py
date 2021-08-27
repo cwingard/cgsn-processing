@@ -10,7 +10,7 @@ import numpy as np
 import os
 import xarray as xr
 
-from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING
+from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING, dict_update
 from cgsn_processing.process.configs.attr_superv import SUPERV
 
 
@@ -49,12 +49,18 @@ def proc_superv(infile, platform, deployment, lat, lon, depth, **kwargs):
     dt_str = superv_type + '_date_time_string'
     df.drop(columns=[dt_str], inplace=True)
 
+    # convert the different hex strings (already converted to an integer in the parser) to unsigned integers
+    for col in df.columns:
+        if col in ['dcl_power_state', 'wake_code', 'error_flags', 'error_flags1', 'error_flags2']:
+            df[col] = df[col].astype(np.uintc)
+
     # create an xarray data set from the data frame
     superv = xr.Dataset.from_dataframe(df)
 
     # clean up the dataset and assign attributes
     superv['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(superv.time)).astype(str))
-    superv = update_dataset(superv, platform, deployment, lat, lon, [depth, depth, depth], SUPERV[superv_type])
+    ATTR = dict_update(SUPERV[superv_type], SUPERV['common'])
+    superv = update_dataset(superv, platform, deployment, lat, lon, [depth, depth, depth], ATTR)
     superv.attrs['processing_level'] = 'parsed'
 
     return superv
