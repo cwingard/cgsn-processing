@@ -2,7 +2,7 @@
 # _*_ coding: utf_8 _*_
 """
 @package cgsn_processing.process.configs.attr_superv_cpm
-@file cgsn_processing/process/configs/attr_superv_cpm.py
+@file cgsn_processing/process/configs/attr_superv.py
 @author Christopher Wingard
 @brief Attributes for the CPM Supervisor variables
 """
