@@ -37,7 +37,7 @@ def proc_superv(infile, platform, deployment, lat, lon, depth, **kwargs):
     if superv_type and superv_type.lower() in ['cpm', 'dcl', 'stc']:
         superv_type = superv_type.lower()
     else:
-        raise ValueError('The supervisor type must be a string set as either cpm, dcl, or dcl (case insensitive).')
+        raise ValueError('The supervisor type must be a string set as either cpm, dcl, or stc (case insensitive).')
 
     # load the json data file and return a panda dataframe
     df = json2df(infile)
@@ -51,7 +51,8 @@ def proc_superv(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # convert the different hex strings (already converted to an integer in the parser) to unsigned integers
     for col in df.columns:
-        if col in ['dcl_power_state', 'wake_code', 'error_flags', 'error_flags1', 'error_flags2']:
+        if col in ['wake_code', 'ground_fault_enable', 'dcl_power_state',
+                   'error_flags', 'error_flags1', 'error_flags2']:
             df[col] = df[col].astype(np.uintc)
 
     # create an xarray data set from the data frame
