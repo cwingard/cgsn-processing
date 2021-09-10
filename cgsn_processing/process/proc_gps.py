@@ -8,92 +8,73 @@
 """
 import numpy as np
 import os
-import re
+import xarray as xr
 
-from pyaxiom.netcdf.sensors import TimeSeries
-
-from cgsn_processing.process.common import inputs, json2df
+from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING
 from cgsn_processing.process.configs.attr_gps import GPS
 
 
-def main(argv=None):
-    # load the input arguments
-    args = inputs(argv)
-    infile = os.path.abspath(args.infile)
-    outpath, outfile = os.path.split(args.outfile)
-    platform = args.platform
-    deployment = args.deployment
-    lat = args.latitude
-    lon = args.longitude
+def proc_gps(infile, platform, deployment, lat, lon, depth, **kwargs):
+    """
+    Main GPS processing function. Loads the JSON formatted parsed data and
+    converts data into a NetCDF data file using xarray. Dataset processing
+    level attribute is set to "parsed". There is no processing of the
+    data, just a straight conversion from JSON to NetCDF.
 
+    :param infile: JSON formatted parsed data file
+    :param platform: Name of the mooring the instrument is mounted on.
+    :param deployment: Name of the deployment for the input data file.
+    :param lat: Latitude of the mooring deployment.
+    :param lon: Longitude of the mooring deployment.
+    :param depth: Depth of the platform the instrument is mounted on.
+
+    :return gps: An xarray dataset with the GPS data
+    """
     # load the json data file and return a panda dataframe
     df = json2df(infile)
     if df.empty:
         # there was no data in this file, ending early
         return None
 
-    df['depth'] = 0.0
-    df['deploy_id'] = deployment
+    # rename the latitude and longitude columns to avoid conflicts with NetCDF coordinate variables of the
+    # same name. follows the CF Metadata convention of using precise_lat/precise_lon to distinguish
+    # between the surveyed, nominal position of the mooring compared to the actual measured position.
+    df.rename(columns={'latitude': 'precise_lat', 'longitude': 'precise_lon'}, inplace=True)
 
-    # rename the latitude and longitude columns to avoid conflicts with NetCDF timeseries coordinate variables of the
-    # same name
-    df.rename(columns={'latitude': 'lat', 'longitude': 'lon'}, inplace=True)
+    # clean up some of the data
+    df.drop(columns=['date_time_string'], inplace=True)  # used to calculate time, so redundant
 
-    # Setup the global attributes for the NetCDF file and create the NetCDF timeseries object
-    global_attributes = {
-        'title': 'Mooring GPS Data',
-        'summary': (
-            'Records the GPS position of the mooring during a deployment'
-        ),
-        'project': 'Ocean Observatories Initiative',
-        'institution': 'Coastal and Global Scales Nodes, (CGSN)',
-        'acknowledgement': 'National Science Foundation',
-        'references': 'http://oceanobservatories.org',
-        'creator_name': 'Christopher Wingard',
-        'creator_email': 'cwingard@coas.oregonstate.edu',
-        'creator_url': 'http://oceanobservatories.org',
-        'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
-    }
-    ts = TimeSeries(
-        output_directory=outpath,
-        latitude=lat,
-        longitude=lon,
-        station_name=platform,
-        global_attributes=global_attributes,
-        times=df.time.values.astype(np.int64) * 10**-9,
-        verticals=df.depth.values,
-        output_filename=outfile,
-        vertical_positive='down')
+    # set the data types for the date, time latitude and longitude strings
+    for col in df.columns:
+        if col in ['longitude_string', 'latitude_string', 'gps_date_string', 'gps_time_string']:
+            df[col] = df[col].astype('S12')
 
-    # add the data from the data frame and set the attributes
-    nc = ts._nc     # create a netCDF4 object from the TimeSeries object
+    # create an xarray data set from the data frame
+    gps = xr.Dataset.from_dataframe(df)
 
-    for c in df.columns:
-        # skip the coordinate variables, if present, already added above via TimeSeries
-        if c in ['time', 'latitude', 'longitude', 'depth']:
-            # print("Skipping axis '{}' (already in file)".format(c))
-            continue
+    # clean up the dataset and assign attributes
+    gps['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(gps.time)).astype(str))
+    gps = update_dataset(gps, platform, deployment, lat, lon, [depth, depth, depth], GPS)
+    gps.attrs['processing_level'] = 'parsed'
 
-        # create the netCDF.Variable object for the date/time string
-        if c == 'date_time_string':
-            d = nc.createVariable(c, 'S23', ('time',))
-            d.setncatts(GPS[c])
-            d[:] = df[c].values
-        elif c == 'deploy_id':
-            d = nc.createVariable(c, 'S6', ('time',))
-            d.setncatts(GPS[c])
-            d[:] = df[c].values
-        elif c in ['longitude_string', 'latitude_string', 'gps_date_string', 'gps_time_string']:
-            d = nc.createVariable(c, 'S12', ('time',))
-            d.setncatts(GPS[c])
-            d[:] = df[c].values
-        else:
-            # use the TimeSeries object to add the variables
-            ts.add_variable(c, df[c].values, fillvalue=-999999999, attributes=GPS[c])
+    return gps
 
-    # synchronize the data with the netCDF file and close it
-    nc.sync()
-    nc.close()
+def main(argv=None):
+    # load the input arguments
+    args = inputs(argv)
+    infile = os.path.abspath(args.infile)
+    outfile = os.path.abspath(args.outfile)
+    platform = args.platform
+    deployment = args.deployment
+    lat = args.latitude
+    lon = args.longitude
+    depth = args.depth
+
+    # process the GPS data and save the results to disk
+    gps = proc_gps(infile, platform, deployment, lat, lon, depth)
+    if gps:
+        gps.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+
 
 if __name__ == '__main__':
     main()
