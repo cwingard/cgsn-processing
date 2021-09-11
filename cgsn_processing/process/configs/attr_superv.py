@@ -27,7 +27,7 @@ SUPERV = {
             'units': 'seconds since 1970-01-01 00:00:00.00',
             'axis': 'T',
             'calendar': 'gregorian',
-            'comment': 'Derived from the GPS referenced clock used by the STC data logger'
+            'comment': 'Derived from the GPS referenced clock used by the data logger'
         },
         'lon': {
             'long_name': 'Longitude',

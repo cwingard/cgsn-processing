@@ -14,7 +14,7 @@ from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCO
 from cgsn_processing.process.configs.attr_gps import GPS
 
 
-def proc_gps(infile, platform, deployment, lat, lon, depth, **kwargs):
+def proc_gps(infile, platform, deployment, lat, lon, depth):
     """
     Main GPS processing function. Loads the JSON formatted parsed data and
     converts data into a NetCDF data file using xarray. Dataset processing
