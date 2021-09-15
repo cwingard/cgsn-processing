@@ -8,86 +8,70 @@
 """
 import numpy as np
 import os
-import re
+import xarray as xr
 
-from pyaxiom.netcdf.sensors import TimeSeries
-
-from cgsn_processing.process.common import inputs, json_sub2df
+from cgsn_processing.process.common import inputs, json_sub2df, update_dataset, ENCODING
 from cgsn_processing.process.configs.attr_velpt import VELPT
+from pyseas.data.generic_functions import magnetic_declination
+from pyseas.data.adcp_functions import magnetic_correction
 
 
-def main(argv=None):
-    # load the input arguments
-    args = inputs(argv)
-    infile = os.path.abspath(args.infile)
-    outpath, outfile = os.path.split(args.outfile)
-    platform = args.platform
-    deployment = args.deployment
-    lat = args.latitude
-    lon = args.longitude
-    depth = float(args.depth)  # set the deployment depth
+def proc_velpt(infile, platform, deployment, lat, lon, depth):
+    """
+    Main VELPT processing function. Loads the JSON formatted parsed data and
+    converts data into a NetCDF data file using xarray.  The eastward and
+    northward seawater velocities are corrected for magnetic declination
+    based on the date, time, latitude and longitude.
 
+    :param infile: JSON formatted parsed data file.
+    :param platform: Name of the mooring the instrument is mounted on.
+    :param deployment: Name of the deployment for the input data file.
+    :param lat: Latitude of the mooring deployment.
+    :param lon: Longitude of the mooring deployment.
+    :param depth: Depth of the platform the instrument is mounted on.
+
+    :return velpt: An xarray dataset with the VELPT data
+    """
     # load the json data file and return a panda dataframe
     df = json_sub2df(infile, 'velocity')
     if df.empty:
         # there was no data in this file, ending early
         return None
 
-    df['depth'] = depth
-    df['deploy_id'] = deployment
+    # correct the eastward and northward velocity components for magnetic declination
+    theta = magnetic_declination(lat, lon, df['time'])
+    u_cor, v_cor = magnetic_correction(theta, df['velocity_east'], df['velocity_north'])
 
-    # Setup the global attributes for the NetCDF file and create the NetCDF timeseries object
-    global_attributes = {
-        'title': 'Point Velocity Measurements from the Nortek Aquadopp',
-        'summary': (
-            'Records 3 minute ensemble averages every 15 minutes of point velocity from various points in the mooring'
-        ),
-        'project': 'Ocean Observatories Initiative',
-        'institution': 'Coastal and Global Scales Nodes, (CGSN)',
-        'acknowledgement': 'National Science Foundation',
-        'references': 'http://oceanobservatories.org',
-        'creator_name': 'Christopher Wingard',
-        'creator_email': 'cwingard@coas.oregonstate.edu',
-        'creator_url': 'http://oceanobservatories.org',
-        'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
-    }
-    ts = TimeSeries(
-        output_directory=outpath,
-        latitude=lat,
-        longitude=lon,
-        station_name=platform,
-        global_attributes=global_attributes,
-        times=df.time.values.astype(np.int64) * 10**-9,
-        verticals=df.depth.values,
-        output_filename=outfile,
-        vertical_positive='down')
+    # add the corrected velocities to the data frame
+    df['eastward_seawater_velocity'] = u_cor
+    df['northward_seawater_velocity'] = v_cor
 
-    # add the data from the data frame and set the attributes
-    nc = ts._nc     # create a netCDF4 object from the TimeSeries object
+    # create an xarray data set from the data frame
+    velpt = xr.Dataset.from_dataframe(df)
 
-    for c in df.columns:
-        # skip the coordinate variables, if present, already added above via TimeSeries
-        if c in ['time', 'latitude', 'longitude', 'depth']:
-            # print("Skipping axis '{}' (already in file)".format(c))
-            continue
+    # clean up the dataset and assign attributes
+    velpt['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(velpt.time)).astype(str))
+    velpt = update_dataset(velpt, platform, deployment, lat, lon, [depth, depth, depth], VELPT)
+    velpt.attrs['processing_level'] = 'processed'
 
-        if c == 'date_time_array':
-            #TODO: Add this parameter to the dataset
-            # print("Skipping the '{}' for now".format(c))
-            continue
+    return velpt
 
-        # create the netCDF.Variable object for the date/time string
-        elif c == 'deploy_id':
-            d = nc.createVariable(c, 'S6', ('time',))
-            d.setncatts(VELPT[c])
-            d[:] = df[c].values
-        else:
-            # use the TimeSeries object to add the variables
-            ts.add_variable(c, df[c].values, fillvalue=-999999999, attributes=VELPT[c])
+def main(argv=None):
+    # load the input arguments
+    args = inputs(argv)
+    infile = os.path.abspath(args.infile)
+    outfile = os.path.abspath(args.outfile)
+    platform = args.platform
+    deployment = args.deployment
+    lat = args.latitude
+    lon = args.longitude
+    depth = args.depth
 
-    # synchronize the data with the netCDF file and close it
-    nc.sync()
-    nc.close()
+    # process the VELPT data and save the results to disk
+    velpt = proc_velpt(infile, platform, deployment, lat, lon, depth)
+    if velpt:
+        velpt.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+
 
 if __name__ == '__main__':
     main()

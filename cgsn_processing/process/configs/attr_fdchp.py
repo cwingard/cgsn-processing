@@ -8,6 +8,12 @@
 """
 
 FDCHP = {
+    'global': {
+        'title': 'Summarized Flux Direct Covariance Sensor Measurements',
+        'summary': (
+            'Records the hourly summarized flux direct covariance measurements from the FDCHP.'
+        ),
+    },
     'deploy_id': {
         'long_name': 'Deployment ID',
         'standard_name': 'deployment_id',
