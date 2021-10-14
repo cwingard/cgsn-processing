@@ -12,7 +12,7 @@ import xarray as xr
 
 from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING
 from cgsn_processing.process.configs.attr_pco2a import PCO2A
-from pyseas.data.co2_functions import co2_ppressure, co2_co2flux
+from pyseas.data.co2_functions import co2_ppressure
 
 
 def proc_pco2a(infile, platform, deployment, lat, lon, depth):
@@ -41,11 +41,12 @@ def proc_pco2a(infile, platform, deployment, lat, lon, depth):
     # clean up some of the data
     df.drop(columns=['co2_date_time_string, dcl_date_time_string'], inplace=True)
 
-    # rename the CO2 measurement variable to remove the word "water" since it can be from either air or water.
-    df.rename(columns={'measured_water_co2': 'measured_co2'}, inplace=True)
+    # rename the CO2 measurement variable to remove the word "water" since it can be from either air or water, and
+    # use the terminology from the vendor documentation.
+    df.rename(columns={'measured_water_co2': 'co2_mole_fraction'}, inplace=True)
 
     # calculate the partial pressure of CO2 in the air and water samples
-    df['pCO2'] = co2_ppressure(df['measured_co2'], df['gas_stream_pressure'])
+    df['pCO2'] = co2_ppressure(df['co2_mole_fraction'], df['gas_stream_pressure'])
 
     # create an xarray data set from the data frame
     pco2a = xr.Dataset.from_dataframe(df)

@@ -42,12 +42,13 @@ def proc_metbk(infile, platform, deployment, lat, lon, depth):
     df.drop(columns=['dcl_date_time_string'], inplace=True)  # used to calculate time, so redundant
 
     # calculate the practical salinity of the surface seawater from the temperature and conductivity measurements
-    df['psu'] = SP_from_C(df['sea_surface_conductivity'].values * 10, df['sea_surface_temperature'].values, 0)
+    df['sea_surface_salinity'] = SP_from_C(df['sea_surface_conductivity'].values * 10,
+                                           df['sea_surface_temperature'].values, 0)
 
     # calculate the in-situ density of the surface seawater from the absolute salinity and conservative temperature
     sa = SA_from_SP(df['psu'].values, 0.0, lon, lat)                   # absolute salinity
     ct = CT_from_t(sa, df['sea_surface_temperature'].values, 0.0)      # conservative temperature
-    df['rho'] = rho(sa, ct, 0.0)                                       # density
+    df['sea_surface_density'] = rho(sa, ct, 0.0)                                       # density
 
     # create an xarray data set from the data frame
     metbk = xr.Dataset.from_dataframe(df)
