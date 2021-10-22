@@ -10,8 +10,9 @@ import numpy as np
 import os
 import xarray as xr
 
-from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING
+from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING, dict_update
 from cgsn_processing.process.configs.attr_gps import GPS
+from cgsn_processing.process.configs.attr_common import SHARED
 
 
 def proc_gps(infile, platform, deployment, lat, lon, depth):
@@ -54,7 +55,8 @@ def proc_gps(infile, platform, deployment, lat, lon, depth):
 
     # clean up the dataset and assign attributes
     gps['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(gps.time)).astype(str))
-    gps = update_dataset(gps, platform, deployment, lat, lon, [depth, depth, depth], GPS)
+    attrs = dict_update(GPS, SHARED)
+    gps = update_dataset(gps, platform, deployment, lat, lon, [depth, depth, depth], attrs)
     gps.attrs['processing_level'] = 'parsed'
 
     return gps

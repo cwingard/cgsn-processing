@@ -12,8 +12,9 @@ import xarray as xr
 
 from gsw import SP_from_C, SA_from_SP, CT_from_t, rho
 
-from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING
+from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING, dict_update
 from cgsn_processing.process.configs.attr_metbk import METBK
+from cgsn_processing.process.configs.attr_common import SHARED
 
 
 def proc_metbk(infile, platform, deployment, lat, lon, depth):
@@ -55,7 +56,8 @@ def proc_metbk(infile, platform, deployment, lat, lon, depth):
 
     # clean up the dataset and assign attributes
     metbk['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(metbk.time)).astype(str))
-    metbk = update_dataset(metbk, platform, deployment, lat, lon, [depth, depth, depth], METBK)
+    attrs = dict_update(METBK, SHARED)  # add the shared attributes
+    metbk = update_dataset(metbk, platform, deployment, lat, lon, [depth, depth, depth], attrs)
     metbk.attrs['processing_level'] = 'processed'
 
     return metbk

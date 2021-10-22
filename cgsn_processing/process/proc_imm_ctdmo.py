@@ -10,8 +10,9 @@ import os
 import xarray as xr
 
 from cgsn_processing.process.common import ENCODING, inputs, dict_update, epoch_time, join_df, \
-    json2obj, json_obj2df, update_dataset
-from cgsn_processing.process.configs.attr_ctdmo import CTDMO, CTD
+    json2obj, json_obj2df, update_datase
+from cgsn_processing.process.configs.attr_ctdmo import CTDMO
+from cgsn_processing.process.configs.attr_common import SHARED
 from gsw import SP_from_C, SA_from_SP, CT_from_t, rho
 
 
@@ -72,7 +73,7 @@ def main(argv=None):
     ctd = xr.Dataset.from_dataframe(joined)
 
     # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
-    attrs = dict_update(CTDMO, CTD)
+    attrs = dict_update(CTDMO, SHARED)  # add the shared attributes
     ctd = update_dataset(ctd, platform, deployment, lat, lon, [depth, depth, depth], attrs)
 
     # save the data

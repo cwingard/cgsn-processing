@@ -12,6 +12,7 @@ import xarray as xr
 
 from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING, dict_update
 from cgsn_processing.process.configs.attr_superv import SUPERV
+from cgsn_processing.process.configs.attr_common import SHARED
 
 
 def proc_superv(infile, platform, deployment, lat, lon, depth, **kwargs):
@@ -60,8 +61,9 @@ def proc_superv(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # clean up the dataset and assign attributes
     superv['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(superv.time)).astype(str))
-    ATTR = dict_update(SUPERV[superv_type], SUPERV['common'])
-    superv = update_dataset(superv, platform, deployment, lat, lon, [depth, depth, depth], ATTR)
+    attrs = dict_update(SUPERV[superv_type], SUPERV['common'])
+    attrs = dict_update(attrs, SHARED)
+    superv = update_dataset(superv, platform, deployment, lat, lon, [depth, depth, depth], attrs)
     superv.attrs['processing_level'] = 'parsed'
 
     return superv

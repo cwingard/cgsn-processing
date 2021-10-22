@@ -12,9 +12,10 @@ import xarray as xr
 
 from gsw import SP_from_C, SA_from_SP, CT_from_t, rho
 
-from cgsn_processing.process.common import ENCODING, inputs, epoch_time, json2df, update_dataset
+from cgsn_processing.process.common import ENCODING, inputs, epoch_time, json2df, update_dataset, dict_update
 from cgsn_processing.process.finding_calibrations import find_calibration
 from cgsn_processing.process.configs.attr_ctdbp import CTDBP
+from cgsn_processing.process.configs.attr_common import SHARED
 from cgsn_processing.process.proc_flort import Calibrations
 
 from pyseas.data.do2_functions import do2_salinity_correction
@@ -130,7 +131,8 @@ def proc_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
             ctd.attrs['processing_level'] = 'parsed'
 
         # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
-        ctd = update_dataset(ctd, platform, deployment, lat, lon, [depth, depth, depth], CTDBP)
+        attrs = dict_update(CTDBP, SHARED)  # add the shared the attributes
+        ctd = update_dataset(ctd, platform, deployment, lat, lon, [depth, depth, depth], attrs)
 
         return ctd
 

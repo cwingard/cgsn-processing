@@ -16,7 +16,8 @@ from gsw import SP_from_C
 from pytz import timezone
 
 from cgsn_processing.process.common import ENCODING, colocated_ctd, inputs, json2df, dict_update, update_dataset
-from cgsn_processing.process.configs.attr_phsen import GLOBAL, PHSEN
+from cgsn_processing.process.configs.attr_phsen import PHSEN
+from cgsn_processing.process.configs.attr_common import SHARED
 
 from pyseas.data.ph_functions import ph_battery, ph_thermistor, ph_calc_phwater
 
@@ -140,7 +141,7 @@ def main(argv=None):
     # merge the data sets together and create the final data set with full attributes
     data_dataset = xr.Dataset.from_dataframe(data)
     pH = xr.merge([data_dataset, ds])
-    attrs = dict_update(GLOBAL, PHSEN)      # merge global pH attribute dictionaries into a single dictionary
+    attrs = dict_update(PHSEN, SHARED)  # add the shared attributes
     pH = update_dataset(pH, platform, deployment, lat, lon, [depth, depth, depth], attrs)
 
     # save the file

@@ -10,8 +10,9 @@ import numpy as np
 import os
 import xarray as xr
 
-from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING
+from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING, dict_update
 from cgsn_processing.process.configs.attr_fdchp import FDCHP
+from cgsn_processing.process.configs.attr_common import SHARED
 
 
 def proc_fdchp(infile, platform, deployment, lat, lon, depth):
@@ -44,7 +45,8 @@ def proc_fdchp(infile, platform, deployment, lat, lon, depth):
 
     # clean up the dataset and assign attributes
     fdchp['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(fdchp.time)).astype(str))
-    fdchp = update_dataset(fdchp, platform, deployment, lat, lon, [depth, depth, depth], FDCHP)
+    attrs = dict_update(FDCHP, SHARED)
+    fdchp = update_dataset(fdchp, platform, deployment, lat, lon, [depth, depth, depth], attrs)
     fdchp.attrs['processing_level'] = 'parsed'
 
     return fdchp

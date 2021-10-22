@@ -14,9 +14,11 @@ import xarray as xr
 
 from gsw import SP_from_C, p_from_z
 
-from cgsn_processing.process.common import Coefficients, inputs, json2df, colocated_ctd, update_dataset, ENCODING
+from cgsn_processing.process.common import Coefficients, inputs, json2df, colocated_ctd, update_dataset, \
+    ENCODING, dict_update
 from cgsn_processing.process.finding_calibrations import find_calibration
 from cgsn_processing.process.configs.attr_flort import FLORT
+from cgsn_processing.process.configs.attr_common import SHARED
 
 from pyseas.data.flo_functions import flo_scale_and_offset, flo_bback_total
 
@@ -224,7 +226,8 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
     flort['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(flort.time)).astype(str))
-    flort = update_dataset(flort, platform, deployment, lat, lon, depth, FLORT)
+    attrs = dict_update(FLORT, SHARED)
+    flort = update_dataset(flort, platform, deployment, lat, lon, depth, attrs)
     if proc_flag:
         flort.attrs['processing_level'] = 'processed'
     else:

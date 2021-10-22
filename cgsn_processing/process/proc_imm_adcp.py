@@ -13,6 +13,7 @@ import xarray as xr
 
 from cgsn_processing.process.common import Coefficients, ENCODING, inputs, dict_update, json2obj, update_dataset
 from cgsn_processing.process.configs.attr_adcp import ADCP, PD12, DERIVED
+from cgsn_processing.process.configs.attr_common import SHARED
 from cgsn_processing.process.finding_calibrations import find_calibration
 
 from gsw.conversions import z_from_p
@@ -151,8 +152,9 @@ def main(argv=None):
     vmin = adcp.bin_depth.min().values
 
     # add to the global attributes for the ADCP
-    attrs = dict_update(ADCP, PD12)   # merge default and PD12
+    attrs = dict_update(ADCP, PD12)         # merge the default attributes and PD12
     attrs = dict_update(attrs, DERIVED)     # add the derived attributes
+    attrs = dict_update(attrs, SHARED)      # add the shared attributes
     adcp = update_dataset(adcp, platform, deployment, lat, lon, [depth, vmin, vmax], attrs)
 
     # save the file

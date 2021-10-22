@@ -19,8 +19,9 @@ import xarray as xr
 from gsw import SP_from_C
 
 from cgsn_processing.process.common import Coefficients, inputs, json2obj, colocated_ctd, \
-    update_dataset, ENCODING, FILL_INT
+    update_dataset, ENCODING, FILL_INT, dict_update
 from cgsn_processing.process.configs.attr_optaa import OPTAA
+from cgsn_processing.process.configs.attr_common import SHARED
 from cgsn_processing.process.finding_calibrations import find_calibration
 
 from pyseas.data.opt_functions import opt_internal_temp, opt_external_temp
@@ -538,7 +539,8 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
         optaa = calculate_ratios(optaa, dev.coeffs)
 
     # update the data set with the appropriate attributes
-    optaa = update_dataset(optaa, platform, deployment, lat, lon, [depth, depth, depth], OPTAA)
+    attrs = dict_update(OPTAA, SHARED)  # add the shared attributes
+    optaa = update_dataset(optaa, platform, deployment, lat, lon, [depth, depth, depth], attrs)
     optaa['wavelength_number'].attrs['actual_wavelengths'] = np.intc(num_wavelengths)
 
     # if we used burst averaging, reset fill values and attributes for the raw a and c signal and reference values
@@ -552,7 +554,7 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
     if proc_flag:
         optaa.attrs['processing_level'] = 'processed'
     else:
-        optaa.attrs['processing_level'] = 'parsed'
+        optaa.attrs['processing_level'] = 'partial'
 
     # return the final processed dataset
     return optaa

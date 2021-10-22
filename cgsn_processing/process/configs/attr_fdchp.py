@@ -10,29 +10,7 @@
 FDCHP = {
     'global': {
         'title': 'Summarized Flux Direct Covariance Sensor Measurements',
-        'summary': (
-            'Records the hourly summarized flux direct covariance measurements from the FDCHP.'
-        ),
-    },
-    'deploy_id': {
-        'long_name': 'Deployment ID',
-        'standard_name': 'deployment_id',
-        'units': '1',
-        'coordinates': 'time z longitude latitude',
-        'grid_mapping': 'crs',
-        'platform': 'platform',
-        'ancillary_variables': 'platform',
-        'coverage_content_type': 'physicalMeasurement'
-    },
-    'dcl_date_time_string': {
-        'long_name': 'DCL Date and Time Stamp',
-        'standard_name': 'dcl_date_time_string',
-        'units': '1',
-        'coordinates': 'time z longitude latitude',
-        'grid_mapping': 'crs',
-        'platform': 'platform',
-        'ancillary_variables': 'platform',
-        'coverage_content_type': 'physicalMeasurement'
+        'summary': 'Records the hourly summarized flux direct covariance measurements from the FDCHP.',
     },
     'start_time': {},
     'processing_version': {},

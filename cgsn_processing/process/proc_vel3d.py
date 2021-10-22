@@ -13,8 +13,10 @@ import xarray as xr
 from gsw import z_from_p
 from pyseas.data.generic_functions import magnetic_declination, magnetic_correction
 
-from cgsn_processing.process.common import ENCODING, FILL_INT, inputs, json2obj, json_obj2df, dt64_epoch, update_dataset
+from cgsn_processing.process.common import ENCODING, FILL_INT, inputs, json2obj, json_obj2df, dt64_epoch, \
+    update_dataset, dict_update
 from cgsn_processing.process.configs.attr_vel3d import VEL3D
+from cgsn_processing.process.configs.attr_common import SHARED
 
 
 def main(argv=None):
@@ -102,7 +104,8 @@ def main(argv=None):
     vel3d['velocity_north_corrected'] = (['time'], north)
 
     # update the data set with appropriate metadata
-    vel3d = update_dataset(vel3d, platform, deployment, lat, lon, [z, zmin, zmax], VEL3D)
+    attrs = dict_update(VEL3D, SHARED)  # add the shared attributes
+    vel3d = update_dataset(vel3d, platform, deployment, lat, lon, [z, zmin, zmax], attrs)
 
     # save the file
     vel3d.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)

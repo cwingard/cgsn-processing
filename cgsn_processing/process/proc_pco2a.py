@@ -10,8 +10,10 @@ import numpy as np
 import os
 import xarray as xr
 
-from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING
+from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING, dict_update
 from cgsn_processing.process.configs.attr_pco2a import PCO2A
+from cgsn_processing.process.configs.attr_common import SHARED
+
 from pyseas.data.co2_functions import co2_ppressure
 
 
@@ -53,7 +55,8 @@ def proc_pco2a(infile, platform, deployment, lat, lon, depth):
 
     # clean up the dataset and assign attributes
     pco2a['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(pco2a.time)).astype(str))
-    pco2a = update_dataset(pco2a, platform, deployment, lat, lon, [depth, depth, depth], PCO2A)
+    attrs = dict_update(PCO2A, SHARED)  # add the shared attributes
+    pco2a = update_dataset(pco2a, platform, deployment, lat, lon, [depth, depth, depth], attrs)
     pco2a.attrs['processing_level'] = 'processed'
 
     return pco2a

@@ -12,8 +12,10 @@ import os
 import pandas as pd
 import xarray as xr
 
-from cgsn_processing.process.common import Coefficients, inputs, json2df, colocated_ctd, update_dataset, ENCODING
+from cgsn_processing.process.common import Coefficients, inputs, json2df, colocated_ctd, update_dataset, \
+    ENCODING, dict_update
 from cgsn_processing.process.configs.attr_dosta import DOSTA
+from cgsn_processing.process.configs.attr_common import SHARED
 from cgsn_processing.process.finding_calibrations import find_calibration
 
 from pyseas.data.do2_functions import do2_phase_to_doxy, do2_salinity_correction
@@ -187,11 +189,12 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
     dosta['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(dosta.time)).astype(str))
-    dosta = update_dataset(dosta, platform, deployment, lat, lon, depth, DOSTA)
+    attrs = dict_update(DOSTA, SHARED)  # add the shared attributes
+    dosta = update_dataset(dosta, platform, deployment, lat, lon, depth, attrs)
     if proc_flag:
         dosta.attrs['processing_level'] = 'processed'
     else:
-        dosta.attrs['processing_level'] = 'parsed'
+        dosta.attrs['processing_level'] = 'partial'
 
     return dosta
 

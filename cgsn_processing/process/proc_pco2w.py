@@ -15,7 +15,8 @@ from datetime import datetime, timedelta
 from pytz import timezone
 
 from cgsn_processing.process.common import Coefficients, ENCODING, inputs, dict_update, json2df, update_dataset
-from cgsn_processing.process.configs.attr_pco2w import GLOBAL, PCO2W
+from cgsn_processing.process.configs.attr_pco2w import PCO2W
+from cgsn_processing.process.configs.attr_common import SHARED
 from cgsn_processing.process.finding_calibrations import find_calibration
 
 from pyseas.data.co2_functions import co2_blank, co2_thermistor, co2_pco2wat
@@ -206,7 +207,7 @@ def main(argv=None):
     pCO2 = data.to_xarray()
 
     # update the metadata and setup the data set for export to NetCDF
-    attrs = dict_update(GLOBAL, PCO2W)      # merge global and pCO2 attribute dictionaries into a single dictionary
+    attrs = dict_update(PCO2W, SHARED) # add the shared attributes
     pCO2 = update_dataset(pCO2, platform, deployment, lat, lon, [depth, depth, depth], attrs)
 
     # save the file

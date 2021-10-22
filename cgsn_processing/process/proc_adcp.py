@@ -14,6 +14,7 @@ import xarray as xr
 from cgsn_processing.process.common import ENCODING, inputs, dict_update, dt64_epoch, epoch_time, json2obj, \
     json_obj2df, colocated_ctd, update_dataset
 from cgsn_processing.process.configs.attr_adcp import ADCP, PD0, PD8, DERIVED
+from cgsn_processing.process.configs.attr_common import SHARED
 from gsw import z_from_p
 from pyseas.data.generic_functions import magnetic_declination
 from pyseas.data.adcp_functions import magnetic_correction, adcp_bin_depths
@@ -276,6 +277,7 @@ def main(argv=None):
     # add to the global attributes for the ADCP
     attrs = dict_update(ADCP, adcp_attrs)   # merge default and PD0 attribute dictionaries into a single dictionary
     attrs = dict_update(attrs, DERIVED)     # add the derived attributes
+    attrs = dict_update(attrs, SHARED)      # add the shared attributes
     adcp = update_dataset(adcp, platform, deployment, lat, lon, [depth, vmin, vmax], attrs)
 
     # save the file

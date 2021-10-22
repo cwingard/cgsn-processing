@@ -18,6 +18,7 @@ from cgsn_processing.process.common import ENCODING, inputs, dict_update, epoch_
     json2obj, json_obj2df, update_dataset
 from cgsn_processing.process.finding_calibrations import find_calibration
 from cgsn_processing.process.configs.attr_ctdbp import CTDBP
+from cgsn_processing.process.configs.attr_common import SHARED
 
 from cgsn_processing.process.proc_dosta import Calibrations as DOSTA_Calibrations
 from cgsn_processing.process.proc_flort import Calibrations as FLORD_Calibrations
@@ -173,7 +174,8 @@ def proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
         ctd.attrs['processing_level'] = 'parsed'
 
     # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
-    ctd = update_dataset(ctd, platform, deployment, lat, lon, [depth, depth, depth], CTDBP)
+    attrs = dict_update(CTDBP, SHARED)  # add the shared attributes
+    ctd = update_dataset(ctd, platform, deployment, lat, lon, [depth, depth, depth], attrs)
 
     return ctd
 

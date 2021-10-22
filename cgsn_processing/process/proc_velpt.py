@@ -10,8 +10,10 @@ import numpy as np
 import os
 import xarray as xr
 
-from cgsn_processing.process.common import inputs, json_sub2df, update_dataset, ENCODING
+from cgsn_processing.process.common import inputs, json_sub2df, update_dataset, dict_update, ENCODING
 from cgsn_processing.process.configs.attr_velpt import VELPT
+from cgsn_processing.process.configs.attr_common import SHARED
+
 from pyseas.data.generic_functions import magnetic_declination
 from pyseas.data.adcp_functions import magnetic_correction
 
@@ -51,7 +53,8 @@ def proc_velpt(infile, platform, deployment, lat, lon, depth):
 
     # clean up the dataset and assign attributes
     velpt['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(velpt.time)).astype(str))
-    velpt = update_dataset(velpt, platform, deployment, lat, lon, [depth, depth, depth], VELPT)
+    attrs = dict_update(VELPT, SHARED)
+    velpt = update_dataset(velpt, platform, deployment, lat, lon, [depth, depth, depth], attrs)
     velpt.attrs['processing_level'] = 'processed'
 
     return velpt
