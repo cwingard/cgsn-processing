@@ -10,7 +10,7 @@ import numpy as np
 import os
 import xarray as xr
 
-from gsw import SP_from_C, SA_from_SP, CT_from_t, rho
+from gsw import SP_from_C, SA_from_SP, CT_from_t, rho, z_from_p
 
 from cgsn_processing.process.common import ENCODING, inputs, epoch_time, json2df, update_dataset, dict_update
 from cgsn_processing.process.finding_calibrations import find_calibration
@@ -59,11 +59,14 @@ def proc_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
         # json data file was empty, exiting
         return None
 
+    # clean up variables and setting the processing flag
     ctd['sensor_time'] = epoch_time(ctd['ctd_date_time_string'].values[0])
     ctd.drop(columns=['ctd_date_time_string', 'dcl_date_time_string'], inplace=True)
+    proc_flag = False
 
-    # add the deployment id, used to subset data sets
-    ctd['deploy_id'] = deployment
+    # reset the depth array from the pressure record
+    d = z_from_p(ctd['pressure'], lat)
+    depth = [d.mean(), d.min(), d.max()]
 
     # calculate the practical salinity of the seawater from the temperature and conductivity measurements
     ctd['salinity'] = SP_from_C(ctd['conductivity'].values * 10.0, ctd['temperature'].values, ctd['pressure'].values)
@@ -71,22 +74,18 @@ def proc_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
     # calculate the in-situ density of the seawater from the absolute salinity and conservative temperature
     sa = SA_from_SP(ctd['salinity'].values, ctd['pressure'].values, lon, lat)  # absolute salinity
     ct = CT_from_t(sa, ctd['temperature'].values, ctd['pressure'].values)      # conservative temperature
-    ctd['density'] = rho(sa, ct, ctd['pressure'].values)                # density
+    ctd['density'] = rho(sa, ct, ctd['pressure'].values)                       # density
 
     if ctd_type in ['solo', 'dosta']:
-        if ctd_type == 'dosta':
-            # apply temperature, salinity and pressure corrections to dissolved oxygen measurement
-            ctd['oxygen_concentration_corrected'] = do2_salinity_correction(ctd['oxygen_concentration'],
-                                                                            ctd['pressure'],
-                                                                            ctd['temperature'], ctd['salinity'], lat,
-                                                                            lon)
-        # create an xarray data set from the data frame
-        ctd = xr.Dataset.from_dataframe(ctd)
+        # set the processing flag
+        proc_flag = True
 
-        # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
-        ctd = update_dataset(ctd, platform, deployment, lat, lon, [depth, depth, depth], CTDBP)
-        ctd.attrs['processing_level'] = 'processed'
-        return ctd
+        # apply temperature, salinity and pressure corrections to dissolved oxygen measurement
+        if ctd_type == 'dosta':
+            ctd['oxygen_concentration_corrected'] = do2_salinity_correction(ctd['oxygen_concentration'].values,
+                                                                            ctd['pressure'].values,
+                                                                            ctd['temperature'].values,
+                                                                            ctd['salinity'].values, lat, lon)
 
     if ctd_type == 'flort':
         # create empty variables for the processed FLORT data
@@ -94,7 +93,6 @@ def proc_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
         ctd['fluorometric_cdom'] = ctd['raw_cdom'] * np.nan
         ctd['beta_700'] = ctd['raw_backscatter'] * np.nan
         ctd['total_optical_backscatter'] = ctd['beta_700'] * np.nan
-        proc_flag = False
 
         # now grab the calibration coefficients for the FLORT (if they exist)
         coeff_file = os.path.join(os.path.dirname(infile), 'flort.cal_coeffs.json')
@@ -123,18 +121,19 @@ def proc_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
                                                                flr.coeffs['scatter_angle'], flr.coeffs['wavelength'],
                                                                flr.coeffs['chi_factor'])
 
-        # create an xarray data set from the data frame
-        ctd = xr.Dataset.from_dataframe(ctd)
-        if proc_flag:
-            ctd.attrs['processing_level'] = 'processed'
-        else:
-            ctd.attrs['processing_level'] = 'parsed'
+    # create an xarray data set from the data frame
+    ctd = xr.Dataset.from_dataframe(ctd)
 
-        # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
-        attrs = dict_update(CTDBP, SHARED)  # add the shared the attributes
-        ctd = update_dataset(ctd, platform, deployment, lat, lon, [depth, depth, depth], attrs)
+    # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
+    ctd['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(ctd.time)).astype(str))
+    attrs = dict_update(CTDBP, SHARED)  # add the shared the attributes
+    ctd = update_dataset(ctd, platform, deployment, lat, lon, depth, attrs)
+    if proc_flag:
+        ctd.attrs['processing_level'] = 'processed'
+    else:
+        ctd.attrs['processing_level'] = 'partial'
 
-        return ctd
+    return ctd
 
 
 def main(argv=None):

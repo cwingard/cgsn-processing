@@ -47,7 +47,7 @@ def proc_metbk(infile, platform, deployment, lat, lon, depth):
                                            df['sea_surface_temperature'].values, 0)
 
     # calculate the in-situ density of the surface seawater from the absolute salinity and conservative temperature
-    sa = SA_from_SP(df['psu'].values, 0.0, lon, lat)                   # absolute salinity
+    sa = SA_from_SP(df['sea_surface_salinity'].values, 0.0, lon, lat)                   # absolute salinity
     ct = CT_from_t(sa, df['sea_surface_temperature'].values, 0.0)      # conservative temperature
     df['sea_surface_density'] = rho(sa, ct, 0.0)                                       # density
 

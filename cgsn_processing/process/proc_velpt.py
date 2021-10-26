@@ -14,8 +14,7 @@ from cgsn_processing.process.common import inputs, json_sub2df, update_dataset, 
 from cgsn_processing.process.configs.attr_velpt import VELPT
 from cgsn_processing.process.configs.attr_common import SHARED
 
-from pyseas.data.generic_functions import magnetic_declination
-from pyseas.data.adcp_functions import magnetic_correction
+from pyseas.data.generic_functions import magnetic_declination, magnetic_correction
 
 
 def proc_velpt(infile, platform, deployment, lat, lon, depth):
@@ -40,13 +39,16 @@ def proc_velpt(infile, platform, deployment, lat, lon, depth):
         # there was no data in this file, ending early
         return None
 
+    # clean up some the variables
+    df.drop(columns='date_time_array', inplace=True)
+
     # correct the eastward and northward velocity components for magnetic declination
-    theta = magnetic_declination(lat, lon, df['time'])
-    u_cor, v_cor = magnetic_correction(theta, df['velocity_east'], df['velocity_north'])
+    theta = magnetic_declination(lat, lon, df['time'].values.astype(float) / 1e9)
+    u_cor, v_cor = magnetic_correction(theta.mean(), df.velocity_east.values, df.velocity_north.values)
 
     # add the corrected velocities to the data frame
-    df['eastward_seawater_velocity'] = u_cor
-    df['northward_seawater_velocity'] = v_cor
+    df['eastward_seawater_velocity'] = u_cor / 1000
+    df['northward_seawater_velocity'] = v_cor / 1000
 
     # create an xarray data set from the data frame
     velpt = xr.Dataset.from_dataframe(df)
