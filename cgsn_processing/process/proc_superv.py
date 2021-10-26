@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-@package cgsn_processing.process.proc_superv_cpm
+@package cgsn_processing.process.proc_superv
 @file cgsn_processing/process/proc_superv.py
 @author Christopher Wingard
-@brief Creates a NetCDF dataset for the CPM Supervisor from JSON formatted source data
+@brief Creates a NetCDF dataset for the CPM, DCL or STC Supervisor from JSON
+    formatted source data
 """
 import numpy as np
 import os
@@ -17,9 +18,11 @@ from cgsn_processing.process.configs.attr_common import SHARED
 
 def proc_superv(infile, platform, deployment, lat, lon, depth, **kwargs):
     """
-    Main CPM supervisor processing function. Loads the JSON formatted parsed
-    data and creates a NetCDF file for use in monitoring the mooring data
-    logger system health.
+    Main supervisor processing function. Loads the JSON formatted parsed data
+    and creates a NetCDF file for use in monitoring the mooring data logger
+    system health. Dataset processing level attribute is set to "parsed".
+    There is no processing of the data, just a straight conversion from JSON
+    to NetCDF.
 
     :param infile: JSON formatted parsed data file
     :param platform: Name of the mooring the instrument is mounted on.
@@ -31,7 +34,7 @@ def proc_superv(infile, platform, deployment, lat, lon, depth, **kwargs):
     :kwargs superv_type: Specify the source of the supervisor log file, either
         a CPM, DCL or STC.
 
-    :return superv: An xarray dataset with the processed CPM supervisor data
+    :return superv: An xarray dataset with the processed supervisor data
     """
     # get the supervisor type and force the string to lowercase if supplied
     superv_type = kwargs.get('superv_type')

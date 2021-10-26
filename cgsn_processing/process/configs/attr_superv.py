@@ -402,7 +402,7 @@ SUPERV = {
             'long_name': 'Port 1 Error Flag',
             'standard_name': 'status_flag',
             'units': '1',
-            'comment': 'Indicates whether there is an error condition (0: no error, 1: error) with the port.',
+            'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
             'ancillary_variables': 'port1_power_state port1_voltage port1_current'
@@ -430,7 +430,7 @@ SUPERV = {
             'long_name': 'Port 2 Error Flag',
             'standard_name': 'status_flag',
             'units': '1',
-            'comment': 'Indicates whether there is an error condition (0: no error, 1: error) with the port.',
+            'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
             'ancillary_variables': 'port2_power_state port2_voltage port2_current'
@@ -458,7 +458,7 @@ SUPERV = {
             'long_name': 'Port 3 Error Flag',
             'standard_name': 'status_flag',
             'units': '1',
-            'comment': 'Indicates whether there is an error condition (0: no error, 1: error) with the port.',
+            'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
             'ancillary_variables': 'port3_power_state port3_voltage port3_current'
@@ -486,7 +486,7 @@ SUPERV = {
             'long_name': 'Port 4 Error Flag',
             'standard_name': 'status_flag',
             'units': '1',
-            'comment': 'Indicates whether there is an error condition (0: no error, 1: error) with the port.',
+            'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
             'ancillary_variables': 'port4_power_state port4_voltage port4_current'
@@ -514,7 +514,7 @@ SUPERV = {
             'long_name': 'Port 5 Error Flag',
             'standard_name': 'status_flag',
             'units': '1',
-            'comment': 'Indicates whether there is an error condition (0: no error, 1: error) with the port.',
+            'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
             'ancillary_variables': 'port5_power_state port5_voltage port5_current'
@@ -542,7 +542,7 @@ SUPERV = {
             'long_name': 'Port 6 Error Flag',
             'standard_name': 'status_flag',
             'units': '1',
-            'comment': 'Indicates whether there is an error condition (0: no error, 1: error) with the port.',
+            'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
             'ancillary_variables': 'port6_power_state port6_voltage port6_current'
@@ -570,7 +570,7 @@ SUPERV = {
             'long_name': 'Port 7 Error Flag',
             'standard_name': 'status_flag',
             'units': '1',
-            'comment': 'Indicates whether there is an error condition (0: no error, 1: error) with the port.',
+            'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
             'ancillary_variables': 'port7_power_state port7_voltage port7_current'
@@ -598,7 +598,7 @@ SUPERV = {
             'long_name': 'Port 8 Error Flag',
             'standard_name': 'status_flag',
             'units': '1',
-            'comment': 'Indicates whether there is an error condition (0: no error, 1: error) with the port.',
+            'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
             'ancillary_variables': 'port8_power_state port8_voltage port8_current'
@@ -873,7 +873,7 @@ SUPERV = {
             'long_name': 'Port 1 Error Flag',
             'standard_name': 'status_flag',
             'units': '1',
-            'comment': 'Indicates whether there is an error condition (0: no error, 1: error) with the port.',
+            'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
             'ancillary_variables': 'port1_power_state port1_voltage port1_current'
@@ -901,7 +901,7 @@ SUPERV = {
             'long_name': 'Port 2 Error Flag',
             'standard_name': 'status_flag',
             'units': '1',
-            'comment': 'Indicates whether there is an error condition (0: no error, 1: error) with the port.',
+            'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
             'ancillary_variables': 'port2_power_state port2_voltage port2_current'
@@ -929,7 +929,7 @@ SUPERV = {
             'long_name': 'Port 3 Error Flag',
             'standard_name': 'status_flag',
             'units': '1',
-            'comment': 'Indicates whether there is an error condition (0: no error, 1: error) with the port.',
+            'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
             'ancillary_variables': 'port3_power_state port3_voltage port3_current'
@@ -957,7 +957,7 @@ SUPERV = {
             'long_name': 'Port 5 Error Flag',
             'standard_name': 'status_flag',
             'units': '1',
-            'comment': 'Indicates whether there is an error condition (0: no error, 1: error) with the port.',
+            'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
             'ancillary_variables': 'port5_power_state port5_voltage port5_current'
@@ -985,7 +985,7 @@ SUPERV = {
             'long_name': 'Port 7 Error Flag',
             'standard_name': 'status_flag',
             'units': '1',
-            'comment': 'Indicates whether there is an error condition (0: no error, 1: error) with the port.',
+            'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
             'ancillary_variables': 'port7_power_state port7_voltage port7_current'

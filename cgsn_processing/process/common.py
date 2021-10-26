@@ -284,16 +284,24 @@ def update_dataset(ds, platform, deployment, lat, lon, depth, attrs):
     :param deployment: Deployment name
     :param lat: Deployment latitude in decimal degrees North
     :param lon: Deployment longitude in decimal degrees East
-    :param depth: Array indicating deployment depth and the vertical minimum and maximum extent of the depth range for
-                  the instrument in this data set
+    :param depth: Array indicating the deployment depth, and the vertical
+        minimum and maximum extent of the depth range for the instrument in
+        this data set
     :param attrs: Global and variable level attributes for the data set
     :return ds: The updated data set
     """
+    # convert the depth array to named variables
+    deploy_depth = depth[0]     # instrument deployment depth
+    min_depth = depth[1]        # minimum vertical extent of the instrument depth
+    max_depth = depth[2]        # maximum vertical extent of the instrument depth
+    # note, the minimum and maximum depths will vary if the instrument includes a
+    # pressure sensor, otherwise they will be set to the deployment depth
+
     # add the non-dimensional coordinate variables
     ds = ds.assign_coords({
         'lat': lat,
         'lon': lon,
-        'z': depth[0],
+        'z': deploy_depth,
         'station': platform.upper()
     })
 
@@ -308,8 +316,8 @@ def update_dataset(ds, platform, deployment, lat, lon, depth, attrs):
         'geospatial_lat_min': lat,
         'geospatial_lon_max': lon,
         'geospatial_lon_min': lon,
-        'geospatial_vertical_max': depth[2],
-        'geospatial_vertical_min': depth[1],
+        'geospatial_vertical_max': max_depth,
+        'geospatial_vertical_min': min_depth,
         'geospatial_vertical_positive': 'down',
         'geospatial_vertical_units': 'm'
     })

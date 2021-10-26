@@ -31,7 +31,7 @@ def proc_gps(infile, platform, deployment, lat, lon, depth):
 
     :return gps: An xarray dataset with the GPS data
     """
-    # load the json data file and return a panda dataframe
+    # load the json data file and return a pandas dataframe
     df = json2df(infile)
     if df.empty:
         # there was no data in this file, ending early

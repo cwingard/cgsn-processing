@@ -215,7 +215,10 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
     if burst:
         # resample to a 15 minute interval and shift the clock to center the averaging window
         flort = flort.resample(time='900s', base=3150, loffset='450s').median(dim='time', keep_attrs=True)
-        flort = flort.where(~np.isnan(flort.raw_signal_beta), drop=True)
+
+        # resampling will fill in missing time steps with NaNs. Use the raw_internal_temp variable
+        # as a proxy variable to find cases where data is filled with a NaN, and delete those records.
+        flort = flort.where(~np.isnan(flort.raw_internal_temp), drop=True)
 
         # reset original integer values
         int_arrays = ['measurement_wavelength_beta', 'raw_signal_beta', 'measurement_wavelength_chl',

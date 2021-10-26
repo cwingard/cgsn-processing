@@ -4,7 +4,7 @@
 @package cgsn_processing.process.configs.attr_mopak
 @file cgsn_processing/process/configs/attr_mopak.py
 @author Christopher Wingard
-@brief Attributes for the hydrogen gas variables
+@brief Attributes for the 3D accelerometer (MOPAK) data
 """
 
 MOPAK = {

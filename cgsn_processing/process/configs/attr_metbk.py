@@ -95,8 +95,8 @@ METBK = {
         'long_name': 'Eastward Wind Velocity',
         'standard_name': 'eastward_wind',
         'units': 'm s-1',
-        'comment': '"WINDAVG-VLE_L0',
-        'data_product_identifier': 'Eastward wind velocity relative to magnetic North.',
+        'comment': 'Eastward wind velocity relative to magnetic North.',
+        'data_product_identifier': 'WINDAVG-VLE_L0',
         '_FillValue': np.nan
     },
     'northward_wind_velocity': {
