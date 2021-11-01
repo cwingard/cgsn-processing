@@ -187,7 +187,7 @@ def main(argv=None):
     d.setncatts(attrs['wavelengths'])
     d[:] = wavelengths
 
-    d = nc.createVariable('channel_measurements', 'i', ('station', 'time', 'wavelengths',))
+    d = nc.createVariable('channel_measurements', 'i', ('station', 't', 'wavelengths',))
     d.setncatts(attrs['channel_measurements'])
     d[:] = channels
 
