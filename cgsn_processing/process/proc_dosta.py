@@ -113,7 +113,7 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # clean up dataframe and rename selected variables
     empty_data = np.atleast_1d(dosta['serial_number']).astype(np.int32) * np.nan
-    dosta.drop(columns=['dcl_date_time_string'], inplace=True)
+    dosta.drop(columns=['date_time_string'], inplace=True)
     dosta.rename(columns={'estimated_oxygen_concentration': 'oxygen_concentration',
                           'estimated_oxygen_saturation': 'oxygen_saturation',
                           'optode_temperature': 'oxygen_thermistor_temperature',
@@ -140,28 +140,26 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
         ctd = colocated_ctd(infile, ctd_name)
 
     if proc_flag and not ctd.empty:
-        # set the CTD and DOSTA time to the same units of seconds since 1970-01-01
-        ctd_time = ctd.time.values.astype(float) / 10.0 ** 9
-
         # test to see if the CTD covers our time of interest for this DOSTA file
-        coverage = ctd_time.min() <= dosta['time'].min() and ctd_time.max() >= dosta['time'].max()
+        coverage = ctd['time'].min() <= dosta['time'].min() and ctd['time'].max() >= dosta['time'].max()
 
         # interpolate the CTD data if we have full coverage
         if coverage:
-            pressure = np.interp(dosta['time'], ctd_time, ctd.pressure)
+            pressure = np.interp(dosta['time'], ctd['time'], ctd.pressure)
             dosta['ctd_pressure'] = pressure
 
-            temperature = np.interp(dosta['time'], ctd_time, ctd.temperature)
+            temperature = np.interp(dosta['time'], ctd['time'], ctd.temperature)
             dosta['ctd_temperature'] = temperature
 
             salinity = SP_from_C(ctd.conductivity.values * 10.0, ctd.temperature.values, ctd.pressure.values)
-            salinity = np.interp(dosta['time'], ctd_time, salinity)
+            salinity = np.interp(dosta['time'], ctd['time'], salinity)
             dosta['ctd_salinity'] = salinity
 
             # calculate the pressure and salinity corrected oxygen concentration
-            dosta['oxygen_concentration_corrected'] = do2_salinity_correction(dosta['svu_oxygen_concentration'],
-                                                                              dosta['pressure'], dosta['temperature'],
-                                                                              dosta['salinity'], lat, lon)
+            dosta['oxygen_concentration_corrected'] = do2_salinity_correction(dosta['svu_oxygen_concentration'].values,
+                                                                              dosta['ctd_pressure'].values,
+                                                                              dosta['ctd_temperature'].values,
+                                                                              dosta['ctd_salinity'].values, lat, lon)
 
     # create an xarray data set from the data frame
     dosta = xr.Dataset.from_dataframe(dosta)
@@ -181,7 +179,7 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
                 dosta[k] = dosta[k].astype(np.int32)
 
     # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
-    dosta['deploy_id'] = xr.Variable('time', np.atleast_1d(deployment).astype(np.str))
+    dosta['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(dosta.time)).astype(str))
     dosta = update_dataset(dosta, platform, deployment, lat, lon, [depth, depth, depth], DOSTA)
     if proc_flag:
         dosta.attrs['processing_level'] = 'processed'

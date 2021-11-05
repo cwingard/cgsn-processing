@@ -7,6 +7,7 @@
 @brief Find the most applicable calibration file for an instrument
 """
 import datetime
+import pandas as pd
 import re
 import requests
 
@@ -51,6 +52,11 @@ def find_calibration(inst_class, inst_serial, sampling_date):
 
                     # calculate the epoch time as seconds since 1970-01-01 in UTC
                     epts = timegm(utc.timetuple()) + (utc.microsecond / 1e6)
+
+                    # test the type of the sampling_date and convert to match epts if needed
+                    if type(sampling_date) is pd.Timestamp:
+                        # convert the sampling date to epoch time
+                        sampling_date = timegm(sampling_date.timetuple())
 
                     # now compare that time to the sampling date from the data
                     flist.append(inst)
