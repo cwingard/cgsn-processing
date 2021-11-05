@@ -75,10 +75,10 @@ def proc_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
     if ctd_type in ['solo', 'dosta']:
         if ctd_type == 'dosta':
             # apply temperature, salinity and pressure corrections to dissolved oxygen measurement
-            ctd['oxygen_concentration_corrected'] = do2_salinity_correction(ctd['oxygen_concentration'],
-                                                                            ctd['pressure'],
-                                                                            ctd['temperature'], ctd['salinity'], lat,
-                                                                            lon)
+            ctd['oxygen_concentration_corrected'] = do2_salinity_correction(ctd['oxygen_concentration'].values,
+                                                                            ctd['pressure'].values,
+                                                                            ctd['temperature'].values,
+                                                                            ctd['salinity'].values, lat, lon)
         # create an xarray data set from the data frame
         ctd = xr.Dataset.from_dataframe(ctd)
 

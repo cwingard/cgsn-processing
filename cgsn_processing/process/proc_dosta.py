@@ -193,7 +193,7 @@ def main(argv=None):
     # load the input arguments
     args = inputs(argv)
     infile = os.path.abspath(args.infile)
-    outpath, outfile = os.path.split(args.outfile)
+    outfile = os.path.abspath(args.outfile)
     platform = args.platform
     deployment = args.deployment
     lat = args.latitude
