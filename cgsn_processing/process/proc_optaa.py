@@ -16,7 +16,7 @@ import requests
 import warnings
 import xarray as xr
 
-from gsw import SP_from_C
+from datetime import timedelta
 
 from cgsn_processing.process.common import Coefficients, inputs, json2obj, colocated_ctd, \
     update_dataset, ENCODING, FILL_INT
@@ -25,6 +25,7 @@ from cgsn_processing.process.finding_calibrations import find_calibration
 
 from pyseas.data.opt_functions import opt_internal_temp, opt_external_temp
 from pyseas.data.opt_functions import opt_pressure, opt_pd_calc, opt_tempsal_corr
+from gsw import SP_from_C
 
 
 class Calibrations(Coefficients):
@@ -454,7 +455,8 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
         ctd_time = ctd.time.values.astype(float) / 10.0 ** 9
 
         # test to see if the CTD covers our time of interest for this optaa file
-        coverage = ctd_time.min() <= min(optaa_time) and ctd_time.max() >= max(optaa_time)
+        td = timedelta(hours=1)
+        coverage = ctd_time.min() <= min(optaa_time) and ctd_time.max() + td >= max(optaa_time)
 
         # reset initial estimates of in-situ temperature and salinity if we have full coverage
         if coverage:
