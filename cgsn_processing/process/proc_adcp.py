@@ -63,7 +63,7 @@ def main(argv=None):
         ctd_time = ctd.time.values.astype(float) / 10.0 ** 9
 
         # test to see if the CTD covers our time of interest for this ADCP file
-        td = timedelta(hours=1)
+        td = timedelta(hours=1).total_seconds()
         coverage = ctd_time.min() <= time.min() and ctd_time.max() + td >= time.max()
 
         # reset initial estimate of deployment depth based on if we have full coverage

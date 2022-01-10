@@ -20,10 +20,9 @@ LAT=$3; LON=$4
 DOSTA=${5,,}
 CTD=${6,,}
 DEPTH=$7
-FILE=`basename $8
+FILE=`basename $8`
 
 # Set the default directory paths and input/output sources
-
 DATA="/home/ooiuser/data"
 IN="$DATA/proc/$PLATFORM/$DEPLOY/$DOSTA/$FILE"
 OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$DOSTA/${FILE%.json}.nc"
