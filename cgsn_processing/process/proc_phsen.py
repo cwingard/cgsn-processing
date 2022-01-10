@@ -12,13 +12,13 @@ import pandas as pd
 import xarray as xr
 
 from datetime import datetime, timedelta
-from gsw import SP_from_C
 from pytz import timezone
 
 from cgsn_processing.process.common import ENCODING, colocated_ctd, inputs, json2df, dict_update, update_dataset
 from cgsn_processing.process.configs.attr_phsen import GLOBAL, PHSEN
 
 from pyseas.data.ph_functions import ph_battery, ph_thermistor, ph_calc_phwater
+from gsw import SP_from_C
 
 
 def main(argv=None):
@@ -97,7 +97,8 @@ def main(argv=None):
         ph_time = data.time.values.astype(float) / 10.0 ** 9
 
         # test to see if the CTD covers our time of interest for this pH file
-        coverage = ctd_time.min() <= ph_time.min() and ctd_time.max() >= ph_time.max()
+        td = timedelta(hours=1)
+        coverage = ctd_time.min() <= ph_time.min() and ctd_time.max() + td >= ph_time.max()
 
         # reset initial estimate of in-situ salinity if we have full coverage
         if coverage:

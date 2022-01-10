@@ -41,7 +41,7 @@ if [ -e $IN ]; then
     cd /home/ooiuser/code/cgsn-processing
     {
         python -m cgsn_processing.process.proc_flort -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH \
-            -i $IN -o $OUT -cf $COEFF -sn $SERIAL -df $CTD
+            -i $IN -o $OUT -cf $COEFF -sn $SERIAL -df $CTD -ba
     } || {
         echo "$IN failed to process"
     }
