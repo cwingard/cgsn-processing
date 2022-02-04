@@ -12,6 +12,8 @@ import os
 import pandas as pd
 import xarray as xr
 
+from datetime import timedelta
+
 from cgsn_processing.process.common import Coefficients, inputs, json2df, colocated_ctd, update_dataset, \
     ENCODING, dict_update
 from cgsn_processing.process.configs.attr_dosta import DOSTA
@@ -150,7 +152,8 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
         do_time = dosta.time.values.astype(float) / 10.0 ** 9
 
         # test to see if the CTD covers our time of interest for this DOSTA file
-        coverage = ctd_time.min() <= do_time.min() and ctd_time.max() >= do_time.max()
+        td = timedelta(hours=1)
+        coverage = ctd['time'].min() <= dosta['time'].min() and ctd['time'].max() + td >= dosta['time'].max()
 
         # interpolate the CTD data if we have full coverage
         if coverage:

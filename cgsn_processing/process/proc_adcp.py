@@ -11,6 +11,8 @@ import os
 import pandas as pd
 import xarray as xr
 
+from datetime import timedelta
+
 from cgsn_processing.process.common import ENCODING, inputs, dict_update, dt64_epoch, epoch_time, json2obj, \
     json_obj2df, colocated_ctd, update_dataset
 from cgsn_processing.process.configs.attr_adcp import ADCP, PD0, PD8, DERIVED
@@ -18,6 +20,7 @@ from cgsn_processing.process.configs.attr_common import SHARED
 from gsw import z_from_p
 from pyseas.data.generic_functions import magnetic_declination
 from pyseas.data.adcp_functions import magnetic_correction, adcp_bin_depths
+from gsw import z_from_p
 
 
 def main(argv=None):
@@ -61,7 +64,8 @@ def main(argv=None):
         ctd_time = ctd.time.values.astype(float) / 10.0 ** 9
 
         # test to see if the CTD covers our time of interest for this ADCP file
-        coverage = ctd_time.min() <= time.min() and ctd_time.max() >= time.max()
+        td = timedelta(hours=1).total_seconds()
+        coverage = ctd_time.min() <= time.min() and ctd_time.max() + td >= time.max()
 
         # reset initial estimate of deployment depth based on if we have full coverage
         if coverage:
