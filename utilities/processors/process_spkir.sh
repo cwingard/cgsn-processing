@@ -23,13 +23,13 @@ FILE=`basename $7`
 
 # Set the default directory paths and input/output sources
 DATA="/home/ooiuser/data"
-IN="$DATA/proc/$PLATFORM/$DEPLOY/$SPKIR/$FILE"
-OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$SPKIR/${FILE%.json}.nc"
+IN="$DATA/parsed/$PLATFORM/$DEPLOY/$SPKIR/$FILE"
+OUT="$DATA/processed/$PLATFORM/$DEPLOY/$SPKIR/${FILE%.json}.nc"
 if [ ! -d `dirname $OUT` ]; then
     mkdir -p `dirname $OUT`
 fi
 
-COEFF="$DATA/proc/$PLATFORM/$DEPLOY/$SPKIR/spkir_factory_calibrations.coeff"
+COEFF="$DATA/parsed/$PLATFORM/$DEPLOY/$SPKIR/spkir_factory_calibrations.coeff"
 
 # Process the file (if it hasn't already been done)
 if [ -e $IN ]; then

@@ -28,8 +28,8 @@ FILE=`basename $9`
 
 # Set the default directory paths and input/output sources
 DATA="/home/ooiuser/data"
-IN="$DATA/proc/$PLATFORM/$DEPLOY/$CTDBP/$FILE"
-OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$CTDBP/${FILE%.json}.nc"
+IN="$DATA/parsed/$PLATFORM/$DEPLOY/$CTDBP/$FILE"
+OUT="$DATA/processed/$PLATFORM/$DEPLOY/$CTDBP/${FILE%.json}.nc"
 if [ ! -d `dirname $OUT` ]; then
     mkdir -p `dirname $OUT`
 fi

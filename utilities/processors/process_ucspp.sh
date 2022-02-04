@@ -24,8 +24,8 @@ PARAD=$8
 NUTNR=$9
 
 # setup the base directories and the python parser used for creating the JSON formatted file
-PROC="/home/ooiuser/data/proc/$PLATFORM/$DEPLOY"
-ERDDAP="/home/ooiuser/data/erddap/$PLATFORM/$DEPLOY"
+PROC="/home/ooiuser/data/parsed/$PLATFORM/$DEPLOY"
+ERDDAP="/home/ooiuser/data/processed/$PLATFORM/$DEPLOY"
 
 case $FTYPE in
     "ACS" )
