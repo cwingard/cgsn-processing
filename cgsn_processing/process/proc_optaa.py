@@ -455,7 +455,7 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
         ctd_time = ctd.time.values.astype(float) / 10.0 ** 9
 
         # test to see if the CTD covers our time of interest for this optaa file
-        td = timedelta(hours=1)
+        td = timedelta(hours=1).total_seconds()
         coverage = ctd_time.min() <= min(optaa_time) and ctd_time.max() + td >= max(optaa_time)
 
         # reset initial estimates of in-situ temperature and salinity if we have full coverage
