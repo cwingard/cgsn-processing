@@ -97,8 +97,8 @@ def main(argv=None):
         ph_time = data.time.values.astype(float) / 10.0 ** 9
 
         # test to see if the CTD covers our time of interest for this pH file
-        td = timedelta(hours=1)
-        coverage = ctd_time.min() <= ph_time.min() and ctd_time.max() + td.total_seconds() >= ph_time.max()
+        td = timedelta(hours=1).total_seconds()
+        coverage = ctd_time.min() <= ph_time.min() and ctd_time.max() + td >= ph_time.max()
 
         # reset initial estimate of in-situ salinity if we have full coverage
         if coverage:
