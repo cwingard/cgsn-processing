@@ -25,8 +25,8 @@ BIN="/home/ooiuser/code/cgsn-processing/cgsn_processing/process"
 PYTHON="/home/ooiuser/bin/conda/bin/python"
 
 DATA="/home/ooiuser/data"
-IN="$DATA/proc/$PLATFORM/$DEPLOY/$METBK/$FILE"
-OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$METBK/${FILE%.json}.nc"
+IN="$DATA/parsed/$PLATFORM/$DEPLOY/$METBK/$FILE"
+OUT="$DATA/processed/$PLATFORM/$DEPLOY/$METBK/${FILE%.json}.nc"
 if [ ! -d `dirname $OUT` ]; then
     mkdir -p `dirname $OUT`
 fi

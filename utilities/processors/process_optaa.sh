@@ -25,13 +25,13 @@ FILE=`basename $8`
 
 # Set the default directory paths and input/output sources
 DATA="/home/ooiuser/data"
-IN="$DATA/proc/$PLATFORM/$DEPLOY/$OPTAA/$FILE"
-OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$OPTAA/${FILE%.json}.nc"
+IN="$DATA/parsed/$PLATFORM/$DEPLOY/$OPTAA/$FILE"
+OUT="$DATA/processed/$PLATFORM/$DEPLOY/$OPTAA/${FILE%.json}.nc"
 if [ ! -d `dirname $OUT` ]; then
     mkdir -p `dirname $OUT`
 fi
 
-COEFF="$DATA/proc/$PLATFORM/$DEPLOY/$OPTAA/optaa.cal_coeffs.json"
+COEFF="$DATA/parsed/$PLATFORM/$DEPLOY/$OPTAA/optaa.cal_coeffs.json"
 
 # Process the file (if it hasn't already been done)
 if [ -e $IN ] && [ ! -e $OUT ]; then

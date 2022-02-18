@@ -23,8 +23,8 @@ FILE=`basename $6`
 # Set the default directory paths and input/output sources
 
 DATA="/home/ooiuser/data"
-IN="$DATA/proc/$PLATFORM/$DEPLOY/$WAVSS/$FILE"
-OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$WAVSS/${FILE%.json}.nc"
+IN="$DATA/parsed/$PLATFORM/$DEPLOY/$WAVSS/$FILE"
+OUT="$DATA/processed/$PLATFORM/$DEPLOY/$WAVSS/${FILE%.json}.nc"
 if [ ! -d `dirname $OUT` ]; then
     mkdir -p `dirname $OUT`
 fi
