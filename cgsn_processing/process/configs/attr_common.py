@@ -60,7 +60,8 @@ SHARED = {
         'long_name': 'Depth',
         'standard_name': 'depth',
         'units': 'm',
-        'comment': 'Instrument deployment depth',
+        'comment': ('Depth of the instrument, either from the deployment depth (e.g. 7 m for an NSIF) or the '
+                    'instrument pressure record converted to depth.'),
         'positive': 'down',
         'axis': 'Z'
     }
