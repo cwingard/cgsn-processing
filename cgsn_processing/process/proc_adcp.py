@@ -200,7 +200,6 @@ def main(argv=None):
 
         # combine it all into one data set
         adcp = xr.merge([glbl, fx, bd, vbl, rtc, vel, cor, echo, back, per])
-        adcp['time'] = dt64_epoch(adcp.time)  # Convert from a datetime64 object to seconds since 1970
         adcp_attrs = PD0    # use the PD0 attributes
 
     elif adcp_type.lower() == 'pd8':
@@ -212,7 +211,7 @@ def main(argv=None):
         bin_number = np.array(data['velocity']['bin_number'][0]).astype(np.int32)
 
         # calculate the bin_depth
-        bin_depth = adcp_bin_depth(blanking_distance, bin_size, bin_number, 1, depth_m)
+        bin_depth = adcp_bin_depths(blanking_distance, bin_size, bin_number, 1, depth_m)
 
         # remap the bin_depth to a 2D array to correspond to the time and bin_number coordinate axes.
         if not depth_flag:
@@ -267,7 +266,6 @@ def main(argv=None):
 
         # combine it all into one data set
         adcp = xr.merge([glbl, vbl, bd, vel, echo, back])
-        adcp['time'] = dt64_epoch(adcp.time)  # Convert from a datetime64 object to seconds since 1970
         adcp_attrs = PD8    # use the PD8 attributes
 
     else:
