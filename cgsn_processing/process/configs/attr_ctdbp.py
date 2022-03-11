@@ -181,6 +181,15 @@ CTDBP = {
         'ancillary_variables': 'raw_oxygen_thermistor',
         '_FillValue': np.nan
     },
+    'oxygen_concentration': {
+        'long_name': 'Dissolved Oxygen Concentration',
+        'standard_name': 'mole_concentration_of_dissolved_molecular_oxygen_in_sea_water',
+        'units': 'umol L-1',
+        'comment': ('Mole concentration of dissolved oxygen per unit volume, also known as Molarity, as measured by '
+                    'an optode oxygen sensor. It is computed onboard the sensor and reported to the CTD.'),
+        'data_product_identifier': 'DOCONCS-L1',
+        '_FillValue': np.nan
+    },
     'svu_oxygen_concentration': {
         'long_name': 'Dissolved Oxygen Concentration',
         'standard_name': 'mole_concentration_of_dissolved_molecular_oxygen_in_sea_water',

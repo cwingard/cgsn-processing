@@ -29,12 +29,12 @@ BUOYS = {
 
 # Create a dictionary to correct some inconsistencies between an xarray dataset and a CF compliant NetCDF file
 ENCODING = {
-    'time': {'_FillValue': False},
-    'lat': {'_FillValue': False},
-    'lon': {'_FillValue': False},
-    'z': {'_FillValue': False},
-    'station': {'dtype': 'S8'},
-    'deploy_id': {'dtype': 'S6'}
+    'time': {'_FillValue': None},
+    'lat': {'_FillValue': None},
+    'lon': {'_FillValue': None},
+    'z': {'_FillValue': None},
+    'station': {'dtype': str},
+    'deploy_id': {'dtype': str}
 }
 
 # Create global default fill values

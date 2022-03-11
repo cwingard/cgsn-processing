@@ -147,10 +147,13 @@ def proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
     if proc_dosta:
         ctd['calibrated_phase'] = do2_phase_volt_to_degree(ctd['raw_calibrated_phase'])
         ctd['oxygen_thermistor_temperature'] = do2_therm_volt_to_degc(ctd['raw_oxygen_thermistor'])
-        ctd['svu_oxygen_concentration'] = do2_phase_to_doxy(ctd['calibrated_phase'], ctd['oxygen_thermistor_temperature'],
-                                                            opt.coeffs['svu_cal_coeffs'], opt.coeffs['two_point_coeffs'])
-        ctd['oxygen_concentration_corrected'] = do2_salinity_correction(ctd['oxygen_concentration'], ctd['pressure'],
-                                                                        ctd['temperature'], ctd['salinity'], lat, lon)
+        ctd['svu_oxygen_concentration'] = do2_phase_to_doxy(ctd['calibrated_phase'],
+                                                            ctd['oxygen_thermistor_temperature'],
+                                                            opt.coeffs['svu_cal_coeffs'],
+                                                            opt.coeffs['two_point_coeffs'])
+        ctd['oxygen_concentration_corrected'] = do2_salinity_correction(ctd['svu_oxygen_concentration'],
+                                                                        ctd['pressure'], ctd['temperature'],
+                                                                        ctd['salinity'], lat, lon)
 
     # if calibration data is available, process the FLORD data
     if proc_flord:
@@ -196,6 +199,7 @@ def main(argv=None):
     # process the CTDBP data and save the results to disk
     ctdbp = proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth,
                            dosta_serial=dosta_serial, flord_serial=flord_serial)
+
     if ctdbp:
         ctdbp.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
 
