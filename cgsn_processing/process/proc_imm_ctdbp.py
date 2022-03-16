@@ -7,7 +7,6 @@
 @brief Creates a NetCDF dataset for the CTDBP data transferred via the IMM from the JSON formatted data
 """
 import os
-import re
 
 import numpy as np
 import xarray as xr
@@ -98,7 +97,7 @@ def proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
     # calculate the in-situ density of the seawater from the absolute salinity and conservative temperature
     sa = SA_from_SP(ctd['salinity'].values, ctd['pressure'].values, lon, lat)  # absolute salinity
     ct = CT_from_t(sa, ctd['temperature'].values, ctd['pressure'].values)      # conservative temperature
-    ctd['density'] = rho(sa, ct, ctd['pressure'].values)                # density
+    ctd['density'] = rho(sa, ct, ctd['pressure'].values)                       # density
 
     # create filled variables to be updated if calibration coefficients are available
     empty_data = ctd['sensor_time'] * np.nan
@@ -144,15 +143,20 @@ def proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # if calibration data is available, process the DOSTA data
     if proc_dosta:
+        # calculate the oxygen concentration from the calibrated phase and thermistor temperature using the
+        # Stern-Volmer-Uchida (SVU) equations
         ctd['calibrated_phase'] = do2_phase_volt_to_degree(ctd['raw_calibrated_phase'])
         ctd['oxygen_thermistor_temperature'] = do2_therm_volt_to_degc(ctd['raw_oxygen_thermistor'])
         ctd['svu_oxygen_concentration'] = do2_phase_to_doxy(ctd['calibrated_phase'],
                                                             ctd['oxygen_thermistor_temperature'],
                                                             opt.coeffs['svu_cal_coeffs'],
                                                             opt.coeffs['two_point_coeffs'])
-        ctd['oxygen_concentration_corrected'] = do2_salinity_correction(ctd['svu_oxygen_concentration'],
-                                                                        ctd['pressure'], ctd['temperature'],
-                                                                        ctd['salinity'], lat, lon)
+
+        # apply temperature, salinity and pressure corrections to dissolved oxygen measurement
+        ctd['oxygen_concentration_corrected'] = do2_salinity_correction(ctd['svu_oxygen_concentration'].values,
+                                                                        ctd['pressure'].values,
+                                                                        ctd['temperature'].values,
+                                                                        ctd['salinity'].values, lat, lon)
 
     # if calibration data is available, process the FLORD data
     if proc_flord:
