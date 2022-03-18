@@ -2,6 +2,7 @@ numpy >= 1.9.2
 scipy >= 0.15.1
 munch >= 2.1.0
 gsw >= 3.0.3
+beautifulsoup4
 pandas
 netCDF4
 jinja2
