@@ -87,7 +87,7 @@ def main(argv=None):
     # process the supervisor data and save the results to disk
     superv = proc_superv(infile, platform, deployment, lat, lon, depth, superv_type=superv_type)
     if superv:
-        superv.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+        superv.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 
 if __name__ == '__main__':

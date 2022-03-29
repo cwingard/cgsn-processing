@@ -218,7 +218,7 @@ def main(argv=None):
     # process the CTDBP data and save the results to disk
     dosta = proc_dosta(infile, platform, deployment, lat, lon, depth, ctd_name=ctd_name, burst=burst)
     if dosta:
-        dosta.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+        dosta.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 
 if __name__ == '__main__':

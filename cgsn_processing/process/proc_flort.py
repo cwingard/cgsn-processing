@@ -257,7 +257,7 @@ def main(argv=None):
     flort = proc_flort(infile, platform, deployment, lat, lon, depth,
                        serial_number=serial_number, ctd_name=ctd_name, burst=burst)
     if flort:
-        flort.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+        flort.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 
 if __name__ == '__main__':

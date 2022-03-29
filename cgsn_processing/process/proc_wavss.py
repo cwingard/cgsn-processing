@@ -66,7 +66,7 @@ def main(argv=None):
     # process the WAVSS data and save the results to disk
     wavss = proc_wavss(infile, platform, deployment, lat, lon, depth)
     if wavss:
-        wavss.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+        wavss.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 
 if __name__ == '__main__':

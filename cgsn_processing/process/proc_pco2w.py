@@ -211,7 +211,7 @@ def main(argv=None):
     pCO2 = update_dataset(pCO2, platform, deployment, lat, lon, [depth, depth, depth], attrs)
 
     # save the file
-    pCO2.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+    pCO2.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 
 if __name__ == '__main__':

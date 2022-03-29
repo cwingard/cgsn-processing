@@ -158,7 +158,7 @@ def main(argv=None):
     adcp = update_dataset(adcp, platform, deployment, lat, lon, [depth, vmin, vmax], attrs)
 
     # save the file
-    adcp.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+    adcp.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 
 if __name__ == '__main__':

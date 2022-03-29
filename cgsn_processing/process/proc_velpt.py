@@ -75,7 +75,7 @@ def main(argv=None):
     # process the VELPT data and save the results to disk
     velpt = proc_velpt(infile, platform, deployment, lat, lon, depth)
     if velpt:
-        velpt.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+        velpt.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 
 if __name__ == '__main__':
