@@ -33,7 +33,7 @@ SHARED = {
     'time': {
         'long_name': 'Time',
         'standard_name': 'time',
-        'units': 'seconds since 1970-01-01 00:00:00.00',
+        'units': 'seconds since 1970-01-01T00:00:00.000Z',
         'axis': 'T',
         'calendar': 'gregorian',
         'comment': ('Derived from either the DCL data logger GPS referenced clock, or the internal instrument clock. '

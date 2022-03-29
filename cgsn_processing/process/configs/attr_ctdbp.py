@@ -20,7 +20,7 @@ CTDBP = {
     'sensor_time': {
         'long_name': 'CTD Date and Time',
         'standard_name': 'time',
-        'units': 'seconds since 1970-01-01 00:00:00.00',
+        'units': 'seconds since 1970-01-01T00:00:00.000Z',
         'comment': ('Internal CTD clock date and time stamp, recorded when the instrument begins the measurement. It '
                     'is expected that this value will drift from the true time by some amount over the course of '
                     'a deployment. Cross-comparisons to other systems will be required to account for the offset '
@@ -84,7 +84,7 @@ CTDBP = {
     # attributes associated with the status message output from a CTDBP connected to an inductive modem (IMM)
     'status_time': {
         'long_name': 'Status Update Time',
-        'units': 'seconds since 1970-01-01 00:00:00.00',
+        'units': 'seconds since 1970-01-01T00:00:00.000Z',
         'comment': 'Date and time the CTD status was queried.',
         'calendar': 'gregorian',
         '_FillValue': np.nan
