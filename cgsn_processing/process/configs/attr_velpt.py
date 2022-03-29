@@ -104,7 +104,7 @@ VELPT = {
     },
     'amplitude_beam1': {
         'long_name': 'Amplitude Beam 1',
-        'units': 'counts',
+        'units': 'count',
         'comment': ('This is the raw measurement, the acoustic return signal for the beam, used to calculate the '
                     'seawater velocity. This value should be roughly equivalent to the other two beams. Significant '
                     'differences would suggest one or more of the beams is blocked or otherwise impaired.'),
@@ -112,7 +112,7 @@ VELPT = {
     },
     'amplitude_beam2': {
         'long_name': 'Amplitude Beam 2',
-        'units': 'counts',
+        'units': 'count',
         'comment': ('This is the raw measurement, the acoustic return signal for the beam, used to calculate the '
                     'seawater velocity. This value should be roughly equivalent to the other two beams. Significant '
                     'differences would suggest one or more of the beams is blocked or otherwise impaired.'),
@@ -120,7 +120,7 @@ VELPT = {
     },
     'amplitude_beam3': {
         'long_name': 'Amplitude Beam 3',
-        'units': 'counts',
+        'units': 'count',
         'comment': ('This is the raw measurement, the acoustic return signal for the beam, used to calculate the '
                     'seawater velocity. This value should be roughly equivalent to the other two beams. Significant '
                     'differences would suggest one or more of the beams is blocked or otherwise impaired.'),

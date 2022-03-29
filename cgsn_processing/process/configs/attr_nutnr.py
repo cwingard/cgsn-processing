@@ -80,19 +80,19 @@ ISUS = {
         'units': 'V'
     },
     'average_reference': {
-        'units': 'counts'
+        'units': 'count'
     },
     'variance_reference': {
-        'units': 'counts'
+        'units': 'count'
     },
     'seawater_dark': {
-        'units': 'counts'
+        'units': 'count'
     },
     'spectral_average': {
-        'units': 'counts'
+        'units': 'count'
     },
     'channel_measurements': {
-        'units': 'counts'
+        'units': 'count'
     },
     'temperature': {
         'long_name': 'Sea Water Temperature',
@@ -165,24 +165,24 @@ SUNA = {
         'units': 'mg L-1'
     },
     'absorbance_254': {
-        'units': 'counts'
+        'units': 'count'
     },
     'absorbance_250': {
-        'units': 'counts'
+        'units': 'count'
     },
     'bromide_trace': {
         'units': 'mg L-1'
     },
     'spectal_average': {
-        'units': 'counts'
+        'units': 'count'
     },
     'dark_value': {
-        'units': 'counts'
+        'units': 'count'
     },
     'integration_factor': {
     },
     'channel_measurements': {
-        'units': 'counts'
+        'units': 'count'
     },
     'temperature_internal': {
         'units': 'degrees_Celsius'

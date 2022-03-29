@@ -109,13 +109,13 @@ CTDBP = {
     },
     'samples_recorded': {
         'long_name': 'Number of Samples Recorded',
-        'units': 'counts',
+        'units': 'count',
         'comment': 'Number of samples recorded during the deployment',
         '_FillValue': FILL_INT
     },
     'sample_slots_free': {
         'long_name': 'Number of Free Sample Slots Remaining',
-        'units': 'counts',
+        'units': 'count',
         'comment': 'Number of free samples available for recording, representing the memory available in the unit',
         '_FillValue': FILL_INT
     },
@@ -216,14 +216,14 @@ CTDBP = {
     # --> with WET Labs ECO Triplet (FLORT)
     'raw_backscatter': {
         'long_name': 'Raw Optical Backscatter',
-        'units': 'counts',
+        'units': 'count',
         'comment': 'Raw optical backscatter at 700 nm measurements as recorded by the CTD.',
         'data_product_identifier': 'FLUBSCT_L0',
         '_FillValue': FILL_INT
     },
     'raw_chlorophyll': {
         'long_name': 'Raw Chlorophyll Fluorescence',
-        'units': 'counts',
+        'units': 'count',
         'comment': ('Raw chlorophyll fluorescence (470 nm excitation/ 695 nm emission) measurements as recorded by '
                     'the CTD.'),
         'data_product_identifier': 'CHLAFLO_L0',
@@ -231,7 +231,7 @@ CTDBP = {
     },
     'raw_cdom': {
         'long_name': 'Raw CDOM Fluorescence',
-        'units': 'counts',
+        'units': 'count',
         'comment': ('Raw chromophoric dissolved organic matter (CDOM) fluorescence (370 nm excitation/ 460 nm '
                     'emission) measurements as recorded by the CTD.'),
         'data_product_identifier': 'CDOMFLO_L0',

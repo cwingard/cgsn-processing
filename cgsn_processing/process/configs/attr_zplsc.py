@@ -86,15 +86,15 @@ ZPLSC = {
     },
     'profiles_channel_1': {
         'long_name': 'Raw Echo Intensity Channel 1',
-        'units': 'counts'
+        'units': 'count'
     },
     'profiles_channel_2': {
         'long_name': 'Raw Echo Intensity Channel 2',
-        'units': 'counts'
+        'units': 'count'
     },
     'profiles_channel_3': {
         'long_name': 'Raw Echo Intensity Channel 3',
-        'units': 'counts'
+        'units': 'count'
     },
     'profiles_channel_4': {
         'long_name': 'Raw Echo Intensity Channel 4',

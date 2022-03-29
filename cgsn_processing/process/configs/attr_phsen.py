@@ -36,7 +36,7 @@ PHSEN = {
         'comment': ('Optical absorbance reference intensity at 434 nm. Measured with deionized water. Reference and ' +
                     'signal intensities range between 0 and 4096. Values should be greater than ~1500. Lower ' +
                     'intensities will result in higher noise in the absorbance and pH measurements.'),
-        'units': 'counts',
+        'units': 'count',
         '_FillValue': -9999999,
     },
     'blank_signal_434': {
@@ -44,7 +44,7 @@ PHSEN = {
         'comment': ('Optical absorbance signal intensity at 434 nm. Measured with deionized water. Reference and ' +
                     'signal intensities range between 0 and 4096. Values should be greater than ~1500. Lower ' +
                     'intensities will result in higher noise in the absorbance and pH measurements.'),
-        'units': 'counts',
+        'units': 'count',
         '_FillValue': -9999999,
     },
     'blank_refrnc_578': {
@@ -52,7 +52,7 @@ PHSEN = {
         'comment': ('Optical absorbance reference intensity at 578 nm. Measured with deionized water. Reference and ' +
                     'signal intensities range between 0 and 4096. Values should be greater than ~1500. Lower ' +
                     'intensities will result in higher noise in the absorbance and pH measurements.'),
-        'units': 'counts',
+        'units': 'count',
         '_FillValue': -9999999,
     },
     'blank_signal_578': {
@@ -60,7 +60,7 @@ PHSEN = {
         'comment': ('Optical absorbance signal intensity at 578 nm. Measured with deionized water. Reference and ' +
                     'signal intensities range between 0 and 4096. Values should be greater than ~1500. Lower ' +
                     'intensities will result in higher noise in the absorbance and pH measurements.'),
-        'units': 'counts',
+        'units': 'count',
         '_FillValue': -9999999,
     },
     'reference_434': {
@@ -68,7 +68,7 @@ PHSEN = {
         'comment': ('Optical absorbance reference intensity at 434 nm. Reference and signal intensities range ' +
                     'between 0 and 4096. Values should be greater than ~1500. Lower intensities will result in ' +
                     'higher noise in the absorbance and pH measurements.'),
-        'units': 'counts'
+        'units': 'count'
     },
     'signal_434': {
         'long_name': 'Signal Intensity at 434 nm',
@@ -76,14 +76,14 @@ PHSEN = {
                     'and 4096. Values should be greater than ~1500. Lower intensities will result in higher noise in ' +
                     'the absorbance and pH measurements.'),
         'data_product_identifier': 'PH434SI_L0',
-        'units': 'counts'
+        'units': 'count'
     },
     'reference_578': {
         'long_name': 'Reference Intensity at 578 nm',
         'comment': ('Optical absorbance reference intensity at 578 nm. Reference and signal intensities range ' +
                     'between 0 and 4096. Values should be greater than ~1500. Lower intensities will result in ' +
                     'higher noise in the absorbance and pH measurements.'),
-        'units': 'counts'
+        'units': 'count'
     },
     'signal_578': {
         'long_name': 'Signal Intensity at 578 nm',
@@ -91,7 +91,7 @@ PHSEN = {
                     'and 4096. Values should be greater than ~1500. Lower intensities will result in higher noise in ' +
                     'the absorbance and pH measurements.'),
         'data_product_identifier': 'PH578SI_L0',
-        'units': 'counts'
+        'units': 'count'
     },
     'record_number': {
         'long_name': 'IMM Record Number',
@@ -117,18 +117,18 @@ PHSEN = {
     'raw_thermistor_start': {
         'long_name': 'Raw Thermistor Temperature, Measurement Start',
         'comment': 'Thermistor resistivity measured in counts at the start of the measurement cycle.',
-        'units': 'counts'
+        'units': 'count'
     },
     'raw_thermistor_end': {
         'long_name': 'Raw Thermistor Temperature, Measurement End',
         'comment': 'Thermistor resistivity measured in counts at the end of the measurement cycle.',
-        'units': 'counts'
+        'units': 'count'
     },
     'raw_battery_voltage': {
         'long_name': 'Raw Battery Voltage',
         'comment': ('Raw internal battery voltage measured in counts. May actually reflect external voltage if ' +
                     'external power is applied'),
-        'units': 'counts'
+        'units': 'count'
     },
     'thermistor_temperature_start': {
         'long_name': 'Thermistor Temperature, Measurement Start',

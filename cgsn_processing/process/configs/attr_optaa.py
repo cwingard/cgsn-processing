@@ -23,20 +23,20 @@ OPTAA = {
     },
     'pressure_raw': {
         'long_name': 'Raw Pressure',
-        'units': 'counts',
+        'units': 'count',
         'comment': ('Raw measurements, reported in counts, from the AC-S pressure sensor. If the unit is not '
                     'equipped with a pressure sensor, the values will all be 0.')
     },
     'external_temp_raw': {
         'long_name': 'Raw In-Situ Temperature',
-        'units': 'counts',
+        'units': 'count',
         'data_product_identifier': 'OPTTEMP_L0',
         'comment': ('Raw measurements, reported in counts, from the AC-S external temperature sensor. This sensor '
                     'measures the in-situ seawater termperature.')
     },
     'internal_temp_raw': {
         'long_name': 'Raw Internal Instrument Temperature',
-        'units': 'counts',
+        'units': 'count',
         'comment': ('Raw measurements, reported in counts, from the AC-S internal temperature sensor. This sensor '
                     'measures the internal instrument termperature and is used in converting the raw optical '
                     'measurements into absorbance and attenuation estimates.')
@@ -66,13 +66,13 @@ OPTAA = {
     },
     'a_reference_dark': {
         'long_name': 'A Channel Dark Reference',
-        'units': 'counts',
+        'units': 'count',
         'comment': ('A channel reference detector dark counts (before the lamp is turned on). Used in conversion '
                     'of the raw a channel measurements to absorbance estimates.')
     },
     'a_reference_raw': {
         'long_name': 'A Channel Raw Reference',
-        'units': 'counts',
+        'units': 'count',
         'comment': ('A channel reference detector raw counts (while the lamp is turned on). Used in conversion '
                     'of the raw a channel measurements to absorbance estimates.'),
         'data_product_identifier': 'OPTAREF_L0',
@@ -80,13 +80,13 @@ OPTAA = {
     },
     'a_signal_dark': {
         'long_name': 'A Channel Dark Signal',
-        'units': 'counts',
+        'units': 'count',
         'comment': ('A channel signal detector dark counts (before the lamp is turned on). Used in conversion '
                     'of the raw a channel measurements to absorbance estimates.')
     },
     'a_signal_raw': {
         'long_name': 'A Channel Raw Signal',
-        'units': 'counts',
+        'units': 'count',
         'comment': ('A channel signal detector raw counts (while the lamp is turned on). Used in conversion '
                     'of the raw a channel measurements to absorbance estimates.'),
         'data_product_identifier': 'OPTASIG_L0',
@@ -102,13 +102,13 @@ OPTAA = {
     },
     'c_reference_dark': {
         'long_name': 'C Channel Dark Reference',
-        'units': 'counts',
+        'units': 'count',
         'comment': ('C channel reference detector dark counts (before the lamp is turned on). Used in conversion '
                     'of the raw c channel measurements to attenuation estimates.')
     },
     'c_reference_raw': {
         'long_name': 'C Channel Raw Reference',
-        'units': 'counts',
+        'units': 'count',
         'comment': ('C channel reference detector raw counts (while the lamp is turned on). Used in conversion '
                     'of the raw c channel measurements to attenuation estimates.'),
         'data_product_identifier': 'OPTCREF_L0',
@@ -116,13 +116,13 @@ OPTAA = {
     },
     'c_signal_dark': {
         'long_name': 'C Channel Dark Signal',
-        'units': 'counts',
+        'units': 'count',
         'comment': ('C channel signal detector dark counts (before the lamp is turned on). Used in conversion '
                     'of the raw c channel measurements to attenuation estimates.')
     },
     'c_signal_raw': {
         'long_name': 'C Channel Raw Signal',
-        'units': 'counts',
+        'units': 'count',
         'comment': ('C channel signal detector raw counts (while the lamp is turned on). Used in conversion '
                     'of the raw c channel measurements to attenuation estimates.'),
         'data_product_identifier': 'OPTCSIG_L0',

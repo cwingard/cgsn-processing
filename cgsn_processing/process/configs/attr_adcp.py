@@ -107,12 +107,12 @@ PD0 = {
     'low_corr_threshold': {
         'long_name': 'Low Correlation Threshold',
         'comment': 'Contains minimum threshold of correlation that water-profile data can have to be considered good.',
-        'units': 'counts'
+        'units': 'count'
     },
     'num_code_repetitions': {
         'long_name': 'Number of Code Repetitions',
         'comment': 'Number of code repetitions in the transmit pulse',
-        'units': 'counts'
+        'units': 'count'
     },
     'percent_good_min': {
         'long_name': 'Percent Good Minimum',
@@ -243,7 +243,7 @@ PD0 = {
     'false_target_threshold': {
         'long_name': 'False Target Threshold',
         'comment': 'Threshold value used to reject data received from false targets, usually fish. 255 disables.',
-        'units': 'counts'
+        'units': 'count'
     },
     'transmit_lag_distance': {
         'long_name': 'Transmit Lag Distance',
@@ -352,42 +352,42 @@ PD0 = {
     'adc_transmit_current': {
         'long_name': 'ADC Transmit Current',
         'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the transmit current.',
-        'units': 'counts',
+        'units': 'count',
     },
     'adc_transmit_voltage': {
         'long_name': 'ADC Transmit Voltage',
         'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the transmit voltage.',
-        'units': 'counts',
+        'units': 'count',
     },
     'adc_ambient_temp': {
         'long_name': 'ADC Ambient Temperature',
         'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the ambient temperature.',
-        'units': 'counts',
+        'units': 'count',
     },
     'adc_pressure_plus': {
         'long_name': 'ADC Pressure Plus',
         'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the pressure+.',
-        'units': 'counts',
+        'units': 'count',
     },
     'adc_pressure_minus': {
         'long_name': 'ADC Pressure Minus',
         'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the pressure-.',
-        'units': 'counts',
+        'units': 'count',
     },
     'adc_attitude_temp': {
-        'units': 'counts',
+        'units': 'count',
         'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the attitude temperature.',
         'long_name': 'ADC Attitude Temperature',
     },
     'adc_attitude': {
         'long_name': 'ADC Attitiude',
         'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the attitude.',
-        'units': 'counts',
+        'units': 'count',
     },
     'adc_contamination_sensor': {
         'long_name': 'ADC Contamination Sensor',
         'comment': 'Contains outputs of the A/D converter located on DSP board. Measures the contamination sensor.',
-        'units': 'counts',
+        'units': 'count',
     },
     'bus_error_exception': {
         'long_name': 'Bus Error Exception',
@@ -549,25 +549,25 @@ PD0 = {
         'long_name': 'Correlation Magnitude Beam 1',
         'comment': ('Magnitude of the normalized echo auto-correlation at the lag used for estimating the Doppler ' +
                     'phase change. 0 represents no correlation and 255 represents perfect correlation.'),
-        'units': 'counts'
+        'units': 'count'
     },
     'correlation_magnitude_beam2': {
         'long_name': 'Correlation Magnitude Beam 2',
         'comment': ('Magnitude of the normalized echo auto-correlation at the lag used for estimating the Doppler ' +
                     'phase change. 0 represents no correlation and 255 represents perfect correlation.'),
-        'units': 'counts'
+        'units': 'count'
     },
     'correlation_magnitude_beam3': {
         'long_name': 'Correlation Magnitude Beam 3',
         'comment': ('Magnitude of the normalized echo auto-correlation at the lag used for estimating the Doppler ' +
                     'phase change. 0 represents no correlation and 255 represents perfect correlation.'),
-        'units': 'counts'
+        'units': 'count'
     },
     'correlation_magnitude_beam4': {
         'long_name': 'Correlation Magnitude Beam 4',
         'comment': ('Magnitude of the normalized echo auto-correlation at the lag used for estimating the Doppler ' +
                     'phase change. 0 represents no correlation and 255 represents perfect correlation.'),
-        'units': 'counts'
+        'units': 'count'
     },
 
     # echo intensities
@@ -576,28 +576,28 @@ PD0 = {
         'comment': ('Echo Intensity is the acoustic return signal per beam that is output directly from the ADCP. ' +
                     'This is the raw measurement used to calculate the echo intensity data product for the beam.'),
         'data_product_identifier': 'ECHOINT-B1_L0',
-        'units': 'counts'
+        'units': 'count'
     },
     'echo_intensity_beam2': {
         'long_name': 'Echo Intensity Beam 2',
         'comment': ('Echo Intensity is the acoustic return signal per beam that is output directly from the ADCP. ' +
                     'This is the raw measurement used to calculate the echo intensity data product for the beam.'),
         'data_product_identifier': 'ECHOINT-B2_L0',
-        'units': 'counts'
+        'units': 'count'
     },
     'echo_intensity_beam3': {
         'long_name': 'Echo Intensity Beam 3',
         'comment': ('Echo Intensity is the acoustic return signal per beam that is output directly from the ADCP. ' +
                     'This is the raw measurement used to calculate the echo intensity data product for the beam.'),
         'data_product_identifier': 'ECHOINT-B3_L0',
-        'units': 'counts'
+        'units': 'count'
     },
     'echo_intensity_beam4': {
         'long_name': 'Echo Intensity Beam 4',
         'comment': ('Echo Intensity is the acoustic return signal per beam that is output directly from the ADCP. ' +
                     'This is the raw measurement used to calculate the echo intensity data product for the beam.'),
         'data_product_identifier': 'ECHOINT-B4_L0',
-        'units': 'counts'
+        'units': 'count'
     },
 
     # percent good
@@ -729,28 +729,28 @@ PD8 = {
         'comment': ('Echo Intensity is the acoustic return signal per beam that is output directly from the ADCP. ' +
                     'This is the raw measurement used to calculate the echo intensity data product for the beam.'),
         'data_product_identifier': 'ECHOINT-B1_L0',
-        'units': 'counts'
+        'units': 'count'
     },
     'echo_intensity_beam2': {
         'long_name': 'Echo Intensity Beam 2',
         'comment': ('Echo Intensity is the acoustic return signal per beam that is output directly from the ADCP. ' +
                     'This is the raw measurement used to calculate the echo intensity data product for the beam.'),
         'data_product_identifier': 'ECHOINT-B2_L0',
-        'units': 'counts'
+        'units': 'count'
     },
     'echo_intensity_beam3': {
         'long_name': 'Echo Intensity Beam 3',
         'comment': ('Echo Intensity is the acoustic return signal per beam that is output directly from the ADCP. ' +
                     'This is the raw measurement used to calculate the echo intensity data product for the beam.'),
         'data_product_identifier': 'ECHOINT-B3_L0',
-        'units': 'counts'
+        'units': 'count'
     },
     'echo_intensity_beam4': {
         'long_name': 'Echo Intensity Beam 4',
         'comment': ('Echo Intensity is the acoustic return signal per beam that is output directly from the ADCP. ' +
                     'This is the raw measurement used to calculate the echo intensity data product for the beam.'),
         'data_product_identifier': 'ECHOINT-B4_L0',
-        'units': 'counts'
+        'units': 'count'
     }
 }
 
