@@ -11,26 +11,27 @@ import numpy as np
 import os
 import pandas as pd
 import re
+import xarray as xr
 
-from gsw import SP_from_C, p_from_z
-from netCDF4 import Dataset
-from pocean.utils import dict_update
-from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMTs
-from scipy.interpolate import interp1d
+from datetime import timedelta
 
-from cgsn_processing.process.common import Coefficients, inputs, json2df, df2omtdf
+from cgsn_processing.process.common import Coefficients, inputs, json2obj, colocated_ctd
 from cgsn_processing.process.finding_calibrations import find_calibration
-from cgsn_processing.process.configs.attr_nutnr import ISUS
+from cgsn_processing.process.configs.attr_nutnr import ISUS, SUNA
+from cgsn_processing.process.configs.attr_common import SHARED
 
 from pyseas.data.nit_functions import ts_corrected_nitrate
+from gsw import SP_from_C, p_from_z
 
 
 class Calibrations(Coefficients):
     def __init__(self, coeff_file, csv_url=None):
         """
-        Loads the NUTNR pure water calibration coefficients for a unit. Values come from either a serialized object
-        created per instrument and deployment (calibration coefficients do not change in the middle of a deployment),
-        or from parsed CSV files maintained on GitHub by the OOI CI team.
+        Loads the NUTNR pure water calibration coefficients for a unit. Values
+        come from either a serialized object created per instrument and
+        deployment (calibration coefficients do not change in the middle of a
+        deployment), or from parsed CSV files maintained on GitHub by the OOI
+        CI team.
         """
         # assign the inputs
         Coefficients.__init__(self, coeff_file)
@@ -38,9 +39,10 @@ class Calibrations(Coefficients):
 
     def read_csv(self, csv_url):
         """
-        Reads the values from a NUTNR calibration file already parsed and stored on Github as a CSV files. Note, the
-        formatting of those files puts some constraints on this process. If someone has a cleaner method, I'm all in
-        favor...
+        Reads the values from a NUTNR calibration file already parsed and
+        stored on Github as a CSV files. Note, the formatting of those files
+        puts some constraints on this process. If someone has a cleaner method,
+        I'm all in favor...
         """
         # create the device file dictionary and assign values
         coeffs = {}
@@ -71,6 +73,173 @@ class Calibrations(Coefficients):
 
         # save the resulting dictionary
         self.coeffs = coeffs
+
+
+def proc_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
+    """
+    Main NUTNR processing function. Loads the JSON formatted, parsed data and
+    applies appropriate calibration coefficients to convert the raw, parsed
+    data into engineering units. If calibration coefficients are available,
+    the dataset processing level attribute is set to "processed". Otherwise,
+    filled variables are returned and the dataset processing level attribute
+    is set to "parsed".
+
+    :param infile: JSON formatted parsed data file
+    :param platform: Name of the mooring the instrument is mounted on.
+    :param deployment: Name of the deployment for the input data file.
+    :param lat: Latitude of the mooring deployment.
+    :param lon: Longitude of the mooring deployment.
+    :param depth: Depth of the platform the instrument is mounted on.
+
+    :kwargs ctd_name: Name of directory with data from a co-located CTD. This
+           data will be used to calculate the optical backscatter, which
+           requires the temperature and salinity data from the CTD. Otherwise
+           the optical backscatter is filled with NaN's
+    :kwargs burst: Boolean flag to indicate whether or not to apply burst
+           averaging to the data. Default is to not apply burst averaging.
+
+    :return nutnr: An xarray dataset with the processed nutnr data
+    """
+    # process the variable length keyword arguments
+    ctd_name = kwargs.get('ctd_name')
+    burst = kwargs.get('burst')
+
+    # load the json data file as a dictionary object for further processing
+    data = json2obj(infile)
+    if data.empty:
+        # json data file was empty, exiting
+        return None
+
+    # setup the instrument calibration data object
+    coeff_file = os.path.join(os.path.dirname(infile), 'nutnr.cal_coeffs.json')
+    dev = Calibrations(coeff_file)  # initialize calibration class
+    proc_flag = False
+
+    # check for the source of the calibration coefficients and load accordingly
+    if os.path.isfile(coeff_file):
+        # we always want to use this file if it already exists
+        dev.load_coeffs()
+        proc_flag = True
+    else:
+        # load from the CI hosted CSV files
+        serial_number = str(data.serial_number[0])
+        sampling_time = data['time'][0].value / 10.0 ** 9
+        csv_url = find_calibration('NUTNR', serial_number, sampling_time)
+        if csv_url:
+            dev.read_csv(csv_url)
+            dev.save_coeffs()
+            proc_flag = True
+
+    # clean-up and re-organize the timing variables
+    ds = pd.to_datetime(data['date_string'], format='%Y%j', utc=True)
+    td = pd.to_timedelta(data['decimal_hours'], 'h')
+    data['internal_timestamp'] = ds + td
+    data.drop(columns=['date_time_string', 'date_string', 'decimal_hours'], inplace=True)
+
+    # determine the instrument type and drop all dark frame measurements.
+    data = data[(data['measurement_type'] == 'NLC') | (data['measurement_type'] == 'NLF')
+                | (data['measurement_type'] == 'SLF')]
+    data = data.reset_index(drop=True)
+    measurement_type = data['measurement_type'][0]
+    instrument_type = None
+    if measurement_type == 'NLC':
+        instrument_type = 'condensed'   # ISUS Condensed Frames
+    if measurement_type == 'NLF':
+        instrument_type = 'isus'        # ISUS Full Frames
+    if measurement_type == 'NLC':
+        instrument_type = 'suna'        # SUNA Full Frames
+
+    # pop the raw_channels array out of the dataframe (we will put it back in later)
+    if instrument_type in ['isus', 'suna']:
+        channels = np.array(np.vstack(data.pop('channel_measurements')))
+
+    # create the time coordinate array and setup a base data frame
+    nutnr_time = data['time']
+    df = pd.DataFrame()
+    df['time'] = pd.to_datetime(nutnr_time, unit='s')
+    df.set_index('time', drop=True, inplace=True)
+
+    # setup and load the 1D parsed data
+    empty_data = np.atleast_1d(data['serial_number']).astype(int) * np.nan
+    # raw data parsed from the data file
+    for v in data.columns:
+        if v not in ['time', 'measurement_type']:
+            df[v] = np.atleast_1d(data[v])
+
+    if instrument_type == 'condensed':
+        # add the 1D variables for the ISUS using a fill value
+        df['temperature_internal'] = empty_data
+        df['temperature_spectrometer'] = empty_data
+        df['temperature_lamp'] = empty_data
+        df['lamp_on_time'] = empty_data
+        df['humidity'] = empty_data
+        df['voltage_lamp'] = empty_data
+        df['voltage_analog'] = empty_data
+        df['voltage_main'] = empty_data
+        df['average_reference'] = empty_data
+        df['variance_reference'] = empty_data
+        df['seawater_dark'] = empty_data
+        df['spectral_average'] = empty_data
+
+    # processed 1D variables to be created if a device file is available
+    df['corrected_nitrate'] = empty_data
+
+    # check for data from a co-located CTD and test to see if it covers our time range of interest.
+    df['ctd_pressure'] = empty_data
+    df['ctd_temperature'] = empty_data
+    df['ctd_salinity'] = empty_data
+
+    ctd = pd.DataFrame()
+    if ctd_name:
+        ctd = colocated_ctd(infile, ctd_name)
+
+    if not ctd.empty:
+        # set the CTD and NUTNR time to the same units of seconds since 1970-01-01
+        ctd_time = ctd.time.values.astype(float) / 10.0 ** 9
+
+        # test to see if the CTD covers our time of interest for this optaa file
+        td = timedelta(hours=1).total_seconds()
+        coverage = ctd_time.min() <= min(nutnr_time) and ctd_time.max() + td >= max(nutnr_time)
+
+        # reset initial estimates of in-situ temperature and salinity if we have full coverage
+        if coverage:
+            pressure = np.mean(np.interp(nutnr_time, ctd_time, ctd.pressure))
+            df['ctd_pressure'] = pressure
+
+            temperature = np.mean(np.interp(nutnr_time, ctd_time, ctd.temperature))
+            df['ctd_temperature'] = temperature
+
+            salinity = SP_from_C(ctd.conductivity.values * 10.0, ctd.temperature.values, ctd.pressure.values)
+            salinity = np.mean(np.interp(nutnr_time, ctd_time, salinity))
+            df['ctd_salinity'] = salinity
+
+    # Calculate the corrected nitrate concentration (uM) accounting for temperature and salinity and the pure
+    # water calibration values.
+    if instrument_type != 'condensed':
+        df['corrected_nitrate'] = ts_corrected_nitrate(dev.coeffs['cal_temp'], dev.coeffs['wl'], dev.coeffs['eno3'],
+                                                       dev.coeffs['eswa'], dev.coeffs['di'], df['dark_value'],
+                                                       df['temperature'], df['salinity'], channels,
+                                                       measurement_type, dev.coeffs['wllower'],
+                                                       dev.coeffs['wlupper'])
+
+    # convert the 1D data frame to an xarray dataset
+    ds = xr.Dataset.from_dataframe(df)
+
+    # create the 2D arrays for the raw channel measurements
+    wavelengths = dev.coeffs['wl']
+    num_wavelengths = wavelengths.shape
+
+    channels = xr.Dataset({
+        # raw data parsed from the data file
+        'channel_measurements': (['time', 'wavelengths'], channels),
+    }, coords={'time': (['time'], pd.to_datetime(nutnr_time, unit='s')),
+               'wavelengths': wavelengths})
+
+    # combine the 1D and 2D datasets into a single xarray dataset
+    optaa = xr.merge([ds, ac])
+
+    # convert the dataframe to a format suitable for the pocean OMTs, adding the deployment name
+    df['deploy_id'] = deployment
 
 
 def main(argv=None):
@@ -107,11 +276,6 @@ def main(argv=None):
             else:
                 print('A source for the NUTNR calibration coefficients for {} could not be found'.format(infile))
                 return None
-
-        # pop the raw_channels array out of the dataframe (will put it back in later)
-        channels = np.array(np.vstack(df.pop('channel_measurements')))
-        # create the wavelengths array
-        wavelengths = dev.coeffs['wl']
 
         # Merge the co-located CTD temperature and salinity data and calculate the corrected nitrate concentration
         nutnr_path, nutnr_file = os.path.split(infile)
