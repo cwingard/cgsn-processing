@@ -87,18 +87,20 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
     is set to "parsed".
 
     :param infile: JSON formatted parsed data file
-    :param platform: Name of the mooring the instrument is mounted on.
-    :param deployment: Name of the deployment for the input data file.
-    :param lat: Latitude of the mooring deployment.
-    :param lon: Longitude of the mooring deployment.
-    :param depth: Depth of the platform the instrument is mounted on.
+    :param platform: Name of the mooring the instrument is mounted on
+    :param deployment: Name of the deployment for the input data file
+    :param lat: Latitude of the mooring deployment
+    :param lon: Longitude of the mooring deployment
+    :param depth: Depth of the platform the instrument is mounted on
 
+    :kwargs serial_number: The instrument serial number, used to find the
+        calibration file from the GitHub hosted Asset Management database
     :kwargs ctd_name: Name of directory with data from a co-located CTD. This
-           data will be used to calculate the optical backscatter, which
-           requires the temperature and salinity data from the CTD. Otherwise
-           the optical backscatter is filled with NaN's
+        data will be used to calculate the optical backscatter, which
+        requires the temperature and salinity data from the CTD. Otherwise
+        the optical backscatter is filled with NaN's
     :kwargs burst: Boolean flag to indicate whether or not to apply burst
-           averaging to the data. Default is to not apply burst averaging.
+        averaging to the data. Default is to not apply burst averaging
 
     :return flort: An xarray dataset with the processed FLORT data
     """
