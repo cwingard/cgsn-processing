@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import argparse
-import collections
 import datetime
 import glob
 import json
@@ -11,6 +10,7 @@ import pandas as pd
 import re
 import sys
 
+from collections.abc import Mapping
 from dateutil import rrule
 from pathlib import Path
 
@@ -423,7 +423,7 @@ def dict_update(source, overrides):
     the same thread.
     """
     for key, value in overrides.items():
-        if isinstance(value, collections.Mapping) and value:
+        if isinstance(value, Mapping) and value:
             returned = dict_update(source.get(key, {}), value)
             source[key] = returned
         else:
