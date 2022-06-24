@@ -16,7 +16,7 @@ import xarray as xr
 from datetime import timedelta
 
 from cgsn_processing.process.common import Coefficients, inputs, json2df, colocated_ctd, dict_update, \
-    update_dataset, FILL_NAN, FILL_INT
+    update_dataset, ENCODING, FILL_INT
 from cgsn_processing.process.finding_calibrations import find_calibration
 from cgsn_processing.process.configs.attr_nutnr import NUTNR
 from cgsn_processing.process.configs.attr_common import SHARED
@@ -93,11 +93,11 @@ def proc_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
     :param depth: Depth of the platform the instrument is mounted on.
 
     :kwargs ctd_name: Name of directory with data from a co-located CTD. This
-           data will be used to calculate the optical backscatter, which
-           requires the temperature and salinity data from the CTD. Otherwise
-           the optical backscatter is filled with NaN's
-    :kwargs burst: Boolean flag to indicate whether or not to apply burst
-           averaging to the data. Default is to not apply burst averaging.
+            data will be used to calculate the optical backscatter, which
+            requires the temperature and salinity data from the CTD. Otherwise,
+            the calculated nitrate concentration is filled with NaN's
+    :kwargs burst: Boolean flag to indicate whether to apply burst averaging
+            to the data. Default is to not apply burst averaging.
 
     :return nutnr: An xarray dataset with the processed nutnr data
     """
@@ -219,6 +219,17 @@ def proc_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
 
         # reset initial estimates of in-situ temperature and salinity if we have full coverage
         if coverage:
+            # The Global moorings may use the data from the METBK-CT for the NUTNR mounted on the buoy subsurface plate.
+            # We'll rename the data columns from the METBK to match other CTDs and process accordingly.
+            if re.match('metbk', ctd_name):
+                # rename temperature and salinity
+                ctd = ctd.rename(columns={
+                    'sea_surface_temperature': 'temperature',
+                    'sea_surface_conductivity': 'conductivity'
+                })
+                # set the pressure (dbar) from the approximate depth (m) below the water line.
+                ctd['pressure'] = p_from_z(-1.25, lat)
+
             pressure = np.interp(nutnr_time, ctd.time, ctd.pressure)
             df['ctd_pressure'] = pressure
             depth[1] = pressure.min()
@@ -250,7 +261,6 @@ def proc_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # create the 2D arrays for the raw channel measurements
     wavelengths = dev.coeffs['wl']
-    num_wavelengths = wavelengths.shape
     ch = xr.Dataset({
         'channel_measurements': (['time', 'wavelengths'], channels),
     }, coords={'time': (['time'], pd.to_datetime(nutnr_time, unit='s')),
@@ -294,6 +304,12 @@ def main(argv=None):
     lon = args.longitude
     depth = args.depth
     ctd_name = args.devfile  # name of co-located CTD
+    burst = args.burst
+
+    # process the NUTNR data and save the results to disk
+    nutnr = proc_nutnr(infile, platform, deployment, lat, lon, depth, ctd_name=ctd_name, burst=burst)
+    if nutnr:
+        nutnr.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 
 if __name__ == '__main__':
