@@ -22,7 +22,7 @@ from cgsn_processing.process.configs.attr_nutnr import NUTNR
 from cgsn_processing.process.configs.attr_common import SHARED
 
 from pyseas.data.nit_functions import ts_corrected_nitrate
-from gsw import SP_from_C, p_from_z
+from gsw import SP_from_C, p_from_z, z_from_p
 
 
 class Calibrations(Coefficients):
@@ -157,9 +157,9 @@ def proc_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
         data.rename(columns={'fit_rmse': 'rms_error',
                              'dark_value': 'seawater_dark'}, inplace=True)
     else:
-        data.rename(columns={'auxilliary_fit_1st': 'auxilliary_fit_1',
-                             'auxilliary_fit_2nd': 'auxilliary_fit_2',
-                             'auxilliary_fit_3rd': 'auxilliary_fit_3'}, inplace=True)
+        data.rename(columns={'auxiliary_fit_1st': 'fit_auxiliary_1',
+                             'auxiliary_fit_2nd': 'fit_auxiliary_2',
+                             'auxiliary_fit_3rd': 'fit_auxiliary_3'}, inplace=True)
 
     # create the time coordinate array and set up a base data frame
     nutnr_time = data['time']
@@ -232,8 +232,9 @@ def proc_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
 
             pressure = np.interp(nutnr_time, ctd.time, ctd.pressure)
             df['ctd_pressure'] = pressure
-            depth[1] = pressure.min()
-            depth[2] = pressure.max()
+            depth[0] = z_from_p(np.mean(pressure), lat) * -1
+            depth[1] = z_from_p(pressure.min(), lat) * -1
+            depth[2] = z_from_p(pressure.max(), lat) * -1
 
             temperature = np.interp(nutnr_time, ctd.time, ctd.temperature)
             df['ctd_temperature'] = temperature
