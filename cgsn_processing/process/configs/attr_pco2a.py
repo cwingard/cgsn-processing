@@ -22,13 +22,13 @@ PCO2A = {
     },
     'zero_a2d': {
         'long_name': 'Raw Zero Measurement',
-        'units': 'counts',
+        'units': 'count',
         'comment': ('The raw A2D zero measurement updated by the instrument approximately every 12 hours, used '
                     'in internal calculations to produce the c02_mole_fraction measurement.')
     },
     'current_a2d': {
         'long_name': 'Raw CO2 Measurement',
-        'units': 'counts',
+        'units': 'count',
         'comment': ('The raw air or water CO2 measurement collected in burst mode (9 measurements per sample source '
                     'every hour), used in internal calculations to produce the c02_mole_fraction measurement.')
     },

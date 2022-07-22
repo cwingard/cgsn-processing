@@ -22,19 +22,19 @@ VEL3D = {
         'long_name': 'Noise Amplitude Beam 1',
         'comment': ('Ambient noise amplitudes measured by beam 1 prior to a the collection of a 3 minute burst of '
                     '8 Hz velocity data and recorded in the header data packet.'),
-        'units': 'counts'
+        'units': 'count'
     },
     'noise_amplitude_beam2': {
         'long_name': 'Noise Amplitude Beam 2',
         'comment': ('Ambient noise amplitudes measured by beam 2 prior to a the collection of a 3 minute burst of '
                     '8 Hz velocity data and recorded in the header data packet.'),
-        'units': 'counts'
+        'units': 'count'
     },
     'noise_amplitude_beam3': {
         'long_name': 'Noise Amplitude Beam 3',
         'comment': ('Ambient noise amplitudes measured by beam 3 prior to a the collection of a 3 minute burst of '
                     '8 Hz velocity data and recorded in the header data packet.'),
-        'units': 'counts'
+        'units': 'count'
     },
     'noise_correlation_beam1': {
         'long_name': 'Noise Correlation Beam 1',
@@ -147,19 +147,19 @@ VEL3D = {
         'long_name': 'Velocity Amplitude Beam 1',
         'comment': ('Raw measurement, for beam 1, of the difference in frequency between the transmitted '
                     'and the received pulse, which is proportional to the velocity of the water.'),
-        'units': 'counts'
+        'units': 'count'
     },
     'amplitude_beam2': {
         'long_name': 'Velocity Amplitude Beam 2',
         'comment': ('Raw measurement, for beam 2, of the difference in frequency between the transmitted '
                     'and the received pulse, which is proportional to the velocity of the water.'),
-        'units': 'counts'
+        'units': 'count'
     },
     'amplitude_beam3': {
         'long_name': 'Velocity Amplitude Beam 3',
         'comment': ('Raw measurement, for beam 3, of the difference in frequency between the transmitted '
                     'and the received pulse, which is proportional to the velocity of the water.'),
-        'units': 'counts'
+        'units': 'count'
     },
     'correlation_beam1': {
         'long_name': 'Percent Correlation Beam 1',

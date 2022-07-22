@@ -146,7 +146,7 @@ def main(argv=None):
     pH = update_dataset(pH, platform, deployment, lat, lon, [depth, depth, depth], attrs)
 
     # save the file
-    pH.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+    pH.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 
 if __name__ == '__main__':

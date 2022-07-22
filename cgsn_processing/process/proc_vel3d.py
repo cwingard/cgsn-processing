@@ -108,7 +108,7 @@ def main(argv=None):
     vel3d = update_dataset(vel3d, platform, deployment, lat, lon, [z, zmin, zmax], attrs)
 
     # save the file
-    vel3d.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+    vel3d.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 if __name__ == '__main__':
     main()

@@ -75,7 +75,7 @@ def main(argv=None):
     # process the GPS data and save the results to disk
     gps = proc_gps(infile, platform, deployment, lat, lon, depth)
     if gps:
-        gps.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+        gps.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 
 if __name__ == '__main__':

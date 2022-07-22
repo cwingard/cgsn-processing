@@ -77,7 +77,7 @@ def main(argv=None):
     ctd = update_dataset(ctd, platform, deployment, lat, lon, [depth, depth, depth], attrs)
 
     # save the data
-    ctd.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+    ctd.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 
 if __name__ == '__main__':

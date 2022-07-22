@@ -63,7 +63,7 @@ def main(argv=None):
     # process the 3-D accelerometer data and save the results to disk
     mopak = proc_mopak(infile, platform, deployment, lat, lon, depth)
     if mopak:
-        mopak.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+        mopak.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 
 if __name__ == '__main__':

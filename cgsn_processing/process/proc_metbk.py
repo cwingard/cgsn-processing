@@ -76,7 +76,7 @@ def main(argv=None):
     # process the METBK data and save the results to disk
     metbk = proc_metbk(infile, platform, deployment, lat, lon, depth)
     if metbk:
-        metbk.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+        metbk.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 
 if __name__ == '__main__':

@@ -28,7 +28,7 @@ WAVSS = {
     },
     'num_zero_crossings': {
         'long_name': 'Number of Zero Crossings',
-        'units': 'counts',
+        'units': 'count',
         'comment': ('Number of zero crossings in the underlying displacement data, used primarily for verification '
                     'and QC.'),
         'data_product_identifier': 'WAVSTAT-N0_L0'

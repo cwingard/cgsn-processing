@@ -40,13 +40,13 @@ CTDMO = {
     'samples_recorded': {
         'long_name': 'Number of Samples Recorded',
         'comment': 'Number of samples recorded during the deployment',
-        'units': 'counts',
+        'units': 'count',
         '_FillValue': -9999999,
     },
     'sample_slots_free': {
         'long_name': 'Number of Free Sample Slots Remaining',
         'comment': 'Number of free samples available for recording, representing the memory available in the unit',
-        'units': 'counts',
+        'units': 'count',
         '_FillValue': -9999999,
     },
     'pressure_range': {
@@ -59,21 +59,21 @@ CTDMO = {
     # Raw values reported by the SBE37, units are all in counts
     'raw_conductivity': {
         'long_name': 'Raw Conductivity',
-        'units': 'counts',
+        'units': 'count',
         'comment': 'Raw conductivity measurement reported in counts.',
         'data_product_identifier': 'CONDWAT_L0',
         '_FillValue': -9999999,
     },
     'raw_temperature': {
         'long_name': 'Raw Temperature',
-        'units': 'counts',
+        'units': 'count',
         'comment': 'Raw temperature measurement reported in counts.',
         'data_product_identifier': 'TEMPWAT_L0',
         '_FillValue': -9999999,
     },
     'raw_pressure': {
         'long_name': 'Raw Pressure',
-        'units': 'counts',
+        'units': 'count',
         'comment': 'Raw pressure measurement reported in counts.',
         'data_product_identifier': 'PRESWAT_L0',
         '_FillValue': -9999999,

@@ -17,7 +17,7 @@ FDCHP = {
         'standard_name': 'time',
         'comment': ('Instrument start time, recorded as seconds since 1970-01-01. Can be compared to the time record '
                     'recorded by the DCL clock to determine the average measurement time.'),
-        'units': 'seconds since 1970-01-01 00:00:00.00',
+        'units': 'seconds since 1970-01-01T00:00:00.000Z',
         'calendar': 'gregorian'
     },
     'processing_version': {

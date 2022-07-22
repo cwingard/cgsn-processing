@@ -217,7 +217,7 @@ def main(argv=None):
     # process the OPTAA data and save the results to disk
     optaa = proc_cspp_optaa(infile, platform, deployment, lat, lon, depth)
     if optaa:
-        optaa.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+        optaa.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 
 if __name__ == '__main__':

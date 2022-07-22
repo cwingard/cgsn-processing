@@ -48,7 +48,7 @@ SPKIR = {
         'units': 'ms'
     },
     'raw_channels': {
-        'units': 'counts'
+        'units': 'count'
     },
     'input_voltage': {
         'units': 'V'

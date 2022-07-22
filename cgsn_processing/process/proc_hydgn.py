@@ -66,7 +66,7 @@ def main(argv=None):
     # process the hydrogen data and save the results to disk
     hydgn = proc_hydgn(infile, platform, deployment, lat, lon, depth)
     if hydgn:
-        hydgn.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+        hydgn.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 
 if __name__ == '__main__':

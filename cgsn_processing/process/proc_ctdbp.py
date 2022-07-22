@@ -158,7 +158,7 @@ def main(argv=None):
     # process the CTDBP data and save the results to disk
     ctdbp = proc_ctdbp(infile, platform, deployment, lat, lon, depth, ctd_type=ctd_type, flort_serial=flort_serial)
     if ctdbp:
-        ctdbp.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+        ctdbp.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 
 if __name__ == '__main__':

@@ -40,7 +40,7 @@ CSPP = {
     'time': {
         'long_name': 'Time',
         'standard_name': 'time',
-        'units': 'seconds since 1970-01-01 00:00:00.00',
+        'units': 'seconds since 1970-01-01T00:00:00.000Z',
         'axis': 'T',
         'calendar': 'gregorian',
         'comment': ('Derived from either the DCL data logger GPS referenced clock, or the internal instrument clock. '
@@ -274,7 +274,7 @@ CSPP_FLORT = {
         'units': 'nm'
     },
     'raw_signal_beta': {
-        'units': 'counts'
+        'units': 'count'
     },
     'measurement_wavelength_chl': {
         'long_name': 'Wavelength',
@@ -282,7 +282,7 @@ CSPP_FLORT = {
         'units': 'nm'
     },
     'raw_signal_chl': {
-        'units': 'counts'
+        'units': 'count'
     },
     'measurement_wavelength_cdom': {
         'long_name': 'Wavelength',
@@ -290,10 +290,10 @@ CSPP_FLORT = {
         'units': 'nm'
     },
     'raw_signal_cdom': {
-        'units': 'counts'
+        'units': 'count'
     },
     'raw_internal_temp': {
-        'units': 'counts'
+        'units': 'count'
     },
     'estimated_chlorophyll': {
         'long_name': 'Estimated Chlorophyll',
@@ -371,7 +371,7 @@ CSPP_NUTNR = {
         'units': '1'
     },
     'channel_measurements': {
-        'units': 'counts'
+        'units': 'count'
     },
     'temperature_internal': {
         'units': 'degrees_Celsius'
@@ -447,7 +447,7 @@ CSPP_PARAD = {
         )
     },
     'raw_par': {
-        'units': 'counts'
+        'units': 'count'
     },
     'irradiance': {
         'long_name': 'Downwelling Photosynthetic Radiation',
@@ -473,7 +473,7 @@ CSPP_SPKIR = {
         'units': 'ms'
     },
     'raw_channels': {
-        'units': 'counts'
+        'units': 'count'
     },
     'input_voltage': {
         'units': 'V'
@@ -535,13 +535,13 @@ CSPP_VELPT = {
         'units': 'cm s-1'
     },
     'amplitude_beam1': {
-        'units': 'counts'
+        'units': 'count'
     },
     'amplitude_beam2': {
-        'units': 'counts'
+        'units': 'count'
     },
     'amplitude_beam3': {
-        'units': 'counts'
+        'units': 'count'
     }
 }
 
@@ -553,7 +553,7 @@ CSPP_WINCH = {
         )
     },
     'encoder_counts': {
-        'units': 'counts'
+        'units': 'count'
     },
     'current': {
         'units': 'A'

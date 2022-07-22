@@ -22,7 +22,7 @@ FLORT = {
     },
     'raw_signal_beta': {
         'long_name': 'Raw Optical Backscatter at 700 nm',
-        'units': 'counts',
+        'units': 'count',
         'comment': 'Raw optical backscatter measurements at 700 nm.',
         'data_product_identifier': 'FLUBSCT_L0'
     },
@@ -33,7 +33,7 @@ FLORT = {
     },
     'raw_signal_chl': {
         'long_name': 'Raw Chlorophyll Fluorescence',
-        'units': 'counts',
+        'units': 'count',
         'comment': 'Raw chlorophyll fluorescence (470 nm excitation/ 695 nm emission) measurements.',
         'data_product_identifier': 'CHLAFLO_L0'
     },
@@ -44,13 +44,13 @@ FLORT = {
     },
     'raw_signal_cdom': {
         'long_name': 'Raw CDOM Fluorescence',
-        'units': 'counts',
+        'units': 'count',
         'comment': 'Raw CDOM fluorescence (370 nm excitation/ 460 nm emission) measurements.',
         'data_product_identifier': 'CDOMFLO_L0'
     },
     'raw_internal_temp': {
         'long_name': 'Raw Internal Thermistor Temperature',
-        'units': 'counts',
+        'units': 'count',
         'comment': ('This parameter is not defined in the instrument manual, and the exact use for it is uncertain.'
                     'Including here it on the off-chance that it may provide some benefit at a future data.')
     },

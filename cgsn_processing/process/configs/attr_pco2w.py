@@ -65,14 +65,14 @@ PCO2W = {
         'comment': ('First of two measurements of the dark LED reference intensity. Dark signal and reference ' +
                     'values, where the LEDs are turned off, should range from ~50 – 200. Higher or erratic dark ' +
                     'signals could indicate an electronic problem with the sensor'),
-        'units': 'counts'
+        'units': 'count'
     },
     'dark_signal_a': {
         'long_name': 'Dark LED Signal Intensity, 1st Measurement',
         'comment': ('First of two measurements of the dark LED signal intensity. Dark signal and reference values, ' +
                     'where the LEDs are turned off, should range from ~50 – 200. Higher or erratic dark signals ' +
                     'could indicate an electronic problem with the sensor'),
-        'units': 'counts'
+        'units': 'count'
     },
     'reference_434_a': {
         'long_name': 'Reference Intensity at 434 nm, 1st Measurement',
@@ -81,7 +81,7 @@ PCO2W = {
                     'greater than ~1500. Lower intensities will result in higher noise in absorbance and, thus, ' +
                     'pCO2 measurements. However, if during blank measurement signal intensities are low, but ' +
                     'reference intensities are not, the flow cell needs to be flushed.'),
-        'units': 'counts'
+        'units': 'count'
     },
     'signal_434_a': {
         'long_name': 'Signal Intensity at 434 nm, 1st Measurement',
@@ -89,7 +89,7 @@ PCO2W = {
                     'reference intensity to derive the optical absorbance ratio. Signal intensities can range from ' +
                     '0 to 4096. If any signal intensity is at or near 4000, the channel may be saturated with light, ' +
                     'giving erroneous results. Blank signal intensities should be greater than ~1500.'),
-        'units': 'counts'
+        'units': 'count'
     },
     'reference_620_a': {
         'long_name': 'Reference Intensity at 620 nm, 1st Measurement',
@@ -98,7 +98,7 @@ PCO2W = {
                     'greater than ~1500. Lower intensities will result in higher noise in absorbance and, thus, ' +
                     'pCO2 measurements. However, if during a blank measurement signal intensities are low, but ' +
                     'reference intensities are not, the flow cell needs to be flushed.'),
-        'units': 'counts'
+        'units': 'count'
     },
     'signal_620_a': {
         'long_name': 'Signal Intensity at 620 nm, 1st Measurement',
@@ -106,7 +106,7 @@ PCO2W = {
                     'reference intensity to derive the optical absorbance ratio. Signal intensities can range from ' +
                     '0 to 4096. If any signal intensity is at or near 4000, the channel may be saturated with light, ' +
                     'giving erroneous results. Blank signal intensities should be greater than ~1500.'),
-        'units': 'counts'
+        'units': 'count'
     },
     'ratio_434': {
         'long_name': 'Optical Absorbance Ratio at 434 nm',
@@ -114,7 +114,7 @@ PCO2W = {
                     'is used in the calculation of pCO2. During a blank measurement (approximately every few days), ' +
                     'this value is used to determine the blank intensity ratio at 434 nm.'),
         'data_product_identifier': 'CO2ABS1_L0',
-        'units': 'counts'
+        'units': 'count'
     },
     'ratio_620': {
         'long_name': 'Optical Absorbance Ratio at 620 nm',
@@ -122,21 +122,21 @@ PCO2W = {
                     'is used in the calculation of pCO2. During a blank measurement (approximately every few days), ' +
                     'this value is used to determine the blank intensity ratio at 620 nm.'),
         'data_product_identifier': 'CO2ABS2_L0',
-        'units': 'counts'
+        'units': 'count'
     },
     'dark_reference_b': {
         'long_name': 'Dark LED Reference Intensity, 2nd Measurement',
         'comment': ('Second of two measurements of the dark LED reference intensity. Dark signal and reference ' +
                     'values, where the LEDs are turned off, should range from ~50 – 200. Higher or erratic dark ' +
                     'signals could indicate an electronic problem with the sensor'),
-        'units': 'counts'
+        'units': 'count'
     },
     'dark_signal_b': {
         'long_name': 'Dark LED Signal Intensity, 2nd Measurement',
         'comment': ('Second of two measurements of the dark LED signal intensity. Dark signal and reference values, ' +
                     'where the LEDs are turned off, should range from ~50 – 200. Higher or erratic dark signals ' +
                     'could indicate an electronic problem with the sensor'),
-        'units': 'counts'
+        'units': 'count'
     },
     'reference_434_b': {
         'long_name': 'Reference Intensity at 434 nm, 2nd Measurement',
@@ -145,7 +145,7 @@ PCO2W = {
                     'greater than ~1500. Lower intensities will result in higher noise in absorbance and, thus, ' +
                     'pCO2 measurements. However, if during blank measurement signal intensities are low, but ' +
                     'reference intensities are not, the flow cell needs to be flushed.'),
-        'units': 'counts'
+        'units': 'count'
     },
     'signal_434_b': {
         'long_name': 'Signal Intensity at 434 nm, 2nd Measurement',
@@ -153,7 +153,7 @@ PCO2W = {
                     'reference intensity to derive the optical absorbance ratio. Signal intensities can range from ' +
                     '0 to 4096. If any signal intensity is at or near 4000, the channel may be saturated with light, ' +
                     'giving erroneous results. Blank signal intensities should be greater than ~1500.'),
-        'units': 'counts'
+        'units': 'count'
     },
     'reference_620_b': {
         'long_name': 'Reference Intensity at 620 nm, 2nd Measurement',
@@ -162,7 +162,7 @@ PCO2W = {
                     'greater than ~1500. Lower intensities will result in higher noise in absorbance and, thus, ' +
                     'pCO2 measurements. However, if during a blank measurement signal intensities are low, but ' +
                     'reference intensities are not, the flow cell needs to be flushed.'),
-        'units': 'counts'
+        'units': 'count'
     },
     'signal_620_b': {
         'long_name': 'Signal Intensity at 620 nm, 2nd Measurement',
@@ -170,13 +170,13 @@ PCO2W = {
                     'reference intensity to derive the optical absorbance ratio. Signal intensities can range from ' +
                     '0 to 4096. If any signal intensity is at or near 4000, the channel may be saturated with light, ' +
                     'giving erroneous results. Blank signal intensities should be greater than ~1500.'),
-        'units': 'counts'
+        'units': 'count'
     },
     'raw_battery_voltage': {
         'long_name': 'Raw Battery Voltage',
         'comment': ('Raw internal battery voltage measured in counts. May actually reflect external voltage if ' +
                     'external power is applied'),
-        'units': 'counts'
+        'units': 'count'
     },
     'battery_voltage': {
         'long_name': 'Battery Voltage',
@@ -188,7 +188,7 @@ PCO2W = {
     'raw_thermistor': {
         'long_name': 'Raw Thermistor Temperature',
         'comment': 'Thermistor resistivity measured in counts.',
-        'units': 'counts'
+        'units': 'count'
     },
     'thermistor_temperature': {
         'long_name': 'Thermistor Temperature',

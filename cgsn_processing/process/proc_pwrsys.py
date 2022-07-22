@@ -79,7 +79,7 @@ def main(argv=None):
     # process the mooring power system data and save the results to disk
     pwrsys = proc_pwrsys(infile, platform, deployment, lat, lon, depth)
     if pwrsys:
-        pwrsys.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+        pwrsys.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 
 if __name__ == '__main__':

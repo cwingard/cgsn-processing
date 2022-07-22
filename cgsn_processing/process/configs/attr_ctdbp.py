@@ -20,7 +20,7 @@ CTDBP = {
     'sensor_time': {
         'long_name': 'CTD Date and Time',
         'standard_name': 'time',
-        'units': 'seconds since 1970-01-01 00:00:00.00',
+        'units': 'seconds since 1970-01-01T00:00:00.000Z',
         'comment': ('Internal CTD clock date and time stamp, recorded when the instrument begins the measurement. It '
                     'is expected that this value will drift from the true time by some amount over the course of '
                     'a deployment. Cross-comparisons to other systems will be required to account for the offset '
@@ -84,7 +84,7 @@ CTDBP = {
     # attributes associated with the status message output from a CTDBP connected to an inductive modem (IMM)
     'status_time': {
         'long_name': 'Status Update Time',
-        'units': 'seconds since 1970-01-01 00:00:00.00',
+        'units': 'seconds since 1970-01-01T00:00:00.000Z',
         'comment': 'Date and time the CTD status was queried.',
         'calendar': 'gregorian',
         '_FillValue': np.nan
@@ -109,13 +109,13 @@ CTDBP = {
     },
     'samples_recorded': {
         'long_name': 'Number of Samples Recorded',
-        'units': 'counts',
+        'units': 'count',
         'comment': 'Number of samples recorded during the deployment',
         '_FillValue': FILL_INT
     },
     'sample_slots_free': {
         'long_name': 'Number of Free Sample Slots Remaining',
-        'units': 'counts',
+        'units': 'count',
         'comment': 'Number of free samples available for recording, representing the memory available in the unit',
         '_FillValue': FILL_INT
     },
@@ -216,14 +216,14 @@ CTDBP = {
     # --> with WET Labs ECO Triplet (FLORT)
     'raw_backscatter': {
         'long_name': 'Raw Optical Backscatter',
-        'units': 'counts',
+        'units': 'count',
         'comment': 'Raw optical backscatter at 700 nm measurements as recorded by the CTD.',
         'data_product_identifier': 'FLUBSCT_L0',
         '_FillValue': FILL_INT
     },
     'raw_chlorophyll': {
         'long_name': 'Raw Chlorophyll Fluorescence',
-        'units': 'counts',
+        'units': 'count',
         'comment': ('Raw chlorophyll fluorescence (470 nm excitation/ 695 nm emission) measurements as recorded by '
                     'the CTD.'),
         'data_product_identifier': 'CHLAFLO_L0',
@@ -231,7 +231,7 @@ CTDBP = {
     },
     'raw_cdom': {
         'long_name': 'Raw CDOM Fluorescence',
-        'units': 'counts',
+        'units': 'count',
         'comment': ('Raw chromophoric dissolved organic matter (CDOM) fluorescence (370 nm excitation/ 460 nm '
                     'emission) measurements as recorded by the CTD.'),
         'data_product_identifier': 'CDOMFLO_L0',

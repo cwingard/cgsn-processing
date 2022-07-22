@@ -205,7 +205,7 @@ def main(argv=None):
                            dosta_serial=dosta_serial, flord_serial=flord_serial)
 
     if ctdbp:
-        ctdbp.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+        ctdbp.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 
 if __name__ == '__main__':
