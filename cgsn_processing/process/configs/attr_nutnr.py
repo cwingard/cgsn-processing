@@ -51,14 +51,14 @@ NUTNR = {
         'long_name': 'Spectral Average',
         'units': 'count',
         'comment': 'Average value of the raw absorbance measurements.',
-        '_FillValue': FILL_NAN
+        '_FillValue': FILL_INT
     },
     'seawater_dark': {
         'long_name': 'Seawater Dark Measurement',
         'units': 'count',
         'comment': ('Average, raw absorbance measurement when the lamp is turned off. The value is used as the '
                     'dark reference in the calculation of the dissolved nitrate concentration.'),
-        '_FillValue': FILL_NAN
+        '_FillValue': FILL_INT
     },
     'rms_error': {
         'long_name': 'Root Mean Square Error',
@@ -102,7 +102,7 @@ NUTNR = {
         'long_name': 'Lamp On Time',
         'units': 's',
         'comment': 'Total time the lamp has been turned on. The lamp should be replaced after 1000 hours.',
-        '_FillValue': FILL_NAN
+        '_FillValue': FILL_INT
     },
     'humidity': {
         'long_name': 'Relative Humidity',

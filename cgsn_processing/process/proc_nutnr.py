@@ -189,7 +189,7 @@ def proc_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
         df['temperature_internal'] = empty_data
         df['temperature_spectrometer'] = empty_data
         df['temperature_lamp'] = empty_data
-        df['lamp_on_time'] = empty_data
+        df['lamp_on_time'] = np.atleast_1d(data['serial_number']).astype(int) * 0 + FILL_INT
         df['humidity'] = empty_data
         df['voltage_lamp'] = empty_data
         df['voltage_analog'] = empty_data
@@ -283,7 +283,11 @@ def proc_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
         nutnr = nutnr.where(~np.isnan(nutnr.serial_number), drop=True)
 
         # reset original integer values
-        nutnr['channel_measurements'] = nutnr['channel_measurements'].astype(int)
+        int_arrays = ['serial_number', 'channel_measurements', 'lamp_on_time', 'spectral_average', 'seawater_dark',
+                      'integration_factor', 'main_current']
+        for var in nutnr.variables:
+            if var in int_arrays:
+                nutnr[var] = nutnr[var].astype(int)
 
     # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
     nutnr['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(nutnr.time)).astype(str))
