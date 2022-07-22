@@ -12,7 +12,7 @@ NUTNR = {
     # global attributes and metadata variables and attributes
     'global': {
         'title': 'Nitrate Concentration',
-        'summary': ('Nitrate Concentration in sea water measured using either the Satlantic ISUS-V3, or the SUNA-V2 '
+        'summary': ('Nitrate concentration in sea water measured using either the Satlantic ISUS-V3, or the SUNA-V2 '
                     'sensor.'),
     },
     # attributes common to all forms of the NUTNR
