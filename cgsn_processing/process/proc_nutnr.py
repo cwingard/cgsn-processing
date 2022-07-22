@@ -16,7 +16,7 @@ import xarray as xr
 from datetime import timedelta
 
 from cgsn_processing.process.common import Coefficients, inputs, json2df, colocated_ctd, dict_update, \
-    update_dataset, ENCODING, FILL_INT
+    update_dataset, dt64_epoch, ENCODING, FILL_INT
 from cgsn_processing.process.finding_calibrations import find_calibration
 from cgsn_processing.process.configs.attr_nutnr import NUTNR
 from cgsn_processing.process.configs.attr_common import SHARED
@@ -131,10 +131,10 @@ def proc_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
             dev.save_coeffs()
             proc_flag = True
 
-    # set the sensor time
+    # set the sensor time from the date string and decimal hours
     ds = pd.to_datetime(data['date_string'], format='%Y%j', utc=True)
     td = pd.to_timedelta(data['decimal_hours'], 'h')
-    data['sensor_time'] = ds + td
+    data['sensor_time'] = dt64_epoch(ds + td)
 
     # determine the instrument type and drop all dark frame measurements.
     data = data[(data['measurement_type'] == 'NLC') | (data['measurement_type'] == 'NLF')
