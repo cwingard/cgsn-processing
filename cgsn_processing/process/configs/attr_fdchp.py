@@ -390,7 +390,7 @@ FDCHP = {
         'units': 'm s-1',
         'comment': 'Wind speed, corrected for the motion of the buoy, relative to the ground.'
     },
-    'uw_momentum_flux': {
+    'momentum_flux_uw': {
         'long_name': 'Along-Wind Momentum Flux',
         'units': 'm2 s-2',
         'comment': ('The momentum flux is the vertical transfer of horizontal momentum from the air to the ocean and '
@@ -399,7 +399,7 @@ FDCHP = {
                     'responsible for most of the surface stress.'),
         'data_product_identifier': 'FLUXMOM-U_L2',
     },
-    'vw_momentum_flux': {
+    'momentum_flux_vw': {
         'long_name': 'Cross-Wind Momentum Flux',
         'units': 'm2 s-2',
         'comment': ('The momentum flux is the vertical transfer of horizontal momentum from the air to the ocean and '
