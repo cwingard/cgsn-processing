@@ -156,6 +156,9 @@ def proc_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
     if instrument_type == 'suna':
         data.rename(columns={'fit_rmse': 'rms_error',
                              'dark_value': 'seawater_dark'}, inplace=True)
+        if 'absorbance_250' in data.columns:
+            # check to see if this data frame has an older, incorrectly named variable
+            data.rename(columns={'absorbance_250': 'absorbance_350'}, inplace=True)
     else:
         data.rename(columns={'auxiliary_fit_1st': 'fit_auxiliary_1',
                              'auxiliary_fit_2nd': 'fit_auxiliary_2',
