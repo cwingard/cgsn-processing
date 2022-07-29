@@ -174,7 +174,7 @@ def proc_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
     if instrument_type in ['isus', 'suna']:
         channels = np.array(np.vstack(data.pop('channel_measurements')))
     else:
-        empty_data = dev.coeffs['wl'].astype(int) * 0 + FILL_INT
+        empty_data = dev.coeffs['wl'].astype(int) * 0
         channels = np.tile(empty_data, (len(nutnr_time), 1))
 
     # set up and load the 1D parsed data into the data frame

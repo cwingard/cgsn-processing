@@ -11,7 +11,7 @@
 SHARED = {
     'global': {
         'project': 'Ocean Observatories Initiative',
-        'institution': 'Coastal and Global Scale Nodes (CGSN)',
+        'institution': 'Coastal and Global Scale Nodes (CGSN) and the Endurance Array (EA)',
         'acknowledgement': 'National Science Foundation',
         'references': 'http://oceanobservatories.org',
         'creator_name': 'Ocean Observatories Initiative',
