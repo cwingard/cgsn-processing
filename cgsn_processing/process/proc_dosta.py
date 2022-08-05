@@ -4,7 +4,8 @@
 @package cgsn_processing.process.proc_dosta
 @file cgsn_processing/process/proc_dosta.py
 @author Christopher Wingard
-@brief Creates a NetCDF dataset for the dissolved oxygen from the JSON formatted source data
+@brief Creates a NetCDF dataset for the dissolved oxygen from the JSON
+    formatted source data
 """
 import json
 import numpy as np
@@ -21,15 +22,17 @@ from cgsn_processing.process.configs.attr_common import SHARED
 from cgsn_processing.process.finding_calibrations import find_calibration
 
 from pyseas.data.do2_functions import do2_phase_to_doxy, do2_salinity_correction
-from gsw import SP_from_C
+from gsw import SP_from_C, z_from_p
 
 
 class Calibrations(Coefficients):
     def __init__(self, coeff_file, csv_url=None):
         """
-        Loads the DOSTA factory and secondary 2-point calibration coefficients. Values come from either a serialized
-        object created per instrument and deployment (calibration coefficients do not change in the middle of a
-        deployment), or from parsed CSV files maintained on GitHub by the OOI CI team.
+        Loads the DOSTA factory and secondary 2-point calibration coefficients.
+        Values come from either a serialized object created per instrument and
+        deployment (calibration coefficients do not change in the middle of a
+        deployment), or from parsed CSV files maintained on GitHub by the OOI
+        CI team.
         """
         # assign the inputs
         Coefficients.__init__(self, coeff_file)
@@ -38,8 +41,9 @@ class Calibrations(Coefficients):
 
     def read_csv(self, csv_url):
         """
-        Reads the values from a DOSTA calibration file already parsed and stored on Github as a CSV file. Note,
-        the formatting of those files puts some constraints on this process. If someone has a cleaner method,
+        Reads the values from a DOSTA calibration file already parsed and
+        stored on GitHub as a CSV file. Note, the formatting of those files
+        puts some constraints on this process. If someone has a cleaner method,
         I'm all in favor...
         """
         # create the device file dictionary and assign values
@@ -78,11 +82,11 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
     :param depth: Depth of the platform the instrument is mounted on.
 
     :kwargs ctd_name: Name of directory with data from a co-located CTD. This
-           data will be used to apply salinity and density corrections to the
-           data. Otherwise the salinity corrected oxygen concentration is
-           filled with NaN's
-    :kwargs burst: Boolean flag to indicate whether or not to apply burst
-           averaging to the data. Default is to not apply burst averaging.
+        data will be used to apply salinity and density corrections to the
+        data. Otherwise, the salinity corrected oxygen concentration is
+        filled with NaN's
+    :kwargs burst: Boolean flag to indicate whether to apply burst averaging
+        to the data. Default is to not apply burst averaging.
 
     :return dosta: An xarray dataset with the processed DOSTA data
     """
@@ -96,7 +100,7 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
         # json data file was empty, exiting
         return None
 
-    # setup the instrument calibration data object
+    # set up the instrument calibration data object
     coeff_file = os.path.join(os.path.dirname(infile), 'dosta.cal_coeffs.json')
     dev = Calibrations(coeff_file)  # initialize calibration class
     proc_flag = False
@@ -159,8 +163,9 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
         if coverage:
             pressure = np.interp(do_time, ctd_time, ctd.pressure)
             dosta['ctd_pressure'] = pressure
-            depth[1] = pressure.min()
-            depth[2] = pressure.max()
+            depth[0] = z_from_p(np.mean(pressure), lat) * -1
+            depth[1] = z_from_p(pressure.min(), lat) * -1
+            depth[2] = z_from_p(pressure.max(), lat) * -1
 
             temperature = np.interp(do_time, ctd_time, ctd.temperature)
             dosta['ctd_temperature'] = temperature
@@ -180,7 +185,7 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # apply burst averaging if selected
     if burst:
-        # resample to a 15 minute interval and shift the clock to make sure we capture the time "correctly"
+        # resample to a 15-minute interval and shift the clock to make sure we capture the time "correctly"
         dosta = dosta.resample(time='900s', base=3150, loffset='450s').median(dim='time', keep_attrs=True)
         dosta = dosta.where(~np.isnan(dosta.serial_number), drop=True)
 
@@ -188,7 +193,7 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
         int_arrays = ['product_number', 'serial_number']
         for k in dosta.variables:
             if k in int_arrays:
-                dosta[k] = dosta[k].astype(np.intc)  # explicitly setting as a 32 bit integer
+                dosta[k] = dosta[k].astype(np.intc)  # explicitly setting as a 32-bit integer
 
     # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
     dosta['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(dosta.time)).astype(str))
