@@ -121,7 +121,7 @@ esac
 #$PROCESS/process_ctdbp.sh $PLATFORM $DEPLOY $LAT $LON "nsif/ctdbp" 7 0 "solo" $FNAME.${CTDBP1[0]}.json
 $PROCESS/process_dosta.sh $PLATFORM $DEPLOY $LAT $LON "nsif/dosta" 7 $FNAME.dosta.json
 $PROCESS/process_flort.sh $PLATFORM $DEPLOY $LAT $LON "nsif/flort" "ctdbp" 7 ${FLORT[0]} $FNAME.flort.json
-#$PROCESS/process_suna.sh $PLATFORM $DEPLOY $LAT $LON "nsif/nutnr" ${CTDBP1[0]} 7 $FNAME.nutnr.json
+$PROCESS/process_nutnr.sh $PLATFORM $DEPLOY $LAT $LON "nsif/nutnr" ${CTDBP1[0]} 7 $FNAME.nutnr.json
 for optaa in $PROC/$PLATFORM/$DEPLOY/nsif/optaa/$FNAME*.${OPTAA1[0]}.json; do
     if [ -e $optaa ]; then
         SIZE=`du -k "$optaa" | cut -f1`
