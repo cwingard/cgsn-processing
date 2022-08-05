@@ -325,8 +325,8 @@ def update_dataset(ds, platform, deployment, lat, lon, depth, attrs):
     # assign the updated attributes to the global metadata and the individual variables
     ds.attrs = attrs['global']
     for v in ds.variables:
-        if v not in ['time', 'lat', 'lon', 'z', 'station', 'wavelength_number']:
-            ds[v].attrs = dict_update(attrs[v], {'coordinates': 'time lat lon z station'})
+        if v not in ['time', 'lat', 'lon', 'z', 'station', 'wavelength_number', 'wavelengths']:
+            ds[v].attrs = dict_update(attrs[v], {'coordinates': 'time lon lat z station'})
         else:
             ds[v].attrs = attrs[v]
 

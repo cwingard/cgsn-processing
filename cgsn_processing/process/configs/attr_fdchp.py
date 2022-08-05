@@ -337,7 +337,7 @@ FDCHP = {
         'units': 'radians',
         'comment': 'Minimum of the roll measured during the sampling period.'
     },
-    'u_corr': {
+    'u_corrected': {
         'long_name': 'Northerly Wind Speed',
         'units': 'm s-1',
         'comment': ('The relative U, V and W-Axis wind speeds, corrected for buoy motion, are used to produce wind '
@@ -345,7 +345,7 @@ FDCHP = {
                     'of the instrument, are positive to the North.'),
         'data_product_identifier': 'WINDTUR-VLN_L1',
     },
-    'v_corr': {
+    'v_corrected': {
         'long_name': 'Westerly Wind Speed',
         'units': 'm s-1',
         'comment': ('The relative U, V and W-Axis wind speeds, corrected for buoy motion, are used to produce wind '
@@ -353,7 +353,7 @@ FDCHP = {
                     'of the instrument, are positive to the West.'),
         'data_product_identifier': 'WINDTUR-VLW_L1',
     },
-    'w_corr': {
+    'w_corrected': {
         'long_name': 'Upward Wind Speed',
         'units': 'm s-1',
         'comment': ('The relative U, V and W-Axis wind speeds, corrected for buoy motion, are used to produce wind '
@@ -361,7 +361,7 @@ FDCHP = {
                     'of the instrument, are positive upwards.'),
         'data_product_identifier': 'WINDTUR-VLU_L1',
     },
-    'std_u_corr': {
+    'std_u_corrected': {
         'long_name': 'Standard Deviation Along-Wind Compenent',
         'units': 'm s-1',
         'comment': ('The wind speeds relative to the earth are rotated into longitudinal (streamwise) winds and '
@@ -369,7 +369,7 @@ FDCHP = {
                     'This measurement represents the standard deviation of the along-wind component of the '
                     'horizontal velocities.')
     },
-    'std_v_corr': {
+    'std_v_corrected': {
         'long_name': 'Standard Deviation Cross-Wind Compenent',
         'units': 'm s-1',
         'comment': ('The wind speeds relative to the earth are rotated into longitudinal (streamwise) winds and '
@@ -377,7 +377,7 @@ FDCHP = {
                     'This measurement represents the standard deviation of the cross-wind component of the '
                     'horizontal velocities.')
     },
-    'std_w_corr': {
+    'std_w_corrected': {
         'long_name': 'Standard Deviation Vertical Compenent',
         'units': 'm s-1',
         'comment': ('The wind speeds relative to the earth are rotated into longitudinal (streamwise) winds and '
@@ -390,7 +390,7 @@ FDCHP = {
         'units': 'm s-1',
         'comment': 'Wind speed, corrected for the motion of the buoy, relative to the ground.'
     },
-    'uw_momentum_flux': {
+    'momentum_flux_uw': {
         'long_name': 'Along-Wind Momentum Flux',
         'units': 'm2 s-2',
         'comment': ('The momentum flux is the vertical transfer of horizontal momentum from the air to the ocean and '
@@ -399,7 +399,7 @@ FDCHP = {
                     'responsible for most of the surface stress.'),
         'data_product_identifier': 'FLUXMOM-U_L2',
     },
-    'vw_momentum_flux': {
+    'momentum_flux_vw': {
         'long_name': 'Cross-Wind Momentum Flux',
         'units': 'm2 s-2',
         'comment': ('The momentum flux is the vertical transfer of horizontal momentum from the air to the ocean and '

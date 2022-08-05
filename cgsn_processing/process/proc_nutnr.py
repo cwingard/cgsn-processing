@@ -16,13 +16,13 @@ import xarray as xr
 from datetime import timedelta
 
 from cgsn_processing.process.common import Coefficients, inputs, json2df, colocated_ctd, dict_update, \
-    update_dataset, ENCODING, FILL_INT
+    update_dataset, dt64_epoch, ENCODING, FILL_INT
 from cgsn_processing.process.finding_calibrations import find_calibration
 from cgsn_processing.process.configs.attr_nutnr import NUTNR
 from cgsn_processing.process.configs.attr_common import SHARED
 
 from pyseas.data.nit_functions import ts_corrected_nitrate
-from gsw import SP_from_C, p_from_z
+from gsw import SP_from_C, p_from_z, z_from_p
 
 
 class Calibrations(Coefficients):
@@ -131,10 +131,10 @@ def proc_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
             dev.save_coeffs()
             proc_flag = True
 
-    # set the sensor time
+    # set the sensor time from the date string and decimal hours
     ds = pd.to_datetime(data['date_string'], format='%Y%j', utc=True)
     td = pd.to_timedelta(data['decimal_hours'], 'h')
-    data['sensor_time'] = ds + td
+    data['sensor_time'] = dt64_epoch(ds + td)
 
     # determine the instrument type and drop all dark frame measurements.
     data = data[(data['measurement_type'] == 'NLC') | (data['measurement_type'] == 'NLF')
@@ -156,10 +156,13 @@ def proc_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
     if instrument_type == 'suna':
         data.rename(columns={'fit_rmse': 'rms_error',
                              'dark_value': 'seawater_dark'}, inplace=True)
+        if 'absorbance_250' in data.columns:
+            # check to see if this data frame has an older, incorrectly named variable
+            data.rename(columns={'absorbance_250': 'absorbance_350'}, inplace=True)
     else:
-        data.rename(columns={'auxilliary_fit_1st': 'auxilliary_fit_1',
-                             'auxilliary_fit_2nd': 'auxilliary_fit_2',
-                             'auxilliary_fit_3rd': 'auxilliary_fit_3'}, inplace=True)
+        data.rename(columns={'auxiliary_fit_1st': 'fit_auxiliary_1',
+                             'auxiliary_fit_2nd': 'fit_auxiliary_2',
+                             'auxiliary_fit_3rd': 'fit_auxiliary_3'}, inplace=True)
 
     # create the time coordinate array and set up a base data frame
     nutnr_time = data['time']
@@ -171,7 +174,7 @@ def proc_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
     if instrument_type in ['isus', 'suna']:
         channels = np.array(np.vstack(data.pop('channel_measurements')))
     else:
-        empty_data = dev.coeffs['wl'].astype(int) * 0 + FILL_INT
+        empty_data = dev.coeffs['wl'].astype(int) * 0
         channels = np.tile(empty_data, (len(nutnr_time), 1))
 
     # set up and load the 1D parsed data into the data frame
@@ -186,7 +189,7 @@ def proc_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
         df['temperature_internal'] = empty_data
         df['temperature_spectrometer'] = empty_data
         df['temperature_lamp'] = empty_data
-        df['lamp_on_time'] = empty_data
+        df['lamp_on_time'] = np.atleast_1d(data['serial_number']).astype(int) * 0 + FILL_INT
         df['humidity'] = empty_data
         df['voltage_lamp'] = empty_data
         df['voltage_analog'] = empty_data
@@ -232,8 +235,9 @@ def proc_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
 
             pressure = np.interp(nutnr_time, ctd.time, ctd.pressure)
             df['ctd_pressure'] = pressure
-            depth[1] = pressure.min()
-            depth[2] = pressure.max()
+            depth[0] = z_from_p(np.mean(pressure), lat) * -1
+            depth[1] = z_from_p(pressure.min(), lat) * -1
+            depth[2] = z_from_p(pressure.max(), lat) * -1
 
             temperature = np.interp(nutnr_time, ctd.time, ctd.temperature)
             df['ctd_temperature'] = temperature
@@ -279,7 +283,11 @@ def proc_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
         nutnr = nutnr.where(~np.isnan(nutnr.serial_number), drop=True)
 
         # reset original integer values
-        nutnr['channel_measurements'] = nutnr['channel_measurements'].astype(int)
+        int_arrays = ['serial_number', 'channel_measurements', 'lamp_on_time', 'spectral_average', 'seawater_dark',
+                      'integration_factor', 'main_current']
+        for var in nutnr.variables:
+            if var in int_arrays:
+                nutnr[var] = nutnr[var].astype(int)
 
     # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
     nutnr['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(nutnr.time)).astype(str))
