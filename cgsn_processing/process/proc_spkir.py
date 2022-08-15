@@ -110,7 +110,7 @@ def proc_spkir(infile, platform, deployment, lat, lon, depth, **kwargs):
             proc_flag = True
 
     # clean up the dataframe, getting rid of variables we don't need
-    data.drop(columns=['dcl_date_time_string'], inplace=True)
+    data.drop(columns=['date_time_string'], inplace=True)
 
     # create the time coordinate array and set up a base data frame
     spkir_time = data['time']
