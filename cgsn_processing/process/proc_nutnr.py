@@ -41,7 +41,7 @@ class Calibrations(Coefficients):
     def read_csv(self, csv_url):
         """
         Reads the values from a NUTNR calibration file already parsed and
-        stored on Github as a CSV files. Note, the formatting of those files
+        stored on GitHub as a CSV files. Note, the formatting of those files
         puts some constraints on this process. If someone has a cleaner method,
         I'm all in favor...
         """
@@ -111,7 +111,7 @@ def proc_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
         # json data file was empty, exiting
         return None
 
-    # setup the instrument calibration data object
+    # set up the instrument calibration data object
     coeff_file = os.path.join(os.path.dirname(infile), 'nutnr.cal_coeffs.json')
     dev = Calibrations(coeff_file)  # initialize calibration class
     proc_flag = False
