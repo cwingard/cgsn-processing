@@ -13,7 +13,7 @@ import re
 from pyaxiom.netcdf.sensors import TimeSeries
 
 from cgsn_processing.process.common import inputs, json2df
-#from cgsn_processing.process.error_flags import SupervErrorFlagSTC, derive_multi_flags
+# from cgsn_processing.process.error_flags import SupervErrorFlagSTC, derive_multi_flags
 from cgsn_processing.process.configs.attr_superv_stc import SUPERV
 
 
@@ -41,7 +41,7 @@ def main(argv=None):
     #df = derive_multi_flags(SupervErrorFlagSTC, 'error_flags1', df)
     #df = derive_multi_flags(SupervErrorFlagSTC, 'error_flags2', df)
 
-    # Setup the global attributes for the NetCDF file and create the NetCDF timeseries object
+    # Set up the global attributes for the NetCDF file and create the NetCDF timeseries object
     global_attributes = {
         'title': 'Mooring STC Supervisor Data',
         'summary': (
@@ -82,21 +82,22 @@ def main(argv=None):
             d = nc.createVariable(c, 'S23', ('time',))
             d.setncatts(SUPERV[c])
             d[:] = df[c].values
-        elif c in ['error_flags1', 'error_flags2']:
-                d = nc.createVariable(c, 'S23', ('time',))
-                d.setncatts(SUPERV[c])
-                d[:] = df[c].values
+        # elif c in ['error_flags1', 'error_flags2']:
+        #     d = nc.createVariable(c, 'S23', ('time',))
+        #     d.setncatts(SUPERV[c])
+        #     d[:] = df[c].values
         elif c == 'deploy_id':
             d = nc.createVariable(c, 'S6', ('time',))
             d.setncatts(SUPERV[c])
             d[:] = df[c].values
         else:
             # use the TimeSeries object to add the variables
-            ts.add_variable(c, df[c].values, fillvalue=-999999999, attributes=SUPERV[c])
+            ts.add_variable(c, df[c].values, fillvalue=-9999999, attributes=SUPERV[c])
 
     # synchronize the data with the netCDF file and close it
     nc.sync()
     nc.close()
+
 
 if __name__ == '__main__':
     main()
