@@ -11,7 +11,7 @@ import numpy as np
 GLOBAL = {
     'global': {
         'title': 'Partial Pressure of CO2 in Sea Water',
-        'summary': 'Partial pressure of CO2 in sea water measured using the Sunburst Sensors SAMI2-pCO2 instrument.',
+        'summary': 'Partial pressure of CO2 in sea water measured using the Sunburst Sensors SAMI-pCO2 instrument.',
         'project': 'Ocean Observatories Initiative',
         'institution': 'Coastal Endurance Array (EA) and Coastal and Global Scale Nodes (CGSN)',
         'acknowledgement': 'National Science Foundation',
@@ -103,7 +103,7 @@ PCO2W = {
     },
     'record_time': {
         'long_name': 'Instrument Timestamp',
-        'comment': 'Derived from the SAMI2-pCO2 internal clock.',
+        'comment': 'Derived from the SAMI-pCO2 internal clock.',
         'units': 'seconds since 1970-01-01 00:00:00 0:00',
         'calendar': 'gregorian'
     },
