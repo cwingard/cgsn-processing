@@ -22,7 +22,8 @@ VEL3D = {
         'long_name': 'Noise Amplitude Beam 1',
         'comment': ('Ambient noise amplitudes measured by beam 1 prior to a the collection of a 3 minute burst of '
                     '8 Hz velocity data and recorded in the header data packet.'),
-        'units': 'count'
+        'units': 'count',
+        '_FillValue': FILL_INT
     },
     'noise_amplitude_beam2': {
         'long_name': 'Noise Amplitude Beam 2',

@@ -9,6 +9,7 @@ import os
 import pandas as pd
 import re
 import sys
+import xarray as xr
 
 from collections.abc import Mapping
 from dateutil import rrule
@@ -297,13 +298,19 @@ def update_dataset(ds, platform, deployment, lat, lon, depth, attrs):
     # note, the minimum and maximum depths will vary if the instrument includes a
     # pressure sensor, otherwise they will be set to the deployment depth
 
-    # add the non-dimensional coordinate variables
-    ds = ds.assign_coords({
-        'lat': lat,
-        'lon': lon,
-        'z': deploy_depth,
-        'station': platform.upper()
+    # add a station dimension to the data set
+    ds = ds.expand_dims('station', axis=None)
+
+    # add the geospatial coordinates using the station dimension from above
+    geo_coords = xr.Dataset({
+        'station_name': ('station', [platform.upper()]),
+        'lat': ('station', [lat]),
+        'lon': ('station', [lon]),
+        'z': ('station', [deploy_depth])
     })
+
+    # merge the geospatial coordinates into the data set
+    ds = ds.merge(geo_coords)
 
     # Convert time from nanoseconds to seconds since 1970
     ds['time'] = dt64_epoch(ds.time)
@@ -325,8 +332,8 @@ def update_dataset(ds, platform, deployment, lat, lon, depth, attrs):
     # assign the updated attributes to the global metadata and the individual variables
     ds.attrs = attrs['global']
     for v in ds.variables:
-        if v not in ['time', 'lat', 'lon', 'z', 'station', 'wavelength_number', 'wavelengths']:
-            ds[v].attrs = dict_update(attrs[v], {'coordinates': 'time lon lat z station'})
+        if v not in ['time', 'lat', 'lon', 'z', 'station_name', 'wavelength_number', 'wavelengths']:
+            ds[v].attrs = dict_update(attrs[v], {'coordinates': 'time lon lat z'})
         else:
             ds[v].attrs = attrs[v]
 

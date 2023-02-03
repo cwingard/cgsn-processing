@@ -26,7 +26,7 @@ SHARED = {
         'comment': ('Mooring deployment ID. Useful for differentiating data by deployment, '
                     'allowing for overlapping deployments in the data sets.')
     },
-    'station': {
+    'station_name': {
         'cf_role': 'timeseries_id',
         'long_name': 'Station Name',
     },
