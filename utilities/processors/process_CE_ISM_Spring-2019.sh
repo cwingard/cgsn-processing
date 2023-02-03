@@ -69,8 +69,8 @@ $PROCESS/process_velpt.sh $PLATFORM $DEPLOY $LAT $LON "buoy/velpt" 1 $FNAME.velp
 $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LON "nsif/superv/dcl16" 7 $FNAME.superv.json
 
 $PROCESS/process_ctdbp.sh $PLATFORM $DEPLOY $LAT $LON "nsif/ctdbp" 7 0 "dosta" $FNAME.ctdbp1.json
-$PROCESS/process_flort.sh $PLATFORM $DEPLOY $LAT $LON "nsif/flort" "ctdbp1" 7 ${FLORT2[0]} $FNAME.flort.json
-$PROCESS/process_suna.sh $PLATFORM $DEPLOY $LAT $LON "nsif/nutnr" "ctdbp1" 7 $FNAME.nutnr.json
+$PROCESS/process_flort.sh $PLATFORM $DEPLOY $LAT $LON "nsif/flort" "ctdbp" 7 ${FLORT2[0]} $FNAME.flort.json
+$PROCESS/process_suna.sh $PLATFORM $DEPLOY $LAT $LON "nsif/nutnr" "ctdbp" 7 $FNAME.nutnr.json
 for optaa in $PROC/$PLATFORM/$DEPLOY/nsif/optaa/$FNAME*.optaa1.json; do
     if [ -e $optaa ]; then
         SIZE=`du -k "$optaa" | cut -f1`
@@ -89,8 +89,8 @@ $PROCESS/process_superv_cpm.sh $PLATFORM $DEPLOY $LAT $LON "mfn/superv/cpm3" $MF
 $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LON "mfn/superv/dcl36" $MFN_DEPTH $FNAME.superv.json
 $PROCESS/process_superv_dcl.sh $PLATFORM $DEPLOY $LAT $LON "mfn/superv/dcl37" $MFN_DEPTH $FNAME.superv.json
 
-#--> ADCPT
 $PROCESS/process_ctdbp.sh $PLATFORM $DEPLOY $LAT $LON "mfn/ctdbp" $MFN_DEPTH 0 "dosta" $FNAME.ctdbp2.json
+$PROCESS/process_adcp.sh $PLATFORM $DEPLOY $LAT $LON "mfn/adcp" "ctdbp" $MFN_DEPTH $FNAME.adcpt.json
 #--> CAMDS
 for optaa in $PROC/$PLATFORM/$DEPLOY/mfn/optaa/$FNAME*.optaa2.json; do
     if [ -e $optaa ]; then
@@ -103,5 +103,5 @@ done
 $PROCESS/process_pco2w.sh $PLATFORM $DEPLOY $LAT $LON "mfn/pco2w" $MFN_DEPTH ${PCO2W2[0]} $FNAME.pco2w2.json
 $PROCESS/process_phsen.sh $PLATFORM $DEPLOY $LAT $LON "mfn/phsen" $MFN_DEPTH $FNAME.phsen2.json
 $PROCESS/process_presf.sh $PLATFORM $DEPLOY $LAT $LON "mfn/presf" $MFN_DEPTH $FNAME.presf.json
-#--> VEL3D
+$PROCESS/process_vel3d.sh $PLATFORM $DEPLOY $LAT $LON "mfn/vel3d" $MFN_DEPTH $FNAME.vel3d.json
 $PROCESS/process_zplsc.sh $PLATFORM $DEPLOY $LAT $LON "mfn/zplsc" $MFN_DEPTH 2.004 $FNAME.zplsc.json

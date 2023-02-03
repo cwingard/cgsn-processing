@@ -25,7 +25,7 @@ CTDMO = {
     'serial_number': {
         'long_name': 'Serial Number',
         '_FillValue': -9999999,
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'main_battery_voltage': {
         'long_name': 'Main Battery Voltage',

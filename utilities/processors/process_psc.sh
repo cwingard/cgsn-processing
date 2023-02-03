@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Read the parsed PWRSYS data files from the CGSN Coastal Surface Moorings and
+# Read the parsed PSC data files from the CGSN Coastal Surface Moorings and
 # create processed datasets available in NetCDF formatted files for further
 # processing and review.
 #
@@ -8,10 +8,10 @@
 
 # Parse the command line inputs
 if [ $# -ne 6 ]; then
-    echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the PWRSYS"
+    echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the PSC"
     echo " directory name, and the name of the file to process."
     echo ""
-    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 buoy/pwrsys 20161012.pwrsys.json"
+    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 buoy/psc 20161012.pwrsys.json"
     exit 1
 fi
 PLATFORM=${1,,}
@@ -21,7 +21,6 @@ PWRSYS=${5,,}
 FILE=`basename $6`
 
 # Set the default directory paths and input/output sources
-
 DATA="/home/ooiuser/data"
 IN="$DATA/parsed/$PLATFORM/$DEPLOY/$PWRSYS/$FILE"
 OUT="$DATA/processed/$PLATFORM/$DEPLOY/$PWRSYS/${FILE%.json}.nc"
@@ -32,5 +31,5 @@ fi
 # Process the file
 if [ -e $IN ]; then
     cd /home/ooiuser/code/cgsn-processing
-    python -m cgsn_processing.process.proc_pwrsys -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp 0 -i $IN -o $OUT
+    python -m cgsn_processing.process.proc_psc -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp 0 -i $IN -o $OUT
 fi

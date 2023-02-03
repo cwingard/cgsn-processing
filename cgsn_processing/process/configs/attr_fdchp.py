@@ -22,12 +22,12 @@ FDCHP = {
     },
     'processing_version': {
         'long_name': 'Processing Version',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
         'comment': 'Version number of the processing software used by the FDCHP.'
     },
     'status': {
         'long_name': 'Status',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
         'comment': ('Six character hex string representing the status of the different instruments and calculations '
                     'used by the instrument. The order (from left to right) of the status values corresponds to W ('
                     'wind),  R (rates), A (acceleration), O (heading, pitch and roll), C (conditions), and F (flux '

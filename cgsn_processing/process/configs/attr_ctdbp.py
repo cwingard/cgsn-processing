@@ -91,7 +91,7 @@ CTDBP = {
     },
     'serial_number': {
         'long_name': 'Serial Number',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
         'comment': 'Instrument serial number.',
         '_FillValue': FILL_INT,
     },

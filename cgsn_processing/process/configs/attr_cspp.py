@@ -136,12 +136,12 @@ CSPP_DOSTA = {
     'product_number': {
         'long_name': 'Product Number',
         'comment': 'Optode product number, usually model 4831 for OOI systems.',
-        # 'units': ''    # deliberately left blank, no units for this value,
+        # 'units': '',    deliberately left blank, no units for this value,
     },
     'serial_number': {
         'long_name': 'Serial Number',
         'comment': 'Instrument serial number.',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'oxygen_concentration': {
         'long_name': 'Dissolved Oxygen Concentration',

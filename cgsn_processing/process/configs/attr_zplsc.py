@@ -11,49 +11,22 @@ ZPLSC = {
     'global': {
         'title': 'Acoustic Profiles of Fish and Zooplankton.',
         'summary': 'Acoustic profiles of fish and zooplankton at four frequencies using the ASL AZFP sensor.',
-        'project': 'Ocean Observatories Initiative',
-        'institution': 'Coastal and Global Scale Nodes (CGSN)',
-        'acknowledgement': 'National Science Foundation',
-        'references': 'http://oceanobservatories.org',
-        'creator_name': 'Christopher Wingard',
-        'creator_email': 'cwingard@coas.oregonstate.edu',
-        'creator_url': 'http://oceanobservatories.org',
     },
-    'deploy_id': {
-        'long_name': 'Deployment ID',
-        'units': '1'
-    },
-    'z': {
-        'long_name': 'Sensor Depth',
-        'standard_name': 'depth',
-        'units': 'm',
-        'comment': 'Sensor depth below sea surface',
-        'positive': 'down',
-        'axis': 'Z'
-    },
-    'dcl_date_time_string': {
-        'long_name': 'DCL Date and Time Stamp',
-        'units': '1',
-    },
-    'transmission_date_string': {
-        'long_name': 'Profile Transmission Time',
-        'units': '1',
-    },
-    'time_offset': {
+    'clock_drift': {
         'long_name': 'Internal Clock Drift',
+        'units': 'seconds'
+    },
+    'sampling_drift': {
+        'long_name': 'Sampling Time Drift',
         'units': 'seconds'
     },
     'serial_number': {
         'long_name': 'Unit Serial Number',
-        'units': '1'
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'burst_number': {
         'long_name': 'Burst Number',
-        'units': '1'
-    },
-    'burst_date_string': {
-        'long_name': 'Profile Burst Time',
-        'units': '1'
+        'units': 'count'
     },
     'battery_voltage': {
         'long_name': 'Battery Voltage',

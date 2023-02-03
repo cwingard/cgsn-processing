@@ -58,7 +58,7 @@ GPS = {
     },
     'horiz_dilution_precision': {
         'long_name': 'Horizontal Dilution of Precision',
-        # 'units': ''    # deliberately left blank, no units for this value,
+        # 'units': '',    deliberately left blank, no units for this value,
         'comment': ('Describes the quality of the horizontal fix (latitude and longitude) based on the number of '
                     'good views to satellites low on the horizon. Smaller HDOP values are indicative of '
                     'more precise location measurements. Values less than or equal to 1 are considered ideal, 1-2 are '
@@ -71,22 +71,22 @@ GPS = {
     },
     'gps_date_string': {
         'long_name': 'GPS Date String',
-        # 'units': ''    # deliberately left blank, no units for this value,
+        # 'units': '',    deliberately left blank, no units for this value,
         'comment': 'GPS date formatted as a string (YYMMDD).'
     },
     'gps_time_string': {
         'long_name': 'GPS Time String',
-        # 'units': ''    # deliberately left blank, no units for this value,
+        # 'units': '',    deliberately left blank, no units for this value,
         'comment': 'GPS Time formatted as a string (hhmmss).'
     },
     'latitude_string': {
         'long_name': 'Latitude String',
-        # 'units': ''    # deliberately left blank, no units for this value,
+        # 'units': '',    deliberately left blank, no units for this value,
         'comment': 'Latitude formatted as a string (DDMM.SSSS N/S).'
     },
     'longitude_string': {
         'long_name': 'Longitude String',
-        # 'units': ''    # deliberately left blank, no units for this value,
+        # 'units': '',    deliberately left blank, no units for this value,
         'comment': 'Longitude formatted as a string (DDDMM.SSSS E/W).'
     }
 }
