@@ -371,8 +371,8 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
            to the data. Otherwise, defaults are used with salinity set to
            33 psu and temperature from the OPTAAs external temperature
            sensor.
-    :kwargs burst: Boolean flag to indicate whether or not to apply burst
-           averaging to the data. Default is to not apply burst averaging.
+    :kwargs burst: Boolean flag to indicate whether to apply burst averaging
+        to the data. Default is to not apply burst averaging.
 
     :return optaa: An xarray dataset with the processed OPTAA data
     """
@@ -386,7 +386,7 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
         # json data file was empty, exiting
         return None
 
-    # setup the instrument calibration data object
+    # set up the instrument calibration data object
     coeff_file = os.path.join(os.path.dirname(infile), 'optaa.cal_coeffs.json')
     dev = Calibrations(coeff_file)  # initialize calibration class
     proc_flag = False

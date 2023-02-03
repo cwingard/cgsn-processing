@@ -16,13 +16,13 @@ PCO2W = {
     'collect_date_time': {
         'long_name': 'Sample Collection Date and Time Stamp',
         'comment': 'Data logger time stamp, recorded when the instrument cycles the pump and collects a sample.',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'process_date_time': {
         'long_name': 'Sample Processing Date and Time Stamp',
         'comment': ('Data logger time stamp, recorded when the instrument processes the sample after a period ' +
                     'of equilibration of the CO2 across the sample volume membrane.'),
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'unique_id': {
         'long_name': 'Instrument Unique ID',
@@ -30,22 +30,22 @@ PCO2W = {
                     'version serving as a proxy for a unique ID. While identified as the instrument unique ID, it is ' +
                     'possible for more than one instrument to have the same checksum summary. Thus, the uniqueness ' +
                     'of this value should be considered with a certain degree of caution.'),
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'record_number': {
         'long_name': 'IMM Record Number',
         'comment': 'Inductive modem record number',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'record_length': {
         'long_name': 'Record Length',
         'comment': 'Number of bytes in the record.',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'record_type': {
         'long_name': 'Record Type',
         'comment': 'Records the record type, which is either a blank (type = 5), or a sampling (type = 4) record.',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'record_time': {
         'long_name': 'Instrument Timestamp',

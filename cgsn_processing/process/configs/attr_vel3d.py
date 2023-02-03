@@ -93,7 +93,7 @@ VEL3D = {
         'flag_meanings': ('compass_error measurement_error sensor_data_error tag_bit_error '
                           'flash_error ct_sensor_read_error'),
         'comment': 'Integer representation of the instrument error codes.'
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'status_code': {
         'long_name': 'Instrument Status Codes',
@@ -103,7 +103,7 @@ VEL3D = {
                           'wake_bad_power wake_break_received wake_power_applied wake_rtc_alarm '
                           'power_level_high power_level_1 power_level_2 power_level_low'),
         'comment': 'Integer representation of the instrument status codes.'
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'pressure': {
         'long_name': 'Pressure',

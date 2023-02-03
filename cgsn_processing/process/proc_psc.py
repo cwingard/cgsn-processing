@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-@package cgsn_processing.process.proc_pwrsys
-@file cgsn_processing/process/proc_pwrsys.py
+@package cgsn_processing.process.proc_psc
+@file cgsn_processing/process/proc_psc.py
 @author Christopher Wingard
 @brief Creates a NetCDF dataset for the power system controller data from JSON formatted source data
 """
@@ -11,13 +11,13 @@ import os
 import xarray as xr
 
 from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING, dict_update
-from cgsn_processing.process.configs.attr_pwrsys import PWRSYS
+from cgsn_processing.process.configs.attr_psc import PSC
 from cgsn_processing.process.configs.attr_common import SHARED
 
 
-def proc_pwrsys(infile, platform, deployment, lat, lon, depth):
+def proc_psc(infile, platform, deployment, lat, lon, depth):
     """
-    Mooring power system controller (PWRSYS) processing function. Loads
+    Mooring power system controller (PSC) processing function. Loads
     the JSON formatted parsed data and converts data into a NetCDF data file
     using xarray. Dataset processing level attribute is set to "parsed". There
     is no processing of the data, just a straight conversion from JSON to
@@ -30,7 +30,7 @@ def proc_pwrsys(infile, platform, deployment, lat, lon, depth):
     :param lon: Longitude of the mooring deployment.
     :param depth: Depth of the platform the instrument is mounted on.
 
-    :return pwrsys: An xarray dataset with the mooring power system data
+    :return psc: An xarray dataset with the mooring power system data
     """
     # load the json data file and return a panda dataframe
     df = json2df(infile)
@@ -54,15 +54,15 @@ def proc_pwrsys(infile, platform, deployment, lat, lon, depth):
             df[col] = df[col].astype(np.uintc)
 
     # create an xarray data set from the data frame
-    pwrsys = xr.Dataset.from_dataframe(df)
+    psc = xr.Dataset.from_dataframe(df)
 
     # clean up the dataset and assign attributes
-    pwrsys['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(pwrsys.time)).astype(str))
-    attrs = dict_update(PWRSYS, SHARED)
-    pwrsys = update_dataset(pwrsys, platform, deployment, lat, lon, [depth, depth, depth], attrs)
-    pwrsys.attrs['processing_level'] = 'parsed'
+    psc['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(psc.time)).astype(str))
+    attrs = dict_update(PSC, SHARED)
+    psc = update_dataset(psc, platform, deployment, lat, lon, [depth, depth, depth], attrs)
+    psc.attrs['processing_level'] = 'parsed'
 
-    return pwrsys
+    return psc
 
 
 def main(argv=None):
@@ -77,9 +77,9 @@ def main(argv=None):
     depth = args.depth
 
     # process the mooring power system data and save the results to disk
-    pwrsys = proc_pwrsys(infile, platform, deployment, lat, lon, depth)
-    if pwrsys:
-        pwrsys.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
+    psc = proc_psc(infile, platform, deployment, lat, lon, depth)
+    if psc:
+        psc.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 
 if __name__ == '__main__':

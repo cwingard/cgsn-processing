@@ -22,7 +22,7 @@ ADCP = {
     'bin_number': {
         'long_name': 'Bin Number',
         'comment': 'Number of the ADCP velocity bin. Number of bins is dependent on depth of deployment and frequency.',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     }
 }
 
@@ -31,12 +31,12 @@ PD0 = {
     'firmware_version': {
         'long_name': 'Firmware Version',
         'comment': 'Version number of current CPU firmware',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'firmware_revision': {
         'long_name': 'Firmware Revision',
         'comment': 'Revision number of current CPU firmware',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'sysconfig_frequency': {
         'long_name': 'Sysconfig Frequency',
@@ -46,27 +46,27 @@ PD0 = {
     'sysconfig_beam_pattern': {
         'long_name': 'Sysconfig Beam Pattern',
         'comment': 'Transducer head beam pattern',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'sysconfig_sensor_config': {
         'long_name': 'Sysconfig Sensor Config',
         'comment': 'Sensor configuration number (1, 2 or 3)',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
      },
     'sysconfig_head_attached': {
         'long_name': 'Sysconfig Head Attached',
         'comment': 'Whether transducer head is attached',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'sysconfig_vertical_orientation': {
         'long_name': 'Sysconfig Vertical Orientation',
         'comment': 'Whether vertical orientation is upward or downward',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'data_flag': {
         'long_name': 'Real/Simulated Data Flag',
         'comment': 'PD (Data Stream Select) Real or Simulated data flag. Always set to real data (0) by default',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'lag_length': {
         'long_name': 'Lag Length',
@@ -76,17 +76,17 @@ PD0 = {
     'num_beams': {
         'long_name': 'Number Beams',
         'comment': 'Contains the number of beams used to calculate velocity data',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'num_cells': {
         'long_name': 'Number Cells',
         'comment': 'Contains the number of cells over which the ADCP collects data',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'pings_per_ensemble': {
         'long_name': 'Pings Per Ensemble',
         'comment': 'Contains the number of pings averaged together during a data ensemble',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'depth_cell_length': {
         'long_name': 'Cell Length',
@@ -102,7 +102,7 @@ PD0 = {
     'signal_processing_mode': {
         'long_name': 'Signal Processing Mode',
         'comment': 'Signal Processing Mode. Always set to 1',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'low_corr_threshold': {
         'long_name': 'Low Correlation Threshold',
@@ -128,22 +128,22 @@ PD0 = {
     'coord_transform_type': {
         'long_name': 'Coordinate Transform Type',
         'comment': 'Coordinate Transformation type: 0 = None (Beam), 1 = Instrument, 2 = Ship, 3 = Earth.',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'coord_transform_tilts': {
         'long_name': 'Coordinate Transform Tilts',
         'comment': 'Whether tilts used in Earth or Ship coordinated transformations',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'coord_transform_beams': {
         'long_name': 'Coord Transform Beams',
         'comment': 'Was 3-beam solution used if 1 beam is below correlation threshold',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'coord_transform_mapping': {
         'long_name': 'Coord Transform Mapping',
         'comment': 'Bin mapping used with tilts and coordinate transformations',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'heading_alignment': {
         'long_name': 'Heading Alignment',
@@ -158,67 +158,67 @@ PD0 = {
     'sensor_source_speed': {
         'long_name': 'Sensor Source Speed',
         'comment': 'Contains the selected source for the speed of sound estimation',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'sensor_source_depth': {
         'long_name': 'Sensor Source Depth',
         'comment': 'Uses ED for depth sensor',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'sensor_source_heading': {
         'long_name': 'Sensor Source Heading',
         'comment': 'Uses EH for transducer heading',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'sensor_source_pitch': {
         'long_name': 'Sensor Source Pitch',
         'comment': 'Uses EP for transducer pitch sensor',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'sensor_source_roll': {
         'long_name': 'Sensor Source Roll',
         'comment': 'Uses ER for transducer roll sensor',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'sensor_source_conductivity': {
         'long_name': 'Sensor Source Conductivity',
         'comment': 'Uses ES (salinity) calculated from external conductivity sensor',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'sensor_source_temperature': {
         'long_name': 'Sensor Source Temperature',
         'comment': 'Uses ET for transducer temperature sensor',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'sensor_available_depth': {
         'long_name': 'Sensor Available Depth',
         'comment': 'Is depth sensor installed',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'sensor_available_heading': {
         'long_name': 'Sensor Available Heading',
         'comment': 'Is heading sensor installed',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'sensor_available_pitch': {
         'long_name': 'Sensor Available Pitch',
         'comment': 'Is pitch sensor installed',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'sensor_available_roll': {
         'long_name': 'Sensor Available Roll',
         'comment': 'Is roll sensor installed',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'sensor_available_conductivity': {
         'long_name': 'Sensor Available Conductivity',
         'comment': 'Is conductivity sensor installed',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'sensor_available_temperature': {
         'long_name': 'Sensor Available Temperature',
         'comment': 'Is temperature sensor installed',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'bin_1_distance': {
         'long_name': 'Distance First Bin',
@@ -233,12 +233,12 @@ PD0 = {
     'reference_layer_start': {
         'long_name': 'Reference Layer Start',
         'comment': 'Starting depth cell used for water reference layer',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'reference_layer_stop': {
         'long_name': 'Reference Layer Stop',
         'comment': 'Ending depth cell used for water reference layer',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'false_target_threshold': {
         'long_name': 'False Target Threshold',
@@ -253,12 +253,12 @@ PD0 = {
     'system_bandwidth': {
         'long_name': 'System Bandwidth',
         'comment': 'Sets profiling mode bandwidth (sampling) rate from wide (0) to narrow (1). Default is 0',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'serial_number': {
         'long_name': 'Serial Number',
         'comment': 'Serial Number',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'beam_angle': {
         'long_name': 'Beam Angle',
@@ -270,22 +270,22 @@ PD0 = {
     'ensemble_number': {
         'long_name': 'Ensemble Number',
         'comment': 'Sequential number of the ensemble to which the data applies',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'bit_result_demod_1': {
         'long_name': 'BIT DEMOD 1 Error',
         'comment': 'DEMOD 1 error from the ADCP''s builtin test function',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'bit_result_demod_2': {
         'long_name': 'BIT DEMOD 0 Error',
         'comment': 'DEMOD 0 error from the ADCP''s builtin test function',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'bit_result_timing': {
         'long_name': 'BIT Timing Error',
         'comment': 'Timing card error from the ADCP''s builtin test function',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'speed_of_sound': {
         'comment': 'Contains either manual or calculated speed of sound',
@@ -392,102 +392,102 @@ PD0 = {
     'bus_error_exception': {
         'long_name': 'Bus Error Exception',
         'comment': 'Recorded in the Error Status Word'
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'address_error_exception': {
         'long_name': 'Address Error Exception',
         'comment': 'Recorded in the Error Status Word'
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'illegal_instruction_exception': {
         'long_name': 'Illegal Instruction Exception',
         'comment': 'Recorded in the Error Status Word.'
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'zero_divide_instruction': {
         'long_name': 'Zero Divide Instruction',
         'comment': 'Recorded in the Error Status Word'
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'emulator_exception': {
         'long_name': 'Emulator Exception',
         'comment': 'Recorded in the Error Status Word'
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'unassigned_exception': {
         'long_name': 'Unassigned Exception',
         'comment': 'Recorded in the Error Status Word'
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'watchdog_restart_occurred': {
         'long_name': 'Watchdog Restart Occurred',
         'comment': 'Recorded in the Error Status Word'
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'battery_saver_power': {
         'long_name': 'Battery Saver Power',
         'comment': 'Recorded in the Error Status Word'
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'pinging': {
         'long_name': 'Pinging Error',
         'comment': 'Recorded in the Error Status Word'
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'cold_wakeup_occurred': {
         'long_name': 'Cold Wakeup Occurred',
         'comment': 'Recorded in the Error Status Word'
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'unknown_wakeup_occurred': {
         'long_name': 'Unknown Wakeup Occurred',
         'comment': 'Recorded in the Error Status Word'
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'clock_read_error': {
         'long_name': 'Clock Read Error',
         'comment': 'Recorded in the Error Status Word'
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'unexpected_alarm': {
         'long_name': 'Unexpected Alarm',
         'comment': 'Recorded in the Error Status Word'
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'clock_jump_forward': {
         'long_name': 'Clcok Jump Forward',
         'comment': 'Recorded in the Error Status Word'
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'clock_jump_backward': {
         'long_name': 'Clock Jump Backward',
         'comment': 'Recorded in the Error Status Word'
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'power_fail': {
         'long_name': 'Power Failure',
         'comment': 'Recorded in the Error Status Word'
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'spurious_dsp_interrupt': {
         'long_name': 'Spurious DSP Interrupt',
         'comment': 'Recorded in the Error Status Word'
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'spurious_uart_interrupt': {
         'long_name': 'Spurious UART Interrupt',
         'comment': 'Recorded in the Error Status Word'
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'spurious_clock_interrupt': {
         'long_name': 'Spurious Clock Interrupt',
         'comment': 'Recorded in the Error Status Word'
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'level_7_interrupt': {
         'long_name': 'Level 7 Interrupt',
         'comment': 'Recorded in the Error Status Word'
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'pressure': {
         'long_name': 'Pressure',
@@ -631,12 +631,12 @@ PD8 = {
     'ensemble_number': {
         'long_name': 'Ensemble Number',
         'comment': 'Sequential number of the ensemble to which the data applies',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'bit_result': {
         'long_name': 'BIT Results',
         'comment': 'Summary result of the ADCP''s builtin test functions',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'speed_of_sound': {
         'comment': 'Contains calculated speed of sound based on transducer temperature and default salinity',
@@ -758,27 +758,27 @@ PD12 = {
     'imm_record_number': {
         'long_name': 'IMM Record Number',
         'comment': 'Inductive modem record number',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'serial_number': {
         'long_name': 'Serial Number',
         'comment': 'Serial Number',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'ensemble_number': {
         'long_name': 'Ensemble Number',
         'comment': 'Sequential number of the ensemble to which the data applies',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'firmware_version': {
         'long_name': 'Firmware Version',
         'comment': 'Version number of current CPU firmware',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'firmware_revision': {
         'long_name': 'Firmware Revision',
         'comment': 'Revision number of current CPU firmware',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'heading': {
         'long_name': 'Heading',
