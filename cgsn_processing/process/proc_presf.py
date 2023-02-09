@@ -10,19 +10,16 @@ import numpy as np
 import os
 import xarray as xr
 
-from gsw import z_from_p
-
-from cgsn_processing.process.common import inputs, json2df, epoch_time, update_dataset, dict_update, ENCODING
+from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING, dict_update, epoch_time
 from cgsn_processing.process.configs.attr_presf import PRESF
 from cgsn_processing.process.configs.attr_common import SHARED
 
 
 def proc_presf(infile, platform, deployment, lat, lon, depth):
     """
-    Main PRESF processing function. Loads the JSON formatted parsed data and
-    converts data into a NetCDF data file using xarray. Dataset processing
-    level attribute is set to "processed" with the absolute pressure reading
-    converted from psi to dbar.
+    Sea-Bird 26Plus Seafloor Pressure sensor processing function. Loads the
+    JSON formatted parsed data and converts data into a NetCDF data file using
+    xarray.
 
     :param infile: JSON formatted parsed data file
     :param platform: Name of the mooring the instrument is mounted on.
@@ -31,39 +28,32 @@ def proc_presf(infile, platform, deployment, lat, lon, depth):
     :param lon: Longitude of the mooring deployment.
     :param depth: Depth of the platform the instrument is mounted on.
 
-    :return presf: An xarray dataset with the PRESF data
+    :return presf: An xarray dataset with the seafloor pressure data
     """
-    # load the json data file and return a panda dataframe, adding a deployment depth and ID
+    # load the json data file and return a panda dataframe
     df = json2df(infile)
     if df.empty:
         # there was no data in this file, ending early
         return None
 
-    # rename pressure_temp, so I can stop hearing people complain about this variable name
-    df.rename(columns={'pressure_temp': 'sensor_temperature'}, inplace=True)
+    # clean up the dataframe, getting rid of variables we no longer need
+    df['sensor_time'] = [epoch_time(x) for x in df['presf_date_time_string']]
+    df.drop(columns=['presf_date_time_string', 'dcl_date_time_string'], inplace=True)
 
-    # clean up the time variables
-    df['sensor_time'] = epoch_time(df['presf_date_time_string'].values[0])
-    df.drop(columns=['dcl_date_time_string', 'presf_date_time_string'], inplace=True)
-
-    # convert the absolute (hydrostatic + atmospheric) pressure measurement from psi to dbar
-    df['seafloor_pressure'] = df['absolute_pressure'] * 0.689475728
-
-    # reset the depth array from the pressure record (removing the standard atmospheric pressure)
-    d = z_from_p(df['seafloor_pressure'] - 10.1325, lat)
-    depth = [d.mean(), d.min(), d.max()]
+    # convert the absolute seafloor pressure from psi to dbar
+    df['absolute_pressure'] = df['absolute_pressure'] * 0.689476
 
     # create an xarray data set from the data frame
     presf = xr.Dataset.from_dataframe(df)
 
     # clean up the dataset and assign attributes
     presf['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(presf.time)).astype(str))
-    attrs = dict_update(PRESF, SHARED)
-    presf = update_dataset(presf, platform, deployment, lat, lon, depth, attrs)
+    attrs = dict_update(PRESF, SHARED)  # add the shared attributes
+    presf = update_dataset(presf, platform, deployment, lat, lon, [depth, depth, depth], attrs)
     presf.attrs['processing_level'] = 'processed'
 
     return presf
-        
+
 
 def main(argv=None):
     # load the input arguments
@@ -76,11 +66,11 @@ def main(argv=None):
     lon = args.longitude
     depth = args.depth
 
-    # process the PRESF data and save the results to disk
+    # process the Sea-Bird 26Plus data and save the results to disk
     presf = proc_presf(infile, platform, deployment, lat, lon, depth)
     if presf:
         presf.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
-    
+
 if __name__ == '__main__':
     main()
