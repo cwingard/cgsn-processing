@@ -18,6 +18,30 @@ from cgsn_processing.process.configs.attr_zplsc import ZPLSC
 from cgsn_processing.process.configs.attr_common import SHARED
 
 
+def sample_drift(df):
+    """
+    Calculate an estimate of the sample drift (difference between when the unit
+    should sample versus when it actually did) over the course of a deployment
+    by comparing the burst time to a preset array of sample times (minutes of
+    the hour)
+
+    :param df: dataframe with the burst time calculated from the burst
+        date/time string
+    :return: estimated sample drift in seconds relative to when the instrument
+        should have sampled
+    """
+    schedule = np.array([5, 20, 35, 50])
+    minutes = np.atleast_2d([x.minute for x in df['time']]).T
+    offsets = np.abs(minutes - schedule)
+    idx = np.argmin(offsets, 1)
+    drift = []
+    for i, t in enumerate(df['time']):
+        scheduled = pd.Timestamp(t.year, t.month, t.day, t.hour, schedule[idx[i]], 0)
+        drift.append(scheduled.to_datetime64().astype(float) / 10 ** 9 - df['burst_time'][i])
+
+    return drift
+
+
 def proc_zplsc(infile, platform, deployment, lat, lon, depth, **kwargs):
     """
     Main ZPLSC processing function. Loads the JSON formatted parsed data and
@@ -86,9 +110,6 @@ def proc_zplsc(infile, platform, deployment, lat, lon, depth, **kwargs):
     profiles_channel_3 = profiles_channel_3 + np.atleast_2d(minimum_values[:, 2]).T
     profiles_channel_4 = profiles_channel_4 + np.atleast_2d(minimum_values[:, 3]).T
 
-    # create an xarray dataset of the 1D data
-    ds = xr.Dataset.from_dataframe(data)
-    
     # create an approximate depth axis for the dataset based on the bin size, the maximum number of bins, and the
     # mounting angle of the transducers.
     bins = (np.arange(max(number_bins[0, :])) * bin_size) * np.cos(np.radians(15.0))
