@@ -50,7 +50,7 @@ def proc_presf(infile, platform, deployment, lat, lon, depth):
     presf['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(presf.time)).astype(str))
     attrs = dict_update(PRESF, SHARED)  # add the shared attributes
     presf = update_dataset(presf, platform, deployment, lat, lon, [depth, depth, depth], attrs)
-    presf.attrs['processing_level'] = 'processed'
+    presf.attrs['processing_level'] = 'parsed'
 
     return presf
 
