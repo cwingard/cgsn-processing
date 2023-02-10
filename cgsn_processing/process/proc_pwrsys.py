@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 @package cgsn_processing.process.proc_psc
-@file cgsn_processing/process/proc_psc.py
+@file cgsn_processing/process/proc_pwrsys.py
 @author Christopher Wingard
 @brief Creates a NetCDF dataset for the power system controller data from JSON formatted source data
 """
@@ -11,11 +11,12 @@ import os
 import xarray as xr
 
 from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING, dict_update
+from cgsn_processing.process.configs.attr_mpea import MPEA
 from cgsn_processing.process.configs.attr_psc import PSC
 from cgsn_processing.process.configs.attr_common import SHARED
 
 
-def proc_psc(infile, platform, deployment, lat, lon, depth):
+def proc_pwrsys(infile, platform, deployment, lat, lon, depth, **kwargs):
     """
     Mooring power system controller (PSC) processing function. Loads
     the JSON formatted parsed data and converts data into a NetCDF data file
@@ -30,8 +31,17 @@ def proc_psc(infile, platform, deployment, lat, lon, depth):
     :param lon: Longitude of the mooring deployment.
     :param depth: Depth of the platform the instrument is mounted on.
 
+    :kwargs pwrsys_type: Name of the power system type, either psc or mpea.
+
     :return psc: An xarray dataset with the mooring power system data
     """
+    # process the variable length keyword arguments
+    pwrsys_type = kwargs.get('pwrsys_type')
+    if pwrsys_type and pwrsys_type in ['psc', 'mpea']:
+        pass
+    else:
+        IOError('You need to specify the power system type, either psc or mpea, before the data can be processed)')
+
     # load the json data file and return a panda dataframe
     df = json2df(infile)
     if df.empty:
@@ -41,11 +51,31 @@ def proc_psc(infile, platform, deployment, lat, lon, depth):
     # drop the date and time string variable.
     df.drop(columns=['dcl_date_time_string'], inplace=True)
 
-    # we don't have a fuel cell, we've never had one, and we never will. time to stop pretending, bye-bye fuel cell
-    fuel_cell = ['fuel_cell1_state', 'fuel_cell1_voltage', 'fuel_cell1_current',
-                 'fuel_cell2_state', 'fuel_cell2_voltage', 'fuel_cell2_current',
-                 'fuel_cell_volume']
-    df.drop(columns=fuel_cell, inplace=True)
+    # create dummy attrs variable
+    attrs = None
+
+    if pwrsys_type == 'psc':
+        # we don't have a fuel cell, we've never had one, and we never will. time to stop pretending, bye-bye fuel cell
+        fuel_cell = ['fuel_cell1_state', 'fuel_cell1_voltage', 'fuel_cell1_current',
+                     'fuel_cell2_state', 'fuel_cell2_voltage', 'fuel_cell2_current',
+                     'fuel_cell_volume']
+        df.drop(columns=fuel_cell, inplace=True)
+
+        # set up the attributes dictionary
+        attrs = dict_update(PSC, SHARED)
+
+    if pwrsys_type == 'mpea':
+        # While originally intended to provide power for AUV docks, that functionality of the CVT was never used. There
+        # are multiple channels for which we have no data, and at this time never will. Dropping them to make a cleaner
+        # data set.
+        df.drop(columns=['cv3_state', 'cv3_voltage', 'cv3_current',
+                         'cv4_state', 'cv4_voltage', 'cv4_current',
+                         'cv5_state', 'cv5_voltage', 'cv5_current',
+                         'cv6_state', 'cv6_voltage', 'cv6_current',
+                         'cv7_state', 'cv7_voltage', 'cv7_current'], inplace=True)
+
+        # set up the attributes dictionary
+        attrs = dict_update(MPEA, SHARED)
 
     # convert the different hex strings (already converted to an integer in the parser) used for flags
     # to unsigned integers
@@ -58,7 +88,6 @@ def proc_psc(infile, platform, deployment, lat, lon, depth):
 
     # clean up the dataset and assign attributes
     psc['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(psc.time)).astype(str))
-    attrs = dict_update(PSC, SHARED)
     psc = update_dataset(psc, platform, deployment, lat, lon, [depth, depth, depth], attrs)
     psc.attrs['processing_level'] = 'parsed'
 
@@ -75,11 +104,12 @@ def main(argv=None):
     lat = args.latitude
     lon = args.longitude
     depth = args.depth
+    pwrsys_type = args.devfile  # name of co-located CTD
 
     # process the mooring power system data and save the results to disk
-    psc = proc_psc(infile, platform, deployment, lat, lon, depth)
-    if psc:
-        psc.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
+    pwrsys = proc_pwrsys(infile, platform, deployment, lat, lon, depth, pwrsys_type=pwrsys_type)
+    if pwrsys:
+        pwrsys.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 
 if __name__ == '__main__':
