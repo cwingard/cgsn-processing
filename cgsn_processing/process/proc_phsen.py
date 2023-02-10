@@ -6,6 +6,8 @@
 @author Christopher Wingard
 @brief Calculates the pH for the PHSEN and saves the data to NetCDF
 """
+import warnings
+
 import numpy as np
 import os
 import pandas as pd
@@ -14,33 +16,113 @@ import xarray as xr
 from datetime import datetime, timedelta
 from pytz import timezone
 
-from cgsn_processing.process.common import ENCODING, colocated_ctd, inputs, json2df, dict_update, update_dataset
+from cgsn_processing.process.common import ENCODING, Coefficients, colocated_ctd, inputs, json2df, \
+    dict_update, update_dataset
+from cgsn_processing.process.finding_calibrations import find_calibration
 from cgsn_processing.process.configs.attr_phsen import GLOBAL, PHSEN
 
 from pyseas.data.ph_functions import ph_battery, ph_thermistor, ph_calc_phwater
 from gsw import SP_from_C
 
 
-def main(argv=None):
-    # load the input arguments
-    args = inputs(argv)
-    infile = os.path.abspath(args.infile)
-    outfile = os.path.abspath(args.outfile)
-    platform = args.platform
-    deployment = args.deployment
-    lat = args.latitude
-    lon = args.longitude
-    depth = args.depth
-    if args.devfile:
-        ctd_name = args.devfile  # name of co-located CTD
-    else:
-        ctd_name = None
+class Calibrations(Coefficients):
+    def __init__(self, coeff_file, csv_url=None):
+        """
+        A serialized object created per instrument and deployment (calibration
+        coefficients do not change in the middle of a deployment), or from
+        parsed CSV files maintained on GitHub by the OOI CI team.
+        """
+        # assign the inputs
+        Coefficients.__init__(self, coeff_file)
+        self.csv_url = csv_url
+
+    def read_csv(self, csv_url):
+        """
+        Reads the values from the CSV file already parsed and stored on GitHub.
+        Note, the formatting of those files puts some constraints on this
+        process. If someone has a cleaner method, I'm all in favor...
+        """
+        # create the device file dictionary and assign values
+        coeffs = {}
+
+        # read in the calibration data
+        data = pd.read_csv(csv_url, usecols=[0, 1, 2])
+        for idx, row in data.iterrows():
+            if row[1] == 'CC_ea434':
+                coeffs['ea434'] = float(row[2])
+            if row[1] == 'CC_ea578':
+                coeffs['ea578'] = float(row[2])
+            if row[1] == 'CC_eb434':
+                coeffs['eb434'] = float(row[2])
+            if row[1] == 'CC_eb578':
+                coeffs['eb578'] = float(row[2])
+            if row[1] == 'CC_ind_off':
+                coeffs['ind_off'] = float(row[2])
+            if row[1] == 'CC_ind_slp':
+                coeffs['ind_slp'] = float(row[2])
+            if row[1] == 'CC_psal':
+                coeffs['psal'] = float(row[2])
+            if row[1] == 'CC_sami_bits':
+                coeffs['sami_bits'] = float(row[2])
+
+        # serial number
+        coeffs['serial_number'] = data.serial[0]
+
+        # save the resulting dictionary
+        self.coeffs = coeffs
+
+
+def proc_phsen(infile, platform, deployment, lat, lon, depth, **kwargs):
+    """
+    Processing function for the Sunburst Sensors SAMI-pH sensor. Loads the JSON
+    formatted parsed data and applies appropriate calibration coefficients to
+    convert the raw parsed data into engineering units. If no calibration
+    coefficients are available, filled variables are returned and the dataset
+    processing level attribute is set to "parsed". If the calibration,
+    coefficients are available then the dataset processing level attribute is
+    set to "processed".
+
+    :param infile: JSON formatted parsed data file
+    :param platform: Name of the mooring the instrument is mounted on.
+    :param deployment: Name of the deployment for the input data file.
+    :param lat: Latitude of the mooring deployment.
+    :param lon: Longitude of the mooring deployment.
+    :param depth: Depth of the platform the instrument is mounted on.
+
+    :kwarg serial_number: The serial number of the SAMI-pH
+    :kwarg ctd_name: Name of the co-located CTD to use for salinity data
+
+    :return phsen: An xarray dataset with the processed PHSEN data
+    """
+    # process the variable length keyword arguments
+    ctd_name = kwargs.get('ctd_name')
+    serial_number = kwargs.get('serial_number')
 
     # load the json data file as a panda data frame for further processing
     data = json2df(infile)
     if data.empty:
         # json data file was empty, exiting
         return None
+
+    # initialize the calibrations data class
+    coeff_file = os.path.join(os.path.dirname(infile), 'phsen.calibration_coeffs.json')
+    cal = Calibrations(coeff_file)
+    proc_flag = False
+
+    # check for the source of calibration coefficients and load accordingly
+    if os.path.isfile(coeff_file):
+        # we always want to use this file if it exists
+        cal.load_coeffs()
+        proc_flag = True
+    else:
+        # load from the CI hosted CSV files
+        csv_url = find_calibration('PHSEN', serial_number, (data.time.values.astype('int64') * 10 ** -9)[0])
+        if csv_url:
+            cal.read_csv(csv_url)
+            cal.save_coeffs()
+            proc_flag = True
+        else:
+            warnings.warn('Required calibrations coefficients could not be found.')
 
     # set the deployment id as a variable
     data['deploy_id'] = deployment
@@ -50,9 +132,14 @@ def main(argv=None):
                          'thermistor_end': 'raw_thermistor_end',
                          'voltage_battery': 'raw_battery_voltage'},
                 inplace=True)
-    data['thermistor_temperature_start'] = ph_thermistor(data['raw_thermistor_start'])
-    data['thermistor_temperature_end'] = ph_thermistor(data['raw_thermistor_end'])
-    data['battery_voltage'] = ph_battery(data['raw_battery_voltage'])
+    if proc_flag:
+        data['thermistor_temperature_start'] = ph_thermistor(data['raw_thermistor_start'], cal.coeffs['sami_bits'])
+        data['thermistor_temperature_end'] = ph_thermistor(data['raw_thermistor_end'], cal.coeffs['sami_bits'])
+        data['battery_voltage'] = ph_battery(data['raw_battery_voltage'], cal.coeffs['sami_bits'])
+    else:
+        data['thermistor_temperature_start'] = data['raw_thermistor_start'] * np.nan
+        data['thermistor_temperature_end'] = data['raw_thermistor_end'] * np.nan
+        data['battery_voltage'] = data['raw_battery_voltage'] * np.nan
 
     # reset the data type and units for the record time to make sure the value is correctly represented and can be
     # calculated against. the PHSEN uses the OSX date format of seconds since 1904-01-01. here we convert to seconds
@@ -107,7 +194,12 @@ def main(argv=None):
 
     # add the salinity to the data set and calculate the pH
     data['salinity'] = salinity
-    data['pH'] = ph_calc_phwater(refnc, light, therm, salinity)
+    if proc_flag:
+        data['pH'] = ph_calc_phwater(refnc, light, therm, salinity, cal.coeffs['ea434'], cal.coeffs['eb434'],
+                                     cal.coeffs['ea578'], cal.coeffs['eb578'], cal.coeffs['ind_slp'],
+                                     cal.coeffs['ind_off'])
+    else:
+        data['pH'] = salinity * np.nan
 
     # now we need to reset the light and reference arrays to named variables that will be more meaningful and useful in
     # the final data files
@@ -140,12 +232,36 @@ def main(argv=None):
 
     # merge the data sets together and create the final data set with full attributes
     data_dataset = xr.Dataset.from_dataframe(data)
-    pH = xr.merge([data_dataset, ds])
-    attrs = dict_update(GLOBAL, PHSEN)      # merge global pH attribute dictionaries into a single dictionary
-    pH = update_dataset(pH, platform, deployment, lat, lon, [depth, depth, depth], attrs)
+    phsen = xr.merge([data_dataset, ds])
+    attrs = dict_update(GLOBAL, PHSEN)  # merge global and PHSEN attribute dictionaries into a single dictionary
+    if proc_flag:
+        phsen.attrs['processing_level'] = 'processed'
+    else:
+        phsen.attrs['processing_level'] = 'parsed'
+    phsen = update_dataset(phsen, platform, deployment, lat, lon, [depth, depth, depth], attrs)
+    return phsen
 
-    # save the file
-    pH.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+
+def main(argv=None):
+    # load the input arguments
+    args = inputs(argv)
+    infile = os.path.abspath(args.infile)
+    outfile = os.path.abspath(args.outfile)
+    platform = args.platform
+    deployment = args.deployment
+    lat = args.latitude
+    lon = args.longitude
+    depth = args.depth
+    serial_number = args.serial
+    if args.devfile:
+        ctd_name = args.devfile  # name of co-located CTD
+    else:
+        ctd_name = None
+
+    # process the PHSEN data and save the results to disk
+    phsen = proc_phsen(infile, platform, deployment, lat, lon, depth, ctd_name=ctd_name, serial_number=serial_number)
+    if phsen:
+        phsen.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
 
 
 if __name__ == '__main__':
