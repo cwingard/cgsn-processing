@@ -40,7 +40,7 @@ def main(argv=None):
     ct = CT_from_t(sa, df['temperature'], df['pressure'])       # conservative temperature
     df['in_situ_density'] = rho(sa, ct, df['pressure'])         # in-situ density
 
-    # setup some further parameters for use with the OMTs class
+    # set up some further parameters for use with the OMTs class
     df['deploy_id'] = deployment
     df['z'] = depth
     profile_id = re.sub('\D+', '', fname)

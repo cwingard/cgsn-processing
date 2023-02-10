@@ -13,7 +13,7 @@ import pandas as pd
 import xarray as xr
 
 from cgsn_processing.process.common import ENCODING, inputs, dict_update, epoch_time, join_df, \
-    json2obj, json_obj2df, update_datase
+    json2obj, json_obj2df, update_dataset
 from cgsn_processing.process.configs.attr_ctdmo import CTDMO
 from cgsn_processing.process.configs.attr_common import SHARED
 from gsw import SP_from_C, SA_from_SP, CT_from_t, rho

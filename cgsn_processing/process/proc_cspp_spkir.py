@@ -67,7 +67,7 @@ def main(argv=None):
     df['analog_rail_voltage'].apply(lambda x: x * 0.03)
     df['internal_temperature'].apply(lambda x: -50 + x * 0.5)
 
-    # setup some further parameters for use with the OMTs class
+    # set up some further parameters for use with the OMTs class
     df['deploy_id'] = deployment
     df['z'] = depth
     profile_id = re.sub('\D+', '', fname)

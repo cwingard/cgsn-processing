@@ -73,7 +73,7 @@ def main(argv=None):
         # json data file was empty, exiting
         return None
 
-    # create the time coordinate array and setup a data set with the global values used above
+    # create the time coordinate array and set up a data set with the global values used above
     time = np.array(data['time'])
     df = pd.DataFrame()
     df['time'] = pd.to_datetime(time, unit='s')

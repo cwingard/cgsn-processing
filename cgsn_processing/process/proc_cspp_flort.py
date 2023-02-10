@@ -82,7 +82,7 @@ def main(argv=None):
         df['salinity'] = np.nan
         df['bback'] = np.nan
 
-    # setup some further parameters for use with the OMTs class
+    # set up some further parameters for use with the OMTs class
     df['deploy_id'] = deployment
     df['z'] = depth
     profile_id = re.sub('\D+', '', fname)

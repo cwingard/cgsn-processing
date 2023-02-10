@@ -56,7 +56,7 @@ def proc_cspp_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
         # json data file was empty, exiting
         return None
 
-    # setup the instrument calibration data object
+    # set up the instrument calibration data object
     coeff_file = os.path.join(os.path.dirname(infile), 'dosta.cal_coeffs.json')
     dev = Calibrations(coeff_file)  # initialize calibration class
     proc_flag = False
