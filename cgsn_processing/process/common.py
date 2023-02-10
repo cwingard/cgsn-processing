@@ -193,7 +193,7 @@ def json2df(infile):
             print("JSON data file {0} was empty, returning empty data frame".format(infile))
             return df
 
-        # setup time and the index
+        # set up time and the index
         df['time'] = pd.to_datetime(df.time, unit='s')
         df.index = df['time']
 

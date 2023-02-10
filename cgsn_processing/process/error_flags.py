@@ -10,7 +10,7 @@ import numpy as np
 from enum import IntEnum
 
 
-# Setup the error flag enumeration class for the CPM Supervisor
+# Set up the error flag enumeration class for the CPM Supervisor
 class SupervErrorFlagCPM(IntEnum):
     efc_no_errors = 0x00000000
     efc_sbd_hardware_failure = 0x00000001
@@ -47,6 +47,7 @@ class SupervErrorFlagCPM(IntEnum):
     efc_mpic_brown_out_reset = 0x80000000
 
 
+# Set up the error flag enumeration class for the DCL Supervisor
 class SupervErrorFlagDCL(IntEnum):
     efd_no_errors = 0x00000000
     efd_vmain_out_of_normal_range = 0x00000001
@@ -75,7 +76,7 @@ class SupervErrorFlagDCL(IntEnum):
     efd_mpic_brown_out_reset = 0x00800000
 
 
-# Setup the various error flag enumeration classes for the PSC
+# Set up the various error flag enumeration classes for the PSC
 class PwrsysOverrideFlag(IntEnum):
     efo_no_override = 0x0000
     efo_wt1_connect = 0x0001
@@ -239,8 +240,9 @@ class MPEAErrorFlag2(IntEnum):
 
 def derive_multi_flags(flag_class, flag_name, df):
     """
-    Uses the enumeration flag classes from above to quickly set values for the flag values
-    in the DataFrame. Returns the DataFrame with the newly created variables. 
+    Uses the enumeration flag classes from above to quickly set values for the
+    flag values in the DataFrame. Returns the DataFrame with the newly created
+    variables.
     """
     for name, member in flag_class.__members__.items():
         flag = []
@@ -266,14 +268,15 @@ def derive_multi_flags(flag_class, flag_name, df):
 
 def derive_single_flags(flag_class, value, df):
     """
-    Uses the enumeration flag class from above to quickly set values for the flag values in the DataFrame. Returns 
-    the DataFrame with the newly created variables. 
+    Uses the enumeration flag class from above to quickly set values for the
+    flag values in the DataFrame. Returns the DataFrame with the newly created
+    variables.
     """
     for name, member in flag_class.__members__.items():
         flag = []
         for row in df.itertuples():
             # grab the flag value
-            x = row._asdict()[flag_name]
+            x = row._asdict()[value]
             if not isinstance(x, (np.int, np.int32, np.int64)):
                 # convert it to an integer if still a string
                 x = int(x, 16)

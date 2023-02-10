@@ -87,7 +87,7 @@ def main(argv=None):
         # there was no CTD data, and thus no pressure record or temperature and salinity available, ending early
         return None
 
-    # setup some further parameters for use with the OMTs class
+    # set up some further parameters for use with the OMTs class
     df['deploy_id'] = deployment
     df['z'] = depth
     profile_id = re.sub('\D+', '', fname)

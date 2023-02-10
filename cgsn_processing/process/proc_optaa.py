@@ -98,14 +98,14 @@ class Calibrations(Coefficients):
     def read_devurls(self, hdr_url, tca_url, tcc_url):
         """
         Reads the values from an ac-s device file already parsed and stored on
-        Github as a set of 3 CSV files. Note, the formatting of those files 
+        GitHub as a set of 3 CSV files. Note, the formatting of those files 
         puts some constraints on this process. If someone has a cleaner method,
         I'm all in favor...
         """
         # create the device file dictionary and assign values
         coeffs = {}
         
-        # read in the mostly header portion of the calibration data
+        # read in the header portion of the calibration data
         hdr = pd.read_csv(hdr_url, usecols=[0, 1, 2])
         for idx, row in hdr.iterrows():
             # beam attenuation and absorption channel clear water offsets
@@ -173,7 +173,7 @@ def apply_dev(optaa, coeffs):
         slope = coeffs['pressure_coeff'][1]
         optaa['pressure'] = opt_pressure(optaa['pressure_raw'], offset, slope)
 
-    # setup inputs and create a mask index to select real wavelengths (not the pads)
+    # set up inputs and create a mask index to select real wavelengths (not the pads)
     a_ref = optaa['a_reference_raw']
     a_sig = optaa['a_signal_raw']
     c_ref = optaa['c_reference_raw']
@@ -221,7 +221,7 @@ def apply_tscorr(optaa, coeffs, temp=None, salinity=None):
     scalar, or a 1D array or a row or column vector with the same number of time
     points as 'a' and 'c'.
     """
-    # setup the temperature and salinity arrays
+    # set up the temperature and salinity arrays
     if temp is None:
         temp = optaa['external_temp'].values
     else: 
@@ -244,7 +244,7 @@ def apply_tscorr(optaa, coeffs, temp=None, salinity=None):
     if salinity.size != optaa['time'].size:
         raise Exception("Mismatch: salinity array != number of OPTAA measurements")
 
-    # setup and size the inputs
+    # set up and size the inputs
     apd = optaa['apd']
     cpd = optaa['cpd']
     npackets = apd.shape[0]
@@ -327,7 +327,7 @@ def calculate_ratios(optaa, coeffs):
     Calculate pigment ratios to use in analyzing community composition and/or
     bloom health. As these ratios are subject to the effects of biofouling it
     is expected that these values will start to become chaotic with noise
-    dominating the signal. Thus these ratios can also serve as biofouling
+    dominating the signal. Thus, these ratios can also serve as biofouling
     indicators.
 
     :param optaa: xarray dataset with the scatter corrected absorbance data.
@@ -367,7 +367,7 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
     :param depth: Depth of the platform the instrument is mounted on.
 
     :kwargs ctd_name: Name of directory with data from a co-located CTD. This
-           data will be used to apply temeprature and salinity corrections
+           data will be used to apply temperature and salinity corrections
            to the data. Otherwise, defaults are used with salinity set to
            33 psu and temperature from the OPTAAs external temperature
            sensor.
@@ -412,13 +412,13 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
     if dev.coeffs['num_wavelengths'] != data['num_wavelengths'][0]:
         raise Exception('Number of wavelengths mismatch between ac-s data and the device file.')
 
-    # create the time coordinate array and setup a base data frame
+    # create the time coordinate array and set up a base data frame
     optaa_time = data['time']
     df = pd.DataFrame()
     df['time'] = pd.to_datetime(optaa_time, unit='s')
     df.set_index('time', drop=True, inplace=True)
 
-    # setup and load the 1D parsed data
+    # set up and load the 1D parsed data
     empty_data = np.atleast_1d(data['serial_number']).astype(int) * np.nan
     # raw data parsed from the data file
     df['serial_number'] = np.atleast_1d(data['serial_number']).astype(int)
@@ -490,13 +490,15 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
         'a_wavelengths': (['time', 'wavelength_number'], np.tile(a_wavelengths, (len(optaa_time), 1))),
         'a_signal_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['a_signal_raw']).astype(int),
                          np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
-        'a_reference_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['a_reference_raw']).astype(int),
-                            np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
+        'a_reference_raw': (['time', 'wavelength_number'], 
+                            np.concatenate([np.array(data['a_reference_raw']).astype(int), 
+                                            np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
         'c_wavelengths': (['time', 'wavelength_number'], np.tile(c_wavelengths, (len(optaa_time), 1))),
         'c_signal_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['c_signal_raw']).astype(int),
                          np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
-        'c_reference_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['c_reference_raw']).astype(int),
-                            np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
+        'c_reference_raw': (['time', 'wavelength_number'], 
+                            np.concatenate([np.array(data['c_reference_raw']).astype(int), 
+                                            np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
         # processed variables to be created if a device file is available
         'apd': (['time', 'wavelength_number'], empty_data),
         'apd_ts': (['time', 'wavelength_number'], empty_data),
@@ -516,11 +518,11 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
     # apply a median average to the burst (if desired) and add the deployment ID
     if burst:
         # suppress warnings for now. In the first case, changes suggested cause a ValueError and the second
-        # warning is expected given we are averaging before calculating some of the values
+        # warning is expected given we are averaging before calculating some values
         warnings.filterwarnings(action='ignore', category=FutureWarning)
         warnings.filterwarnings(action='ignore', message='All-NaN slice encountered')
 
-        # resample to a 15 minute interval and shift the clock to make sure we capture the time "correctly"
+        # resample to a 15-minute interval and shift the clock to make sure we capture the time "correctly"
         optaa = optaa.resample(time='15Min', base=55, loffset='5Min').median(dim='time', keep_attrs=True)
         optaa['deploy_id'] = xr.Variable('time', np.atleast_1d(deployment).astype(str))
     else:

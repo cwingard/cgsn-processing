@@ -39,7 +39,7 @@ class Calibrations(Coefficients):
     def read_csv(self, csv_url):
         """
         Reads the values from an ECO Triplet (aka FLORT) device file already
-        parsed and stored on Github as a CSV files. Note, the formatting of
+        parsed and stored on GitHub as a CSV files. Note, the formatting of
         those files puts some constraints on this process. If someone has a
         cleaner method, I'm all in favor...
         """
@@ -97,10 +97,10 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
         calibration file from the GitHub hosted Asset Management database
     :kwargs ctd_name: Name of directory with data from a co-located CTD. This
         data will be used to calculate the optical backscatter, which
-        requires the temperature and salinity data from the CTD. Otherwise
+        requires the temperature and salinity data from the CTD. Otherwise,
         the optical backscatter is filled with NaN's
-    :kwargs burst: Boolean flag to indicate whether or not to apply burst
-        averaging to the data. Default is to not apply burst averaging
+    :kwargs burst: Boolean flag to indicate whether to apply burst averaging
+        to the data. Default is to not apply burst averaging
 
     :return flort: An xarray dataset with the processed FLORT data
     """
@@ -115,7 +115,7 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
         # json data file was empty, exiting
         return None
 
-    # setup the instrument calibration data object
+    # set up the instrument calibration data object
     coeff_file = os.path.join(os.path.dirname(infile), 'flort.cal_coeffs.json')
     dev = Calibrations(coeff_file)  # initialize calibration class
     proc_flag = False
@@ -135,7 +135,7 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
                 dev.save_coeffs()
                 proc_flag = True
 
-    # clean up dataframe and and create an empty data variable
+    # clean up dataframe and create an empty data variable
     flort.drop(columns=['dcl_date_time_string', 'flort_date_time_string'], inplace=True)
     empty_data = np.atleast_1d(flort['time']).astype(np.int32) * np.nan
 
@@ -215,7 +215,7 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # apply burst averaging if selected
     if burst:
-        # resample to a 15 minute interval and shift the clock to center the averaging window
+        # resample to a 15-minute interval and shift the clock to center the averaging window
         flort = flort.resample(time='900s', base=3150, loffset='450s').median(dim='time', keep_attrs=True)
 
         # resampling will fill in missing time steps with NaNs. Use the raw_internal_temp variable
@@ -227,7 +227,7 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
                       'raw_signal_chl', 'measurement_wavelength_cdom', 'raw_signal_cdom', 'raw_internal_temp']
         for k in flort.variables:
             if k in int_arrays:
-                flort[k] = flort[k].astype(np.intc)  # explicitly setting as a 32 bit integer
+                flort[k] = flort[k].astype(np.intc)  # explicitly setting as a 32-bit integer
 
     # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
     flort['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(flort.time)).astype(str))
@@ -255,7 +255,6 @@ def main(argv=None):
     ctd_name = args.devfile  # name of co-located CTD
     burst = args.burst
 
-    # process the CTDBP data and save the results to disk
     flort = proc_flort(infile, platform, deployment, lat, lon, depth,
                        serial_number=serial_number, ctd_name=ctd_name, burst=burst)
     if flort:
