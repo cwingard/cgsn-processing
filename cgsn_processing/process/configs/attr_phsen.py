@@ -110,7 +110,7 @@ PHSEN = {
     },
     'record_time': {
         'long_name': 'Instrument Timestamp',
-        'comment': 'Derived from the SAMI2-pH internal clock.',
+        'comment': 'Derived from the SAMI-pH internal clock.',
         'units': 'seconds since 1970-01-01',
         'calendar': 'gregorian'
     },

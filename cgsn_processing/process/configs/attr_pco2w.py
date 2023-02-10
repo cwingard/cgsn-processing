@@ -49,7 +49,7 @@ PCO2W = {
     },
     'record_time': {
         'long_name': 'Instrument Timestamp',
-        'comment': 'Derived from the SAMI2-pCO2 internal clock.',
+        'comment': 'Derived from the SAMI-pCO2 internal clock.',
         'units': 'seconds since 1970-01-01 00:00:00 0:00',
         'calendar': 'gregorian'
     },
