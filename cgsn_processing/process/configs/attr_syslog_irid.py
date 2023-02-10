@@ -11,31 +11,6 @@ IRID = {
     'global': {
         'title': 'Iridium RUDICS Telemetry Statistics',
         'summary': 'Summary statistics on telemetry success, duration and signal strengths',
-        'project': 'Ocean Observatories Initiative',
-        'institution': 'Coastal and Global Scale Nodes, (CGSN)',
-        'acknowledgement': 'National Science Foundation',
-        'references': 'http://oceanobservatories.org',
-        'creator_name': 'Christopher Wingard',
-        'creator_email': 'cwingard@coas.oregonstate.edu',
-        'creator_url': 'http://oceanobservatories.org',
-    },
-    'deploy_id': {
-        'long_name': 'Deployment ID',
-        'standard_name': 'deployment_id',
-        'units': '1',
-    },
-    'date_time_string': {
-        'long_name': 'Date and Time Stamp',
-        'standard_name': 'date_time_string',
-        'units': '1',
-    },
-    'z': {
-        'long_name': 'Sensor Depth',
-        'standard_name': 'depth',
-        'units': 'm',
-        'comment': 'Sensor depth below sea surface',
-        'positive': 'down',
-        'axis': 'Z'
     },
     'files_sent': {},
     'files_received': {},

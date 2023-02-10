@@ -11,44 +11,25 @@ FB250 = {
     'global': {
         'title': 'Sailor 250 FleetBroadband Telemetry Statistics',
         'summary': 'Summary statistics on telemetry success, duration and signal strengths',
-        'project': 'Ocean Observatories Initiative',
-        'institution': 'Coastal and Global Scale Nodes, (CGSN)',
-        'acknowledgement': 'National Science Foundation',
-        'references': 'http://oceanobservatories.org',
-        'creator_name': 'Christopher Wingard',
-        'creator_email': 'cwingard@coas.oregonstate.edu',
-        'creator_url': 'http://oceanobservatories.org',
-    },
-    'deploy_id': {
-        'long_name': 'Deployment ID',
-        'standard_name': 'deployment_id',
-        'units': '1',
-    },
-    'date_time_string': {
-        'long_name': 'Date and Time Stamp',
-        'standard_name': 'date_time_string',
-        'units': '1',
-    },
-    'z': {
-        'long_name': 'Sensor Depth',
-        'standard_name': 'depth',
-        'units': 'm',
-        'comment': 'Sensor depth below sea surface',
-        'positive': 'down',
-        'axis': 'Z'
     },
     'link_state': {'units': '1'},
     'rssi': {'units': '1'},
     'temperature': {},
-    'latitude': {
-        'long_name': 'latitude',
+    'precise_lat': {
+        'long_name': 'Precise Latitude',
         'standard_name': 'latitude',
-        'units': 'degrees_north'
+        'units': 'degrees_north',
+        'comment': ('Mooring location measured by a GPS sensor located atop the mooring masthead inside the Sailor '
+                    '250 antenna dome. Provides a precise measurement of the mooring location, compared to the '
+                    'nominal location determined after mooring deployment from an anchor survey.')
     },
-    'longitude': {
-        'long_name': 'longitude',
+    'precise_lon': {
+        'long_name': 'Precise Longitude',
         'standard_name': 'longitude',
-        'units': 'degrees_east'
+        'units': 'degrees_east',
+        'comment': ('Mooring location measured by a GPS sensor located atop the mooring masthead inside the Sailor '
+                    '250 antenna dome. Provides a precise measurement of the mooring location, compared to the '
+                    'nominal location determined after mooring deployment from an anchor survey.')
     },
     'fb250_device_id': {'units': '1'},
     'link_attempts': {'units': 'count'},
