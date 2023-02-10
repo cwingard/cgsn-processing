@@ -23,24 +23,42 @@ from pyseas.data.adcp_functions import magnetic_correction, adcp_bin_depths
 from gsw import z_from_p
 
 
-def main(argv=None):
-    # load the input arguments
-    args = inputs(argv)
-    infile = os.path.abspath(args.infile)
-    outfile = os.path.abspath(args.outfile)
-    platform = args.platform
-    deployment = args.deployment
-    lat = args.latitude
-    lon = args.longitude
-    depth = args.depth
-    adcp_type = args.switch
+def proc_adcp(infile, platform, deployment, lat, lon, depth, **kwargs):
+    """
+    Main ADCP processing function. Loads the JSON formatted parsed data and
+    applies appropriate calibration coefficients to convert the raw, parsed
+    data into engineering units. Deployment details are used to determine the
+    magnetic declination prior to converting the current vectors from magnetic
+    north to true north.
 
-    # optional/default arguments for calculating the bin_depth
-    bin_size = args.bin_size
-    blanking_distance = args.blanking_distance
-    ctd_name = args.devfile  # name of co-located CTD
+    :param infile: JSON formatted parsed data file
+    :param platform: Name of the mooring the instrument is mounted on.
+    :param deployment: Name of the deployment for the input data file.
+    :param lat: Latitude of the mooring deployment.
+    :param lon: Longitude of the mooring deployment.
+    :param depth: Depth of the platform the instrument is mounted on.
+
+    :kwargs adcp_type: Type of data format recorded in the parsed record. Valid
+        options are PD0 or PD8.
+    :kwargs ctd_name: Name of directory with data from a co-located CTD. This
+        data will be used to create a pressure record for the ADCP if it does
+        not have a built-in pressure sensor.
+    :kwargs bin_size: Specify the size of the depth bins (cm). Needed only for
+        adcp data recorded in PD8 format in order to calculate bin depths.
+    :kwargs blanking_distance: Specify the blanking distance (cm). Needed only
+        for adcp data recorded in PD8 format in order to calculate bin depths.
+
+    :return adcp: An xarray dataset with the processed ADCP data
+    """
+    # process the variable length keyword arguments
+    adcp_type = kwargs.get('adcp_type')
+    ctd_name = kwargs.get('ctd_name')
+    bin_size = kwargs.get('bin_size')
+    blanking_distance = kwargs.get('blanking_distance')
+
+    # create a default depth value in meters based on the deployment depth
     depth_m = depth
-    depth_flag = False  # singleton depth value
+    depth_flag = False  # assume no CTD-based depth record is available
 
     # load the json data file as a json formatted object for further processing
     data = json2obj(infile)
@@ -48,7 +66,7 @@ def main(argv=None):
         # json data file was empty, exiting
         return None
 
-    # create the time coordinate array and setup a data frame with the global values used above
+    # create the time coordinate array and set up a data frame with the global values used above
     time = np.array(data['time'])
     df = pd.DataFrame()
     df['time'] = pd.to_datetime(time, unit='s')
@@ -113,13 +131,15 @@ def main(argv=None):
         vbl = vbl.drop(['ensemble_number_increment'])   # drop the sub-components
 
         # calculate the bin_depth so we can plot our data in geo-spatial coordinates, pulling required data from the
-        # data file (pressure is a special case, need to find the optimal source)
+        # data file
         blanking_distance = fx.bin_1_distance.values[0]
         bin_size = fx.depth_cell_length.values[0]
         orientation = fx.sysconfig_vertical_orientation.values[0]
 
-        # determine best source for the pressure measurement: best = ADCP pressure sensor, good = co-located CTD, OK =
-        # deployment depth (from inputs to the function).
+        # determine best source for the pressure measurement:
+        #   best = ADCP pressure sensor
+        #   good = co-located CTD
+        #   OK = deployment depth (from inputs to the function).
         ptest = vbl.pressure == 0
         if not ptest.all():  # the ADCP has a pressure sensor, using that data instead of values set above
             # use the ADCP pressure sensor, convert the daPa values to dbar and then meters
@@ -281,9 +301,32 @@ def main(argv=None):
     attrs = dict_update(attrs, DERIVED)     # add the derived attributes
     attrs = dict_update(attrs, SHARED)      # add the shared attributes
     adcp = update_dataset(adcp, platform, deployment, lat, lon, [depth, vmin, vmax], attrs)
+    adcp.attrs['processing_level'] = 'processed'
 
-    # save the file
-    adcp.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
+    # return the final processed dataset
+    return adcp
+
+
+def main(argv=None):
+    # load the input arguments
+    args = inputs(argv)
+    infile = os.path.abspath(args.infile)
+    outfile = os.path.abspath(args.outfile)
+    platform = args.platform
+    deployment = args.deployment
+    lat = args.latitude
+    lon = args.longitude
+    depth = args.depth
+    adcp_type = args.switch
+    ctd_name = args.args.devfile  # name of co-located CTD
+    bin_size = args.bin_size
+    blanking_distance = args.blanking_distance
+
+    # process the ADCP data and save the results to disk
+    adcp = proc_adcp(infile, platform, deployment, lat, lon, depth, adcp_type=adcp_type, ctd_name=ctd_name,
+                     bin_size=bin_size, blanking_distance=blanking_distance)
+    if adcp:
+        adcp.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 
 if __name__ == '__main__':
