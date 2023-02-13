@@ -17,7 +17,8 @@ from pytz import timezone
 
 from cgsn_processing.process.common import Coefficients, NumpyEncoder, ENCODING, inputs, dict_update, json2df, \
     update_dataset
-from cgsn_processing.process.configs.attr_pco2w import GLOBAL, PCO2W
+from cgsn_processing.process.configs.attr_pco2w import PCO2W
+from cgsn_processing.process.configs.attr_common import SHARED
 from cgsn_processing.process.finding_calibrations import find_calibration
 
 from pyseas.data.co2_functions import co2_blank, co2_thermistor, co2_pco2wat
@@ -231,12 +232,12 @@ def proc_pco2w(infile, platform, deployment, lat, lon, depth, **kwargs):
     pco2w = data.to_xarray()
 
     # update the metadata and set up the data for export to NetCDF
-    attrs = dict_update(GLOBAL, PCO2W)  # merge global and PCO2W attribute dictionaries into a single dictionary
+    attrs = dict_update(PCO2W, SHARED)  # merge shared and PCO2W attribute dictionaries into a single dictionary
+    pco2w = update_dataset(pco2w, platform, deployment, lat, lon, [depth, depth, depth], attrs)
     if proc_flag:
         pco2w.attrs['processing_level'] = 'processed'
     else:
         pco2w.attrs['processing_level'] = 'parsed'
-    pco2w = update_dataset(pco2w, platform, deployment, lat, lon, [depth, depth, depth], attrs)
 
     return pco2w
 
