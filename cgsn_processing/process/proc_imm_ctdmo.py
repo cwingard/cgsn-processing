@@ -7,6 +7,9 @@
 @brief Creates NetCDF datasets for the CTDMO data from inductive modem hosted instruments on Global Surface Moorings.
 """
 import os
+import warnings
+
+import pandas as pd
 import xarray as xr
 
 from cgsn_processing.process.common import ENCODING, inputs, dict_update, epoch_time, join_df, \
@@ -49,6 +52,13 @@ def main(argv=None):
     # create a data frame with the raw CTD data
     ctd = json_obj2df(data, 'ctd')
     del ctd['ctd_time']  # ctd_time is duplicated by the time variable, remove as variable and use time
+
+    # check the CTD time against now
+    m = ctd.index.to_pydatetime() < pd.Timestamp.now()
+    ctd = ctd[m]
+    if ctd.empty:
+        warnings.warn('The CTD clock is incorrect, reading too far into the future.')
+        return None
 
     # add the deployment id, used to subset data sets
     ctd['deploy_id'] = deployment
