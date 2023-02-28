@@ -35,7 +35,7 @@ class Blanks(object):
         self.blnkfile = blnkfile
         self.k434 = k434
         self.k620 = k620
-    
+
     def load_blanks(self):
         # load the blanks
         with open(self.blnkfile, 'r') as f:
@@ -44,7 +44,7 @@ class Blanks(object):
         # assign the blanks
         self.k434 = blanks['k434']
         self.k620 = blanks['k620']
-        
+
     def save_blanks(self):
         # create the blanks dictionary
         blanks = {
@@ -92,7 +92,7 @@ class Calibrations(Coefficients):
             if row[1] == 'CC_sami_bits':
                 coeffs['sami_bits'] = float(row[2])
             if row[1] == 'CC_cal_range':
-                coeffs['cal_range'] = float(row[2])
+                coeffs['cal_range'] = np.array(json.loads(row[2]))
 
         # serial number, stripping off all but the numbers
         coeffs['serial_number'] = data.serial[0]
@@ -226,7 +226,7 @@ def proc_pco2w(infile, platform, deployment, lat, lon, depth, **kwargs):
             k620.append(blanks.k620)
 
     # add the resulting data to the data frame and convert to an xarray data set
-    data['pco2'] = pco2
+    data['pCO2'] = pco2
     data['k434'] = k434
     data['k620'] = k620
     pco2w = data.to_xarray()

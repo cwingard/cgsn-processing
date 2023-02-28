@@ -8,8 +8,9 @@
 
 # Parse the command line inputs
 if [ $# -ne 8 ]; then
-    echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the PCO2W directory"
-    echo "name, the deployment depth, the unit serial number, and the name of the file to process."
+    echo "$0: required inputs are the platform and deployment names, the latitude and"
+    echo "longitude, the PCO2W directory name, the deployment depth, the unit serial"
+    echo "number, and the name of the file to process."
     echo ""
     echo "     example: $0 ce07shsm D00004 46.98589 -124.56490 mfn/pco2w 87 C0082 20161012.pco2w.json"
     exit 1
