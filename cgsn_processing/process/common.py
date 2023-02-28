@@ -44,9 +44,10 @@ FILL_NAN = np.nan
 
 class NumpyEncoder(json.JSONEncoder):
     """
-    Special json encoder for numpy types, where we have nested numpy arrays in a dictionary.
-    Allows saving the data to a json file. Used by the Coefficients class to save instrument
-    calibration coefficients to disk
+    Special json encoder for numpy types, where we have nested numpy arrays in
+    a dictionary. Allows saving the data to a json file. Used by the
+    Coefficients and Blanks class to save instrument calibration coefficients
+    to disk
 
     From our trusty friends at StackOverflow: https://stackoverflow.com/a/49677241
     """

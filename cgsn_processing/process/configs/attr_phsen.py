@@ -105,12 +105,12 @@ PHSEN = {
     },
     'record_type': {
         'long_name': 'Record Type',
-        'comment': 'Data and control record type. For the SAMI2-pH sensor, the record type is 10',
+        'comment': 'Data and control record type. For the SAMI-pH sensor, the record type is 10',
         # 'units': ''    # deliberately left blank, no units for this value
     },
     'record_time': {
         'long_name': 'Instrument Timestamp',
-        'comment': 'Derived from the SAMI2-pH internal clock.',
+        'comment': 'Derived from the SAMI-pH internal clock.',
         'units': 'seconds since 1970-01-01',
         'calendar': 'gregorian'
     },
