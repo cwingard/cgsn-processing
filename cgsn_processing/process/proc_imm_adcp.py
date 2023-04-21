@@ -16,8 +16,9 @@ from cgsn_processing.process.configs.attr_adcp import ADCP, PD12, DERIVED
 from cgsn_processing.process.finding_calibrations import find_calibration
 
 from gsw.conversions import z_from_p
-from pyseas.data.generic_functions import magnetic_declination
+from pyseas.data.generic_functions import igrf_declination
 from pyseas.data.adcp_functions import magnetic_correction, adcp_bin_depths
+
 
 class Calibrations(Coefficients):
     def __init__(self, coeff_file, csv_url=None):
@@ -76,6 +77,10 @@ def main(argv=None):
     time = np.array(data['time'])
     df = pd.DataFrame()
     df['time'] = pd.to_datetime(time, unit='s')
+    if df.empty:
+        print("JSON data file {0} was empty, returning empty data frame".format(infile))
+        return None
+
     df.set_index('time', drop=True, inplace=True)
     df['deploy_id'] = deployment
     df['serial_number'] = serial
@@ -102,7 +107,7 @@ def main(argv=None):
         del data[k]
 
     # determine the magnetic declination for later use in correcting the eastward and northward velocity components
-    theta = magnetic_declination(lat, lon, time)
+    theta = igrf_declination(lat, lon, time, depth)
 
     # convert the ADCP pressure record to depth in meters (positive down from surface) from daPa
     depth_m = -1 * z_from_p(np.array(data['pressure']) / 1000., lat)

@@ -63,6 +63,11 @@ def proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # create a data frame with the CTD status information
     status = json_obj2df(data, 'status')
+    if status.empty:
+        # json status data was empty, exiting
+        print("The status portion of the JSON data file {0} was empty, exit processing".format(infile))
+        return None
+
     status['status_time'] = epoch_time(status['date_time_string'].values[0])
     status.drop(columns='date_time_string', inplace=True)
     status.rename(columns={'main_battery': 'main_battery_voltage',
@@ -73,6 +78,11 @@ def proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # create a data frame with the CTD, DOSTA and FLORD data
     ctd = json_obj2df(data, 'ctd')
+    if ctd.empty:
+        # json ctd data was empty, exiting
+        print("The CTD portion of the JSON data file {0} was empty, exit processing".format(infile))
+        return None
+
     nrows, _ = ctd.shape
     sensor_time = []
     for i in range(nrows):
