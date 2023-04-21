@@ -31,7 +31,7 @@ if [ ! -d `dirname $OUT` ]; then
 fi
 
 # set the default name of the calibration coefficients file
-COEFFS="adcp.configuration.json"
+COEFFS="$DATA/parsed/$PLATFORM/$DEPLOY/$ADCP/adcp.configuration.json"
 
 # Process the file
 if [ -e $IN ]; then
