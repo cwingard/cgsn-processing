@@ -16,7 +16,7 @@ from cgsn_processing.process.configs.attr_adcp import ADCP, PD12, DERIVED
 from cgsn_processing.process.finding_calibrations import find_calibration
 
 from gsw.conversions import z_from_p
-from pyseas.data.generic_functions import igrf_declination
+from pyseas.data.generic_functions import magnetic_declination
 from pyseas.data.adcp_functions import magnetic_correction, adcp_bin_depths
 
 
@@ -107,7 +107,7 @@ def main(argv=None):
         del data[k]
 
     # determine the magnetic declination for later use in correcting the eastward and northward velocity components
-    theta = igrf_declination(lat, lon, time, depth)
+    theta = magnetic_declination(lat, lon, time)
 
     # convert the ADCP pressure record to depth in meters (positive down from surface) from daPa
     depth_m = -1 * z_from_p(np.array(data['pressure']) / 1000., lat)
