@@ -11,15 +11,15 @@ if [ $# -ne 8 ]; then
     echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the ADCP"
     echo " directory name, the ADCP serial number, the deployment depth, and the name of the file to process."
     echo ""
-    echo "     example: $0 gi01sumo D00004 59.9462 -39.4737 imm/adcp 18000 600 20230303_122800.adcpt.json"
+    echo "     example: $0 gi01sumo D0009 59.9462 -39.4737 imm/adcp 500 18000 20230303_122800.adcpt.json"
     exit 1
 fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
 LAT=$3; LON=$4
 ADCP=${5,,}
-SERIAL=$6
-DEPTH=$7
+DEPTH=$6
+SERIAL=$7
 FILE=`basename $8`
 
 # Set the default directory paths and input/output sources
