@@ -9,8 +9,12 @@
 import numpy as np
 from enum import IntEnum
 
+import pandas as pd
+import warnings
+warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
 
-# Setup the error flag enumeration class for the CPM Supervisor
+
+# Set up the error flag enumeration class for the CPM Supervisor
 class SupervErrorFlagCPM(IntEnum):
     efc_no_errors = 0x00000000
     efc_sbd_hardware_failure = 0x00000001

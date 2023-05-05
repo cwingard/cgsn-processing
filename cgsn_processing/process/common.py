@@ -44,9 +44,10 @@ FILL_NAN = np.nan
 
 class NumpyEncoder(json.JSONEncoder):
     """
-    Special json encoder for numpy types, where we have nested numpy arrays in a dictionary.
-    Allows saving the data to a json file. Used by the Coefficients class to save instrument
-    calibration coefficients to disk
+    Special json encoder for numpy types, where we have nested numpy arrays in
+    a dictionary. Allows saving the data to a json file. Used by the
+    Coefficients and Blanks class to save instrument calibration coefficients
+    to disk
 
     From our trusty friends at StackOverflow: https://stackoverflow.com/a/49677241
     """
@@ -211,6 +212,8 @@ def json_obj2df(data, sub):
     """
     df = pd.DataFrame(data[sub])
     if df.empty:
+        # though rare, sub-arrays may be empty
+        print("The sub-array {0} was empty, returning empty data frame".format(sub))
         return df
 
     # Depending on the json data, time may or may not be present in the subarray. In those cases, it will be at the

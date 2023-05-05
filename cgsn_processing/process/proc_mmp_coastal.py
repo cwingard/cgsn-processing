@@ -9,6 +9,7 @@
 import os
 import json
 import re
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -19,6 +20,8 @@ from gsw import z_from_p, SP_from_C, SA_from_SP, CT_from_t, rho
 
 from cgsn_processing.process.common import inputs
 from cgsn_processing.process.configs.attr_mmp import MMP, MMP_ADATA, MMP_CDATA, MMP_EDATA
+
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 def json2dataframes(j, lat=0., lon=0.):
