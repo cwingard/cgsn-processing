@@ -213,6 +213,8 @@ def json_obj2df(data, sub):
     """
     df = pd.DataFrame(data[sub])
     if df.empty:
+        # though rare, sub-arrays may be empty
+        print("The sub-array {0} was empty, returning empty data frame".format(sub))
         return df
 
     # Depending on the json data, time may or may not be present in the subarray. In those cases, it will be at the
