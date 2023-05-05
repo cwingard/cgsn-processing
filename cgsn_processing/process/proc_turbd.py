@@ -40,7 +40,7 @@ def proc_turbd(infile, platform, deployment, lat, lon, depth, **kwargs):
     #ctd_type = kwargs.get('ctd_type')
     #if ctd_type:
     #    ctd_type = ctd_type.lower()
-    #flort_serial = kwargs.get('flort_serial')
+    #flr_serial = kwargs.get('flr_serial')
 
 
     # load the json data file as a panda data frame for further processing

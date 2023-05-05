@@ -40,7 +40,7 @@ def proc_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
     :param depth: Depth of the platform the instrument is mounted on.
 
     :kwarg ctd_type: Set the type of CTD: solo, with a dosta, or with a flort attached
-    :kwarg flort_serial: The serial number of the attached FLORT (optional input)
+    :kwarg flr_serial: The serial number of the attached FLORT (optional input)
 
     :return ctdbp: An xarray dataset with the processed CTDBP data
     """
@@ -48,7 +48,7 @@ def proc_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
     ctd_type = kwargs.get('ctd_type')
     if ctd_type:
         ctd_type = ctd_type.lower()
-    flort_serial = kwargs.get('flort_serial')
+    flr_serial = kwargs.get('flr_serial')
 
     if ctd_type not in ['solo', 'dosta', 'flort']:
         raise ValueError('The CTDBP type must be a string set as either solo, dosta or flort (case insensitive).')
@@ -103,7 +103,7 @@ def proc_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
             proc_flag = True
         else:
             # load from the CI hosted CSV files
-            csv_url = find_calibration('FLORT', flort_serial, (ctd.time.values.astype('int64') * 10 ** -9)[0])
+            csv_url = find_calibration('FLORT', flr_serial, (ctd.time.values.astype('int64') * 10 ** -9)[0])
             if csv_url:
                 flr.read_csv(csv_url)
                 flr.save_coeffs()
@@ -153,10 +153,10 @@ def main(argv=None):
     lon = args.longitude
     depth = args.depth
     ctd_type = args.switch
-    flort_serial = args.serial  # serial number of the FLORT
+    flr_serial = args.serial  # serial number of the FLORT
 
     # process the CTDBP data and save the results to disk
-    ctdbp = proc_ctdbp(infile, platform, deployment, lat, lon, depth, ctd_type=ctd_type, flort_serial=flort_serial)
+    ctdbp = proc_ctdbp(infile, platform, deployment, lat, lon, depth, ctd_type=ctd_type, flr_serial=flr_serial)
     if ctdbp:
         ctdbp.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 

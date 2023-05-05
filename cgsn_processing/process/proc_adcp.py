@@ -287,7 +287,6 @@ def proc_adcp(infile, platform, deployment, lat, lon, depth, **kwargs):
         # combine it all into one data set
         adcp = xr.merge([glbl, vbl, bd, vel, echo, back])
         adcp_attrs = PD8    # use the PD8 attributes
-
     else:
         # Unknown ADCP type, exiting function
         return None

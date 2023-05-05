@@ -20,8 +20,8 @@ DEPLOY=${2^^}
 LAT=$3; LON=$4
 CTDBP=${5,,}
 DEPTH=$6
-DOSTA_SERIAL=$7
-FLORT_SERIAL=$8
+oxy_serial=$7
+flr_serial=$8
 FILE=`basename $9`
 
 # Set the default directory paths and input/output sources
@@ -36,5 +36,5 @@ fi
 if [ -e $IN ]; then
     cd /home/ooiuser/code/cgsn-processing
     python -m cgsn_processing.process.proc_imm_ctdbp -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH \
-      -dsn $DOSTA_SERIAL -fsn $FLORT_SERIAL -i $IN -o $OUT
+      -dsn $oxy_serial -fsn $flr_serial -i $IN -o $OUT
 fi

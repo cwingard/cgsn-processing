@@ -19,21 +19,19 @@ from cgsn_processing.process.configs.attr_common import SHARED
 from gsw import SP_from_C, SA_from_SP, CT_from_t, rho
 
 
-def main(argv=None):
+def proc_imm_ctdmo(infile, platform, deployment, lat, lon, depth, **kwargs):
     """
-    :param argv:
-    :return:
-    """
-    # load the input arguments
-    args = inputs(argv)
-    infile = os.path.abspath(args.infile)
-    outfile = os.path.abspath(args.outfile)
-    platform = args.platform
-    deployment = args.deployment
-    lat = args.latitude
-    lon = args.longitude
-    depth = args.depth
+    Processes CTDMO data recorded via an inductive modem link.
 
+    :param infile: JSON formatted parsed data file
+    :param platform: Name of the mooring the instrument is mounted on.
+    :param deployment: Name of the deployment for the input data file.
+    :param lat: Latitude of the mooring deployment.
+    :param lon: Longitude of the mooring deployment.
+    :param depth: Depth of the platform the instrument is mounted on.
+
+    :return: ctdmo - xarray Dataset containing the processed CTDMO data
+    """
     # load the json data file as a json formatted object for further processing
     data = json2obj(infile)
     if not data:
@@ -80,14 +78,32 @@ def main(argv=None):
     joined = join_df(ctd, status)
 
     # create a final data set with the raw and derived CTD data and merged status data
-    ctd = xr.Dataset.from_dataframe(joined)
+    ctdmo = xr.Dataset.from_dataframe(joined)
 
     # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
     attrs = dict_update(CTDMO, SHARED)  # add the shared attributes
-    ctd = update_dataset(ctd, platform, deployment, lat, lon, [depth, depth, depth], attrs)
+    ctdmo = update_dataset(ctdmo, platform, deployment, lat, lon, [depth, depth, depth], attrs)
+    ctdmo.attrs['processing_level'] = 'processed'
+    return ctdmo
+
+
+def main(argv=None):
+    # load the input arguments
+    args = inputs(argv)
+    infile = os.path.abspath(args.infile)
+    outfile = os.path.abspath(args.outfile)
+    platform = args.platform
+    deployment = args.deployment
+    lat = args.latitude
+    lon = args.longitude
+    depth = args.depth
+
+    # process the CTDMO data and save the results to disk
+    ctdmo = proc_imm_ctdmo(infile, platform, deployment, lat, lon, depth)
 
     # save the data
-    ctd.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
+    if ctdmo:
+        ctd.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 
 if __name__ == '__main__':

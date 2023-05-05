@@ -34,7 +34,7 @@ class OXY_Calibrations(Coefficients):
         come from either a serialized object created per instrument and
         deployment (calibration coefficients do not change in the middle of a
         deployment), or from parsed CSV files maintained on GitHub by the OOI
-        CI team.
+        Data teams.
         """
         # assign the inputs
         Coefficients.__init__(self, coeff_file)
@@ -77,7 +77,7 @@ class PAR_Calibrations(Coefficients):
         come from either a serialized object created per instrument and
         deployment (calibration coefficients do not change in the middle of a
         deployment), or from parsed CSV files maintained on GitHub by the OOI
-        CI team.
+        Data teams.
         """
         # assign the inputs
         Coefficients.__init__(self, coeff_file)
@@ -108,25 +108,45 @@ class PAR_Calibrations(Coefficients):
 
 def proc_mmp_coastal(infile, platform, deployment, lat, lon, depth, **kwargs):
     """
+    Processing function for a Coastal MMP with CTDPF, DOFST, FLORT, PARAD,
+    and VEL3D sensors attached. Loads the JSON formatted parsed data file and
+    extracts and processes the three different file types covering the five
+    instruments ("A" = VEL3D, "C" = CTDPF and DOFST, and "E" = FLORT and
+    PARAD). Appropriate calibration coefficients, to convert the raw data
+    into engineering units, are applied. If no calibration coefficients are
+    available, filled variables are returned and the dataset processing level
+    attributes are set to "parsed". Otherwise, the dataset processing level is
+    set to "partial" or "processed" depending on whether all the needed data is
+    available to convert the raw data.
 
-    :param infile:
-    :param platform:
-    :param deployment:
-    :param lat:
-    :param lon:
-    :param depth:
-    :return:
+    :param infile: JSON formatted parsed data file
+    :param platform: Name of the mooring the instrument is mounted on.
+    :param deployment: Name of the deployment for the input data file.
+    :param lat: Latitude of the mooring deployment.
+    :param lon: Longitude of the mooring deployment.
+    :param depth: Depth of the platform the instrument is mounted on.
+
+    :kwarg flr_serial: The serial number of the attached FLORT (optional input)
+    :kwarg oxy_serial: The serial number of the attached DOFST (optional input)
+    :kwarg par_serial: The serial number of the attached PARAD (optional input)
+
+    :return edata: An xarray dataset with the processed "E" file data, which
+        includes the MMP engineering, FLORT and PARAD data
+    :return cdata: An xarray dataset with the processed "C" file data, which
+        includes the CTDPF and DOFST data
+    :return adata: An xarray dataset with the processed "A" file data, which
+        consists of the VEL3D data
     """
     # process the variable length keyword arguments
     flr_serial = kwargs.get('flr_serial')
     oxy_serial = kwargs.get('oxy_serial')
     par_serial = kwargs.get('par_serial')
 
-    # load the json data file as a json formatted object for further processing
+    # load the data file as a json formatted object for further processing
     data = json2obj(infile)
     if not data:
         # json data file was empty, exiting
-        return None
+        return None, None, None
 
     # extract the profiler data from the 3 original source files
     edata = json_obj2df(data, 'edata')
@@ -140,7 +160,7 @@ def proc_mmp_coastal(infile, platform, deployment, lat, lon, depth, **kwargs):
     start_depth = data['profile']['start_depth']
     end_depth = data['profile']['end_depth']
 
-    # redefine the site depth to a list include the min/max depth of the profile
+    # redefine the site depth to a list including the min/max depth of the profile
     if start_depth > end_depth:
         depth = [depth, end_depth, start_depth]
     else:
@@ -215,10 +235,12 @@ def proc_mmp_coastal(infile, platform, deployment, lat, lon, depth, **kwargs):
     attrs = dict_update(MMP, MMP_EDATA)  # combine the common and dataframe specific attributes
     attrs = dict_update(attrs, SHARED)  # add the shared the attributes
     edata = update_dataset(edata, platform, deployment, lat, lon, depth, attrs)
-    if proc_flort and proc_parad:
+    if (proc_flort and not proc_parad) or (proc_parad and not proc_flort):
+        edata.attrs['processing_level'] = 'partial'
+    elif proc_flort and proc_parad:
         edata.attrs['processing_level'] = 'processed'
     else:
-        edata.attrs['processing_level'] = 'partial'
+        edata.attrs['processing_level'] = 'parsed'
 
     # --- process the data from each source: CDATA --- #
     if cdata.empty is False:
@@ -240,7 +262,7 @@ def proc_mmp_coastal(infile, platform, deployment, lat, lon, depth, **kwargs):
         edata['total_optical_backscatter'] = flo_bback_total(edata['beta_700'], degc, psu, flr.coeffs['scatter_angle'],
                                                              flr.coeffs['wavelength'], flr.coeffs['chi_factor'])
 
-        # create empty variables for the processed FLORT and PAR data (will fill in with processed data if available)
+        # create empty variables for the processed oxygen data (will fill in with processed data if available)
         empty_data = np.atleast_1d(cdata['time']).astype(np.int32) * np.nan
         cdata['oxygen_concentration'] = empty_data
         cdata['oxygen_concentration_corrected'] = empty_data
@@ -273,10 +295,12 @@ def proc_mmp_coastal(infile, platform, deployment, lat, lon, depth, **kwargs):
         attrs = dict_update(MMP, MMP_CDATA)  # combine the common and dataframe specific attributes
         attrs = dict_update(attrs, SHARED)  # add the shared the attributes
         cdata = update_dataset(cdata, platform, deployment, lat, lon, depth, attrs)
-        if proc_flort and proc_parad:
-            edata.attrs['processing_level'] = 'processed'
+        if proc_dofst:
+            cdata.attrs['processing_level'] = 'processed'
         else:
-            adata.attrs['processing_level'] = 'partial'
+            cdata.attrs['processing_level'] = 'parsed'
+    else:
+        cdata = None
 
     # --- process the data from each source: ADATA --- #
     if adata.empty is False:
@@ -314,6 +338,8 @@ def proc_mmp_coastal(infile, platform, deployment, lat, lon, depth, **kwargs):
         attrs = dict_update(attrs, SHARED)  # add the shared the attributes
         adata = update_dataset(adata, platform, deployment, lat, lon, depth, attrs)
         adata.attrs['processing_level'] = 'processed'
+    else:
+        adata = None
 
     return edata, cdata, adata
 
@@ -330,15 +356,26 @@ def main(argv=None):
     depth = args.depth
 
     # instrument serial numbers
-    flr_serial = args.devfile  # name of co-located CTD
+    flr_serial = args.devfile
     par_serial = args.devfile
     oxy_serial = args.devfile
 
     # process the CTDBP data and save the results to disk
-    dosta = proc_dosta(infile, platform, deployment, lat, lon, depth, ctd_name=ctd_name, burst=burst)
-    if dosta:
-        dosta.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
+    edata, cdata, adata = proc_mmp_coastal(infile, platform, deployment, lat, lon, depth,
+                                           flr_serial=flr_serial, par_serial=par_serial, oxy_serial=oxy_serial)
 
+    base = os.path.splitext(outfile)[0]
+    if edata:
+        efile = os.rename(outfile, base + '_edata.nc')
+        edata.to_netcdf(efile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
+
+    if cdata:
+        cfile = os.rename(outfile, base + '_cdata.nc')
+        cdata.to_netcdf(cfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
+
+    if adata:
+        afile = os.rename(outfile, base + '_adata.nc')
+        adata.to_netcdf(afile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 if __name__ == '__main__':
     main()

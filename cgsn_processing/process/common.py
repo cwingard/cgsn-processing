@@ -500,8 +500,12 @@ def inputs(args=None):
     parser.add_argument("-bd", "--blanking_distance", dest="blanking_distance", type=float, required=False)
     parser.add_argument("-cf", "--coeff_file", dest="coeff_file", type=str, required=False)
     parser.add_argument("-sn", "--serial_number", dest="serial", type=str, required=False)
-    parser.add_argument("-dsn", "--dosta_serial_number", dest="dosta_serial", type=str, required=False)
-    parser.add_argument("-fsn", "--flord_serial_number", dest="flord_serial", type=str, required=False)
+    parser.add_argument("-fsn", "--flr_serial_number", dest="flr_serial", type=str, required=False,
+                        help="Serial number of the fluorometer (FLORT or FLORD)")
+    parser.add_argument("-dsn", "--oxy_serial_number", dest="oxy_serial", type=str, required=False,
+                        help="Serial number of the oxygen sensor (DOFST or DOSTA)")
+    parser.add_argument("-psn", "--par_serial_number", dest="par_serial", type=str, required=False,
+                        help="Serial number of the PAR sensor (PARAD)")
     parser.add_argument("-df", "--devfile", dest="devfile", type=str, required=False)
     parser.add_argument("-u", "--csvurl", dest="csvurl", type=str, required=False)
     parser.add_argument("-s", "--switch", dest="switch", type=str, required=False)

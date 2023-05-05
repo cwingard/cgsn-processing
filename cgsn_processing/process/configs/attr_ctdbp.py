@@ -199,7 +199,7 @@ CTDBP = {
                     'calibrated phase values and the optode thermistor temperature via the '
                     'Stern-Volmer-Uchida equation.'),
         'data_product_identifier': 'DOCONCS-L1',
-        'ancillary_variables': 'oxygen_phase, oxygen_thermistor',
+        'ancillary_variables': 'calibrated_phase, oxygen_thermistor',
         '_FillValue': np.nan
     },
     'oxygen_concentration_corrected': {

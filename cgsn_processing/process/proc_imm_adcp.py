@@ -55,18 +55,28 @@ class Calibrations(Coefficients):
         self.coeffs = coeffs
 
 
-def main(argv=None):
-    # load the input arguments
-    args = inputs(argv)
-    infile = os.path.abspath(args.infile)
-    outfile = os.path.abspath(args.outfile)
-    platform = args.platform
-    deployment = args.deployment
-    lat = args.latitude
-    lon = args.longitude
-    depth = args.depth
-    serial = args.serial
-    coeff_file = os.path.abspath(args.coeff_file)
+def proc_imm_adcp(infile, platform, deployment, lat, lon, depth, **kwargs):
+    """
+    Processes ADCP data recorded in PD12 format via an inductive modem link.
+    Data are stored in a JSON file, which is parsed and converted to a NetCDF
+    file.
+
+    :param infile: JSON formatted parsed data file
+    :param platform: Name of the mooring the instrument is mounted on.
+    :param deployment: Name of the deployment for the input data file.
+    :param lat: Latitude of the mooring deployment.
+    :param lon: Longitude of the mooring deployment.
+    :param depth: Depth of the platform the instrument is mounted on.
+
+    :kwarg adcp_serial: The serial number of the ADCP (required input)
+
+    :return adcp: An xarray dataset with the processed ADCP data
+    """
+    # get the serial number of the ADCP
+    serial = kwargs.get('adcp_serial', None)
+    if not serial:
+        print('No ADCP serial number provided, exiting')
+        return None
 
     # load the json data file as a json formatted object for further processing
     data = json2obj(infile)
@@ -87,7 +97,8 @@ def main(argv=None):
     df['serial_number'] = serial
     glbl = xr.Dataset.from_dataframe(df)
 
-    # check for the source of calibration coeffs and load accordingly
+    # check for the source of adcp configuration settings and load accordingly
+    coeff_file = os.path.join(os.path.dirname(infile), 'adcp_configuration.json')
     dev = Calibrations(coeff_file)  # initialize calibration class
     if os.path.isfile(coeff_file):
         # we always want to use this file if it exists
@@ -99,7 +110,7 @@ def main(argv=None):
             dev.read_csv(csv_url)
             dev.save_coeffs()
         else:
-            print('A source for the ADCP calibration coefficients for {} could not be found'.format(infile))
+            print('A source for the ADCP configuration settings for {} could not be found'.format(infile))
             return None
 
     # drop real-time clock values (already used to create the time variable) and the unit ID (only used if more
@@ -156,14 +167,33 @@ def main(argv=None):
     vmax = adcp.bin_depth.max().values
     vmin = adcp.bin_depth.min().values
 
-    # add to the global attributes for the ADCP
-    attrs = dict_update(ADCP, PD12)         # merge the default attributes and PD12
+    # add the attributes for the ADCP
+    attrs = dict_update(ADCP, PD12)         # merge the default ADCP and PD12-specific attributes
     attrs = dict_update(attrs, DERIVED)     # add the derived attributes
     attrs = dict_update(attrs, SHARED)      # add the shared attributes
     adcp = update_dataset(adcp, platform, deployment, lat, lon, [depth, vmin, vmax], attrs)
+    adcp.attrs['processing_level'] = 'processed'    # set the processing level
+    return adcp
+
+
+def main(argv=None):
+    # load the input arguments
+    args = inputs(argv)
+    infile = os.path.abspath(args.infile)
+    outfile = os.path.abspath(args.outfile)
+    platform = args.platform
+    deployment = args.deployment
+    lat = args.latitude
+    lon = args.longitude
+    depth = args.depth
+    serial = args.serial
+
+    # process the ADCP data and save the results to disk
+    adcp = proc_imm_adcp(infile, platform, deployment, lat, lon, depth, adcp_serial=serial)
 
     # save the file
-    adcp.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
+    if adcp:
+        adcp.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 
 if __name__ == '__main__':
