@@ -19,6 +19,7 @@ from gsw.conversions import z_from_p
 from pyseas.data.generic_functions import magnetic_declination
 from pyseas.data.adcp_functions import magnetic_correction, adcp_bin_depths
 
+
 class Calibrations(Coefficients):
     def __init__(self, coeff_file, csv_url=None):
         """
@@ -76,6 +77,10 @@ def main(argv=None):
     time = np.array(data['time'])
     df = pd.DataFrame()
     df['time'] = pd.to_datetime(time, unit='s')
+    if df.empty:
+        print("JSON data file {0} was empty, returning empty data frame".format(infile))
+        return None
+
     df.set_index('time', drop=True, inplace=True)
     df['deploy_id'] = deployment
     df['serial_number'] = serial
