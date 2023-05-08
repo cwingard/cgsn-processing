@@ -71,13 +71,13 @@ def proc_cspp_optaa(infile, platform, deployment, lat, lon, depth):
     if dev.coeffs['num_wavelengths'] != data['num_wavelengths'][0]:
         raise Exception('Number of wavelengths mismatch between ac-s data and the device file.')
 
-    # create the time coordinate array and setup a base data frame
+    # create the time coordinate array and set up a base data frame
     optaa_time = data['time']
     df = pd.DataFrame()
     df['time'] = pd.to_datetime(optaa_time, unit='s')
     df.set_index('time', drop=True, inplace=True)
 
-    # setup and load the 1D parsed data
+    # set up and load the 1D parsed data
     empty_data = np.atleast_1d(data['serial_number']).astype(np.int32) * np.nan
     # raw data parsed from the data file
     df['serial_number'] = np.atleast_1d(data['serial_number']).astype(np.int32)

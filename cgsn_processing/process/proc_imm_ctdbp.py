@@ -47,14 +47,14 @@ def proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
     :param lon: Longitude of the mooring deployment.
     :param depth: Depth of the platform the instrument is mounted on.
 
-    :kwarg dosta_serial: The serial number of the attached DOSTA (optional input)
-    :kwarg flord_serial: The serial number of the attached FLORD (optional input)
+    :kwarg oxy_serial: The serial number of the attached DOSTA (optional input)
+    :kwarg flr_serial: The serial number of the attached FLORD (optional input)
 
     :return ctd: An xarray dataset with the processed CTDBP data
     """
     # process the variable length keyword arguments
-    dosta_serial = kwargs.get('dosta_serial')
-    flord_serial = kwargs.get('flord_serial')
+    oxy_serial = kwargs.get('oxy_serial')
+    flr_serial = kwargs.get('flr_serial')
 
     # load the json data file as a json formatted object for further processing
     data = json2obj(infile)
@@ -64,6 +64,11 @@ def proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # create a data frame with the CTD status information
     status = json_obj2df(data, 'status')
+    if status.empty:
+        # json status data was empty, exiting
+        print("The status portion of the JSON data file {0} was empty, exit processing".format(infile))
+        return None
+
     status['status_time'] = epoch_time(status['date_time_string'].values[0])
     status.drop(columns='date_time_string', inplace=True)
     status.rename(columns={'main_battery': 'main_battery_voltage',
@@ -74,6 +79,11 @@ def proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # create a data frame with the CTD, DOSTA and FLORD data
     ctd = json_obj2df(data, 'ctd')
+    if ctd.empty:
+        # json ctd data was empty, exiting
+        print("The CTD portion of the JSON data file {0} was empty, exit processing".format(infile))
+        return None
+
     nrows, _ = ctd.shape
     sensor_time = []
     for i in range(nrows):
@@ -120,7 +130,7 @@ def proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
         proc_dosta = True
     else:
         # load from the CI hosted CSV files
-        csv_url = find_calibration('DOSTA', dosta_serial, (ctd.time.values.astype('int64') * 10 ** -9)[0])
+        csv_url = find_calibration('DOSTA', oxy_serial, (ctd.time.values.astype('int64') * 10 ** -9)[0])
         if csv_url:
             opt.read_csv(csv_url)
             opt.save_coeffs()
@@ -136,7 +146,7 @@ def proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
         proc_flord = True
     else:
         # load from the CI hosted CSV files
-        csv_url = find_calibration('FLORD', flord_serial, (ctd.time.values.astype('int64') * 10 ** -9)[0])
+        csv_url = find_calibration('FLORD', flr_serial, (ctd.time.values.astype('int64') * 10 ** -9)[0])
         if csv_url:
             flr.read_csv(csv_url)
             flr.save_coeffs()
@@ -197,12 +207,12 @@ def main(argv=None):
     lat = args.latitude
     lon = args.longitude
     depth = args.depth
-    flord_serial = args.flord_serial
-    dosta_serial = args.dosta_serial
+    flr_serial = args.flr_serial
+    oxy_serial = args.oxy_serial
 
     # process the CTDBP data and save the results to disk
     ctdbp = proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth,
-                           dosta_serial=dosta_serial, flord_serial=flord_serial)
+                           oxy_serial=oxy_serial, flr_serial=flr_serial)
 
     if ctdbp:
         ctdbp.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)

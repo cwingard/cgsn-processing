@@ -19,7 +19,7 @@ OPTAA = {
     # parsed (raw) variables and attributes
     'serial_number': {
         'long_name': 'Unit Serial Number',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'pressure_raw': {
         'long_name': 'Raw Pressure',

@@ -15,7 +15,7 @@ PCO2A = {
     },
     'co2_source': {
         'long_name': 'CO2 Measurement Source',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
         'comment': 'Indicates whether the measurement source is air (0) or water (1).',
         'flag_values': np.intc([0, 1]),
         'flag_meanings': 'air_measurement water_measurement'

@@ -6,39 +6,40 @@
 @author Joe Futrelle
 @brief Attributes for the RDA variables
 """
+import numpy as np
 
 RDA = {
     'global': {
         'title': 'RDA Status',
         'summary': 'Current and Voltage Levels for the RDA',
-        'project': 'Ocean Observatories Initiative',
-        'institution': 'Coastal and Global Scale Nodes (CGSN)',
-        'acknowledgement': 'National Science Foundation',
-        'references': 'http://oceanobservatories.org',
-        'creator_name': 'Christopher Wingard',
-        'creator_email': 'cwingard@coas.oregonstate.edu',
-        'creator_url': 'http://oceanobservatories.org',
     },
-    'deploy_id': {
-        'long_name': 'Deployment ID',
-        'standard_name': 'deployment_id',
-        'units': '1',
+    'main_voltage': {
+        'long_name': 'Main Voltage',
+        'units': 'V',
+        'comment': 'Input voltage supplied to the system.'
     },
-    'date_time_string': {
-        'long_name': 'Date and Time Stamp',
-        'standard_name': 'date_time_string',
-        'units': '1',
+    'main_current': {
+        'long_name': 'Main Current',
+        'units': 'mA',
+        'comment': 'Electrical current used by the system.'
     },
-    'z': {
-        'long_name': 'Sensor Depth',
-        'standard_name': 'depth',
-        'units': 'm',
-        'comment': 'Sensor depth below sea surface',
-        'positive': 'down',
-        'axis': 'Z'
+    'error_flags': {
+        'long_name': 'RDA Error Flags',
+        'standard_name': 'status_flag',
+        # 'units': '',    deliberately left blank, no units for this value,
+        'comment': 'Error flags for the RDA PIC data.',
+        'flag_mask': np.hstack(np.array([0, 2 ** np.array(range(0, 32))], dtype=object)).astype(np.uintc),
+        'flag_meanings': ('no_errors undefined undefined undefined undefined undefined undefined undefined undefined '
+                          'undefined undefined undefined undefined undefined undefined undefined undefined undefined '
+                          'undefined undefined undefined undefined undefined undefined undefined undefined undefined '
+                          'undefined undefined undefined undefined undefined undefined'),
+        'ancillary_variables': 'main_voltage main_current'
     },
-    'main_voltage': {'units': 'V'},
-    'main_current': {'units': 'mA'},
-    'error_flags': {'units': '1'},
-    'rda_type': {'units': '1'}
+    'rda_type': {
+        'long_name': 'RDA Board Type',
+        # 'units': '',    deliberately left blank, no units for this value,
+        'comment': 'Type of RDA board, where 0 == CI, 1 == NSIF and 2 == MFN.',
+        'flag_values': np.intc([0, 1, 2]),
+        'flag_meanings': 'CI NSIF MFN'
+    }
 }

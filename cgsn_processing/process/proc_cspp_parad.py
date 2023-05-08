@@ -34,7 +34,7 @@ class Calibrations(Coefficients):
     def read_csv(self, csv_url):
         """
         Reads the values from an Satlantic PAR sensor (aka PARAD) device file already parsed and stored on
-        Github as a CSV files. Note, the formatting of these files puts some constraints on this process.
+        GitHub as a CSV files. Note, the formatting of these files puts some constraints on this process.
         If someone has a cleaner method, I'm all in favor...
         """
         # create the device file dictionary and assign values
@@ -95,7 +95,7 @@ def main(argv=None):
     # Apply the scale, offset and immersion correction factors from the factory calibration coefficients
     df['irradiance'] = opt_par_satlantic(df['raw_par'], dev.coeffs['a0'], dev.coeffs['a1'], dev.coeffs['Im'])
 
-    # setup some further parameters for use with the OMTs class
+    # set up some further parameters for use with the OMTs class
     df['deploy_id'] = deployment
     df['z'] = depth
     profile_id = re.sub('\D+', '', fname)

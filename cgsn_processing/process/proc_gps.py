@@ -42,7 +42,7 @@ def proc_gps(infile, platform, deployment, lat, lon, depth):
     # between the surveyed, nominal position of the mooring compared to the actual measured position.
     df.rename(columns={'latitude': 'precise_lat', 'longitude': 'precise_lon'}, inplace=True)
 
-    # clean up some of the data
+    # clean up some data
     df.drop(columns=['date_time_string'], inplace=True)  # used to calculate time, so redundant
 
     # set the data types for the date, time latitude and longitude strings
@@ -60,6 +60,7 @@ def proc_gps(infile, platform, deployment, lat, lon, depth):
     gps.attrs['processing_level'] = 'parsed'
 
     return gps
+
 
 def main(argv=None):
     # load the input arguments

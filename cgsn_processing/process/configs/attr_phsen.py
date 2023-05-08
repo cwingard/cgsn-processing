@@ -16,7 +16,7 @@ PHSEN = {
     'dcl_date_time_string': {
         'long_name': 'DCL Date and Time Stamp',
         'comment': 'Data logger time stamp, recorded when instrument begins measurement cycle.',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'unique_id': {
         'long_name': 'Instrument Unique ID',
@@ -24,12 +24,12 @@ PHSEN = {
                     'version serving as a proxy for a unique ID. While identified as the instrument unique ID, it is ' +
                     'possible for more than one instrument to have the same checksum summary. Thus, the uniqueness ' +
                     'of this value should be considered with a certain degree of caution.'),
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'measurements': {
         'long_name': 'Measurements Array',
         'comment': 'Dimensional indexing array created for the reference and light measurements.',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'blank_refrnc_434': {
         'long_name': 'DI Blank Reference Intensity at 434 nm',
@@ -96,17 +96,17 @@ PHSEN = {
     'record_number': {
         'long_name': 'IMM Record Number',
         'comment': 'Inductive modem record number',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'record_length': {
         'long_name': 'Record Length',
         'comment': 'Number of bytes in the record.',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'record_type': {
         'long_name': 'Record Type',
-        'comment': 'Data and control record type. For the SAMI-pH sensor, the record type is 10',
-        # 'units': ''    # deliberately left blank, no units for this value
+        'comment': 'Data and control record type. For the SAMI2-pH sensor, the record type is 10',
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'record_time': {
         'long_name': 'Instrument Timestamp',

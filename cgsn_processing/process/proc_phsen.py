@@ -18,8 +18,9 @@ from pytz import timezone
 
 from cgsn_processing.process.common import ENCODING, Coefficients, colocated_ctd, inputs, json2df, \
     dict_update, update_dataset
+from cgsn_processing.process.configs.attr_phsen import PHSEN
+from cgsn_processing.process.configs.attr_common import SHARED
 from cgsn_processing.process.finding_calibrations import find_calibration
-from cgsn_processing.process.configs.attr_phsen import GLOBAL, PHSEN
 
 from pyseas.data.ph_functions import ph_battery, ph_thermistor, ph_calc_phwater
 from gsw import SP_from_C
@@ -218,8 +219,8 @@ def proc_phsen(infile, platform, deployment, lat, lon, depth, **kwargs):
     reference_578 = light[:, :, 2]            # reference signal, 578 nm
     signal_578 = light[:, :, 3]               # signal intensity, 578 nm (PH578SI_L0)
 
-    # create a data set with the reference and light measurements
-    ds = xr.Dataset({
+    # create a data set with the raw reference and light measurements
+    raw = xr.Dataset({
         'blank_refrnc_434': (['time', 'measurements'], blank_refrnc_434.astype('int32')),
         'blank_signal_434': (['time', 'measurements'], blank_signal_434.astype('int32')),
         'blank_refrnc_578': (['time', 'measurements'], blank_refrnc_578.astype('int32')),
@@ -231,14 +232,15 @@ def proc_phsen(infile, platform, deployment, lat, lon, depth, **kwargs):
     }, coords={'time': data['time'], 'measurements': np.arange(0, 23).astype('int32')})
 
     # merge the data sets together and create the final data set with full attributes
-    data_dataset = xr.Dataset.from_dataframe(data)
-    phsen = xr.merge([data_dataset, ds])
-    attrs = dict_update(GLOBAL, PHSEN)  # merge global and PHSEN attribute dictionaries into a single dictionary
+    ds = xr.Dataset.from_dataframe(data)
+    phsen = xr.merge([ds, raw])
+    attrs = dict_update(PHSEN, SHARED)  # merge global and PHSEN attribute dictionaries into a single dictionary
+    phsen = update_dataset(phsen, platform, deployment, lat, lon, [depth, depth, depth], attrs)
     if proc_flag:
         phsen.attrs['processing_level'] = 'processed'
     else:
         phsen.attrs['processing_level'] = 'parsed'
-    phsen = update_dataset(phsen, platform, deployment, lat, lon, [depth, depth, depth], attrs)
+
     return phsen
 
 
@@ -253,10 +255,7 @@ def main(argv=None):
     lon = args.longitude
     depth = args.depth
     serial_number = args.serial
-    if args.devfile:
-        ctd_name = args.devfile  # name of co-located CTD
-    else:
-        ctd_name = None
+    ctd_name = args.devfile  # name of co-located CTD
 
     # process the PHSEN data and save the results to disk
     phsen = proc_phsen(infile, platform, deployment, lat, lon, depth, ctd_name=ctd_name, serial_number=serial_number)

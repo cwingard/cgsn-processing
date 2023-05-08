@@ -9,6 +9,7 @@ import os
 import pandas as pd
 import re
 import sys
+import xarray as xr
 
 from collections.abc import Mapping
 from dateutil import rrule
@@ -33,7 +34,7 @@ ENCODING = {
     'lat': {'_FillValue': None},
     'lon': {'_FillValue': None},
     'z': {'_FillValue': None},
-    'station': {'dtype': str},
+    'station_name': {'dtype': str},
     'deploy_id': {'dtype': str}
 }
 
@@ -193,7 +194,7 @@ def json2df(infile):
             print("JSON data file {0} was empty, returning empty data frame".format(infile))
             return df
 
-        # setup time and the index
+        # set up time and the index
         df['time'] = pd.to_datetime(df.time, unit='s')
         df.index = df['time']
 
@@ -212,6 +213,8 @@ def json_obj2df(data, sub):
     """
     df = pd.DataFrame(data[sub])
     if df.empty:
+        # though rare, sub-arrays may be empty
+        print("The sub-array {0} was empty, returning empty data frame".format(sub))
         return df
 
     # Depending on the json data, time may or may not be present in the subarray. In those cases, it will be at the
@@ -298,13 +301,19 @@ def update_dataset(ds, platform, deployment, lat, lon, depth, attrs):
     # note, the minimum and maximum depths will vary if the instrument includes a
     # pressure sensor, otherwise they will be set to the deployment depth
 
-    # add the non-dimensional coordinate variables
-    ds = ds.assign_coords({
-        'lat': lat,
-        'lon': lon,
-        'z': deploy_depth,
-        'station': platform.upper()
+    # add a station dimension to the data set
+    ds = ds.expand_dims('station', axis=None)
+
+    # add the geospatial coordinates using the station dimension from above
+    geo_coords = xr.Dataset({
+        'station_name': ('station', [platform.upper()]),
+        'lat': ('station', [lat]),
+        'lon': ('station', [lon]),
+        'z': ('station', [deploy_depth])
     })
+
+    # merge the geospatial coordinates into the data set
+    ds = ds.merge(geo_coords)
 
     # Convert time from nanoseconds to seconds since 1970
     ds['time'] = dt64_epoch(ds.time)
@@ -326,8 +335,8 @@ def update_dataset(ds, platform, deployment, lat, lon, depth, attrs):
     # assign the updated attributes to the global metadata and the individual variables
     ds.attrs = attrs['global']
     for v in ds.variables:
-        if v not in ['time', 'lat', 'lon', 'z', 'station', 'wavelength_number', 'wavelengths']:
-            ds[v].attrs = dict_update(attrs[v], {'coordinates': 'time lon lat z station'})
+        if v not in ['time', 'lat', 'lon', 'z', 'station_name', 'wavelength_number', 'wavelengths']:
+            ds[v].attrs = dict_update(attrs[v], {'coordinates': 'time lon lat z'})
         else:
             ds[v].attrs = attrs[v]
 
@@ -491,8 +500,12 @@ def inputs(args=None):
     parser.add_argument("-bd", "--blanking_distance", dest="blanking_distance", type=float, required=False)
     parser.add_argument("-cf", "--coeff_file", dest="coeff_file", type=str, required=False)
     parser.add_argument("-sn", "--serial_number", dest="serial", type=str, required=False)
-    parser.add_argument("-dsn", "--dosta_serial_number", dest="dosta_serial", type=str, required=False)
-    parser.add_argument("-fsn", "--flord_serial_number", dest="flord_serial", type=str, required=False)
+    parser.add_argument("-fsn", "--flr_serial_number", dest="flr_serial", type=str, required=False,
+                        help="Serial number of the fluorometer (FLORT or FLORD)")
+    parser.add_argument("-dsn", "--oxy_serial_number", dest="oxy_serial", type=str, required=False,
+                        help="Serial number of the oxygen sensor (DOFST or DOSTA)")
+    parser.add_argument("-psn", "--par_serial_number", dest="par_serial", type=str, required=False,
+                        help="Serial number of the PAR sensor (PARAD)")
     parser.add_argument("-df", "--devfile", dest="devfile", type=str, required=False)
     parser.add_argument("-u", "--csvurl", dest="csvurl", type=str, required=False)
     parser.add_argument("-s", "--switch", dest="switch", type=str, required=False)

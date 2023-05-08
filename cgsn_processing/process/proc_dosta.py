@@ -161,17 +161,20 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
 
         # interpolate the CTD data if we have full coverage
         if coverage:
-            pressure = np.interp(do_time, ctd_time, ctd.pressure)
+            if ctd_name in ['metbk', 'metbk1', 'metbk2']:
+                pressure = depth
+                temperature = np.interp(dosta['time'], ctd['time'], ctd.sea_surface_temperature)
+                salinity = SP_from_C(ctd.sea_surface_conductivity.values * 10.0, ctd.sea_surface_temperature.values,
+                                     depth)
+                salinity = np.interp(dosta['time'], ctd['time'], salinity)
+            else:
+                pressure = np.interp(dosta['time'], ctd['time'], ctd.pressure)
+                temperature = np.interp(dosta['time'], ctd['time'], ctd.temperature)
+                salinity = SP_from_C(ctd.conductivity.values * 10.0, ctd.temperature.values, ctd.pressure.values)
+                salinity = np.interp(dosta['time'], ctd['time'], salinity)
+
             dosta['ctd_pressure'] = pressure
-            depth[0] = z_from_p(np.mean(pressure), lat) * -1
-            depth[1] = z_from_p(pressure.min(), lat) * -1
-            depth[2] = z_from_p(pressure.max(), lat) * -1
-
-            temperature = np.interp(do_time, ctd_time, ctd.temperature)
             dosta['ctd_temperature'] = temperature
-
-            salinity = SP_from_C(ctd.conductivity.values * 10.0, ctd.temperature.values, ctd.pressure.values)
-            salinity = np.interp(do_time, ctd_time, salinity)
             dosta['ctd_salinity'] = salinity
 
             # calculate the pressure and salinity corrected oxygen concentration
@@ -188,6 +191,9 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
         # resample to a 15-minute interval and shift the clock to make sure we capture the time "correctly"
         dosta = dosta.resample(time='900s', base=3150, loffset='450s').median(dim='time', keep_attrs=True)
         dosta = dosta.where(~np.isnan(dosta.serial_number), drop=True)
+
+        # resample to a 15-minute interval and shift the clock to make sure we capture the time "correctly"
+        dosta = dosta.resample(time='15Min', base=55, loffset='5Min').median(dim='time', keep_attrs=True)
 
         # reset original integer values
         int_arrays = ['product_number', 'serial_number']

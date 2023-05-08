@@ -15,7 +15,7 @@ VELPT = {
     },
     'error_code': {
         'long_name': 'Error Code',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
         'comment': 'Instrument error codes.',
         'flag_mask': np.array(2 ** np.array(range(0, 8)), dtype=object).astype(np.intc),
         'flag_meanings': ('compass_error measurement_data_error sensor_data_error tag_bit_error flash_error '
@@ -59,7 +59,7 @@ VELPT = {
     },
     'status_code': {
         'long_name': 'Status Code',
-        # 'units': ''    # deliberately left blank, no units for this value
+        # 'units': '',    deliberately left blank, no units for this value
         'comment': 'Instrument status codes.',
         'flag_mask': np.array([1, 1, 2, 2, 4, 8, 48, 48, 48, 48, 192, 192, 192, 192], dtype=object).astype(np.intc),
         'flag_values': np.array([0, 1, 0, 2, 4, 8, 0, 16, 32, 48, 0, 64, 128, 192], dtype=object).astype(np.intc),

@@ -2,13 +2,13 @@
 # _*_ coding: utf_8 _*_
 """
 @package cgsn_processing.process.configs.attr_pwrsys
-@file cgsn_processing/process/configs/attr_pwrsys.py
+@file cgsn_processing/process/configs/attr_psc.py
 @author Christopher Wingard
-@brief Attributes for the PWRSYS variables
+@brief Attributes for the PSC variables
 """
 import numpy as np
 
-PWRSYS = {
+PSC = {
     'global': {
         'title': 'Mooring Power System Controller (PSC) Status Data',
         'summary': ('Measures the status of the mooring power system controller, encompassing the '
@@ -33,7 +33,7 @@ PWRSYS = {
     'override_flag': {
         'long_name': 'Override Flag',
         'standard_name': 'status_flag',
-        'units': '1',
+        # 'units': '',    deliberately left blank, no units for this value
         'comment': ('List of power supply (CVT) or charging sources (e.g. solar panel 1) manually '
                     'connected directly either by the user or through the CPM1 mission file.'),
         'flag_mask': np.hstack(np.array([0, 2 ** np.array(range(0, 12))], dtype=object)).astype(np.uintc),
@@ -46,7 +46,7 @@ PWRSYS = {
     'error_flag1': {
         'long_name': 'Error Flag 1',
         'standard_name': 'status_flag',
-        'units': '1',
+        # 'units': '',    deliberately left blank, no units for this value
         'comment': 'Error flags reported by the power system controller.',
         'flag_mask': np.hstack(np.array([0, 2 ** np.array(range(0, 32))], dtype=object)).astype(np.uintc),
         'flag_meanings': ('no_error battery1_of_string1_overtemp battery2_of_string1_overtemp '
@@ -67,7 +67,7 @@ PWRSYS = {
     'error_flag2': {
         'long_name': 'Error Flag 2',
         'standard_name': 'status_flag',
-        'units': '1',
+        # 'units': '',    deliberately left blank, no units for this value
         'comment': 'Error flags reported by the power system controller.',
         'flag_mask': np.hstack(np.array([0, 2 ** np.array(range(0, 32))], dtype=object)).astype(np.uintc),
         'flag_meanings': ('no_error buoy_24v_power_sensor_fault buoy_24v_power_over_voltage_fault '
@@ -83,7 +83,7 @@ PWRSYS = {
     'solar_panel1_state': {
         'long_name': 'Solar Panel 1 State',
         'standard_name': 'status_flag',
-        'units': '1',
+        # 'units': '',    deliberately left blank, no units for this value
         'comment': 'State, either connected (1) or disconnected (0), of the charging source.',
         'flag_values': np.intc([0, 1]),
         'flag_meanings': 'disconnected connected',
@@ -102,7 +102,7 @@ PWRSYS = {
     'solar_panel2_state': {
         'long_name': 'Solar Panel 2 State',
         'standard_name': 'status_flag',
-        'units': '1',
+        # 'units': '',    deliberately left blank, no units for this value
         'comment': 'State, either connected (1) or disconnected (0), of the charging source.',
         'flag_values': np.intc([0, 1]),
         'flag_meanings': 'disconnected connected',
@@ -121,7 +121,7 @@ PWRSYS = {
     'solar_panel3_state': {
         'long_name': 'Solar Panel 3 State',
         'standard_name': 'status_flag',
-        'units': '1',
+        # 'units': '',    deliberately left blank, no units for this value
         'comment': 'State, either connected (1) or disconnected (0), of the charging source.',
         'flag_values': np.intc([0, 1]),
         'flag_meanings': 'disconnected connected',
@@ -140,7 +140,7 @@ PWRSYS = {
     'solar_panel4_state': {
         'long_name': 'Solar Panel 4 State',
         'standard_name': 'status_flag',
-        'units': '1',
+        # 'units': '',    deliberately left blank, no units for this value
         'comment': 'State, either connected (1) or disconnected (0), of the charging source.',
         'flag_values': np.intc([0, 1]),
         'flag_meanings': 'disconnected connected',
@@ -159,7 +159,7 @@ PWRSYS = {
     'wind_turbine1_state': {
         'long_name': 'Wind Turbine 1 State',
         'standard_name': 'status_flag',
-        'units': '1',
+        # 'units': '',    deliberately left blank, no units for this value
         'comment': 'State, either connected (1) or disconnected (0), of the charging source.',
         'flag_values': np.intc([0, 1]),
         'flag_meanings': 'disconnected connected',
@@ -178,7 +178,7 @@ PWRSYS = {
     'wind_turbine2_state': {
         'long_name': 'Wind Turbine 2 State',
         'standard_name': 'status_flag',
-        'units': '1',
+        # 'units': '',    deliberately left blank, no units for this value
         'comment': 'State, either connected (1) or disconnected (0), of the charging source.',
         'flag_values': np.intc([0, 1]),
         'flag_meanings': 'disconnected connected',
@@ -286,7 +286,7 @@ PWRSYS = {
     'seawater_ground_state': {
         'long_name': 'Sea Water Ground State',
         'standard_name': 'status_flag',
-        'units': '1',
+        # 'units': '',    deliberately left blank, no units for this value
         'comment': 'seawater ground monitoring, either enabled (1) or disabled (0).',
         'flag_values': np.intc([0, 1]),
         'flag_meanings': 'disabled enabled',
@@ -305,7 +305,7 @@ PWRSYS = {
     'cvt_state': {
         'long_name': 'CVT State',
         'standard_name': 'status_flag',
-        'units': '1',
+        # 'units': '',    deliberately left blank, no units for this value
         'comment': 'State of the CVT, either connected (1) or disconnected (0).',
         'flag_values': np.intc([0, 1]),
         'flag_meanings': 'disconnected connected',
@@ -324,7 +324,7 @@ PWRSYS = {
     'cvt_interlock': {
         'long_name': 'CVT Interlock',
         'standard_name': 'status_flag',
-        'units': '1',
+        # 'units': '',    deliberately left blank, no units for this value
         'comment': 'CVT interlock is connected (1) or disconnected (0) by the shorting plug.',
         'flag_values': np.intc([0, 1]),
         'flag_meanings': 'disconnected connected',
@@ -338,7 +338,7 @@ PWRSYS = {
     'error_flag3': {
         'long_name': 'Error Flag 3',
         'standard_name': 'status_flag',
-        'units': '1',
+        # 'units': '',    deliberately left blank, no units for this value
         'comment': 'Error flags reported by the power system controller.',
         'flag_mask': np.hstack(np.array([0, 2 ** np.array(range(0, 32))], dtype=object)).astype(np.uintc),
         'flag_meanings': ('no_error cvt_board_temp_over_100C interlock_output_supply_fuse_blown '
