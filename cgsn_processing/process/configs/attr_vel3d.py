@@ -21,20 +21,22 @@ VEL3D = {
     'noise_amplitude_beam1': {
         'long_name': 'Noise Amplitude Beam 1',
         'comment': ('Ambient noise amplitudes measured by beam 1 prior to a the collection of a 3 minute burst of '
-                    '8 Hz velocity data and recorded in the header data packet.'),
-        'units': 'count',
-        '_FillValue': FILL_INT
+                    '8 Hz velocity data and recorded in the header data packet. For the vector, these values '
+                    'should be around 50.'),
+        'units': 'count'
     },
     'noise_amplitude_beam2': {
         'long_name': 'Noise Amplitude Beam 2',
         'comment': ('Ambient noise amplitudes measured by beam 2 prior to a the collection of a 3 minute burst of '
-                    '8 Hz velocity data and recorded in the header data packet.'),
+                    '8 Hz velocity data and recorded in the header data packet. For the vector, these values '
+                    'should be around 50.'),
         'units': 'count'
     },
     'noise_amplitude_beam3': {
         'long_name': 'Noise Amplitude Beam 3',
         'comment': ('Ambient noise amplitudes measured by beam 3 prior to a the collection of a 3 minute burst of '
-                    '8 Hz velocity data and recorded in the header data packet.'),
+                    '8 Hz velocity data and recorded in the header data packet. For the vector, these values '
+                    'should be around 50.'),
         'units': 'count'
     },
     'noise_correlation_beam1': {
@@ -89,9 +91,9 @@ VEL3D = {
     },
     'error_code': {
         'long_name': 'Instrument Error Codes',
-        'flag_masks': np.array([1, 2, 4, 8, 16, 64], dtype=np.uint8),
+        'flag_masks': np.array([1, 2, 4, 8, 16, 32, 64], dtype=np.uint8),
         'flag_meanings': ('compass_error measurement_error sensor_data_error tag_bit_error '
-                          'flash_error ct_sensor_read_error'),
+                          'flash_error undefined ct_sensor_read_error'),
         'comment': 'Integer representation of the instrument error codes.'
         # 'units': '',    deliberately left blank, no units for this value
     },
