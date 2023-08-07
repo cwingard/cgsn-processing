@@ -88,13 +88,23 @@ def proc_vel3d(infile, platform, deployment, lat, lon, depth):
     system = system.reindex_like(velocity, method='nearest')
     vel3d = velocity.merge(system)
 
+    # use bit 1 in the status code to determine the scaling factor for the velocity data
+    status_code = vel3d.status_code.values
+    scaling = np.array([[n >> i & 1 for i in range(0, int(n).bit_length())] for n in status_code])[:, 1]
+    scaling = np.where(scaling == 1, 0.1, 1)
+
+    # adjust the velocity data based on the scaling factor
+    vel3d['velocity_east'] = vel3d.velocity_east * scaling
+    vel3d['velocity_north'] = vel3d.velocity_north * scaling
+    vel3d['velocity_vertical'] = vel3d.velocity_vertical * scaling
+
     # convert the error and status code variable data types
     vel3d['error_code'] = (vel3d['error_code']).astype(np.uint8)
     vel3d['status_code'] = (vel3d['status_code']).astype(np.uint8)
 
     # convert the pressure record to depth and calculate mean, min and max depths
-    d = z_from_p(vel3d.pressure.values, lat)
-    depth = [depth, d.min(), d.max()]
+    d = z_from_p(vel3d.pressure.values, lat) * -1
+    depth_array = [d.mean(), d.min(), d.max()]
 
     # apply magnetic declination correction to the eastward and northward velocity
     # components and scale from mm/s to m/s
@@ -109,7 +119,7 @@ def proc_vel3d(infile, platform, deployment, lat, lon, depth):
     # update the data set with appropriate metadata
     vel3d['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(vel3d.time)).astype(str))
     attrs = dict_update(VEL3D, SHARED)  # add the shared attributes
-    vel3d = update_dataset(vel3d, platform, deployment, lat, lon, depth, attrs)
+    vel3d = update_dataset(vel3d, platform, deployment, lat, lon, depth_array, attrs)
     vel3d.attrs['processing_level'] = 'processed'
 
     return vel3d
