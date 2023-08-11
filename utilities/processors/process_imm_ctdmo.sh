@@ -32,6 +32,6 @@ fi
 # Process the file
 if [ -e $IN ]; then
     cd /home/ooiuser/code/cgsn-processing || exit
-    python -m cgsn_processing.process.proc_imm_CTDMO -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH \
+    python -m cgsn_processing.process.proc_imm_ctdmo -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH \
         -i $IN -o $OUT
 fi
