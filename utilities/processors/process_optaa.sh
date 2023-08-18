@@ -31,11 +31,9 @@ if [ ! -d `dirname $OUT` ]; then
     mkdir -p `dirname $OUT`
 fi
 
-COEFF="$DATA/proc/$PLATFORM/$DEPLOY/$OPTAA/optaa.cal_coeffs.json"
-
 # Process the file (if it hasn't already been done)
 if [ -e $IN ] && [ ! -e $OUT ]; then
-    cd /home/ooiuser/code/cgsn-processing
+    cd /home/ooiuser/code/cgsn-processing || exit
     python -m cgsn_processing.process.proc_optaa -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH \
-        -i $IN -o $OUT -ba -cf $COEFF -df $CTD
+        -i $IN -o $OUT -ba -df $CTD
 fi
