@@ -29,7 +29,7 @@ def list_links(url, tag=''):
 
 def find_calibration(inst_class, inst_serial, sampling_date):
     # find the links for the instrument class we are after
-    links = list_links('{}/ooi-integration/asset-management/tree/master/calibration/'.format(GIT), inst_class)
+    links = list_links('{}/oceanobservatories/asset-management/tree/master/calibration/'.format(GIT), inst_class)
     tdiff = []
     flist = []
 
