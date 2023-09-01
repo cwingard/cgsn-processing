@@ -11,32 +11,31 @@ import pandas as pd
 import re
 import requests
 
-from bs4 import BeautifulSoup
 from calendar import timegm
 from pytz import timezone
 
 # set the base URL for the OOI asset management listing of calibration files and a regex for the CSV files
 GIT = 'https://github.com'
-CSV = re.compile('.*\.csv')
+CSV = re.compile(r'.*\.csv')
 
 
-def list_links(url, tag=''):
-    page = requests.get(url).text
-    soup = BeautifulSoup(page, 'html.parser')
-    pattern = re.compile(str(tag))
-    return [node.get('href') for node in soup.find_all('a', text=pattern)]
+def list_directories(url, tag=''):
+    page = requests.get(url).json()
+    tree = page['payload']['tree']
+    urls = ['{}/{}'.format(url, item['name']) for item in tree['items'] if tag in item['name']]
+    return urls
 
 
 def find_calibration(inst_class, inst_serial, sampling_date):
     # find the links for the instrument class we are after
-    links = list_links('{}/ooi-integration/asset-management/tree/master/calibration/'.format(GIT), inst_class)
+    links = list_directories('{}/oceanobservatories/asset-management/tree/master/calibration/'.format(GIT), inst_class)
     tdiff = []
     flist = []
 
     # if successful, start to zero in on our instrument
     if links:
         for link in links:
-            instrmts = list_links('{}/{}/'.format(GIT, link), '-{}__'.format(inst_serial.rjust(5, '0')))
+            instrmts = list_directories(link, '-{}__'.format(inst_serial.rjust(5, '0')))
             if instrmts:
                 for inst in instrmts:
                     # only look at .csv files
@@ -71,8 +70,8 @@ def find_calibration(inst_class, inst_serial, sampling_date):
             csv = None
         else:
             # assemble the csv URL, adjusting for the fact we want the raw content
-            csv = '{}{}'.format('https://raw.githubusercontent.com', flist[tdiff.index(m)])
-            csv = re.sub('/blob', '', csv)
+            csv = re.sub('github.com', 'raw.githubusercontent.com', flist[tdiff.index(m)])
+            csv = re.sub('/tree', '', csv)
     else:
         csv = None
 

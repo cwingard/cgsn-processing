@@ -6,7 +6,6 @@
 @author Christopher Wingard
 @brief Adds variables to a pandas DataFrame for the various error flags produced by the systems
 """
-import numpy as np
 from enum import IntEnum
 
 import pandas as pd
@@ -192,7 +191,7 @@ class PwrsysErrorFlag3(IntEnum):
     ef3_high_voltage_output_current_sensor_fault = 0x10000000
     ef3_high_voltage_output_voltage_sensor_fault = 0x20000000
     ef3_p_swgf_sensor_fault = 0x40000000
-    ef3_n_swgf_sensor_fault= 0x80000000
+    ef3_n_swgf_sensor_fault = 0x80000000
 
 
 class MPEAErrorFlag1(IntEnum):
@@ -248,12 +247,13 @@ def derive_multi_flags(flag_class, flag_name, df):
     flag values in the DataFrame. Returns the DataFrame with the newly created
     variables.
     """
+    df = df.copy()  # make a copy of the DataFrame to avoid modifying the original
     for name, member in flag_class.__members__.items():
         flag = []
         for row in df.itertuples():
             # grab the flag value
             x = row._asdict()[flag_name]
-            if not isinstance(x, (np.int, np.int32, np.int64)):
+            if not isinstance(x, int):
                 # convert it to an integer if still a string
                 x = int(x, 16)
             # compare via a logical AND bitwise operation to the flags
@@ -270,18 +270,19 @@ def derive_multi_flags(flag_class, flag_name, df):
     return df
 
 
-def derive_single_flags(flag_class, value, df):
+def derive_single_flags(flag_class, flag_name, df):
     """
     Uses the enumeration flag class from above to quickly set values for the
     flag values in the DataFrame. Returns the DataFrame with the newly created
     variables.
     """
+    df = df.copy()  # make a copy of the DataFrame to avoid modifying the original
     for name, member in flag_class.__members__.items():
         flag = []
         for row in df.itertuples():
             # grab the flag value
-            x = row._asdict()[value]
-            if not isinstance(x, (np.int, np.int32, np.int64)):
+            x = row._asdict()[flag_name]
+            if not isinstance(x, int):
                 # convert it to an integer if still a string
                 x = int(x, 16)
             # compare via a logical OR bitwise operation to the flags
@@ -296,4 +297,3 @@ def derive_single_flags(flag_class, value, df):
         df[name] = flag
 
     return df
-

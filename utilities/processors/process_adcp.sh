@@ -32,8 +32,7 @@ fi
 
 # Process the file
 if [ -e $IN ]; then
-    cd /home/ooiuser/code/cgsn-processing
+    cd /home/ooiuser/code/cgsn-processing || exit
     python -m cgsn_processing.process.proc_adcp -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON \
-        -dp $DEPTH -i $IN -o $OUT -s pd0 -df $CTD
+        -dp $DEPTH -i $IN -o $OUT -s pd0 -df $CTD || true
 fi
-
