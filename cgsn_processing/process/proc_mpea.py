@@ -86,10 +86,10 @@ def main(argv=None):
             d = nc.createVariable(c, 'S6', ('time',))
             d.setncatts(MPEA[c])
             d[:] = df[c].values
-        elif c in ['error_flag1', 'error_flag2']:
-            d = nc.createVariable(c, 'S8', ('time',))
-            d.setncatts(MPEA[c])
-            d[:] = df[c].values
+        # elif c in ['error_flag1', 'error_flag2']:
+        #    d = nc.createVariable(c, 'S8', ('time',))
+        #    d.setncatts(MPEA[c])
+            #    d[:] = df[c].values
         else:
             # use the TimeSeries object to add the variables
             ts.add_variable(c, df[c].values, fillvalue=-999999999, attributes=MPEA[c])

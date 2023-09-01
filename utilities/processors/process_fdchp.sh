@@ -31,6 +31,6 @@ fi
 
 # Process the file
 if [ -e $IN ]; then
-    cd /home/ooiuser/code/cgsn-processing
-    python -m cgsn_processing.process.proc_fdchp -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp 0 -i $IN -o $OUT
+    cd /home/ooiuser/code/cgsn-processing || exit
+    python -m cgsn_processing.process.proc_fdchp -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp -4 -i $IN -o $OUT
 fi

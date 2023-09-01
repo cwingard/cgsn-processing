@@ -92,7 +92,7 @@ def main(argv=None):
             d[:] = df[c].values
         else:
             # use the TimeSeries object to add the variables
-            ts.add_variable(c, df[c].values, fillvalue=-9999999, attributes=SUPERV[c])
+            ts.add_variable(c, df[c].values, fillvalue=-999999999, attributes=SUPERV[c])
 
     # synchronize the data with the netCDF file and close it
     nc.sync()
