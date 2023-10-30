@@ -38,7 +38,7 @@ def main(argv=None):
     # calculate the in-situ density of the seawater from the absolute salinity and conservative temperature
     sa = SA_from_SP(df['salinity'], df['pressure'], lon, lat)   # absolute salinity
     ct = CT_from_t(sa, df['temperature'], df['pressure'])       # conservative temperature
-    df['in_situ_density'] = rho(sa, ct, df['pressure'])         # in-situ density
+    df['density'] = rho(sa, ct, df['pressure'])                 # in-situ density
 
     # set up some further parameters for use with the OMTs class
     df['deploy_id'] = deployment
