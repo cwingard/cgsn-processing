@@ -135,9 +135,7 @@ IFCB = {
     'pump2State': {
         'long_name': 'Pump 2 state',
         'units': 'boolean',
-        'long_name': 'Photomultiplier A high voltage',
-        'units': 'volts',
-        'comment': 'High voltage level at photomultiplier A'
+        'comment': 'Logical on/off state'
     },
 
     'PMTAhighVoltage': {
