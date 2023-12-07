@@ -98,17 +98,14 @@ RBRQ3 = {
     },
     'temperature_00': {
         'long_name': 'Temperature of ???',
-        'standard_name': 'temperature_00',
         'units': 'degrees_Celsius',
     },
     'pressure_00': {
         'long_name': 'Pressure of ???',
-        'standard_name': 'pressure_00',
         'units': 'degrees_Celsius',
     },
     'temperature_01': {
         'long_name': 'Temperature of ???',
-        'standard_name': 'temperature_01',
         'units': 'degrees_Celsius',
     },
     'seapressure_00': {
@@ -118,12 +115,10 @@ RBRQ3 = {
     },
     'period_00': {
         'long_name': 'Period of ???',
-        'standard_name': 'period_00',
         'units': 'seconds???',
     },
     'period_01': {
         'long_name': 'Period of ???',
-        'standard_name': 'period_01',
         'units': 'seconds???',
     }
 }
