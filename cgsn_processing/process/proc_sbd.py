@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-@package cgsn_processing.process.proc_superv
-@file cgsn_processing/process/proc_superv.py
+@package cgsn_processing.process.proc_sbd
+@file cgsn_processing/process/proc_sbd.py
 @author Christopher Wingard
-@brief Creates a NetCDF dataset for the CPM, DCL or STC Supervisor from JSON
-    formatted source data
+@brief Creates a NetCDF dataset for the CPM or STC supervisor logs sent
+    via Iridium SBD messaging from the JSON formatted source data
 """
 import numpy as np
 import os
