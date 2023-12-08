@@ -41,7 +41,7 @@ SHARED = {
                     'the GPS clock to determine the internal clock''s offset and drift.')
     },
     'lon': {
-        'long_name': 'Longitude',
+        'long_name': 'Deployment Longitude',
         'standard_name': 'longitude',
         'units': 'degrees_east',
         'axis': 'X',
@@ -49,7 +49,7 @@ SHARED = {
                     'the center of the watch circle.')
     },
     'lat': {
-        'long_name': 'Latitude',
+        'long_name': 'Deployment Latitude',
         'standard_name': 'latitude',
         'units': 'degrees_north',
         'axis': 'Y',

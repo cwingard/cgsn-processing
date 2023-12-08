@@ -49,14 +49,13 @@ SUPERV = {
         'leak_detect_enable': {
             'long_name': 'Leak Detects Enabled',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': ('Status flag indicating which, if any, of the leak detects are enabled. Valid values '
                         'are 0: leak detects disabled, 1: leak detect 1 enabled, 2: leak detect 2 enabled, '
                         'and 3: leak detects 1 and 2 enabled.'),
             'flag_values': np.intc([0, 1, 2, 3]),
             'flag_meanings': ('leak_detects_disabled leak_detect_1_enabled leak_detect_2_enabled '
                               'leak_detects_1_and_2_enabled'),
-            'ancillary_variables': 'leak_detect_voltage1 leak_detect_voltage2'
         },
         'leak_detect_voltage1': {
             'long_name': 'Leak Detect 1 Voltage',
@@ -75,12 +74,11 @@ SUPERV = {
         'heartbeat_enable': {
             'long_name': 'Heartbeat Enabled',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': ('Status flag indicating whether the heartbeat is enabled or not. Valid values are '
                         '0: heartbeat disabled, 1: heartbeat enabled'),
             'flag_values': np.intc([0, 1]),
-            'flag_meanings': ('heartbeat_disabled heartbeat_enabled'),
-            'ancillary_variables': 'heartbeat_delta heartbeat_threshold'
+            'flag_meanings': 'heartbeat_disabled heartbeat_enabled',
         },
         'heartbeat_delta': {
             'long_name': 'Heartbeat Delta',
@@ -95,12 +93,11 @@ SUPERV = {
         'wake_code': {
             'long_name': 'Wake Code',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Wake code indicating what caused the CE to turn on.',
             'flag_values': np.intc([0, 1, 2, 4, 8, 16, 32, 64, 128]),
             'flag_meanings': ('no_wake_code cold_start alarm_wakeup_from_ce wakeup_from_sbd wakeup_from_dcl '
                               'mpic_watchdog psc_error wakeup_from_imm hbeat_error'),
-            'ancillary_variables': 'wake_time_count wake_power_count'
         },
         'wake_time_count': {
             'long_name': 'Wake Time Count',
@@ -133,7 +130,7 @@ SUPERV = {
         'error_flags': {
             'long_name': 'CPM Error Flags',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': ('Error flags for the CPM supervisor data. The flags are tied to the main voltage and current '
                         'variables for the purposes of this data set, however they are independently applicable to '
                         'multiple variables in the supervisor data set.'),
@@ -153,12 +150,11 @@ SUPERV = {
                               'iseawater_gflt_9522_fw_gnd_out_of_allowable_range leak_det1_exceeded_limit '
                               'leak_det2_exceeded_limit i2c_communication_error uart_communication_error '
                               'cpm_dead_recommend_switchover channel_pic_over_current mpic_brown-out_reset'),
-            'ancillary_variables': 'main_voltage main_current'
         },
         'ground_fault_enable': {
             'long_name': 'Ground Faults Enabled',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'List of enabled ground fault detection systems for the CPM.',
             'flag_masks': np.hstack(np.array([0, 2 ** np.array(range(0, 4))], dtype=object)).astype(np.uintc),
             'flag_meanings': ('not_enabled sbd_enabled gps_enabled main_voltage_enabled fwwf_enabled'),
@@ -187,11 +183,10 @@ SUPERV = {
         'iridium_power_state': {
             'long_name': 'Iridium Modem Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates the power state (0: off, 1: on) of the Iridium modem.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'off on',
-            'ancillary_variables': 'iridium_voltage iridium_current iridium_error_flag'
         },
         'iridium_voltage': {
             'long_name': 'Iridium Modem Voltage',
@@ -206,22 +201,20 @@ SUPERV = {
         'iridium_error_flag': {
             'long_name': 'Iridium Error Flag',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates whether there is an error condition (0: no error, 1: error) with the port.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'no_error error_exists',
-            'ancillary_variables': 'iridium_power_state iridium_voltage iridium_current'
         },
         'fwwf_power_state': {
             'long_name': 'Freewave and WiFi Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': ('Status flag indicating which, if any, of the freewave and WiFi power ports are enabled. '
                         'Valid values are 0: power disabled, 1: freewave power enabled, 2: WiFi power enabled, '
                         'and 3: freewave and WiFI power enabled.'),
             'flag_values': np.intc([0, 1, 2, 3]),
             'flag_meanings': 'freewave_and_wifi_disabled freewave_enabled wifi_enabled freewave_and_wifi_enabled',
-            'ancillary_variables': 'fwwf_voltage fwwf_current fwwf_power_flag'
         },
         'fwwf_voltage': {
             'long_name': 'Freewave and WiFi Voltage',
@@ -236,30 +229,27 @@ SUPERV = {
         'fwwf_power_flag': {
             'long_name': 'Freewave and WiFi Error Flag',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': ('Indicates whether there is an error condition (0: no error, 1: error) with power to the '
                         'freewave or WiFi modems.'),
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'no_error error_exists',
-            'ancillary_variables': 'fwwf_power_state fwwf_voltage fwwf_current'
         },
         'gps_power_state': {
             'long_name': 'GPS Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates the power state (0: off, 1: on) of the GPS sensor.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'off on',
-            'ancillary_variables': 'main_voltage main_current'
         },
         'sbd_power_state': {
             'long_name': 'SBD Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates the power state (0: off, 1: on) of the SBD modem.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'off on',
-            'ancillary_variables': 'main_voltage main_current'
         },
         'sbd_message_pending': {
             'long_name': 'Pending SBD Messages',
@@ -269,42 +259,38 @@ SUPERV = {
         'pps_source': {
             'long_name': 'PPS Source',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates the source for the pulse per second (PPS) signal used to manage the CE clocks.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'GPS seascan_oscillator',
-            'ancillary_variables': 'gps_power_state'
         },
         'dcl_power_state': {
             'long_name': 'DCL Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Flags indicating which of the 7 DCL ports are powered on/off',
             'flag_masks': np.hstack(np.array([0, 2 ** np.array(range(0, 7))], dtype=object)).astype(np.uintc),
             'flag_meanings': ('all_dcls_powered_off dcl_1_powered_on dcl_2_powered_on dcl_3_powered_on'
                               'dcl_4_powered_on dcl_5_powered_on dcl_6_powered_on dcl_7_powered_on'),
-            'ancillary_variables': 'main_voltage main_current'
         },
         'esw_power_state': {
             'long_name': 'Ethernet Switch Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': ('Status flag indicating which, if any, of the ethernet switches are enabled. Valid values '
                         'are 0: power disabled, 1: ethernet switch 1 enabled, 2: ethernet switch 2 enabled, and '
                         '3: both ethernet switches enabled.'),
             'flag_values': np.intc([0, 1, 2, 3]),
             'flag_meanings': 'ethernet_switches_disabled ethernet_switch_1_enabled ethernet_switch_2_enabled '
                              'ethernet_switch_1_and_2_enabled',
-            'ancillary_variables': 'main_voltage main_current'
         },
         'dsl_power_state': {
             'long_name': 'DSL Modem Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates the power state (0: off, 1: on) of the DSL modem.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'off on',
-            'ancillary_variables': 'main_voltage main_current'
         }
     },
     'dcl': {
@@ -317,7 +303,7 @@ SUPERV = {
         'error_flags': {
             'long_name': 'DCL Error Flags',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': ('Error flags for the DCL supervisor data. The flags are tied to the main voltage and current '
                         'variables for the purposes of this data set, however they are independently applicable to '
                         'multiple variables in the supervisor data set.'),
@@ -338,7 +324,6 @@ SUPERV = {
                               'chpic_addr_7_not_responding chpic_addr_8_not_responding i2c_error uart_error '
                               'undefined undefined undefined undefined undefined undefined undefined '
                               'mpic_brown-out_reset'),
-            'ancillary_variables': 'main_voltage main_current'
         },
         'temperature3': {
             'long_name': 'Temperature Sensor 3',
@@ -358,11 +343,10 @@ SUPERV = {
         'ground_fault_enable': {
             'long_name': 'Ground Faults Enabled',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'List of enabled ground fault detection systems for the DCL.',
             'flag_masks': np.hstack(np.array([0, 2 ** np.array(range(0, 3))], dtype=object)).astype(np.uintc),
-            'flag_meanings': ('not_enabled iso_voltage_3.3v_enabled main_voltage_enabled sensors_enabled'),
-            'ancillary_variables': 'ground_fault_isov3 ground_fault_main ground_fault_sensors'
+            'flag_meanings': 'not_enabled iso_voltage_3.3v_enabled main_voltage_enabled sensors_enabled',
         },
         'ground_fault_isov3': {
             'long_name': 'Ground Fault Isolated Voltage',
@@ -382,11 +366,10 @@ SUPERV = {
         'port1_power_state': {
             'long_name': 'Port 1 Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates the power state (0: off, 1: on) of the port.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'off on',
-            'ancillary_variables': 'port1_voltage port1_current port1_error_flag'
         },
         'port1_voltage': {
             'long_name': 'Port 1 Voltage',
@@ -401,20 +384,18 @@ SUPERV = {
         'port1_error_flag': {
             'long_name': 'Port 1 Error Flag',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
-            'ancillary_variables': 'port1_power_state port1_voltage port1_current'
         },
         'port2_power_state': {
             'long_name': 'Port 2 Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates the power state (0: off, 1: on) of the port.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'off on',
-            'ancillary_variables': 'port2_voltage port2_current port2_error_flag'
         },
         'port2_voltage': {
             'long_name': 'Port 2 Voltage',
@@ -429,20 +410,18 @@ SUPERV = {
         'port2_error_flag': {
             'long_name': 'Port 2 Error Flag',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
-            'ancillary_variables': 'port2_power_state port2_voltage port2_current'
         },
         'port3_power_state': {
             'long_name': 'Port 3 Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates the power state (0: off, 1: on) of the port.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'off on',
-            'ancillary_variables': 'port3_voltage port3_current port3_error_flag'
         },
         'port3_voltage': {
             'long_name': 'Port 3 Voltage',
@@ -457,20 +436,18 @@ SUPERV = {
         'port3_error_flag': {
             'long_name': 'Port 3 Error Flag',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
-            'ancillary_variables': 'port3_power_state port3_voltage port3_current'
         },
         'port4_power_state': {
             'long_name': 'Port 4 Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates the power state (0: off, 1: on) of the port.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'off on',
-            'ancillary_variables': 'port4_voltage port4_current port4_error_flag'
         },
         'port4_voltage': {
             'long_name': 'Port 4 Voltage',
@@ -485,20 +462,18 @@ SUPERV = {
         'port4_error_flag': {
             'long_name': 'Port 4 Error Flag',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
-            'ancillary_variables': 'port4_power_state port4_voltage port4_current'
         },
         'port5_power_state': {
             'long_name': 'Port 5 Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates the power state (0: off, 1: on) of the port.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'off on',
-            'ancillary_variables': 'port5_voltage port5_current port5_error_flag'
         },
         'port5_voltage': {
             'long_name': 'Port 5 Voltage',
@@ -513,20 +488,18 @@ SUPERV = {
         'port5_error_flag': {
             'long_name': 'Port 5 Error Flag',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
-            'ancillary_variables': 'port5_power_state port5_voltage port5_current'
         },
         'port6_power_state': {
             'long_name': 'Port 6 Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates the power state (0: off, 1: on) of the port.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'off on',
-            'ancillary_variables': 'port6_voltage port6_current port6_error_flag'
         },
         'port6_voltage': {
             'long_name': 'Port 6 Voltage',
@@ -541,20 +514,18 @@ SUPERV = {
         'port6_error_flag': {
             'long_name': 'Port 6 Error Flag',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
-            'ancillary_variables': 'port6_power_state port6_voltage port6_current'
         },
         'port7_power_state': {
             'long_name': 'Port 7 Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates the power state (0: off, 1: on) of the port.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'off on',
-            'ancillary_variables': 'port7_voltage port7_current port7_error_flag'
         },
         'port7_voltage': {
             'long_name': 'Port 7 Voltage',
@@ -569,20 +540,18 @@ SUPERV = {
         'port7_error_flag': {
             'long_name': 'Port 7 Error Flag',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
-            'ancillary_variables': 'port7_power_state port7_voltage port7_current'
         },
         'port8_power_state': {
             'long_name': 'Port 8 Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates the power state (0: off, 1: on) of the port.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'off on',
-            'ancillary_variables': 'port8_voltage port8_current port8_error_flag'
         },
         'port8_voltage': {
             'long_name': 'Port 8 Voltage',
@@ -597,26 +566,23 @@ SUPERV = {
         'port8_error_flag': {
             'long_name': 'Port 8 Error Flag',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
-            'ancillary_variables': 'port8_power_state port8_voltage port8_current'
         },
         'power_state': {
             'long_name': 'Power Board State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'State of the DCL dual power boards indicating use of the low and/or high power boards.',
             'flag_values': np.intc([0, 1, 2, 3]),
             'flag_meanings': 'power_board_off low_power high_power low_and_high_power',
-            'ancillary_variables': ('power_board_mode power_voltage_select power_voltage_main power_current_main '
-                                    'power_voltage_12 power_current_12 power_voltage_24 power_current_24')
         },
         'power_board_mode': {
             'long_name': 'Dual Power Board Mode',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Dual power board mode. Default is I2C mode (2).',
             'flag_values': np.intc([0, 1, 2]),
             'flag_meanings': 'power_board_off legacy_gio_mode i2c_mode',
@@ -626,7 +592,7 @@ SUPERV = {
         'power_voltage_select': {
             'long_name': 'Dual Power Board Voltage Selected',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Voltage source selected by the power board',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'power_board_off low_power lower_power high_power undefined',
@@ -674,7 +640,7 @@ SUPERV = {
         'error_flags1': {
             'long_name': 'STC Error Flags Set 1',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': ('First set of error flags for the STC supervisor data. The flags are tied to the main voltage '
                         'and current variables for the purposes of this data set, however they are independently '
                         'applicable to multiple variables in the supervisor data set.'),
@@ -684,12 +650,11 @@ SUPERV = {
                               'undefined undefined undefined undefined undefined undefined undefined undefined '
                               'undefined undefined undefined undefined undefined undefined undefined undefined '
                               'undefined'),
-            'ancillary_variables': 'main_voltage main_current'
         },
         'error_flags2': {
             'long_name': 'STC Error Flags Set 2',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': ('Second set of error flags for the STC supervisor data. The flags are tied to the main '
                         'voltage and current variables for the purposes of this data set, however they are '
                         'independently applicable to multiple variables in the supervisor data set.'),
@@ -699,16 +664,14 @@ SUPERV = {
                               'undefined undefined undefined undefined undefined undefined undefined undefined '
                               'undefined undefined undefined undefined undefined undefined undefined undefined '
                               'undefined'),
-            'ancillary_variables': 'main_voltage main_current'
         },
         'ground_fault_enable': {
             'long_name': 'Ground Faults Enabled',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'List of enabled ground fault detection systems for the STC.',
             'flag_masks': np.hstack(np.array([0, 2 ** np.array(range(0, 4))], dtype=object)).astype(np.uintc),
-            'flag_meanings': ('not_enabled sbd_enabled gps_enabled sensors_enabled telemetry_enabled'),
-            'ancillary_variables': 'ground_fault_sbd ground_fault_gps ground_fault_main ground_fault_9522_fw'
+            'flag_meanings': 'not_enabled sbd_enabled gps_enabled sensors_enabled telemetry_enabled',
         },
         'ground_fault_sbd': {
             'long_name': 'Ground Fault SBD',
@@ -733,11 +696,10 @@ SUPERV = {
         'iridium_power_state': {
             'long_name': 'Iridium Modem Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates the power state (0: off, 1: on) of the Iridium modem.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'off on',
-            'ancillary_variables': 'iridium_voltage iridium_current iridium_error_flag'
         },
         'iridium_voltage': {
             'long_name': 'Iridium Modem Voltage',
@@ -752,22 +714,20 @@ SUPERV = {
         'iridium_error_flag': {
             'long_name': 'Iridium Error Flag',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates whether there is an error condition (0: no error, 1: error) with the port.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'no_error error_exists',
-            'ancillary_variables': 'iridium_power_state iridium_voltage iridium_current'
         },
         'fwwf_power_state': {
             'long_name': 'Freewave and WiFi Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': ('Status flag indicating which, if any, of the freewave and WiFi power ports are enabled. '
                         'Valid values are 0: power disabled, 1: freewave power enabled, 2: WiFi power enabled, '
                         'and 3: freewave and WiFI power enabled.'),
             'flag_values': np.intc([0, 1, 2, 3]),
             'flag_meanings': 'freewave_and_wifi_disabled freewave_enabled wifi_enabled freewave_and_wifi_enabled',
-            'ancillary_variables': 'fwwf_voltage fwwf_current fwwf_power_flag'
         },
         'fwwf_voltage': {
             'long_name': 'Freewave and WiFi Voltage',
@@ -782,17 +742,16 @@ SUPERV = {
         'fwwf_power_flag': {
             'long_name': 'Freewave and WiFi Error Flag',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': ('Indicates whether there is an error condition (0: no error, 1: error) with power to the '
                         'freewave or WiFi modems.'),
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'no_error error_exists',
-            'ancillary_variables': 'fwwf_power_state fwwf_voltage fwwf_current'
         },
         'gps_power_state': {
             'long_name': 'GPS Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates the power state (0: off, 1: on) of the GPS sensor.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'off on',
@@ -801,11 +760,10 @@ SUPERV = {
         'sbd_power_state': {
             'long_name': 'SBD Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates the power state (0: off, 1: on) of the SBD modem.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'off on',
-            'ancillary_variables': 'main_voltage main_current'
         },
         'sbd_message_pending': {
             'long_name': 'Pending SBD Messages',
@@ -815,16 +773,15 @@ SUPERV = {
         'pps_source': {
             'long_name': 'PPS Source',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates the source for the pulse per second (PPS) signal used to manage the CE clocks.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'GPS seascan_oscillator',
-            'ancillary_variables': 'gps_power_state'
         },
         'imm_power_state': {
             'long_name': 'IMM Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates the power state (0: off, 1: on) of the inductive modem.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'off on'
@@ -832,32 +789,29 @@ SUPERV = {
         'esw_power_state': {
             'long_name': 'Ethernet Switch Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': ('Status flag indicating which, if any, of the ethernet switches are enabled. Valid values '
                         'are 0: power disabled, 1: ethernet switch 1 enabled, 2: ethernet switch 2 enabled, and '
                         '3: both ethernet switches enabled.'),
             'flag_values': np.intc([0, 1, 2, 3]),
             'flag_meanings': 'ethernet_switches_disabled ethernet_switch_1_enabled ethernet_switch_2_enabled '
                              'ethernet_switch_1_and_2_enabled',
-            'ancillary_variables': 'main_voltage main_current'
         },
         'dsl_power_state': {
             'long_name': 'DSL Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates the power state (0: off, 1: on) of the DSL modem.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'off on',
-            'ancillary_variables': 'main_voltage main_current'
         },
         'port1_power_state': {
             'long_name': 'Port 1 Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates the power state (0: off, 1: on) of the port.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'off on',
-            'ancillary_variables': 'port1_voltage port1_current port1_error_flag'
         },
         'port1_voltage': {
             'long_name': 'Port 1 Voltage',
@@ -872,20 +826,18 @@ SUPERV = {
         'port1_error_flag': {
             'long_name': 'Port 1 Error Flag',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
-            'ancillary_variables': 'port1_power_state port1_voltage port1_current'
         },
         'port2_power_state': {
             'long_name': 'Port 2 Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates the power state (0: off, 1: on) of the port.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'off on',
-            'ancillary_variables': 'port2_voltage port2_current port2_error_flag'
         },
         'port2_voltage': {
             'long_name': 'Port 2 Voltage',
@@ -900,20 +852,18 @@ SUPERV = {
         'port2_error_flag': {
             'long_name': 'Port 2 Error Flag',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
-            'ancillary_variables': 'port2_power_state port2_voltage port2_current'
         },
         'port3_power_state': {
             'long_name': 'Port 3 Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates the power state (0: off, 1: on) of the port.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'off on',
-            'ancillary_variables': 'port3_voltage port3_current port3_error_flag'
         },
         'port3_voltage': {
             'long_name': 'Port 3 Voltage',
@@ -928,20 +878,18 @@ SUPERV = {
         'port3_error_flag': {
             'long_name': 'Port 3 Error Flag',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
-            'ancillary_variables': 'port3_power_state port3_voltage port3_current'
         },
         'port5_power_state': {
             'long_name': 'Port 5 Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates the power state (0: off, 1: on) of the port.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'off on',
-            'ancillary_variables': 'port5_voltage port5_current port5_error_flag'
         },
         'port5_voltage': {
             'long_name': 'Port 5 Voltage',
@@ -956,20 +904,18 @@ SUPERV = {
         'port5_error_flag': {
             'long_name': 'Port 5 Error Flag',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
-            'ancillary_variables': 'port5_power_state port5_voltage port5_current'
         },
         'port7_power_state': {
             'long_name': 'Port 7 Power State',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates the power state (0: off, 1: on) of the port.',
             'flag_values': np.intc([0, 1]),
             'flag_meanings': 'off on',
-            'ancillary_variables': 'port7_voltage port7_current port7_error_flag'
         },
         'port7_voltage': {
             'long_name': 'Port 7 Voltage',
@@ -984,11 +930,10 @@ SUPERV = {
         'port7_error_flag': {
             'long_name': 'Port 7 Error Flag',
             'standard_name': 'status_flag',
-            'units': '1',
+            # 'units': '',    deliberately left blank, no units for this value
             'comment': 'Indicates whether there is an error condition with the port.',
             'flag_values': np.intc([0, 1, 2, 3, 4]),
             'flag_meanings': 'no_error over_current no_comms not_configured serial_only',
-            'ancillary_variables': 'port7_power_state port7_voltage port7_current'
         }
     }
 }
