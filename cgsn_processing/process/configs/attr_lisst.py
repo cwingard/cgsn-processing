@@ -22,14 +22,14 @@ LISST = {
     },
     'lisst_volume_concentration': {
         'long_name': 'Volume Concentration For Size Class 1 Through 36',
-        'units': 'μL',
+        'units': 'uL',
         'comment': 'Volume concentration for particles analyzed by instrument, distributed through 36 size classes '
                    'ranging from 1.00 μm to 500 μm, with ranges increasing logarithmically. Each bin label represents '
                    'the lower limit of that bin size.'
     },
     'lower_particle_size': {
         'long_name': 'Lower Size Limit Of Each Bin',
-        'units': 'µm',
+        'units': 'um',
         'comment': 'Contains the lower size limit of each bin. There is no size gap between bins, so the upper limit '
                    'of each bin is the next bin''s lower limit.'
     },
@@ -69,7 +69,7 @@ LISST = {
     },
     'mean_diameter': {
         'long_name': 'Mean Particle Diameter',
-        'units': 'μm',
+        'units': 'um',
         'comment': 'The mean diameter of analyzed particles. Calculated from fully processed size distribution.'
     },
     'total_volume_concentration': {
