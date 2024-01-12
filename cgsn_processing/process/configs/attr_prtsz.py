@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-@package cgsn_processing.process.configs.attr_lisst
-@file cgsn_processing/process/configs/attr_lisst.py
+@package cgsn_processing.process.configs.attr_prtsz
+@file cgsn_processing/process/configs/attr_prtsz.py
 @author Samuel Dahlberg
-@brief Attributes for the LISST variables
+@brief Attributes for the PRTSZ variables
 """
 
-LISST = {
+PRTSZ = {
     'global': {
         'title': 'Particle Size Analyzer.',
         'summary': 'Laser-diffraction particle size analyzer, classifying particles into 36 size bins ranging from '
@@ -74,7 +74,7 @@ LISST = {
                    'of the data string. Allows for a determination of the internal clock offset and drift over the '
                    'course of a deployment.'
     },
-    'lisst_volume_concentration': {
+    'prtsz_volume_concentration': {
         'long_name': 'Volume Concentration For Size Class 1 Through 36',
         'units': 'uL',
         'comment': 'Volume concentration for particles analyzed by instrument, distributed through 36 size classes '
