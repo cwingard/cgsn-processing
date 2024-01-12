@@ -43,6 +43,9 @@ def proc_prtsz(infile, platform, deployment, lat, lon, depth):
     # clean up the dataframe, getting rid of the time string variables we no longer need
     df.drop(columns=['date_time_string'], inplace=True)
 
+    # dropping the pressure variable, as it has no units and does not provide any useful information
+    df.drop(columns=['pressure'], inplace=True)
+
     # pop the 2d particle size data array out of the dataframe for manipulation
     particle_concentration = np.array(np.vstack(df.pop('prtsz_volume_concentration')))
 

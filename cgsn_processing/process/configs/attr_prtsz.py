@@ -137,12 +137,6 @@ PRTSZ = {
         'units': 'percent',
         'comment': 'Percent relative humidity internal to the sensor. Increasing values can indicate a slow leak.'
     },
-    'pressure': {
-        'long_name': 'Raw Pressure',
-        'standard_name': 'sea_water_pressure',
-        # 'units': ''    # deliberately left blank, no units for this value
-        'comment': 'Sea water pressure'
-    },
     'ambient_light': {
         'long_name': 'Ambient Light',
         'units': 'count',
