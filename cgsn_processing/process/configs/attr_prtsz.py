@@ -11,7 +11,7 @@ PRTSZ = {
     'global': {
         'title': 'Particle Size Analyzer.',
         'summary': 'Laser-diffraction particle size analyzer, classifying particles into 36 size bins ranging from '
-                   '1.00 μm to 500 μm.',
+                   '1.00 um to 500 um.',
         'project': 'Ocean Observatories Initiative',
         'institution': 'Coastal and Global Scale Nodes (CGSN) and the Endurance Array (EA)',
         'acknowledgement': 'National Science Foundation',
@@ -26,7 +26,7 @@ PRTSZ = {
     'deploy_id': {
         'long_name': 'Deployment ID',
         'comment': 'Mooring deployment ID. Useful for differentiating data by deployment, '
-                    'allowing for overlapping deployments in the data sets.'
+                   'allowing for overlapping deployments in the data sets.'
     },
     'station': {
         'cf_role': 'timeseries_id',
@@ -39,8 +39,8 @@ PRTSZ = {
         'axis': 'T',
         'calendar': 'gregorian',
         'comment': 'Derived from either the DCL data logger GPS referenced clock, or the internal instrument clock. '
-                    'For instruments attached to a DCL, the instrument''s internal clock can be cross-compared to '
-                    'the GPS clock to determine the internal clock''s offset and drift.'
+                   'For instruments attached to a DCL, the instrument''s internal clock can be cross-compared to '
+                   'the GPS clock to determine the internal clock''s offset and drift.'
     },
     'lon': {
         'long_name': 'Deployment Longitude',
@@ -48,7 +48,7 @@ PRTSZ = {
         'units': 'degrees_east',
         'axis': 'X',
         'comment': 'Mooring deployment location, surveyed after deployment to determine the anchor location and '
-                    'the center of the watch circle.'
+                   'the center of the watch circle.'
     },
     'lat': {
         'long_name': 'Deployment Latitude',
@@ -56,14 +56,14 @@ PRTSZ = {
         'units': 'degrees_north',
         'axis': 'Y',
         'comment': 'Mooring deployment location, surveyed after deployment to determine the anchor location and '
-                    'the center of the watch circle.'
+                   'the center of the watch circle.'
     },
     'z': {
         'long_name': 'Depth',
         'standard_name': 'depth',
         'units': 'm',
         'comment': 'Depth of the instrument, either from the deployment depth (e.g. 7 m for an NSIF) or the '
-                    'instrument pressure record converted to depth.',
+                   'instrument pressure record converted to depth.',
         'positive': 'down',
         'axis': 'Z'
     },
@@ -74,11 +74,11 @@ PRTSZ = {
                    'of the data string. Allows for a determination of the internal clock offset and drift over the '
                    'course of a deployment.'
     },
-    'prtsz_volume_concentration': {
+    'volume_concentration': {
         'long_name': 'Volume Concentration For Size Class 1 Through 36',
         'units': 'uL',
         'comment': 'Volume concentration for particles analyzed by instrument, distributed through 36 size classes '
-                   'ranging from 1.00 μm to 500 μm, with ranges increasing logarithmically. Each bin label represents '
+                   'ranging from 1.00 um to 500 um, with ranges increasing logarithmically. Each bin label represents '
                    'the lower limit of that bin size.'
     },
     'lower_particle_size': {
@@ -151,7 +151,7 @@ PRTSZ = {
                    'than 0.1 indicated either very clear or very turbid waters and should be disregarded, while values '
                    'for very clear water (0.98-0.995) yield noisy data and should be used carefully.'
     },
-    'beam_attenuation': {
+    'volume_beam_attenuation_coefficient_of_radiative_flux_in_sea_water': {
         'long_name': 'Beam Attenuation (c)',
         'units': 'm-1',
         'comment': 'The Beam Attenuation Coefficient is the rate that the intensity of a beam of light will decrease '

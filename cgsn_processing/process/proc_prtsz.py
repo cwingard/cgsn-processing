@@ -11,7 +11,7 @@ import os
 import pandas as pd
 import xarray as xr
 
-from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING, dict_update, epoch_time
+from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING, epoch_time
 from cgsn_processing.process.configs.attr_prtsz import PRTSZ
 
 
@@ -47,7 +47,7 @@ def proc_prtsz(infile, platform, deployment, lat, lon, depth):
     df.drop(columns=['pressure'], inplace=True)
 
     # pop the 2d particle size data array out of the dataframe for manipulation
-    particle_concentration = np.array(np.vstack(df.pop('prtsz_volume_concentration')))
+    particle_concentration = np.array(np.vstack(df.pop('volume_concentration')))
 
     # Create a list of the lower sizes, to use as a column
     lower_particle_size = [1.00, 1.48, 1.74, 2.05, 2.42, 2.86, 3.38, 3.98, 4.70, 5.55, 6.55, 7.72, 9.12, 10.8, 12.7,
@@ -57,7 +57,7 @@ def proc_prtsz(infile, platform, deployment, lat, lon, depth):
     # convert the 1D variables to a xarray data set
     ds = xr.Dataset.from_dataframe(df)
 
-    particles = xr.Dataset({'prtsz_volume_concentration': (['time', 'lower_particle_size'], particle_concentration)}
+    particles = xr.Dataset({'volume_concentration': (['time', 'lower_particle_size'], particle_concentration)}
     , coords={'time': (['time'], pd.to_datetime(df.time, unit='s')), 'lower_particle_size': lower_particle_size})
 
     # create a xarray data set from the 1D and 2D data
