@@ -151,8 +151,9 @@ PRTSZ = {
                    'than 0.1 indicated either very clear or very turbid waters and should be disregarded, while values '
                    'for very clear water (0.98-0.995) yield noisy data and should be used carefully.'
     },
-    'volume_beam_attenuation_coefficient_of_radiative_flux_in_sea_water': {
+    'beam_attenuation': {
         'long_name': 'Beam Attenuation (c)',
+        'standard_name': 'volume_beam_attenuation_coefficient_of_radiative_flux_in_sea_water',
         'units': 'm-1',
         'comment': 'The Beam Attenuation Coefficient is the rate that the intensity of a beam of light will decrease '
                    'in response to the combined effects of absorption and scatter as a function of propagation '
