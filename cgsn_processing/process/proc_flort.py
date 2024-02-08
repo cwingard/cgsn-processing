@@ -18,7 +18,7 @@ from scipy.interpolate import interp1d
 
 from cgsn_processing.process.common import Coefficients, inputs, json2df, df2omtdf
 from cgsn_processing.process.finding_calibrations import find_calibration
-from cgsn_processing.process.configs.attr_flort import FLORT
+from cgsn_processing.process.configs.attr_flort import FLORT, TURBD
 
 from pyseas.data.flo_functions import flo_scale_and_offset, flo_bback_total
 
@@ -70,6 +70,12 @@ class Calibrations(Coefficients):
             if row[1] == 'CC_scattering_angle':
                 coeffs['scatter_angle'] = row[2]
 
+            # turbidity calculation factors
+            if (row[1] == 'CC_dark_counts_turbd'):
+                coeffs['dark_turbd'] = row[2]
+            if (row[1] == 'CC_scale_factor_turbd'):
+                coeffs['scale_turbd'] = row[2]
+
         # save the resulting dictionary
         self.coeffs = coeffs
 
@@ -85,6 +91,14 @@ def main(argv=None):
     lon = args.longitude
     depth = args.depth
     ctd_name = args.devfile     # name of co-located CTD
+    
+    # add support for turbidity calculation - ppw02022024
+    compute_turbidity_only = False
+    calib_prefix = "FLORT"
+    if args.switch is not None :
+        if args.switch == "TURBDX" :
+            compute_turbidity_only = True
+            calib_prefix = "TURBDX"
 
     # load the json data file and return a panda dataframe
     df = json2df(infile)
@@ -103,65 +117,76 @@ def main(argv=None):
         dev.load_coeffs()
     else:
         # load from the CI hosted CSV files
-        csv_url = find_calibration('FLORT', args.serial, (df.time.values.astype('int64') * 10 ** -9)[0])
+        csv_url = find_calibration(calib_prefix, args.serial, (df.time.values.astype('int64') * 10 ** -9)[0])
         if csv_url:
             dev.read_csv(csv_url)
             dev.save_coeffs()
         else:
-            print('A source for the FLORT calibration coefficients for {} could not be found'.format(infile))
+            print('A source for the FLORT or TURBDX calibration coefficients for {} could not be found'.format(infile))
             return None
 
-    # Apply the scale and offset correction factors from the factory calibration coefficients
-    df['estimated_chlorophyll'] = flo_scale_and_offset(df['raw_signal_chl'], dev.coeffs['dark_chla'],
-                                                       dev.coeffs['scale_chla'])
-    df['fluorometric_cdom'] = flo_scale_and_offset(df['raw_signal_cdom'], dev.coeffs['dark_cdom'],
-                                                   dev.coeffs['scale_cdom'])
-    df['beta_700'] = flo_scale_and_offset(df['raw_signal_beta'], dev.coeffs['dark_beta'], dev.coeffs['scale_beta'])
+    if compute_turbidity_only == False:
 
-    # Merge co-located CTD temperature and salinity data and calculate the total optical backscatter
-    flort_path, flort_file = os.path.split(infile)
-    ctd_file = re.sub('flort[\w]*', ctd_name, flort_file)
-    ctd_path = re.sub('flort', re.sub('[\d]*', '', ctd_name), flort_path)
-    ctd = json2df(os.path.join(ctd_path, ctd_file))
-    if not ctd.empty and len(ctd.index) >= 3:
-        # The Global moorings may use the data from the METBK-CT for FLORT mounted on the buoy subsurface plate. We'll
-        # rename the data columns from the METBK to match other CTDs and process accordingly.
-        if re.match('metbk', ctd_name):
-            # rename temperature and salinity
-            ctd = ctd.rename(columns={
-                'sea_surface_temperature': 'temperature',
-                'sea_surface_conductivity': 'conductivity'
-            })
-            # set the depth in dbar from the measured depth in m below the water line.
-            if re.match('metbk1', ctd_name):
-                ctd['pressure'] = p_from_z(-1.3661, lat)
-            elif re.match('metbk2', ctd_name):
-                ctd['pressure'] = p_from_z(-1.2328, lat)
-            else:  # default of 1.00 m
-                ctd['pressure'] = p_from_z(-1.0000, lat)
+        # Apply the scale and offset correction factors from the factory calibration coefficients
+        df['estimated_chlorophyll'] = flo_scale_and_offset(df['raw_signal_chl'], dev.coeffs['dark_chla'],
+                                                           dev.coeffs['scale_chla'])
+        df['fluorometric_cdom'] = flo_scale_and_offset(df['raw_signal_cdom'], dev.coeffs['dark_cdom'],
+                                                       dev.coeffs['scale_cdom'])
+        df['beta_700'] = flo_scale_and_offset(df['raw_signal_beta'], dev.coeffs['dark_beta'], dev.coeffs['scale_beta'])
 
-        # calculate the practical salinity of the seawater from the temperature, conductivity and pressure measurements
-        ctd['psu'] = SP_from_C(ctd['conductivity'].values * 10.0, ctd['temperature'].values, ctd['pressure'].values)
+        # Merge co-located CTD temperature and salinity data and calculate the total optical backscatter
+        flort_path, flort_file = os.path.split(infile)
+        ctd_file = re.sub('flort[\w]*', ctd_name, flort_file)
+        ctd_path = re.sub('flort', re.sub('[\d]*', '', ctd_name), flort_path)
+        ctd = json2df(os.path.join(ctd_path, ctd_file))
+        if not ctd.empty and len(ctd.index) >= 3:
+            # The Global moorings may use the data from the METBK-CT for FLORT mounted on the buoy subsurface plate. We'll
+            # rename the data columns from the METBK to match other CTDs and process accordingly.
+            if re.match('metbk', ctd_name):
+                # rename temperature and salinity
+                ctd = ctd.rename(columns={
+                    'sea_surface_temperature': 'temperature',
+                    'sea_surface_conductivity': 'conductivity'
+                })
+                # set the depth in dbar from the measured depth in m below the water line.
+                if re.match('metbk1', ctd_name):
+                    ctd['pressure'] = p_from_z(-1.3661, lat)
+                elif re.match('metbk2', ctd_name):
+                    ctd['pressure'] = p_from_z(-1.2328, lat)
+                else:  # default of 1.00 m
+                    ctd['pressure'] = p_from_z(-1.0000, lat)
 
-        # interpolate temperature and salinity data from the CTD into the FLORT record for calculations
-        degC = interp1d(ctd.time.values.astype('int64'), ctd.temperature.values, bounds_error=False)
-        df['temperature'] = degC(df.time.values.astype('int64'))
+            # calculate the practical salinity of the seawater from the temperature, conductivity and pressure measurements
+            ctd['psu'] = SP_from_C(ctd['conductivity'].values * 10.0, ctd['temperature'].values, ctd['pressure'].values)
 
-        psu = interp1d(ctd.time.values.astype('int64'), ctd.psu, bounds_error=False)
-        df['salinity'] = psu(df.time.values.astype('int64'))
+            # interpolate temperature and salinity data from the CTD into the FLORT record for calculations
+            degC = interp1d(ctd.time.values.astype('int64'), ctd.temperature.values, bounds_error=False)
+            df['temperature'] = degC(df.time.values.astype('int64'))
 
-        df['bback'] = flo_bback_total(df['beta_700'], df['temperature'], df['salinity'], 124., 700., 1.076)
-    else:
-        df['temperature'] = -9999.9
-        df['salinity'] = -9999.9
-        df['bback'] = -9999.9
+            psu = interp1d(ctd.time.values.astype('int64'), ctd.psu, bounds_error=False)
+            df['salinity'] = psu(df.time.values.astype('int64'))
 
+            df['bback'] = flo_bback_total(df['beta_700'], df['temperature'], df['salinity'], 124., 700., 1.076)
+        else:
+            df['temperature'] = -9999.9
+            df['salinity'] = -9999.9
+            df['bback'] = -9999.9
+
+    else:  # turbidity only
+
+        # Apply the scale and offset correction factors from the factory calibration coefficients
+        df['turbidity'] = flo_scale_and_offset(df['raw_signal_beta'], dev.coeffs['dark_turbd'],
+                                                           dev.coeffs['scale_turbd'])
+                
     # convert the dataframe to a format suitable for the pocean OMTs
     df['deploy_id'] = deployment
     df = df2omtdf(df, lat, lon, depth)
 
     # Setup and update the attributes for the resulting NetCDF file
-    attr = FLORT
+    if compute_turbidity_only == False: 
+        attr = FLORT
+    else:
+        attr = TURBD
     attr['global'] = dict_update(attr['global'], {
         'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
     })
