@@ -5,6 +5,8 @@
 @file cgsn_processing/process/proc_flort.py
 @author Christopher Wingard
 @brief Creates a NetCDF dataset for the FLORT from JSON formatted source data
+ppw 02082024 - updated to support turbidity calculations, as follows:
+Utilize the optional --switch parameter to support processing flort data to produce ONLY turbidity. Makes use of new calibration files being pushed to asset-management, having the naming scheme “CGINS-TURBDX-{s/n}__{date}.csv. These will live in a separate TURBDX subdirectory in asset management, per the CGSN data team. The value of the --switch flag should be “TURBDX” to compute turbidity; otherwise, standard FLORT outputs are calculated. The shell scripts for running processors or both parsers and processors have been updated accordingly.
 """
 import numpy as np
 import os
