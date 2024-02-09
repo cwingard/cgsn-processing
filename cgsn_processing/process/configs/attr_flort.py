@@ -128,7 +128,7 @@ TURBD = {
         'units': 'counts'
     },
     'turbidity': {
-        'long_name': 'Raw turbidity value',
+        'long_name': 'Sea Water Turbidity',
         'standard_name': 'sea_water_turbidity',
         'units': 'NTU',
         'comment': ('Turbidity is a dimensionless quantity which is expressed in NTU '
