@@ -31,6 +31,6 @@ fi
 # Process the file
 if [ -e $IN ]; then
     cd /home/ooiuser/code/cgsn-processing || exit
-    python -m cgsn_processing.process.proc_mopak -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp 4 \
+    python -m cgsn_processing.process.proc_swnd -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp 4 \
       -i $IN -o $OUT || echo "Processing failed for $IN"
 fi
