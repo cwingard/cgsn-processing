@@ -8,7 +8,6 @@
 """
 import numpy as np
 import os
-import pandas as pd
 import xarray as xr
 
 from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING
