@@ -118,7 +118,7 @@ PCO2W = {
     },
     'gas_stream_pressure': {
         'long_name': 'Gas Stream Pressure',
-        'units': '1',
+        'units': 'mbar',
         'comment': 'Pressure of the gas stream in the instrument. Used to calculate the pCO2.'
     },
     'supply_voltage': {
