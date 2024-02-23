@@ -52,8 +52,8 @@ def proc_cphox(infile, platform, deployment, lat, lon, depth, **kwargs):
     cphox['serial_number'] = cphox['serial_number'].astype(int)
 
     # convert the oxygen concentration from ml/l to umol/L and then to umol/kg per the SBE63 manual
-    SA = SA_from_SP(cphox['salinity'], cphox['pressure'], lon, lat)
-    pt0 = pt0_from_t(SA, cphox['temperature'], cphox['pressure'])
+    SA = SA_from_SP(cphox['salinity'].values, cphox['pressure'].values, lon, lat)
+    pt0 = pt0_from_t(SA, cphox['temperature'].values, cphox['pressure'].values)
     CT = CT_from_pt(SA, pt0)
     sigma = sigma0(SA, CT)
     cphox['oxygen_molar_concentration'] = cphox['oxygen_concentration'] * 44.6615  # convert from ml/l to umol/kg
