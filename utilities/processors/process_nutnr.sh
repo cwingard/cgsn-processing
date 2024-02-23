@@ -37,7 +37,7 @@ COEFF="$DATA/proc/$PLATFORM/$DEPLOY/$NUTNR/nutnr_inhouse_calibration.coeffs"
 
 # Process the file
 if [ -e $IN ]; then
-    cd /home/ooiuser/code/cgsn-processing
+    cd /home/ooiuser/code/cgsn-processing || exit
     python -m cgsn_processing.process.proc_nutnr -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -i $IN -o $OUT \
-        -cf $COEFF -df $CTD -s $SWITCH
+        -cf $COEFF -df $CTD -s $SWITCH || echo "Processing failed for $IN"
 fi
