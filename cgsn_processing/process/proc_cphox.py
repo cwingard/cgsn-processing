@@ -56,8 +56,8 @@ def proc_cphox(infile, platform, deployment, lat, lon, depth, **kwargs):
     pt0 = pt0_from_t(SA, cphox['temperature'].values, cphox['pressure'].values)
     CT = CT_from_pt(SA, pt0)
     sigma = sigma0(SA, CT)
-    cphox['oxygen_molar_concentration'] = cphox['oxygen_concentration'] * 44.6615  # convert from ml/l to umol/kg
-    cphox['oxygen_concentration_per_kg'] = cphox['oxygen_molar_concentration'] / sigma
+    cphox['oxygen_molar_concentration'] = cphox['oxygen_concentration'] * 44.6615  # convert to umol/L
+    cphox['oxygen_concentration_per_kg'] = cphox['oxygen_concentration'] * 44660 / (sigma + 1000)  # convert to umol/kg
     cphox = cphox.drop(columns=['oxygen_concentration'])
 
     # replace the deployment depth with the actual depth from the pressure sensor
