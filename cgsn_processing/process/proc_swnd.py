@@ -17,12 +17,10 @@ from cgsn_processing.process.configs.attr_swnd import SWND
 def wind_binning(tbin):
     """
     Function to bin the 5-second wind data into 1-minute averages. The wind
-    speed and vector-averaged wind direction are calculated for each 1-minute
-    bin. The maximum wind speed observed in the 1-minute bin is also recorded.
-    The wind components are then re-calculated using the average wind speed and
-    direction.
+    components are then re-calculated using the average wind speed and vector
+    averaged wind direction.
 
-    :param tbin: xarray dataset with the 5-second wind data
+    :param tbin: 1-minute binned xarray dataset with the 5-second wind data
     :return avg: xarray dataset with the 1-minute averaged wind data
     """
     # calculate the 1-minute averages
@@ -33,19 +31,17 @@ def wind_binning(tbin):
     y = np.mean(np.cos(np.radians(tbin['heading'])))
     avg['heading'] = np.mod(np.degrees(np.arctan2(x, y)), 360)
 
-    # record the max wind speed observed in the 1-minute bin
-    avg['wind_speed_max'] = tbin['wind_speed'].max(dim='time')
-
     # calculate wind direction from the vector average of the eastward and northward wind components
     avg['wind_direction'] = np.mod(np.degrees(np.arctan2(avg['eastward_wind_asimet'], avg['northward_wind_asimet'])), 360)
 
-    # use the average wind speed and direction to re-calculate the eastward and northward wind components
+    # use the average wind speed and newly calculated direction to re-calculate the eastward and
+    # northward wind components
     avg['eastward_wind_ndbc'] = avg['wind_speed'] * np.sin(np.radians(avg['wind_direction']))
     avg['northward_wind_ndbc'] = avg['wind_speed'] * np.cos(np.radians(avg['wind_direction']))
     return avg
 
 
-def proc_swnd(infile, platform, deployment, lat, lon, depth, **kwargs):
+def proc_swnd(infile, platform, deployment, lat, lon, depth):
     """
     Main ASIMET Sonic Wind (SWND) module processing function. Loads the JSON
     formatted parsed data and calculates different wind products to compare
@@ -78,27 +74,54 @@ def proc_swnd(infile, platform, deployment, lat, lon, depth, **kwargs):
     swnd['northward_wind_relative'] = swnd['u_axis_wind_speed']      # convert u-axis wind speed to positive northward
     swnd = swnd.drop(columns=['u_axis_wind_speed', 'v_axis_wind_speed'])
 
+    # create a temporary wind speed variable to use for estimating the max wind speed
+    swnd['wind_speed_raw'] = np.sqrt(swnd['eastward_wind_relative']**2 + swnd['northward_wind_relative']**2)
+
+    # convert the heading to radians
+    swnd['heading'] = np.radians(swnd['heading'])
+
+    # now apply a series of box car filters to the heading and relative wind data to minimize turbulence and noise
+    # in the wind direction and speed data products due to buoy motion and other factors (heavier filtering is
+    # applied to the heading data to minimize the impact of buoy motion on the wind direction data).
+    swnd['heading'] = swnd['heading'].rolling(7, center=True, min_periods=1).median()
+    swnd['heading'] = swnd['heading'].rolling(11, center=True, min_periods=1).mean()
+    swnd['eastward_wind_relative'] = swnd['eastward_wind_relative'].rolling(5, center=True, min_periods=1).median()
+    swnd['eastward_wind_relative'] = swnd['eastward_wind_relative'].rolling(7, center=True, min_periods=1).mean()
+    swnd['northward_wind_relative'] = swnd['northward_wind_relative'].rolling(5, center=True, min_periods=1).median()
+    swnd['northward_wind_relative'] = swnd['northward_wind_relative'].rolling(7, center=True, min_periods=1).mean()
+
     # calculate the wind speed and relative wind direction
     swnd['wind_speed'] = np.sqrt(swnd['eastward_wind_relative']**2 + swnd['northward_wind_relative']**2)
-    reldir = np.degrees(np.arctan2(swnd['eastward_wind_relative'], swnd['northward_wind_relative'])) + 180
+    reldir = np.mod(np.degrees(np.arctan2(swnd['eastward_wind_relative'], swnd['northward_wind_relative'])) + 180, 360)
 
     # for any wind speed less than 0.05 m/s, use a forward fill to use the last good wind direction
-    m = swnd['wind_speed'] < 0.05  # per the vendor, the wind direction is not reliable at low wind speeds
+    m = swnd['wind_speed'] < 0.05  # per the manual, the wind direction is not reliable at low wind speeds
     reldir[m] = np.nan
     reldir = reldir.ffill()
 
     # calculate the wind direction relative to magnetic north from the compass heading and the relative wind direction
-    wnddir = np.mod(reldir + swnd['heading'], 360)
+    swnd['heading'] = np.degrees(swnd['heading'])
+    wnddir = np.radians(np.mod(reldir + swnd['heading'], 360))
 
     # calculate the eastward and northward wind components using the wind speed and wind direction
-    swnd['eastward_wind_asimet'] = -1 * swnd['wind_speed'] * np.sin(np.radians(wnddir))
-    swnd['northward_wind_asimet'] = -1 * swnd['wind_speed'] * np.cos(np.radians(wnddir))
+    swnd['eastward_wind_asimet'] = swnd['wind_speed'] * np.sin(wnddir)
+    swnd['northward_wind_asimet'] = swnd['wind_speed'] * np.cos(wnddir)
 
     # create an xarray data set from the data frame
     swnd = xr.Dataset.from_dataframe(swnd)
 
+    # shift the time so subsequent resampling bins center the data in the middle of the 1-minute bin
+    swnd['time'] = swnd.time + np.timedelta64(30, 's')
+
+    # create a 1-minute max wind speed variable from the unfiltered wind speed data and then drop the raw wind speed
+    wind_speed_max = swnd['wind_speed_raw'].resample(time='1Min', label='left').max()
+    swnd = swnd.drop_vars('wind_speed_raw')
+
     # resample the data to 1-minute averages using the wind_binning function defined above
-    swnd = swnd.resample(time='1Min', closed='right', label='right').map(wind_binning)
+    swnd = swnd.resample(time='1Min', label='left').map(wind_binning)
+
+    # add the 1-minute max wind speed to the data set
+    swnd['wind_speed_max'] = wind_speed_max
 
     # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
     swnd['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(swnd.time)).astype(str))
