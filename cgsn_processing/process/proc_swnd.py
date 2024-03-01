@@ -70,8 +70,8 @@ def proc_swnd(infile, platform, deployment, lat, lon, depth):
 
     # convert the Gill wind components to the oceanographic convention (relative to the east and north axis
     # of the instrument, rather than the U and V axis of the instrument).
-    swnd['eastward_wind_relative'] = -1 * swnd['v_axis_wind_speed']  # rename and convert v-axis wind speed to eastward
-    swnd['northward_wind_relative'] = swnd['u_axis_wind_speed']      # convert u-axis wind speed to positive northward
+    swnd['eastward_wind_relative'] = -1 * swnd['v_axis_wind_speed']  # rename and convert v-axis to positive eastward
+    swnd['northward_wind_relative'] = swnd['u_axis_wind_speed']      # rename u-axis to northward
     swnd = swnd.drop(columns=['u_axis_wind_speed', 'v_axis_wind_speed'])
 
     # create a temporary wind speed variable to use for estimating the max wind speed
@@ -81,26 +81,27 @@ def proc_swnd(infile, platform, deployment, lat, lon, depth):
     swnd['heading'] = np.radians(swnd['heading'])
 
     # now apply a series of box car filters to the heading and relative wind data to minimize turbulence and noise
-    # in the wind direction and speed data products due to buoy motion and other factors (heavier filtering is
-    # applied to the heading data to minimize the impact of buoy motion on the wind direction data).
-    swnd['heading'] = swnd['heading'].rolling(7, center=True, min_periods=1).median()
-    swnd['heading'] = swnd['heading'].rolling(11, center=True, min_periods=1).mean()
+    # in the wind direction and speed data products due to buoy motion and other factors
+    swnd['heading'] = swnd['heading'].rolling(5, center=True, min_periods=1).median()
+    swnd['heading'] = swnd['heading'].rolling(7, center=True, min_periods=1).mean()
     swnd['eastward_wind_relative'] = swnd['eastward_wind_relative'].rolling(5, center=True, min_periods=1).median()
     swnd['eastward_wind_relative'] = swnd['eastward_wind_relative'].rolling(7, center=True, min_periods=1).mean()
     swnd['northward_wind_relative'] = swnd['northward_wind_relative'].rolling(5, center=True, min_periods=1).median()
     swnd['northward_wind_relative'] = swnd['northward_wind_relative'].rolling(7, center=True, min_periods=1).mean()
 
+    # convert the heading back to degrees
+    swnd['heading'] = np.degrees(swnd['heading'])
+
     # calculate the wind speed and relative wind direction
     swnd['wind_speed'] = np.sqrt(swnd['eastward_wind_relative']**2 + swnd['northward_wind_relative']**2)
-    reldir = np.mod(np.degrees(np.arctan2(swnd['eastward_wind_relative'], swnd['northward_wind_relative'])), 360)
+    reldir = np.degrees(np.arctan2(swnd['eastward_wind_relative'], swnd['northward_wind_relative'])) + 180
 
     # for any wind speed less than 0.05 m/s, use a forward fill to use the last good wind direction
     m = swnd['wind_speed'] < 0.05  # per the manual, the wind direction is not reliable at low wind speeds
     reldir[m] = np.nan
     reldir = reldir.ffill()
 
-    # calculate the wind direction relative to magnetic north from the compass heading and the relative wind direction
-    swnd['heading'] = np.degrees(swnd['heading'])
+    # calculate the wind direction (magnetic north) from the compass heading and the relative wind direction
     wnddir = np.radians(np.mod(reldir + swnd['heading'], 360))
 
     # calculate the eastward and northward wind components using the wind speed and wind direction
