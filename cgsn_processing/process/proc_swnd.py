@@ -92,7 +92,7 @@ def proc_swnd(infile, platform, deployment, lat, lon, depth):
 
     # calculate the wind speed and relative wind direction
     swnd['wind_speed'] = np.sqrt(swnd['eastward_wind_relative']**2 + swnd['northward_wind_relative']**2)
-    reldir = np.mod(np.degrees(np.arctan2(swnd['eastward_wind_relative'], swnd['northward_wind_relative'])) + 180, 360)
+    reldir = np.mod(np.degrees(np.arctan2(swnd['eastward_wind_relative'], swnd['northward_wind_relative'])), 360)
 
     # for any wind speed less than 0.05 m/s, use a forward fill to use the last good wind direction
     m = swnd['wind_speed'] < 0.05  # per the manual, the wind direction is not reliable at low wind speeds
@@ -104,8 +104,8 @@ def proc_swnd(infile, platform, deployment, lat, lon, depth):
     wnddir = np.radians(np.mod(reldir + swnd['heading'], 360))
 
     # calculate the eastward and northward wind components using the wind speed and wind direction
-    swnd['eastward_wind_asimet'] = swnd['wind_speed'] * np.sin(wnddir)
-    swnd['northward_wind_asimet'] = swnd['wind_speed'] * np.cos(wnddir)
+    swnd['eastward_wind_asimet'] = -1 * swnd['wind_speed'] * np.sin(wnddir)
+    swnd['northward_wind_asimet'] = -1 * swnd['wind_speed'] * np.cos(wnddir)
 
     # create an xarray data set from the data frame
     swnd = xr.Dataset.from_dataframe(swnd)
