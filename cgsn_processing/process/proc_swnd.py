@@ -32,12 +32,11 @@ def wind_binning(tbin):
     avg['heading'] = np.mod(np.degrees(np.arctan2(x, y)), 360)
 
     # calculate wind direction from the vector average of the eastward and northward wind components
-    avg['wind_direction'] = np.mod(np.degrees(np.arctan2(avg['eastward_wind_asimet'], avg['northward_wind_asimet'])), 360)
+    avg['wind_direction'] = np.degrees(np.arctan2(avg['eastward_wind_asimet'], avg['northward_wind_asimet'])) + 180
 
-    # use the average wind speed and newly calculated direction to re-calculate the eastward and
-    # northward wind components
-    avg['eastward_wind_ndbc'] = avg['wind_speed'] * np.sin(np.radians(avg['wind_direction']))
-    avg['northward_wind_ndbc'] = avg['wind_speed'] * np.cos(np.radians(avg['wind_direction']))
+    # use the average wind speed and direction to re-calculate the eastward and northward wind components
+    avg['eastward_wind_ndbc'] = -1 * avg['wind_speed'] * np.sin(np.radians(avg['wind_direction']))
+    avg['northward_wind_ndbc'] = -1 * avg['wind_speed'] * np.cos(np.radians(avg['wind_direction']))
     return avg
 
 
@@ -82,12 +81,15 @@ def proc_swnd(infile, platform, deployment, lat, lon, depth):
 
     # now apply a series of box car filters to the heading and relative wind data to minimize turbulence and noise
     # in the wind direction and speed data products due to buoy motion and other factors
-    swnd['heading'] = swnd['heading'].rolling(5, center=True, min_periods=1).median()
-    swnd['heading'] = swnd['heading'].rolling(7, center=True, min_periods=1).mean()
-    swnd['eastward_wind_relative'] = swnd['eastward_wind_relative'].rolling(5, center=True, min_periods=1).median()
-    swnd['eastward_wind_relative'] = swnd['eastward_wind_relative'].rolling(7, center=True, min_periods=1).mean()
-    swnd['northward_wind_relative'] = swnd['northward_wind_relative'].rolling(5, center=True, min_periods=1).median()
-    swnd['northward_wind_relative'] = swnd['northward_wind_relative'].rolling(7, center=True, min_periods=1).mean()
+    swnd['heading'] = swnd['heading'].rolling(3, center=True, min_periods=1).median()
+    swnd['heading'] = swnd['heading'].rolling(3, center=True, min_periods=1).median()
+    swnd['heading'] = swnd['heading'].rolling(5, center=True, min_periods=1).mean()
+    swnd['eastward_wind_relative'] = swnd['eastward_wind_relative'].rolling(3, center=True, min_periods=1).median()
+    swnd['eastward_wind_relative'] = swnd['eastward_wind_relative'].rolling(3, center=True, min_periods=1).median()
+    swnd['eastward_wind_relative'] = swnd['eastward_wind_relative'].rolling(5, center=True, min_periods=1).mean()
+    swnd['northward_wind_relative'] = swnd['northward_wind_relative'].rolling(3, center=True, min_periods=1).median()
+    swnd['northward_wind_relative'] = swnd['northward_wind_relative'].rolling(3, center=True, min_periods=1).median()
+    swnd['northward_wind_relative'] = swnd['northward_wind_relative'].rolling(5, center=True, min_periods=1).mean()
 
     # convert the heading back to degrees
     swnd['heading'] = np.degrees(swnd['heading'])
