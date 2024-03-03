@@ -108,12 +108,14 @@ SWND = {
         'standard_name': 'platform_pitch_angle',
         'comment': ('Pitch angle of the instrument. Pitch is the rotation of the instrument around the east-west axis. '
                     'Positive values indicate the instrument is pitching up.'),
+        'units': 'degrees'
     },
     'roll': {
         'long_name': 'Roll',
         'standard_name': 'platform_roll_angle',
         'comment': ('Roll angle of the instrument. Roll is the rotation of the instrument around the north-south axis. '
                     'Positive values indicate the instrument is rolling to the right.'),
+        'units': 'degrees'
     },
     'wind_speed': {
         'long_name': 'Wind Speed',
