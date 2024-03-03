@@ -96,6 +96,13 @@ SWND = {
         'comment': 'Speed of sound measured by the sonic anemometer.',
         'units': 'm s-1'
     },
+    'relative_direction': {
+        'long_name': 'Relative Wind Direction',
+        'comment': ('Relative wind direction. The direction the wind is moving towards, following the oceanographic '
+                    'convention. Relative to the instrument coordinate frame. Calculated as the arctan of the vector '
+                    'averaged eastward and northward wind components.'),
+        'units': 'degrees'
+    },
     'heading': {
         'long_name': 'Compass Heading',
         'standard_name': 'heading',
