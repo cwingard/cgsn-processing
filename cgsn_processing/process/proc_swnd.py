@@ -74,8 +74,23 @@ def proc_swnd(infile, platform, deployment, lat, lon, depth):
     swnd['northward_wind_relative'] = swnd['u_axis_wind_speed']      # rename u-axis to northward
     swnd = swnd.drop(columns=['u_axis_wind_speed', 'v_axis_wind_speed'])
 
-    # calculate the wind speed and relative direction from the eastward and northward wind components
+    # calculate the wind speed and then apply a series of filters to the wind speed and vector components to
+    # minimize the impact of high frequency noise in the data
     swnd['wind_speed'] = np.sqrt(swnd['eastward_wind_relative']**2 + swnd['northward_wind_relative']**2)
+    swnd['wind_speed_raw'] = swnd['wind_speed']  # save the raw wind speed for later use
+    swnd['wind_speed'] = swnd['wind_speed'].rolling(7, center=True, min_periods=1).median()
+    swnd['wind_speed'] = swnd['wind_speed'].rolling(7, center=True, min_periods=1).median()
+    swnd['wind_speed'] = swnd['wind_speed'].rolling(11, center=True, min_periods=1).mean()
+
+    swnd['eastward_wind_relative'] = swnd['eastward_wind_relative'].rolling(7, center=True, min_periods=1).median()
+    swnd['eastward_wind_relative'] = swnd['eastward_wind_relative'].rolling(7, center=True, min_periods=1).median()
+    swnd['eastward_wind_relative'] = swnd['eastward_wind_relative'].rolling(11, center=True, min_periods=1).mean()
+
+    swnd['northward_wind_relative'] = swnd['northward_wind_relative'].rolling(7, center=True, min_periods=1).median()
+    swnd['northward_wind_relative'] = swnd['northward_wind_relative'].rolling(7, center=True, min_periods=1).median()
+    swnd['northward_wind_relative'] = swnd['northward_wind_relative'].rolling(11, center=True, min_periods=1).mean()
+
+    # now calculate the relative wind direction from the eastward and northward wind components
     swnd['relative_direction'] = np.mod(np.degrees(np.arctan2(swnd['eastward_wind_relative'],
                                                               swnd['northward_wind_relative'])), 360)
 
@@ -90,21 +105,6 @@ def proc_swnd(infile, platform, deployment, lat, lon, depth):
     wind_direction = np.radians(np.mod(swnd['relative_direction'] + swnd['heading'], 360))
     swnd['eastward_wind_asimet'] = swnd['wind_speed'] * np.sin(wind_direction)
     swnd['northward_wind_asimet'] = swnd['wind_speed'] * np.cos(wind_direction)
-
-    # apply a series of box car filters to the wind speed and vector components to minimize the impact of
-    # high frequency noise in the data prior to resampling to 1-minute averages
-    swnd['wind_speed_raw'] = swnd['wind_speed']
-    swnd['wind_speed'] = swnd['wind_speed'].rolling(3, center=True, min_periods=1).median()
-    swnd['wind_speed'] = swnd['wind_speed'].rolling(3, center=True, min_periods=1).median()
-    swnd['wind_speed'] = swnd['wind_speed'].rolling(5, center=True, min_periods=1).mean()
-
-    swnd['eastward_wind_asimet'] = swnd['eastward_wind_asimet'].rolling(3, center=True, min_periods=1).median()
-    swnd['eastward_wind_asimet'] = swnd['eastward_wind_asimet'].rolling(3, center=True, min_periods=1).median()
-    swnd['eastward_wind_asimet'] = swnd['eastward_wind_asimet'].rolling(5, center=True, min_periods=1).mean()
-
-    swnd['northward_wind_asimet'] = swnd['northward_wind_asimet'].rolling(3, center=True, min_periods=1).median()
-    swnd['northward_wind_asimet'] = swnd['northward_wind_asimet'].rolling(3, center=True, min_periods=1).median()
-    swnd['northward_wind_asimet'] = swnd['northward_wind_asimet'].rolling(5, center=True, min_periods=1).mean()
 
     # create an xarray data set from the data frame
     swnd = xr.Dataset.from_dataframe(swnd)
