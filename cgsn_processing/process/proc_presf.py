@@ -56,6 +56,12 @@ def proc_presf(infile, platform, deployment, lat, lon, depth):
 
 
 def main(argv=None):
+
+    # 11/21/2023 ppw - added support for input argument --switch "string"
+    #                  to allow the presf processor to support multiple instrument types
+    #                  If no switch passed, default to "presf" from SeaBird. A value
+    #                  of "rbrq3" handles the RBR Quartz3 instrument.
+    
     # load the input arguments
     args = inputs(argv)
     infile = os.path.abspath(args.infile)
@@ -65,6 +71,10 @@ def main(argv=None):
     lat = args.latitude
     lon = args.longitude
     depth = args.depth
+    
+    instrument = args.switch
+    if instrument is None:
+        instrument = "presf"
 
     # process the Sea-Bird 26Plus data and save the results to disk
     presf = proc_presf(infile, platform, deployment, lat, lon, depth)
