@@ -26,22 +26,18 @@ def wind_binning(tbin):
     # calculate the 1-minute simple averages for the bin
     avg = tbin.mean(dim='time')
 
-    # replace the averaged heading and relative wind directions with the last value in the bin (this is how the
-    # ASIMET web page reports these values as being recorded)
-    avg['heading'] = tbin['heading'][-1]
-    avg['relative_direction'] = tbin['relative_direction'][-1]
+    # add the max wind speed for the bin
+    avg['wind_speed_max'] = tbin['wind_speed'].max(dim='time')
 
-    # replace the averaged wind speed with a weighted average using the inverse-variance of the wind speed as the weight
-    avg['wind_speed'] = np.average(tbin['wind_speed'], weights=1/(tbin['wind_speed'] - avg['wind_speed'])**2)
+    # replace the averaged heading and relative wind directions with circular means
+    x = np.cos(np.radians(tbin['heading']))
+    y = np.sin(np.radians(tbin['heading']))
+    avg['heading'] = np.mod(np.degrees(np.arctan2(y.mean(), x.mean())), 360)
+    x = np.cos(np.radians(tbin['relative_direction']))
+    y = np.sin(np.radians(tbin['relative_direction']))
+    avg['relative_direction'] = np.mod(np.degrees(np.arctan2(y.mean(), x.mean())), 360)
 
-    # replace the averaged eastward and northward wind components with weighted averages using the inverse-variance of
-    # the respective wind components as the weight
-    avg['eastward_wind_asimet'] = np.average(tbin['eastward_wind_asimet'],
-                                             weights=1/(tbin['eastward_wind_asimet'] - avg['eastward_wind_asimet'])**2)
-    avg['northward_wind_asimet'] = np.average(tbin['northward_wind_asimet'],
-                                              weights=1/(tbin['northward_wind_asimet'] - avg['northward_wind_asimet'])**2)
-
-    # calculate the wind direction from the averaged eastward and northward wind components
+    # re-calculate the wind direction from the averaged eastward and northward wind components
     avg['wind_direction'] = np.mod(np.degrees(np.arctan2(avg['eastward_wind_asimet'],
                                                          avg['northward_wind_asimet'])), 360)
 
@@ -85,30 +81,15 @@ def proc_swnd(infile, platform, deployment, lat, lon, depth):
     swnd['northward_wind_relative'] = swnd['u_axis_wind_speed']      # rename u-axis to northward
     swnd = swnd.drop(columns=['u_axis_wind_speed', 'v_axis_wind_speed'])
 
-    # calculate the wind speed and then apply a series of filters to the wind speed and vector components to
-    # minimize the impact of high frequency noise in the data
+    # calculate the wind speed and the relative wind direction from the eastward and northward wind components
     swnd['wind_speed'] = np.sqrt(swnd['eastward_wind_relative']**2 + swnd['northward_wind_relative']**2)
-    swnd['wind_speed_raw'] = swnd['wind_speed']  # save the raw wind speed for later use
-    #swnd['wind_speed'] = swnd['wind_speed'].rolling(7, center=True, min_periods=1).median()
-    #swnd['wind_speed'] = swnd['wind_speed'].rolling(7, center=True, min_periods=1).median()
-    #swnd['wind_speed'] = swnd['wind_speed'].rolling(11, center=True, min_periods=1).mean()
-
-    #swnd['eastward_wind_relative'] = swnd['eastward_wind_relative'].rolling(7, center=True, min_periods=1).median()
-    #swnd['eastward_wind_relative'] = swnd['eastward_wind_relative'].rolling(7, center=True, min_periods=1).median()
-    #swnd['eastward_wind_relative'] = swnd['eastward_wind_relative'].rolling(11, center=True, min_periods=1).mean()
-
-    #swnd['northward_wind_relative'] = swnd['northward_wind_relative'].rolling(7, center=True, min_periods=1).median()
-    #swnd['northward_wind_relative'] = swnd['northward_wind_relative'].rolling(7, center=True, min_periods=1).median()
-    #swnd['northward_wind_relative'] = swnd['northward_wind_relative'].rolling(11, center=True, min_periods=1).mean()
-
-    # now calculate the relative wind direction from the eastward and northward wind components
     swnd['relative_direction'] = np.mod(np.degrees(np.arctan2(swnd['eastward_wind_relative'],
                                                               swnd['northward_wind_relative'])), 360)
 
     # if the wind speed is less than 0.05 m/s, set the wind direction to a NaN and then forward fill the NaNs
-    # with the last valid value
-    #swnd['relative_direction'] = np.where(swnd['wind_speed'] < 0.05, np.nan, swnd['relative_direction'])
-    #swnd['relative_direction'] = swnd['relative_direction'].ffill()
+    # with the last valid value (per the Gill WindMasterII manual)
+    swnd['relative_direction'] = np.where(swnd['wind_speed'] < 0.05, np.nan, swnd['relative_direction'])
+    swnd['relative_direction'] = swnd['relative_direction'].ffill()
 
     # now use the compass heading to convert the instrument relative wind direction to magnetic north and derive
     # the true (magnetic) eastward and northward wind components (these should be comparable to the METBK wind
@@ -123,16 +104,8 @@ def proc_swnd(infile, platform, deployment, lat, lon, depth):
     # shift the time so subsequent resampling bins center the data in the middle of the 1-minute bin
     swnd['time'] = swnd.time + np.timedelta64(30, 's')
 
-    # create a 1-minute max wind speed variable from the unfiltered wind speed data and then drop the raw wind speed
-    wind_speed_max = swnd['wind_speed_raw'].resample(time='1Min', label='left').max()
-    swnd = swnd.drop_vars('wind_speed_raw')
-
-    # resample the data to 1-minute bins using the wind_binning function defined above (combination of simple and
-    # weighted averages)
+    # resample the data to 1-minute bins using the wind_binning function defined above
     swnd = swnd.resample(time='1Min', label='left').map(wind_binning)
-
-    # add the 1-minute max wind speed to the data set
-    swnd['wind_speed_max'] = wind_speed_max
 
     # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
     swnd['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(swnd.time)).astype(str))
