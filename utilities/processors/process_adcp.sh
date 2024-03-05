@@ -34,5 +34,5 @@ fi
 if [ -e $IN ]; then
     cd /home/ooiuser/code/cgsn-processing || exit
     python -m cgsn_processing.process.proc_adcp -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON \
-        -dp $DEPTH -i $IN -o $OUT -s pd0 -df $CTD || true
+        -dp $DEPTH -i $IN -o $OUT -s pd0 -df $CTD || echo "Processing failed for $IN"
 fi
