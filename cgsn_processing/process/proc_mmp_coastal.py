@@ -68,7 +68,7 @@ def json2dataframes(j, lat=0., lon=0.):
         # interpolate adata pressure from cdata
         adata['pressure'] = np.nan
         pressure = adata.pop('pressure')
-        pressure = pressure.append(cdata.pressure)
+        pressure = pressure._append(cdata.pressure)
         pressure.sort_index(inplace=True)
         ipressure = pressure.interpolate(method='time')[np.isnan(pressure)]
         adata['pressure'] = ipressure
