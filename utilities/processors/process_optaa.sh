@@ -35,5 +35,5 @@ fi
 if [ -e $IN ] && [ ! -e $OUT ]; then
     cd /home/ooiuser/code/cgsn-processing || exit
     python -m cgsn_processing.process.proc_optaa -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH \
-        -i $IN -o $OUT -ba -df $CTD
+        -i $IN -o $OUT -ba -df $CTD || echo "Processing failed for $IN"
 fi
