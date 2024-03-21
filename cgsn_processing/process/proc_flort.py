@@ -54,34 +54,34 @@ class Calibrations(Coefficients):
         cal = pd.read_csv(csv_url, usecols=[0, 1, 2])
         for idx, row in cal.iterrows():
             # scale and offset correction factors
-            if row[1] == 'CC_dark_counts_cdom':
-                coeffs['dark_cdom'] = row[2]
-            if row[1] == 'CC_scale_factor_cdom':
-                coeffs['scale_cdom'] = row[2]
+            if row.iloc[1] == 'CC_dark_counts_cdom':
+                coeffs['dark_cdom'] = row.iloc[2]
+            if row.iloc[1] == 'CC_scale_factor_cdom':
+                coeffs['scale_cdom'] = row.iloc[2]
 
-            if row[1] == 'CC_dark_counts_chlorophyll_a':
-                coeffs['dark_chla'] = row[2]
-            if row[1] == 'CC_scale_factor_chlorophyll_a':
-                coeffs['scale_chla'] = row[2]
+            if row.iloc[1] == 'CC_dark_counts_chlorophyll_a':
+                coeffs['dark_chla'] = row.iloc[2]
+            if row.iloc[1] == 'CC_scale_factor_chlorophyll_a':
+                coeffs['scale_chla'] = row.iloc[2]
 
-            if row[1] == 'CC_dark_counts_volume_scatter':
-                coeffs['dark_beta'] = row[2]
-            if row[1] == 'CC_scale_factor_volume_scatter':
-                coeffs['scale_beta'] = row[2]
+            if row.iloc[1] == 'CC_dark_counts_volume_scatter':
+                coeffs['dark_beta'] = row.iloc[2]
+            if row.iloc[1] == 'CC_scale_factor_volume_scatter':
+                coeffs['scale_beta'] = row.iloc[2]
 
             # optical backscatter correction factors
-            if row[1] == 'CC_angular_resolution':
-                coeffs['chi_factor'] = row[2]
-            if row[1] == 'CC_measurement_wavelength':
-                coeffs['wavelength'] = row[2]
-            if row[1] == 'CC_scattering_angle':
-                coeffs['scatter_angle'] = row[2]
+            if row.iloc[1] == 'CC_angular_resolution':
+                coeffs['chi_factor'] = row.iloc[2]
+            if row.iloc[1] == 'CC_measurement_wavelength':
+                coeffs['wavelength'] = row.iloc[2]
+            if row.iloc[1] == 'CC_scattering_angle':
+                coeffs['scatter_angle'] = row.iloc[2]
 
             # turbidity calculation factors
-            if (row[1] == 'CC_dark_counts_turbd'):
-                coeffs['dark_turbd'] = row[2]
-            if (row[1] == 'CC_scale_factor_turbd'):
-                coeffs['scale_turbd'] = row[2]
+            if row.iloc[1] == 'CC_dark_counts_turbd':
+                coeffs['dark_turbd'] = int(row.iloc[2])
+            if row.iloc[1] == 'CC_scale_factor_turbd':
+                coeffs['scale_turbd'] = float(row.iloc[2])
 
         # save the resulting dictionary
         self.coeffs = coeffs
@@ -102,7 +102,7 @@ def main(argv=None):
     # add support for turbidity calculation - ppw02022024
     compute_turbidity_only = False
     calib_prefix = "FLORT"
-    if args.switch is not None :
+    if args.switch is not None:
         if args.switch == "TURBDX" :
             compute_turbidity_only = True
             calib_prefix = "TURBDX"
@@ -132,8 +132,7 @@ def main(argv=None):
             print('A source for the FLORT or TURBDX calibration coefficients for {} could not be found'.format(infile))
             return None
 
-    if compute_turbidity_only == False:
-
+    if not compute_turbidity_only:
         # Apply the scale and offset correction factors from the factory calibration coefficients
         df['estimated_chlorophyll'] = flo_scale_and_offset(df['raw_signal_chl'], dev.coeffs['dark_chla'],
                                                            dev.coeffs['scale_chla'])
@@ -147,8 +146,8 @@ def main(argv=None):
         ctd_path = re.sub('flort', re.sub('[\d]*', '', ctd_name), flort_path)
         ctd = json2df(os.path.join(ctd_path, ctd_file))
         if not ctd.empty and len(ctd.index) >= 3:
-            # The Global moorings may use the data from the METBK-CT for FLORT mounted on the buoy subsurface plate. We'll
-            # rename the data columns from the METBK to match other CTDs and process accordingly.
+            # The Global moorings may use the data from the METBK-CT for FLORT mounted on the buoy subsurface plate.
+            # We'll rename the data columns from the METBK to match other CTDs and process accordingly.
             if re.match('metbk', ctd_name):
                 # rename temperature and salinity
                 ctd = ctd.rename(columns={
@@ -163,7 +162,8 @@ def main(argv=None):
                 else:  # default of 1.00 m
                     ctd['pressure'] = p_from_z(-1.0000, lat)
 
-            # calculate the practical salinity of the seawater from the temperature, conductivity and pressure measurements
+            # calculate the practical salinity of the seawater from the temperature, conductivity and
+            # pressure measurements
             ctd['psu'] = SP_from_C(ctd['conductivity'].values * 10.0, ctd['temperature'].values, ctd['pressure'].values)
 
             # interpolate temperature and salinity data from the CTD into the FLORT record for calculations
@@ -183,14 +183,14 @@ def main(argv=None):
 
         # Apply the scale and offset correction factors from the factory calibration coefficients
         df['turbidity'] = flo_scale_and_offset(df['raw_signal_beta'], dev.coeffs['dark_turbd'],
-                                                           dev.coeffs['scale_turbd'])
+                                               dev.coeffs['scale_turbd'])
                 
     # convert the dataframe to a format suitable for the pocean OMTs
     df['deploy_id'] = deployment
     df = df2omtdf(df, lat, lon, depth)
 
     # Setup and update the attributes for the resulting NetCDF file
-    if compute_turbidity_only == False: 
+    if not compute_turbidity_only:
         attr = FLORT
     else:
         attr = TURBD
