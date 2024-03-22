@@ -16,15 +16,15 @@ fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
 LAT=$3; LON=$4
-IFCB=${5,,}
+PLIMS=${5,,}
 DEPTH=$6
 FILE=`basename $7`
 
 # Set the default directory paths and input/output sources
 
 DATA="/home/ooiuser/data"
-IN="$DATA/parsed/$PLATFORM/$DEPLOY/$IFCB/$FILE"
-OUT="$DATA/processed/$PLATFORM/$DEPLOY/$IFCB/${FILE%.json}.nc"
+IN="$DATA/parsed/$PLATFORM/$DEPLOY/$PLIMS/$FILE"
+OUT="$DATA/processed/$PLATFORM/$DEPLOY/$PLIMS/${FILE%.json}.nc"
 if [ ! -d `dirname $OUT` ]; then
     mkdir -p `dirname $OUT`
 fi
