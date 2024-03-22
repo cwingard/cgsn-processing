@@ -31,7 +31,7 @@ fi
 
 # Process the file (if it hasn't already been done)
 if [ -e $IN ]; then
-    cd ../..
+    cd /home/ooiuser/code/cgsn-processing
     {
         python -m cgsn_processing.process.proc_ifcb_hdr -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -i $IN -o $OUT
     } || {
