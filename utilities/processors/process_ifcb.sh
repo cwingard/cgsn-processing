@@ -6,20 +6,19 @@
 # P. Whelan 2023-12-06
 
 # Parse the command line inputs
-if [ $# -ne 9 ]; then
+if [ $# -ne 7 ]; then
     echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the IFCB"
     echo "directory name, the deployment depth and the name of the file to process."
     echo ""
-    echo "     example: $0 cp10cnsm D0001 44.63929 -124.30404 nsif/ifcb 7 1111 20231205.ifcb.json"
+    echo "     example: $0 cp10cnsm D0001 44.63929 -124.30404 nsif/plims 7 20231205.ifcb.json"
     exit 1
 fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
 LAT=$3; LON=$4
 IFCB=${5,,}
-DEPTH=$7
-SERIAL=${8^^}
-FILE=`basename $9`
+DEPTH=$6
+FILE=`basename $7`
 
 # Set the default directory paths and input/output sources
 
