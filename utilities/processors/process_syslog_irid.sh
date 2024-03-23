@@ -30,7 +30,7 @@ if [ ! -d `dirname $OUT` ]; then
 fi
 
 # Process the file
-if [ -e $IN ]; then
+if [ -e $IN_FILE ]; then
     cd /home/ooiuser/code/cgsn-processing
-    python -m cgsn_processing.process.proc_syslog_irid -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp 0 -i $IN -o $OUT
+    python -m cgsn_processing.process.proc_syslog_irid -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp 0 -i $IN_FILE -o $OUT_FILE
 fi
