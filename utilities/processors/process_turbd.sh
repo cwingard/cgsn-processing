@@ -35,21 +35,21 @@ echo "outfile: $OUTFILE, outpath: $OUTINSTLOC"
 # Set the default directory paths and input/output sources
 
 DATA="/home/ooiuser/data"
-IN="$DATA/proc/$PLATFORM/$DEPLOY/$INSTLOC/$FILE"
+IN="$DATA/proc/$PLATFORM/$DEPLOY/$IN_FILESTLOC/$FILE"
 OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$OUTINSTLOC/${OUTFILE%}.nc"
 if [ ! -d `dirname $OUT` ]; then
     mkdir -p `dirname $OUT`
 fi
 
-COEFF="$DATA/proc/$PLATFORM/$DEPLOY/$INSTLOC/flort_turbd_factory_calibration.coeffs"
+COEFF="$DATA/proc/$PLATFORM/$DEPLOY/$IN_FILESTLOC/flort_turbd_factory_calibration.coeffs"
 
 # Process the file (if it hasn't already been done)
-if [ -e $IN ]; then
+if [ -e $IN_FILE ]; then
     cd /home/ooiuser/code/cgsn-processing
     {
         python -m cgsn_processing.process.proc_flort -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH \
-            -i $IN -o $OUT -cf $COEFF -sn $SERIAL -df $CTD -ba -s TURBDX
+            -i $IN_FILE -o $OUT_FILE -cf $COEFF -sn $SERIAL -df $CTD -ba -s TURBDX
     } || {
-        echo "$IN failed to process"
+        echo "$IN_FILE failed to process"
     }
 fi
