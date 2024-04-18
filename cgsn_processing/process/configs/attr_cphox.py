@@ -98,10 +98,19 @@ CPHOX = {
         'data_product_identifier': 'TEMPWAT_L1',
     },
     'seawater_ph': {
-        'long_name': 'Sea Water pH',
+        'long_name': 'Sea Water pH, Total Scale',
         'standard_name': 'sea_water_ph_reported_on_total_scale',
         'units': '1',
         'comment': ('pH of the sea water, reported on the total scale. The pH is a measure of the acidity or '
+                    'basicity of the sea water, where a pH of 7 is neutral, a pH less than 7 is acidic, and a pH '
+                    'greater than 7 is basic.'),
+        'data_product_identifier': 'PHWATER_L2'
+    },
+    'ph_free': {
+        'long_name': 'Sea Water pH, Free Scale',
+        'standard_name': 'sea_water_ph_reported_on_free_scale',
+        'units': '1',
+        'comment': ('pH of the sea water, reported on the free scale. The pH is a measure of the acidity or '
                     'basicity of the sea water, where a pH of 7 is neutral, a pH less than 7 is acidic, and a pH '
                     'greater than 7 is basic.'),
         'data_product_identifier': 'PHWATER_L2'
