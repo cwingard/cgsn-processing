@@ -64,7 +64,7 @@ CPHOX = {
         'positive': 'down',
         'axis': 'Z'
     },
-    # variable attributes
+    # variable attributes -- reported
     'serial_number': {
         'long_name': 'Serial Number',
         # 'units': '',    # deliberately left blank, no units for this value,
@@ -106,15 +106,6 @@ CPHOX = {
                     'greater than 7 is basic.'),
         'data_product_identifier': 'PHWATER_L2'
     },
-    'ph_free': {
-        'long_name': 'Sea Water pH, Free Scale',
-        'standard_name': 'sea_water_ph_reported_on_free_scale',
-        'units': '1',
-        'comment': ('pH of the sea water, reported on the free scale. The pH is a measure of the acidity or '
-                    'basicity of the sea water, where a pH of 7 is neutral, a pH less than 7 is acidic, and a pH '
-                    'greater than 7 is basic.'),
-        'data_product_identifier': 'PHWATER_L2'
-    },
     'external_reference': {
         'long_name': 'External Reference Voltage',
         'units': 'V',
@@ -152,6 +143,17 @@ CPHOX = {
                     'seawater.'),
         'data_product_identifier': 'CONDWAT_L1'
     },
+    'internal_humidity': {
+        'long_name': 'Internal Humidity',
+        'units': 'percent',
+        'comment': 'Internal humidity of the SeapHOx instrument.'
+    },
+    'internal_temperature': {
+        'long_name': 'Internal Temperature',
+        'units': 'degree_Celsius',
+        'comment': 'Internal temperature of the SeapHOx instrument.'
+    },
+    # variable attributes -- derived values
     'oxygen_molar_concentration': {
         'long_name': 'Dissolved Oxygen Molar Concentration',
         'standard_name': 'mole_concentration_of_dissolved_molecular_oxygen_in_sea_water',
@@ -168,14 +170,19 @@ CPHOX = {
                     'density per directions outlined in the Sea-Bird Electronics SBE63 Manual.'),
         'data_product_identifier': 'DOXYGEN_L2'
     },
-    'internal_humidity': {
-        'long_name': 'Internal Humidity',
-        'units': 'percent',
-        'comment': 'Internal humidity of the SeapHOx instrument.'
+    'estimated_alkalinity': {
+        'long_name': 'Estimated Alkalinity',
+        'units': 'umol kg-1',
+        'comment': ('Estimated alkalinity of the sea water, reported in umol/kg. The alkalinity is estimated using '
+                    'the SeapHOx temperature and salinity data and an equation from Lee et al. (2006, '
+                    'doi:10.1029/2006GL027207.')
     },
-    'internal_temperature': {
-        'long_name': 'Internal Temperature',
-        'units': 'degree_Celsius',
-        'comment': 'Internal temperature of the SeapHOx instrument.'
+    'estimated_ph': {
+        'long_name': 'Estimated pH, Total Scale',
+        'units': '1',
+        'comment': ('Estimated pH of the sea water, reported on the total scale. The pH is a measure of the acidity '
+                    'or basicity of the sea water, where a pH of 7 is neutral, a pH less than 7 is acidic, and a pH '
+                    'greater than 7 is basic. The pH is estimated using the SeapHOx oxygen and temperature data and '
+                    'an equation from Alin et al. (2012, doi:10.1029/2011JC007511).')
     }
 }

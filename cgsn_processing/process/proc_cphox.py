@@ -14,7 +14,6 @@ import xarray as xr
 
 from calendar import timegm
 from gsw import SA_from_SP, pt0_from_t, CT_from_pt, sigma0, z_from_p
-import PyCO2SYS as pyco2
 
 from cgsn_processing.process.common import ENCODING, inputs, json2df, update_dataset
 from cgsn_processing.process.configs.attr_cphox import CPHOX
@@ -139,10 +138,10 @@ def proc_cphox(infile, platform, deployment, lat, lon, depth, **kwargs):
                                      14.72 * (cphox['temperature'] - 20) - 0.158 * (cphox['temperature'] - 20)**2 +
                                      0.062 * (cphox['temperature'] - 20) * lon)
 
-    # calculate the estimated pCO2 from the estimated alkalinity and measured pH
-    cphox['estimated_pco2'] = pyco2.sys(par1=cphox['estimated_alkalinity'], par1_type=1, par2=cphox['seawater_ph'],
-                                        par2_type=3, opt_pH_scale=1, pressure=cphox['pressure'],
-                                        temperature=cphox['temperature'], salinity=cphox['salinity'])['pCO2']
+    # Use Alin et al. (2012) to estimate the pH from the oxygen concentration and temperature
+    cphox['estimated_ph'] = (7.758 + 1.42e-2 * (cphox['temperature'] - 10.28) + 1.62e-3 *
+                             (cphox['oxygen_concentration_per_kg'] - 138.46) + 4.24e-5 *
+                             ((cphox['temperature'] - 10.28) * (cphox['oxygen_concentration_per_kg'] - 138.46)))
 
     # create an xarray data set from the data frame
     cphox = xr.Dataset.from_dataframe(cphox)
