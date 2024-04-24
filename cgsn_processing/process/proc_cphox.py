@@ -129,18 +129,20 @@ def proc_cphox(infile, platform, deployment, lat, lon, depth, **kwargs):
     sigma = sigma0(SA, CT)
     cphox['oxygen_molar_concentration'] = cphox['oxygen_concentration'] * 44661.5 / 1000.  # umol/L
     cphox['oxygen_concentration_per_kg'] = cphox['oxygen_concentration'] * 44661.5 / (sigma + 1000.)  # umol/kg
-    cphox = cphox.drop(columns=['oxygen_concentration'])
 
     # replace the deployment depth with the actual depth from the pressure sensor
     depth = z_from_p(cphox['pressure'], lat)  # calculate the depth from the pressure
     darray = [depth.mean(), depth.min(), depth.max()]
 
-    # calculate the carbonate system parameters from the pH and other measured parameters
-    pcs = pyco2.sys(par1=cphox['seawater_ph'], par1_type=3, opt_pH_scale=1, pressure=cphox['pressure'],
-                    temperature=cphox['temperature'], salinity=cphox['salinity'])
+    # Use the Lee et al. (2006) model to estimate the total alkalinity from the salinity and temperature (zone 4)
+    cphox['estimated_alkalinity'] = (2305 + 53.23 * (cphox['salinity'] - 35) + 1.85 * (cphox['salinity'] - 35)**2 -
+                                     14.72 * (cphox['temperature'] - 20) - 0.158 * (cphox['temperature'] - 20)**2 +
+                                     0.062 * (cphox['temperature'] - 20) * lon)
 
-    # add the calculated carbonate system parameters to the data frame
-    cphox['ph_free'] = pcs['pH_free']
+    # calculate the estimated pCO2 from the estimated alkalinity and measured pH
+    cphox['estimated_pco2'] = pyco2.sys(par1=cphox['estimated_alkalinity'], par1_type=1, par2=cphox['seawater_ph'],
+                                        par2_type=3, opt_pH_scale=1, pressure=cphox['pressure'],
+                                        temperature=cphox['temperature'], salinity=cphox['salinity'])['pCO2']
 
     # create an xarray data set from the data frame
     cphox = xr.Dataset.from_dataframe(cphox)
