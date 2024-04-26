@@ -33,10 +33,10 @@ function help ()
   echo "is the name of the file to process (either relative or full path"
   echo "information is required). Note, the instrument name can include"
   echo "relative path information, if needed. For example, the instrument"
-  echo "name could be specified as 'superv/dcl17' to indicate the processed"
-  echo "data would be located in the 'superv/dcl17' directory."
+  echo "name could be specified as 'superv/dcl12' to indicate the processed"
+  echo "data would be located in the 'superv/dcl12' directory."
   echo ""
-  echo "Example: $0 ce02shsm D00017 44.639 -124.304 1 buoy superv/dcl17 20240202.superv.json"
+  echo "Example: $0 ce02shsm D00017 44.639 -124.304 1 buoy superv/dcl12 20240202.superv.json"
 }
 
 # First parse the optional command line inputs
@@ -65,9 +65,9 @@ done
 
 # Then parse the required command line inputs and check the number of inputs
 if [ $# -ne 8 ]; then
-  echo "Error: Incorrect number of inputs. Please specify the mooring, deployment,"
-  echo "latitude, longitude, depth, subassembly, instrument name and the file to"
-  echo "parse, in that order."
+  echo "Error: Incorrect number of inputs. Please specify the mooring name, deployment"
+  echo "name, latitude, longitude, depth, subassembly name, instrument name and the"
+  echo "file to parse, in that order."
   echo ""
   help
 fi
@@ -83,8 +83,8 @@ FNAME=$(basename "$IN_FILE")
 
 # test that the input file exists and is not empty
 if [ ! -s "$IN_FILE" ]; then
-  echo "ERROR: The input file does not exist or is empty."
-  exit
+  echo "ERROR: The input file $IN_FILE does not exist or is empty."
+  exit 0
 fi
 
 # Set the processed output data directory

@@ -20,7 +20,7 @@ case $FLAG in
     * )
         echo "ERROR: Incorrect ISUS record type, $FLAG, in the processing"
         echo "flag. Please specify either 0 (condensed) or 1 (full) for the"
-        echo "for the ISUS data record format with the -f option."
+        echo "the ISUS data record format with the -f option."
         exit
         ;;
 esac

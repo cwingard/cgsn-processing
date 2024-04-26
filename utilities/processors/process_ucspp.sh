@@ -7,7 +7,7 @@
 # Parse the command line inputs
 if [ $# -ne 9 ]; then
     echo "$0: required inputs are the platform and deployment names, the latitude and "
-    echo "longitude of the mooring, site depth, the data file type and the FLORT and PARAD serial numbers"
+    echo "longitude of the mooring, site depth, the data file type and the FLORT, PARAD and SUNA serial numbers"
     echo ""
     echo "     example: $0 ce02shsp R00001 44.639 -124.304 25 PPB 1084 365 337"
     exit 1
@@ -24,18 +24,18 @@ PARAD=$8
 NUTNR=$9
 
 # setup the base directories and the python parser used for creating the JSON formatted file
-PROC="/home/ooiuser/data/proc/$PLATFORM/$DEPLOY"
-ERDDAP="/home/ooiuser/data/erddap/$PLATFORM/$DEPLOY"
+PARSED="/home/ooiuser/data/parsed/$PLATFORM/$DEPLOY"
+PROCESSED="/home/ooiuser/data/processed/$PLATFORM/$DEPLOY"
 
 case $FTYPE in
     "ACS" )
         # OPTAA data files
-        ODIR="$ERDDAP/optaa"
-        COEFF="$PROC/optaa/optaa_factory_calibration.coeffs"
+        ODIR="$PROCESSED/optaa"
+        COEFF="$PARSED/optaa/optaa_factory_calibration.coeffs"
         if [ ! -d $ODIR ]; then
             mkdir -p $ODIR
         fi
-        for file in $PROC/optaa/ucspp_*_ACS_ACS.json; do
+        for file in $PARSED/optaa/ucspp_*_ACS_ACS.json; do
             out=`basename $file`
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
@@ -47,11 +47,11 @@ case $FTYPE in
 
     "PPB" | "PPD" )
         # CTDPF data files
-        ODIR="$ERDDAP/ctdpf"
+        ODIR="$PROCESSED/ctdpf"
         if [ ! -d $ODIR ]; then
             mkdir -p $ODIR
         fi
-        for file in $PROC/ctdpf/ucspp_*_"$FTYPE"_CTD.json; do
+        for file in $PARSED/ctdpf/ucspp_*_"$FTYPE"_CTD.json; do
             out=`basename $file`
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
@@ -62,11 +62,11 @@ case $FTYPE in
         done
 
         # DOSTA data files
-        ODIR="$ERDDAP/dosta"
+        ODIR="$PROCESSED/dosta"
         if [ ! -d $ODIR ]; then
             mkdir -p $ODIR
         fi
-        for file in $PROC/dosta/ucspp_*_"$FTYPE"_OPT.json; do
+        for file in $PARSED/dosta/ucspp_*_"$FTYPE"_OPT.json; do
             out=`basename $file`
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
@@ -77,12 +77,12 @@ case $FTYPE in
         done
 
         # FLORT data files
-        ODIR="$ERDDAP/flort"
-        COEFF="$PROC/flort/flort_factory_calibration.coeffs"
+        ODIR="$PROCESSED/flort"
+        COEFF="$PARSED/flort/flort_factory_calibration.coeffs"
         if [ ! -d $ODIR ]; then
             mkdir -p $ODIR
         fi
-        for file in $PROC/flort/ucspp_*_"$FTYPE"_TRIP.json; do
+        for file in $PARSED/flort/ucspp_*_"$FTYPE"_TRIP.json; do
             out=`basename $file`
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
@@ -93,12 +93,12 @@ case $FTYPE in
         done
 
         # PARAD data files
-        ODIR="$ERDDAP/parad"
-        COEFF="$PROC/parad/parad_factory_calibration.coeffs"
+        ODIR="$PROCESSED/parad"
+        COEFF="$PARSED/parad/parad_factory_calibration.coeffs"
         if [ ! -d $ODIR ]; then
             mkdir -p $ODIR
         fi
-        for file in $PROC/parad/ucspp_*_"$FTYPE"_PARS.json; do
+        for file in $PARSED/parad/ucspp_*_"$FTYPE"_PARS.json; do
             out=`basename $file`
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
@@ -109,12 +109,12 @@ case $FTYPE in
         done
 
         # SPKIR data files
-        ODIR="$ERDDAP/spkir"
-        COEFF="$PROC/spkir/spkir_factory_calibration.coeffs"
+        ODIR="$PROCESSED/spkir"
+        COEFF="$PARSED/spkir/spkir_factory_calibration.coeffs"
         if [ ! -d $ODIR ]; then
             mkdir -p $ODIR
         fi
-        for file in $PROC/spkir/ucspp_*_"$FTYPE"_OCR.json; do
+        for file in $PARSED/spkir/ucspp_*_"$FTYPE"_OCR.json; do
             out=`basename $file`
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
@@ -125,11 +125,11 @@ case $FTYPE in
         done
 
         # VELPT data files
-        ODIR="$ERDDAP/velpt"
+        ODIR="$PROCESSED/velpt"
         if [ ! -d $ODIR ]; then
             mkdir -p $ODIR
         fi
-        for file in $PROC/velpt/ucspp_*_"$FTYPE"_ADCP.json; do
+        for file in $PARSED/velpt/ucspp_*_"$FTYPE"_ADCP.json; do
             out=`basename $file`
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
@@ -141,12 +141,12 @@ case $FTYPE in
 
     "SNA" )
         # NUTNR data files
-        ODIR="$ERDDAP/nutnr"
-        COEFF="$PROC/nutnr/nutnr_inhouse_calibration.coeffs"
+        ODIR="$PROCESSED/nutnr"
+        COEFF="$PARSED/nutnr/nutnr_inhouse_calibration.coeffs"
         if [ ! -d $ODIR ]; then
             mkdir -p $ODIR
         fi
-        for file in $PROC/nutnr/ucspp_*_SNA_SNA.json; do
+        for file in $PARSED/nutnr/ucspp_*_SNA_SNA.json; do
             out=`basename $file`
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
@@ -158,11 +158,11 @@ case $FTYPE in
 
     "WC" )
         # HMR data files
-        ODIR="$ERDDAP/winch"
+        ODIR="$PROCESSED/winch"
         if [ ! -d $ODIR ]; then
             mkdir -p $ODIR
         fi
-        for file in $PROC/winch/ucspp_*_WC_HMR.json; do
+        for file in $PARSED/winch/ucspp_*_WC_HMR.json; do
             out=`basename $file`
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
@@ -173,7 +173,7 @@ case $FTYPE in
         done
 
         # SBE data files
-        for file in $PROC/winch/ucspp_*_WC_SBE.json; do
+        for file in $PARSED/winch/ucspp_*_WC_SBE.json; do
             out=`basename $file`
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
@@ -184,7 +184,7 @@ case $FTYPE in
         done
 
         # WM data files
-        for file in $PROC/winch/ucspp_*_WC_WM.json; do
+        for file in $PARSED/winch/ucspp_*_WC_WM.json; do
             out=`basename $file`
             if [ ! -f $ODIR/${out%.json}.nc ]; then
                 echo "Processing $file..."
