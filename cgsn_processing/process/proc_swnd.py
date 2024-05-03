@@ -29,13 +29,9 @@ def wind_binning(tbin):
     # add the max wind speed for the bin
     avg['wind_speed_max'] = tbin['wind_speed'].max(dim='time')
 
-    # replace the averaged heading and relative wind directions with circular means
-    x = np.cos(np.radians(tbin['heading']))
-    y = np.sin(np.radians(tbin['heading']))
-    avg['heading'] = np.mod(np.degrees(np.arctan2(y.mean(), x.mean())), 360)
-    x = np.cos(np.radians(tbin['relative_direction']))
-    y = np.sin(np.radians(tbin['relative_direction']))
-    avg['relative_direction'] = np.mod(np.degrees(np.arctan2(y.mean(), x.mean())), 360)
+    # replace the averaged heading and relative wind directions with the last valid value
+    avg['heading'] = tbin['heading'][-1]
+    avg['relative_direction'] = tbin['relative_direction'][-1]
 
     # re-calculate the wind direction from the averaged eastward and northward wind components
     avg['wind_direction'] = np.mod(np.degrees(np.arctan2(avg['eastward_wind_asimet'],
@@ -79,24 +75,40 @@ def proc_swnd(infile, platform, deployment, lat, lon, depth):
     # of the instrument, rather than the U and V axis of the instrument).
     swnd['eastward_wind_relative'] = -1 * swnd['v_axis_wind_speed']  # rename and convert v-axis to positive eastward
     swnd['northward_wind_relative'] = swnd['u_axis_wind_speed']      # rename u-axis to northward
+
+    # drop the original wind components
     swnd = swnd.drop(columns=['u_axis_wind_speed', 'v_axis_wind_speed'])
 
-    # calculate the wind speed and the relative wind direction from the eastward and northward wind components
+    # convert the compass heading to radians
+    heading = swnd['heading'] * 0.0174533  # convert to radians
+
+    # calculate the wind speed
     swnd['wind_speed'] = np.sqrt(swnd['eastward_wind_relative']**2 + swnd['northward_wind_relative']**2)
-    swnd['relative_direction'] = np.mod(np.degrees(np.arctan2(swnd['eastward_wind_relative'],
-                                                              swnd['northward_wind_relative'])), 360)
 
-    # if the wind speed is less than 0.05 m/s, set the wind direction to a NaN and then forward fill the NaNs
-    # with the last valid value (per the Gill WindMasterII manual)
-    swnd['relative_direction'] = np.where(swnd['wind_speed'] < 0.05, np.nan, swnd['relative_direction'])
-    swnd['relative_direction'] = swnd['relative_direction'].ffill()
+    # calculate the relative wind direction
+    swnd['northward_wind_relative'] = np.where(swnd['northward_wind_relative'] == 0, 0.00001,
+                                               swnd['northward_wind_relative'])  # avoid divide by zero errors
+    direction = np.arctan2(swnd['eastward_wind_relative'], swnd['northward_wind_relative'])
 
-    # now use the compass heading to convert the instrument relative wind direction to magnetic north and derive
-    # the true (magnetic) eastward and northward wind components (these should be comparable to the METBK wind
-    # components)
-    wind_direction = np.radians(np.mod(swnd['relative_direction'] + swnd['heading'], 360))
+    # convert to 0 to 360 degrees, but leave in radians for further calculations
+    direction = np.where(direction < 0, direction + 2*np.pi, direction)
+
+    # if the wind speed is less than 0.05 m/s, set the relative wind direction to a NaN and then forward
+    # fill the NaNs with the last valid value (per the Gill WindMasterII manual) -- this differs from the
+    # METBK processing, which does not make this adjustment
+    direction = np.where(swnd['wind_speed'] < 0.05, np.nan, direction)
+
+    # calculate the wind direction relative to magnetic north (using the compass heading and relative wind direction)
+    wind_direction = direction + heading
+    wind_direction = np.where(wind_direction > 2 * np.pi, wind_direction - 2 * np.pi, wind_direction)
+
+    # now compute the eastward and northward wind components
     swnd['eastward_wind_asimet'] = swnd['wind_speed'] * np.sin(wind_direction)
     swnd['northward_wind_asimet'] = swnd['wind_speed'] * np.cos(wind_direction)
+
+    # add the wind direction and relative wind direction (converted to degrees) to the data frame
+    swnd['wind_direction'] = np.degrees(wind_direction)
+    swnd['relative_direction'] = np.degrees(direction)
 
     # create an xarray data set from the data frame
     swnd = xr.Dataset.from_dataframe(swnd)
