@@ -143,6 +143,13 @@ CPHOX = {
                     'seawater.'),
         'data_product_identifier': 'CONDWAT_L1'
     },
+    'oxygen_concentration': {
+        'long_name': 'Dissolved Oxygen Concentration',
+        'units': 'mL L-1',
+        'comment': ('Concentration of dissolved oxygen per unit volume, as measured by an optode oxygen sensor. '
+                    'Computed on-board the sensor using internal calibration coefficients.'),
+        'data_product_identifier': 'DOCONCS_L1'
+    },
     'internal_humidity': {
         'long_name': 'Internal Humidity',
         'units': 'percent',
