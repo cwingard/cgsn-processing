@@ -25,16 +25,17 @@ def ph_total(vrs_ext, degc, psu, dbar, k0, k2, f):
     from the external voltage (vrs_ext), temperature (degC), salinity (psu),
     pressure (dbar), and the calibration coefficients (k0, k2, f). Source is
     Sea-Bird Scientific Application Note 99, "Calculating pH from ISFET pH
-    Sensors" ().
+    Sensors".
 
-    :param vrs_ext:
-    :param degc:
-    :param psu:
-    :param dbar:
-    :param k0:
-    :param k2:
-    :param f:
-    :return:
+    :param vrs_ext: external voltage from the FET sensor
+    :param degc: temperature in degrees Celsius
+    :param psu: salinity in practical salinity units
+    :param dbar: pressure in decibars
+    :param k0: calibration coefficient from vendor documentation
+    :param k2: calibration coefficient from vendor documentation
+    :param f: calibration coefficients (f0, f1, f2, f3, f4, f5) from the
+        vendor documentation (as an array)
+    :return: pH total
     """
     fp = f[0] * dbar + f[1] * dbar**2 + f[2] * dbar**3 + f[3] * dbar**4 + f[4] * dbar**5 + f[5] * dbar**6
     bar = dbar * 0.10  # convert pressure from dbar to bar
@@ -103,6 +104,9 @@ def proc_cphox(infile, platform, deployment, lat, lon, depth, **kwargs):
     :param depth: Depth of the platform relative to the sea surface.
     :return cphox: xarray dataset with the processed SeapHOx data
     """
+    # parse the kwargs to determine if estimated parameters are to be calculated
+    estimated = kwargs.get('estimated', False)
+
     # load the json data file as a pandas data frame
     cphox = json2df(infile)
     if cphox.empty:
@@ -130,18 +134,19 @@ def proc_cphox(infile, platform, deployment, lat, lon, depth, **kwargs):
     cphox['oxygen_concentration_per_kg'] = cphox['oxygen_concentration'] * 44661.5 / (sigma + 1000.)  # umol/kg
 
     # replace the deployment depth with the actual depth from the pressure sensor
-    depth = z_from_p(cphox['pressure'], lat)  # calculate the depth from the pressure
-    darray = [depth.mean(), depth.min(), depth.max()]
+    z = z_from_p(cphox['pressure'], lat)  # calculate the depth from the pressure
+    darray = [depth, z.min(), z.max()]
 
-    # Use the Lee et al. (2006) model to estimate the total alkalinity from the salinity and temperature (zone 4)
-    cphox['estimated_alkalinity'] = (2305 + 53.23 * (cphox['salinity'] - 35) + 1.85 * (cphox['salinity'] - 35)**2 -
-                                     14.72 * (cphox['temperature'] - 20) - 0.158 * (cphox['temperature'] - 20)**2 +
-                                     0.062 * (cphox['temperature'] - 20) * lon)
+    if estimated:  # calculate the estimated pH and alkalinity (applicable only to the Endurance Array at this time)
+        # Use the Lee et al. (2006) model to estimate the total alkalinity from the salinity and temperature (zone 4)
+        cphox['estimated_alkalinity'] = (2305 + 53.23 * (cphox['salinity'] - 35) + 1.85 * (cphox['salinity'] - 35)**2 -
+                                         14.72 * (cphox['temperature'] - 20) - 0.158 * (cphox['temperature'] - 20)**2 +
+                                         0.062 * (cphox['temperature'] - 20) * lon)
 
-    # Use Alin et al. (2012) to estimate the pH from the oxygen concentration and temperature
-    cphox['estimated_ph'] = (7.758 + 1.42e-2 * (cphox['temperature'] - 10.28) + 1.62e-3 *
-                             (cphox['oxygen_concentration_per_kg'] - 138.46) + 4.24e-5 *
-                             ((cphox['temperature'] - 10.28) * (cphox['oxygen_concentration_per_kg'] - 138.46)))
+        # Use Alin et al. (2012) to estimate the pH from the oxygen concentration and temperature
+        cphox['estimated_ph'] = (7.758 + 1.42e-2 * (cphox['temperature'] - 10.28) + 1.62e-3 *
+                                 (cphox['oxygen_concentration_per_kg'] - 138.46) + 4.24e-5 *
+                                 ((cphox['temperature'] - 10.28) * (cphox['oxygen_concentration_per_kg'] - 138.46)))
 
     # create an xarray data set from the data frame
     cphox = xr.Dataset.from_dataframe(cphox)
@@ -168,9 +173,10 @@ def main(argv=None):
     lat = args.latitude
     lon = args.longitude
     depth = args.depth
+    estimated = args.switch
 
     # process the CTDBP data and save the results to disk
-    cphox = proc_cphox(infile, platform, deployment, lat, lon, depth)
+    cphox = proc_cphox(infile, platform, deployment, lat, lon, depth, estimated=estimated)
     if cphox:
         cphox.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
 
