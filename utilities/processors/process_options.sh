@@ -68,7 +68,7 @@ if [ $# -ne 8 ]; then
   echo ""
   help
 fi
-MOORING=${1,,}
+PLATFORM=${1,,}
 DEPLOY=${2^^}
 LAT=${3}
 LON=${4}
