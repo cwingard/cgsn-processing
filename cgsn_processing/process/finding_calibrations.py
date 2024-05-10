@@ -15,20 +15,19 @@ from calendar import timegm
 from pytz import timezone
 
 # set the base URL for the OOI asset management listing of calibration files and a regex for the CSV files
-GIT = 'https://github.com'
+GIT = 'https://api.github.com/repos'
 CSV = re.compile(r'.*\.csv')
 
 
 def list_directories(url, tag=''):
     page = requests.get(url).json()
-    tree = page['payload']['tree']
-    urls = ['{}/{}'.format(url, item['name']) for item in tree['items'] if tag in item['name']]
+    urls = ['{}/{}'.format(url, item['name']) for item in page if tag in item['name']]
     return urls
 
 
 def find_calibration(inst_class, inst_serial, sampling_date):
     # find the links for the instrument class we are after
-    links = list_directories('{}/oceanobservatories/asset-management/tree/master/calibration/'.format(GIT), inst_class)
+    links = list_directories('{}/oceanobservatories/asset-management/contents/calibration'.format(GIT), inst_class)
     tdiff = []
     flist = []
 
@@ -70,8 +69,8 @@ def find_calibration(inst_class, inst_serial, sampling_date):
             csv = None
         else:
             # assemble the csv URL, adjusting for the fact we want the raw content
-            csv = re.sub('github.com', 'raw.githubusercontent.com', flist[tdiff.index(m)])
-            csv = re.sub('/tree', '', csv)
+            csv = re.sub('api.github.com/repos', 'raw.githubusercontent.com', flist[tdiff.index(m)])
+            csv = re.sub('contents', 'master', csv)
     else:
         csv = None
 
