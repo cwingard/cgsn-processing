@@ -15,7 +15,7 @@ function help ()
   echo "the name of the file to process. Three optional flags can be set as"
   echo "defined below:"
   echo ""
-  echo "Syntax: $0 [-h|f|cl|sn] mooring deployment latitude longitude depth instrument file"
+  echo "Syntax: $0 [OPTIONS] mooring deployment latitude longitude depth instrument file"
   echo ""
   echo "Options:"
   echo "h    Print this help message and exit."
@@ -44,22 +44,19 @@ while getopts "hf:c:s:" option; do
   case $option in
     h ) # display Help
       help
-      exit;;
+      exit ;;
     f ) # Processing flag
-      FLAG=${OPTARG,,}
-      shift $((OPTIND - 1))
-      ;;
+      FLAG=${OPTARG,,} ;;
     c ) # Co-located instrument name
-      COLOCATED=${OPTARG,,}
-      shift $((OPTIND - 1))
-      ;;
+      COLOCATED=${OPTARG,,} ;;
     s ) # Serial number of the instrument
-      NSERIAL=${OPTARG,,}
-      shift $((OPTIND - 1))
-      ;;
+      NSERIAL=${OPTARG,,} ;;
+    : )
+      echo "Option -${OPTARG} requires an argument"
+      exit ;;
     * ) # Invalid option
-      echo "Error: Invalid option"
-      exit 1;;
+      echo "Error: Invalid option -${OPTARG}"
+      exit ;;
   esac
 done
 
@@ -84,7 +81,7 @@ FNAME=$(basename "$IN_FILE")
 # test that the input file exists and is not empty
 if [ ! -s "$IN_FILE" ]; then
   echo "ERROR: The input file $IN_FILE does not exist or is empty."
-  exit 0
+  exit
 fi
 
 # Set the processed output data directory
