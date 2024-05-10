@@ -19,6 +19,77 @@ from cgsn_processing.process.common import ENCODING, inputs, json2df, update_dat
 from cgsn_processing.process.configs.attr_cphox import CPHOX
 
 
+def ph_total(vrs_ext, degc, psu, dbar, k0, k2, f):
+    """
+    Calculate the total pH from the SeapHOx sensor. The total pH is calculated
+    from the external voltage (vrs_ext), temperature (degC), salinity (psu),
+    pressure (dbar), and the calibration coefficients (k0, k2, f). Source is
+    Sea-Bird Scientific Application Note 99, "Calculating pH from ISFET pH
+    Sensors".
+
+    :param vrs_ext: external voltage from the FET sensor
+    :param degc: temperature in degrees Celsius
+    :param psu: salinity in practical salinity units
+    :param dbar: pressure in decibars
+    :param k0: calibration coefficient from vendor documentation
+    :param k2: calibration coefficient from vendor documentation
+    :param f: calibration coefficients (f0, f1, f2, f3, f4, f5) from the
+        vendor documentation (as an array)
+    :return: pH total
+    """
+    fp = f[0] * dbar + f[1] * dbar**2 + f[2] * dbar**3 + f[3] * dbar**4 + f[4] * dbar**5 + f[5] * dbar**6
+    bar = dbar * 0.10  # convert pressure from dbar to bar
+
+    # Nernstian response of the pH electrode (slope of the response)
+    R = 8.3144621      # J/(mol K) universal gas constant
+    T = degc + 273.15  # temperature in Kelvin
+    F = 9.6485365e4    # C/mol Faraday constant
+    snerst = R * T * np.log(10) / F
+
+    # total chloride in seawater
+    cl_total = (0.99889 / 35.453) * (psu / 1.80655) * (1000 / (1000 - 1.005 * psu))
+
+    # partial Molal volume of HCl (calculated as Millero 1983)
+    vhcl = 17.85 + 0.1044 * degc - 0.0001316 * degc**2
+
+    # Sample ionic strength (calculated as Dickson et al. 2007)
+    I = (19.924 * psu) / (1000 - 1.005 * psu)
+
+    # Debye-Huckel constant for activity of HCl (calculated as Khoo et al. 1977)
+    Adh = 0.0000034286 * degc**2 + 0.00067503 * degc + 0.49172143
+
+    # log of the activity coefficient of HCl as a function of temperature (calculated as Khoo et al. 1977)
+    loghclt = ((-Adh * np.sqrt(I)) / (1 + 1.394 * np.sqrt(I))) + (0.08885 - 0.000111 * degc) * I
+
+    # log10 of the activity coefficient of HCl as a function of temperature and pressure (calculated as Johnson et
+    # al. 2017)
+    loghcltp = loghclt + (((vhcl * bar) / (np.log(10) * R * T * 10)) / 2)
+
+    # total sulfate in seawater (calculated as Dickson et al. 2007)
+    so4_total = (0.1400 / 96.062) * (psu / 1.80655)
+
+    # acid disassociation constant of HSO4- (calculated as Dickson et al. 2007)
+    Ks = (1 - 0.001005 * psu) * np.exp((-4276.1 / T) + 141.328 - 23.093 * np.log(T) + ((-13856 / T) + 324.57 - 47.986 *
+                                       np.log(T)) * np.sqrt(I) + ((35474 / T) - 771.54 + 114.723 * np.log(T)) *
+                                       I - (2698 / T) * I**1.5 + (1776 / T) * I**2)
+
+    # partial Molal volume of HSO4- (calculated as Millero 1983)
+    vHSO4 = -18.03 + 0.0466 * degc + 0.000316 * degc**2
+
+    # compressibility of sulfate (calculated as Millero 1983)
+    KbarS = (-4.53 + 0.09 * degc) / 1000
+
+    # acid disassociation constant of HSO4- as function of salinity, temperature, and pressure (calculated as Millero
+    # 1982)
+    Kstp = Ks * np.exp((-vHSO4 * bar + 0.5 * KbarS * bar**2) / (R * T * 10))
+
+    # calculate the pH total, adjusted for pressure, temperature and salinity
+    pH = (((vrs_ext - k0 - k2 * degc - fp) / snerst) + np.log10(cl_total) + 2 * loghcltp -
+          np.log10(1 + (so4_total / Kstp)) - np.log10((1000 - 1.005 * psu) / 1000))
+
+    return pH
+
+
 def proc_cphox(infile, platform, deployment, lat, lon, depth, **kwargs):
     """
     Processing function for the Sea-Bird Electronics Deep SeapHOx (combined
@@ -33,6 +104,9 @@ def proc_cphox(infile, platform, deployment, lat, lon, depth, **kwargs):
     :param depth: Depth of the platform relative to the sea surface.
     :return cphox: xarray dataset with the processed SeapHOx data
     """
+    # parse the kwargs to determine if estimated parameters are to be calculated
+    estimated = kwargs.get('estimated', False)
+
     # load the json data file as a pandas data frame
     cphox = json2df(infile)
     if cphox.empty:
@@ -56,13 +130,23 @@ def proc_cphox(infile, platform, deployment, lat, lon, depth, **kwargs):
     pt0 = pt0_from_t(SA, cphox['temperature'].values, cphox['pressure'].values)
     CT = CT_from_pt(SA, pt0)
     sigma = sigma0(SA, CT)
-    cphox['oxygen_molar_concentration'] = cphox['oxygen_concentration'] * 44.6615  # convert to umol/L
-    cphox['oxygen_concentration_per_kg'] = cphox['oxygen_concentration'] * 44660 / (sigma + 1000)  # convert to umol/kg
-    cphox = cphox.drop(columns=['oxygen_concentration'])
+    cphox['oxygen_molar_concentration'] = cphox['oxygen_concentration'] * 44661.5 / 1000.  # umol/L
+    cphox['oxygen_concentration_per_kg'] = cphox['oxygen_concentration'] * 44661.5 / (sigma + 1000.)  # umol/kg
 
     # replace the deployment depth with the actual depth from the pressure sensor
-    depth = z_from_p(cphox['pressure'], lat)  # calculate the depth from the pressure
-    darray = [depth.mean(), depth.min(), depth.max()]
+    z = z_from_p(cphox['pressure'], lat)  # calculate the depth from the pressure
+    darray = [depth, z.min(), z.max()]
+
+    if estimated:  # calculate the estimated pH and alkalinity (applicable only to the Endurance Array at this time)
+        # Use the Lee et al. (2006) model to estimate the total alkalinity from the salinity and temperature (zone 4)
+        cphox['estimated_alkalinity'] = (2305 + 53.23 * (cphox['salinity'] - 35) + 1.85 * (cphox['salinity'] - 35)**2 -
+                                         14.72 * (cphox['temperature'] - 20) - 0.158 * (cphox['temperature'] - 20)**2 +
+                                         0.062 * (cphox['temperature'] - 20) * lon)
+
+        # Use Alin et al. (2012) to estimate the pH from the oxygen concentration and temperature
+        cphox['estimated_ph'] = (7.758 + 1.42e-2 * (cphox['temperature'] - 10.28) + 1.62e-3 *
+                                 (cphox['oxygen_concentration_per_kg'] - 138.46) + 4.24e-5 *
+                                 ((cphox['temperature'] - 10.28) * (cphox['oxygen_concentration_per_kg'] - 138.46)))
 
     # create an xarray data set from the data frame
     cphox = xr.Dataset.from_dataframe(cphox)
@@ -89,9 +173,10 @@ def main(argv=None):
     lat = args.latitude
     lon = args.longitude
     depth = args.depth
+    estimated = args.switch
 
     # process the CTDBP data and save the results to disk
-    cphox = proc_cphox(infile, platform, deployment, lat, lon, depth)
+    cphox = proc_cphox(infile, platform, deployment, lat, lon, depth, estimated=estimated)
     if cphox:
         cphox.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
 
