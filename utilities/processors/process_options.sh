@@ -10,12 +10,12 @@
 # create a function to print the help documentation
 function help ()
 {
-  echo "$0: required inputs are the mooring, deployment, latitude, longitude,"
+  echo "$0: required inputs are the platform, deployment, latitude, longitude,"
   echo "depth and subassembly and instrument name, in that order, followed by"
   echo "the name of the file to process. Three optional flags can be set as"
   echo "defined below:"
   echo ""
-  echo "Syntax: $0 [OPTIONS] mooring deployment latitude longitude depth instrument file"
+  echo "Syntax: $0 [OPTIONS] platform deployment latitude longitude depth instrument file"
   echo ""
   echo "Options:"
   echo "h    Print this help message and exit."
@@ -59,14 +59,15 @@ while getopts "hf:c:s:" option; do
       exit ;;
   esac
 done
+shift $((OPTIND - 1))
 
 # Then parse the required command line inputs and check the number of inputs
 if [ $# -ne 8 ]; then
-  echo "Error: Incorrect number of inputs. Please specify the mooring name, deployment"
+  echo "Error: Incorrect number of inputs. Please specify the platform name, deployment"
   echo "name, latitude, longitude, depth, subassembly name, instrument name and the"
   echo "file to parse, in that order."
   echo ""
-  help
+  exit
 fi
 PLATFORM=${1,,}
 DEPLOY=${2^^}
@@ -86,7 +87,7 @@ fi
 
 # Set the processed output data directory
 PROCESSED="/home/ooiuser/data/processed"
-OUT_DIR="$PROCESSED/$MOORING/$DEPLOY/$ASSMBLY/$INSTRMT"
+OUT_DIR="$PROCESSED/$PLATFORM/$DEPLOY/$ASSMBLY/$INSTRMT"
 OUT_FILE="$OUT_DIR/${FNAME%.json}.nc"
 if [ ! -d "$OUT_DIR" ]; then
     mkdir -p "$OUT_DIR"
