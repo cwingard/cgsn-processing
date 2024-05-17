@@ -1,8 +1,9 @@
 #!/bin/bash
 #
 # Read the parsed FLORT data files from the CGSN Coastal Surface Moorings and
-# create TURBDX processed datasets available in NetCDF formatted files with the vendor
-# factory calibration coefficients applied for further processing and review.
+# create TURBDX processed datasets available in NetCDF formatted files with the
+# vendor factory calibration coefficients applied for further processing and
+# review.
 #
 # P. Whelan 2024-02-08
 # C. Wingard 2024-04-26 -- Updated to use the process_options.sh script to
