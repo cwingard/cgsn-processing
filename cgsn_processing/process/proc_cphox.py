@@ -113,6 +113,8 @@ def proc_cphox(infile, platform, deployment, lat, lon, depth, **kwargs):
         # json data file was empty, exiting
         return None
 
+    # TODO: use vendor calibration coefficients to re-calculate the total pH from the external voltage data
+
     # convert SeapHOx date/time string to a pandas.Timestamp date/time object and then to a epoch time in seconds
     utc = pd.to_datetime(cphox['sphox_date_time_string'], format='%Y-%m-%dT%H:%M:%S', utc=True)
     epts = [timegm(t.timetuple()) for t in utc]  # calculate the epoch time as seconds since 1970-01-01 in UTC
@@ -139,14 +141,15 @@ def proc_cphox(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     if estimated:  # calculate the estimated pH and alkalinity (applicable only to the Endurance Array at this time)
         # Use the Lee et al. (2006) model to estimate the total alkalinity from the salinity and temperature (zone 4)
+        # https://doi.org/10.1029/2006GL027207
         cphox['estimated_alkalinity'] = (2305 + 53.23 * (cphox['salinity'] - 35) + 1.85 * (cphox['salinity'] - 35)**2 -
                                          14.72 * (cphox['temperature'] - 20) - 0.158 * (cphox['temperature'] - 20)**2 +
                                          0.062 * (cphox['temperature'] - 20) * lon)
 
-        # Use Alin et al. (2012) to estimate the pH from the oxygen concentration and temperature
-        cphox['estimated_ph'] = (7.758 + 1.42e-2 * (cphox['temperature'] - 10.28) + 1.62e-3 *
-                                 (cphox['oxygen_concentration_per_kg'] - 138.46) + 4.24e-5 *
-                                 ((cphox['temperature'] - 10.28) * (cphox['oxygen_concentration_per_kg'] - 138.46)))
+        # Use Juranek et al. (2011) to estimate the pH from the oxygen concentration and temperature
+        # https://doi.org/10.1029/2011GL048580
+        cphox['estimated_ph'] = (7.866 + 1.759e-3 * (cphox['oxygen_concentration_per_kg'] - 191.6) +
+                                 1.813e-2 * (cphox['temperature'] - 6.7))
 
     # create an xarray data set from the data frame
     cphox = xr.Dataset.from_dataframe(cphox)
@@ -173,9 +176,12 @@ def main(argv=None):
     lat = args.latitude
     lon = args.longitude
     depth = args.depth
-    estimated = args.switch
+    if args.switch == "estimate":
+        estimated = True
+    else:
+        estimated = False
 
-    # process the CTDBP data and save the results to disk
+    # process the SeapHOx data and save the results to disk
     cphox = proc_cphox(infile, platform, deployment, lat, lon, depth, estimated=estimated)
     if cphox:
         cphox.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
