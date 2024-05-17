@@ -190,6 +190,6 @@ CPHOX = {
         'comment': ('Estimated pH of the sea water, reported on the total scale. The pH is a measure of the acidity '
                     'or basicity of the sea water, where a pH of 7 is neutral, a pH less than 7 is acidic, and a pH '
                     'greater than 7 is basic. The pH is estimated using the SeapHOx oxygen and temperature data and '
-                    'an equation from Alin et al. (2012, doi:10.1029/2011JC007511).')
+                    'an equation from Juranek et al. (2011, doi:10.1029/2011GL048580).')
     }
 }
