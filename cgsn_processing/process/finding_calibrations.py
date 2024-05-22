@@ -7,9 +7,11 @@
 @brief Find the most applicable calibration file for an instrument
 """
 import datetime
+import netrc
 import pandas as pd
 import re
 import requests
+import warnings
 
 from calendar import timegm
 from pytz import timezone
@@ -19,8 +21,21 @@ GIT = 'https://api.github.com/repos'
 CSV = re.compile(r'.*\.csv')
 
 
+# load the GitHub API read-only access token
+headers = None  # default token
+try:
+    nrc = netrc.netrc()
+    auth = nrc.authenticators('api.github.com')
+    if auth is None:
+        warnings.warn('No entry found for the GitHub API token in the users .netrc file, consider adding to improve access to calibration coefficients')
+    else:
+        headers = {'Authentication': 'token ' + auth[2]}
+except FileNotFoundError as e:
+    warnings.warn('No .netrc file found in the users home directory. Consider creating and adding a GitHub API token to improve access to calibration coefficients')
+
+
 def list_directories(url, tag=''):
-    page = requests.get(url).json()
+    page = requests.get(url, headers=headers).json()
     urls = ['{}/{}'.format(url, item['name']) for item in page if tag in item['name']]
     return urls
 

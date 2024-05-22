@@ -4,37 +4,30 @@
 # create processed datasets available in JSON formatted files for further
 # processing and review.
 #
-# C. Wingard 2017-01-24
+# C. Wingard 2017-01-24 -- Original script
+# C. Wingard 2024-03-22 -- Updated to use the process_options.sh script to
+#                          parse the command line inputs
 
-# Parse the command line inputs
-if [ $# -ne 9 ]; then
-    echo "$0: required inputs are the platform and deployment names, the latitude and"
-    echo "longitude, the PHSEN directory name, the name of the co-located CTD, the"
-    echo "deployment depth, the unit serial number and the name of the file to process."
-    echo ""
-    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 nsif/phsen ctdbp 7 P0086 20161012.phsen.json"
-    exit 1
+# include the help function and parse the required and optional command line options
+DIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
+source "$DIR/process_options.sh"
+
+# check that the co-located CTD name is provided
+if [ -z "$COLOCATED" ]; then
+    echo "ERROR: The co-located CTD name must be provided with the -c option."
+    exit
 fi
-PLATFORM=${1,,}
-DEPLOY=${2^^}
-LAT=$3; LON=$4
-PHSEN=${5,,}
-CTD=${6,,}
-DEPTH=$7
-SERIAL=$8
-FILE=`basename $9`
 
-# Set the default directory paths and input/output sources
-DATA="/home/ooiuser/data"
-IN="$DATA/proc/$PLATFORM/$DEPLOY/$PHSEN/$FILE"
-OUT="$DATA/erddap/$PLATFORM/$DEPLOY/$PHSEN/${FILE%.json}.nc"
-if [ ! -d `dirname $OUT` ]; then
-    mkdir -p `dirname $OUT`
+# check that the serial number is provided
+if [ -z "$NSERIAL" ]; then
+    echo "ERROR: The PHSEN serial number must be provided with the -s option."
+    exit
 fi
 
 # Process the file
-if [ -e $IN ]; then
-    cd /home/ooiuser/code/cgsn-processing
-    python -m cgsn_processing.process.proc_phsen -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -df $CTD \
-        -sn $SERIAL -i $IN -o $OUT
+if [ -e $IN_FILE ]; then
+    cd /home/ooiuser/code/cgsn-processing || exit
+    python -m cgsn_processing.process.proc_phsen -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH \
+      -i $IN_FILE -o $OUT_FILE -df $COLOCATED -sn $NSERIAL || echo "ERROR: Failed to process $IN_FILE"
 fi

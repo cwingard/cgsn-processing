@@ -10,10 +10,7 @@ import numpy as np
 import os
 import xarray as xr
 
-from gsw import SP_from_C, SA_from_SP, CT_from_t, rho
-
 from cgsn_processing.process.common import ENCODING, inputs, epoch_time, json2df, update_dataset
-from cgsn_processing.process.finding_calibrations import find_calibration
 from cgsn_processing.process.configs.attr_turbd import TURBD
 
 
@@ -36,13 +33,6 @@ def proc_turbd(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     :return turbd: An xarray dataset with the processed TURBD data
     """
-    # process the variable length keyword arguments
-    #ctd_type = kwargs.get('ctd_type')
-    #if ctd_type:
-    #    ctd_type = ctd_type.lower()
-    #flort_serial = kwargs.get('flort_serial')
-
-
     # load the json data file as a panda data frame for further processing
     turbdf = json2df(infile)
     if turbdf.empty:
@@ -63,6 +53,7 @@ def proc_turbd(infile, platform, deployment, lat, lon, depth, **kwargs):
     turbxr.attrs['processing_level'] = 'processed'
     return turbxr
 
+
 def main(argv=None):
     """
     Command line function to process the TURBD data using the proc_turbd
@@ -80,8 +71,7 @@ def main(argv=None):
     lon = args.longitude
     depth = args.depth
 
-
-    # process the CTDBP data and save the results to disk
+    # process the TURBD data and save the results to disk
     turbd = proc_turbd(infile, platform, deployment, lat, lon, depth)
     if turbd:
         turbd.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
