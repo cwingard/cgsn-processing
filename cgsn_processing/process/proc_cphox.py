@@ -120,8 +120,11 @@ def proc_cphox(infile, platform, deployment, lat, lon, depth, **kwargs):
     epts = [timegm(t.timetuple()) for t in utc]  # calculate the epoch time as seconds since 1970-01-01 in UTC
     cphox['sensor_time'] = epts
 
-    # drop the DCL date and time string, we no longer need it
-    cphox = cphox.drop(columns=['dcl_date_time_string', 'sphox_date_time_string'])
+    # drop unnecessary time columns. Note: IMM resident cphox will not have DCL timestamp
+    if 'dcl_date_time_string' in cphox:
+        cphox = cphox.drop(columns=['dcl_date_time_string', 'sphox_date_time_string'])
+    else:
+        cphox = cphox.drop(columns=['sphox_date_time_string'])
 
     # reset the error code and serial number to integers
     cphox['error_flag'] = cphox['error_flag'].astype(int)
