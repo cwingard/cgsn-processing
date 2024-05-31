@@ -4,35 +4,36 @@
 # create processed datasets available in NetCDF formatted files for further
 # processing and review.
 #
-# C. Wingard 2017-01-24
+# C. Wingard 2017-01-24 -- Original script
+# C. Wingard 2024-03-22 -- Updated to use the process_options.sh script to
+#                          parse the command line inputs
 
-# Parse the command line inputs
-if [ $# -ne 8 ]; then
-    echo "$0: required inputs are the platform and deployment names, the latitude and longitude, the ADCP"
-    echo " directory name, the name of the co-located CTD, the deployment depth and the name of the file to process."
-    echo ""
-    echo "     example: $0 ce02shsm D00004 44.63929 -124.30404 nsif/adcp ctdbp 7 20161012.adcpt.json"
-    exit 1
-fi
-PLATFORM=${1,,}
-DEPLOY=${2^^}
-LAT=$3; LON=$4
-ADCP=${5,,}
-CTD=${6,,}
-DEPTH=$7
-FILE=`basename $8`
+# include the help function and parse the required and optional command line options
+DIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
+source "$DIR/process_options.sh"
 
-# Set the default directory paths and input/output sources
-DATA="/home/ooiuser/data"
-IN="$DATA/parsed/$PLATFORM/$DEPLOY/$ADCP/$FILE"
-OUT="$DATA/processed/$PLATFORM/$DEPLOY/$ADCP/${FILE%.json}.nc"
-if [ ! -d `dirname $OUT` ]; then
-    mkdir -p `dirname $OUT`
+# check the processing flag for the correct ADCP data types (PD0 or PD8)
+case $FLAG in
+    "pd0" | "pd8" )
+        ;;
+    * )
+        echo "ERROR: Incorrect ADCP data file type, $FLAG, in the processing"
+        echo "flag. Please specify either PD0 or PD8 (case-insensitive) for"
+        echo "the data record format with the -f option."
+        exit
+        ;;
+esac
+
+# check that the co-located CTD name is provided
+if [ -z "$COLOCATED" ]; then
+    echo "ERROR: The co-located CTD name must be provided with the -c option."
+    exit
 fi
 
 # Process the file
-if [ -e $IN ]; then
+if [ -e $IN_FILE ]; then
     cd /home/ooiuser/code/cgsn-processing || exit
-    python -m cgsn_processing.process.proc_adcp -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON \
-        -dp $DEPTH -i $IN -o $OUT -s pd0 -df $CTD || echo "Processing failed for $IN"
+    python -m cgsn_processing.process.proc_adcp -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH \
+        -i $IN_FILE -o $OUT_FILE -s $FLAG -df $COLOCATED || echo "ERROR: Failed to process $IN_FILE"
 fi
