@@ -92,7 +92,7 @@ def proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
     ctd['sensor_time'] = sensor_time
     ctd.drop(columns={'serial_number', 'date_time_string'}, inplace=True)
     ctd.rename(columns={'raw_oxy_calphase': 'raw_calibrated_phase',
-                        'raw_oxy_temp': 'raw_oxygen_thermistor'},
+                        'raw_oxy_temp': 'raw_optode_thermistor'},
                inplace=True)
 
     # join the status and ctd data together into a single data frame, keeping track of data types and fill values
@@ -113,7 +113,7 @@ def proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
     # create filled variables to be updated if calibration coefficients are available
     empty_data = ctd['sensor_time'] * np.nan
     ctd['calibrated_phase'] = empty_data
-    ctd['oxygen_thermistor_temperature'] = empty_data
+    ctd['optode_thermistor'] = empty_data
     ctd['svu_oxygen_concentration'] = empty_data
     ctd['oxygen_concentration_corrected'] = empty_data
     ctd['estimated_chlorophyll'] = empty_data
@@ -157,9 +157,9 @@ def proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
         # calculate the oxygen concentration from the calibrated phase and thermistor temperature using the
         # Stern-Volmer-Uchida (SVU) equations
         ctd['calibrated_phase'] = do2_phase_volt_to_degree(ctd['raw_calibrated_phase'])
-        ctd['oxygen_thermistor_temperature'] = do2_therm_volt_to_degc(ctd['raw_oxygen_thermistor'])
+        ctd['optode_thermistor'] = do2_therm_volt_to_degc(ctd['raw_optode_thermistor'])
         ctd['svu_oxygen_concentration'] = do2_phase_to_doxy(ctd['calibrated_phase'],
-                                                            ctd['oxygen_thermistor_temperature'],
+                                                            ctd['optode_thermistor'],
                                                             opt.coeffs['svu_cal_coeffs'],
                                                             opt.coeffs['two_point_coeffs'])
 

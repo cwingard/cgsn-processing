@@ -124,9 +124,9 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
     empty_data = np.atleast_1d(dosta['serial_number']).astype(np.int32) * np.nan
     dosta.rename(columns={'estimated_oxygen_concentration': 'oxygen_concentration',
                           'estimated_oxygen_saturation': 'oxygen_saturation',
-                          'optode_temperature': 'oxygen_thermistor_temperature',
+                          'optode_temperature': 'optode_thermistor',
                           'temp_compensated_phase': 'compensated_phase',
-                          'raw_temperature': 'raw_oxygen_thermistor'}, inplace=True)
+                          'raw_temperature': 'raw_optode_thermistor'}, inplace=True)
 
     # processed variables to be created if a device file and a co-located CTD is available
     dosta['svu_oxygen_concentration'] = empty_data
@@ -138,7 +138,7 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
     # recompute the oxygen concentration from the calibrated phase, optode thermistor temperature and the calibration
     # coefficients
     if proc_flag:
-        svu = do2_phase_to_doxy(dosta['calibrated_phase'], dosta['oxygen_thermistor_temperature'],
+        svu = do2_phase_to_doxy(dosta['calibrated_phase'], dosta['optode_thermistor'],
                                 dev.coeffs['svu_cal_coeffs'], dev.coeffs['two_point_coeffs'])
         dosta['svu_oxygen_concentration'] = svu
 
