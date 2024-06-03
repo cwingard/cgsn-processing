@@ -8,6 +8,7 @@
 """
 import numpy as np
 from cgsn_processing.process.common import dict_update
+from cgsn_processing.process.configs.attr_ctdbp import CTDBP
 from cgsn_processing.process.configs.attr_dosta import DOSTA
 from cgsn_processing.process.configs.attr_flort import FLORT
 from cgsn_processing.process.configs.attr_nutnr import NUTNR
@@ -27,68 +28,15 @@ CSPP = {
     }
 }
 
-CSPP_CTDPF = {
+ctdpf = {
     # global attributes and metadata variables and attributes
     'global': {
         'title': 'Conductivity, Temperature and Depth (CTD) Data from the uCSPP',
         'summary': ('Records the CTD data from the sensor mounted on the uncabled Coastal Surface Piercing '
                     'Profilers (uCSPP).')
-    },
-    # --> reported values
-    'conductivity': {
-        'long_name': 'Sea Water Conductivity',
-        'standard_name': 'sea_water_electrical_conductivity',
-        'units': 'mS cm-1',
-        'comment': ('Sea water conductivity refers to the ability of seawater to conduct electricity. The presence '
-                    'of ions, such as salt, increases the electrical conducting ability of seawater. As such, '
-                    'conductivity can be used as a proxy for determining the quantity of salt in a sample of '
-                    'seawater.'),
-        'data_product_identifier': 'CONDWAT_L1',
-        '_FillValue': np.nan
-    },
-    'temperature': {
-        'long_name': 'Sea Water Temperature',
-        'standard_name': 'sea_water_temperature',
-        'units': 'degrees_Celsius',
-        'comment': 'Sea water temperature is the in situ temperature of the sea water.',
-        'data_product_identifier': 'TEMPWAT_L1',
-        '_FillValue': np.nan
-    },
-    'pressure': {
-        'long_name': 'Seawater Pressure',
-        'standard_name': 'sea_water_pressure_due_to_sea_water',
-        'units': 'dbar',
-        'comment': ('Seawater Pressure refers to the pressure exerted on a sensor in situ by the weight of the '
-                    'column of seawater above it. It is calculated by subtracting one standard atmosphere from the '
-                    'absolute pressure at the sensor to remove the weight of the atmosphere on top of the water '
-                    'column. The pressure at a sensor in situ provides a metric of the depth of that sensor.'),
-        'data_product_identifier': 'PRESWAT_L1',
-        '_FillValue': np.nan
-    },
-    # --> derived values
-    'salinity': {
-        'long_name': 'Practical Salinity',
-        'standard_name': 'sea_water_practical_salinity',
-        'units': '1',
-        'comment': ('Salinity is generally defined as the concentration of dissolved salt in a parcel of sea water. '
-                    'Practical Salinity is a more specific unitless quantity calculated from the conductivity of '
-                    'sea water and adjusted for temperature and pressure. It is approximately equivalent to Absolute '
-                    'Salinity (the mass fraction of dissolved salt in sea water), but they are not interchangeable.'),
-        'data_product_identifier': 'PRACSAL_L2',
-        'ancillary_variables': 'conductivity, temperature, pressure',
-        '_FillValue': np.nan
-    },
-    'density': {
-        'long_name': 'In-Situ Sea Water Density',
-        'standard_name': 'sea_water_density',
-        'units': 'kg m-3',
-        'comment': ('Sea water Density is the in situ density and is defined as mass per unit volume. It is '
-                    'calculated from the conductivity, temperature and depth of a sea water sample.'),
-        'data_product_identifier': 'DENSITY_L2',
-        'ancillary_variables': 'lon, lat, salinity, temperature, pressure',
-        '_FillValue': np.nan
     }
 }
+CSPP_CTDPF = dict_update(CTDBP, ctdpf)
 
 dosta = {
     'global': {
@@ -144,7 +92,7 @@ CSPP_PARAD = {
         'units': 'umol m-2 s-1',
         'comment': ('Photosynthetically Active Radiation (PAR), or photosynthetic photon flux density, is a measure '
                     'of the density of photons per unit area that are in the spectral range of light (400-700 '
-                    'nanometers) used by primary producers photosynthesis.'),
+                    'nanometers) used by primary producers for photosynthesis.'),
         'data_product_identifier': 'OPTPARW_L1',
         'ancillary_variables': 'raw_par_measurement'
     }
@@ -174,49 +122,88 @@ CSPP_WINCH = {
         'summary': ('Records data from the uCSPP winch controller data files (winch motor status, attitude sensor '
                     'data, and pressure sensor data).')
     },
+    # from the WC_WM files
     'encoder_counts': {
-        'units': 'counts'
-    },
-    'current': {
-        'units': 'A'
-    },
-    'status_string': {
-        'units': '1'
-    },
-    'raw_velocity': {
-        'units': 'cm s-1'
-    },
-    'temperature': {
-        'units': 'degrees_Celsius'
+        'long_name': 'Encoder Counts',
+        'units': 'counts',
+        'comment': 'The number of encoder counts from the winch motor.'
     },
     'voltage': {
-        'units': 'V'
+        'long_name': 'Motor Voltage',
+        'units': 'V',
+        'comment': 'The voltage supplied to the winch motor.'
+    },
+    'current': {
+        'long_name': 'Motor Current',
+        'units': 'A',
+        'comment': 'The current supplied to the winch motor.'
+    },
+    'status_string': {
+        'long_name': 'Status String',
+        # 'units': '',    deliberately left blank, no units for this value
+        'comment': 'The status string from the winch motor.'
+    },
+    'raw_velocity': {
+        'long_name': 'Raw Velocity',
+        'units': 'cm s-1',
+        'comment': 'The raw velocity from the winch motor.'
+    },
+    'temperature': {
+        'long_name': 'Motor Temperature',
+        'units': 'degrees_Celsius',
+        'comment': 'The temperature of the winch motor.'
     },
     'raw_time': {
-        'units': '1'
+        'long_name': 'Raw Time',
+        # 'units': '',    deliberately left blank, no units for this value
+        'comment': 'The raw time from the winch motor.'
     },
     'raw_discharge': {
-        'units': '1'
+        'long_name': 'Raw Discharge',
+        # 'units': '',    deliberately left blank, no units for this value
+        'comment': 'The raw discharge from the winch motor.'
     },
     'rope_on_drum': {
-        'units': 'm'
+        'long_name': 'Rope on Drum',
+        'units': 'm',
+        'comment': 'The amount of line on the winch drum.'
     },
-
+    # from the WC_SBE files
     'pressure': {
+        'long_name': 'Sea Water Pressure',
         'standard_name': 'sea_water_pressure_due_to_sea_water',
-        'units': 'dbar'
+        'units': 'dbar',
+        'comment': ('Seawater Pressure refers to the pressure exerted on a sensor in situ by the weight of the '
+                    'column of seawater above it. It is calculated by subtracting one standard atmosphere from the '
+                    'absolute pressure at the sensor to remove the weight of the atmosphere on top of the water '
+                    'column. The pressure at a sensor in situ provides a metric of the depth of that sensor.'),
+        'data_product_identifier': 'PRESWAT_L1'
     },
     'velocity': {
-        'units': 'cm s-1'
+        'long_name': 'Profiler Ascent Velocity',
+        'standard_name': 'platform_speed_wrt_sea_water',
+        'units': 'cm s-1',
+        'comment': ('The velocity of the profiler as it ascends through the water column. The profiler is '
+                    'attached to the winch and is raised and lowered by the winch motor.'),
     },
-
+    # from the WC_HMR files
     'heading': {
-        'units': 'degrees'
+        'long_name': 'Heading',
+        'standard_name': 'platform_orientation',
+        'units': 'degrees',
+        'comment': ('The heading of the profiler control can, used to track profiler rotations as it ascends through '
+                    'the water column.')
     },
     'pitch': {
-        'units': 'degrees'
+        'long_name': 'Pitch',
+        'standard_name': 'platform_pitch',
+        'units': 'degrees',
+        'comment': 'The pitch of the profiler control can.'
     },
     'roll': {
-        'units': 'degrees'
+        'long_name': 'Roll',
+        'standard_name': 'platform_roll',
+        'units': 'degrees',
+        'comment': 'The roll of the profiler control can.'
     }
 }

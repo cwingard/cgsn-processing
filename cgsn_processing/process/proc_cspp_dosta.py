@@ -13,14 +13,14 @@ import pandas as pd
 import xarray as xr
 
 from datetime import timedelta
+from gsw import z_from_p
 
 from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING, dict_update
 from cgsn_processing.process.configs.attr_cspp import CSPP, CSPP_DOSTA
+from cgsn_processing.process.configs.attr_common import SHARED
 from cgsn_processing.process.finding_calibrations import find_calibration
 from cgsn_processing.process.proc_dosta import Calibrations
-
 from pyseas.data.do2_functions import do2_phase_to_doxy, do2_salinity_correction
-from gsw import z_from_p
 
 
 def proc_cspp_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
@@ -34,23 +34,22 @@ def proc_cspp_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
     processing level attribute is set to "parsed".
 
     :param infile: JSON formatted parsed data file
-    :param platform: name of the mooring the instrument is mounted on.
+    :param platform: Site name where the CSPP is deployed
     :param deployment: name of the deployment for the input data file.
-    :param lat: latitude of the mooring deployment.
-    :param lon: longitude of the mooring deployment.
+    :param lat: latitude of the CSPP deployment.
+    :param lon: longitude of the CSPP deployment.
     :param depth: site depth where the CSPP is deployed
+    **ctd_name: Name of directory with data from a co-located CTD. This
+        data will be used to apply salinity and density corrections to the
+        data. Otherwise, the salinity corrected oxygen concentration is
+        filled with NaN's
 
-    :kwargs ctd_name: Name of directory with data from a co-located CTD. This
-           data will be used to apply salinity and density corrections to the
-           data. Otherwise, the salinity corrected oxygen concentration is
-           filled with NaN's
-
-    :return dosta: An xarray dataset with the processed DOSTA data
+    :return dosta: xarray dataset with the processed DOSTA data
     """
     # process the variable length keyword arguments
     ctd_name = kwargs.get('ctd_name')
 
-    # load the json data file as a dictionary object for further processing
+    # load the json data file as a dataframe for further processing
     dosta = json2df(infile)
     if dosta.empty:
         # json data file was empty, exiting
@@ -81,9 +80,8 @@ def proc_cspp_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
             'depth': 'ctd_pressure',
             'estimated_oxygen_concentration': 'oxygen_concentration',
             'estimated_oxygen_saturation': 'oxygen_saturation',
-            'optode_temperature': 'oxygen_thermistor_temperature',
-            'temp_compensated_phase': 'compensated_phase',
-            'raw_temperature': 'raw_oxygen_thermistor'
+            'optode_temperature': 'optode_thermistor',
+            'raw_temperature': 'raw_optode_thermistor',
         }, inplace=True)
 
     # processed variables to be created if calibration coefficients and a co-located CTD are available
@@ -93,15 +91,14 @@ def proc_cspp_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
     dosta['svu_oxygen_concentration'] = empty_data
     dosta['oxygen_concentration_corrected'] = empty_data
 
-    # reset the depth array from the CTD pressure record
-    d = -1 * z_from_p(dosta['ctd_pressure'], lat)
-    dosta['ctd_depth'] = d
-    depth = [depth, d.min(), d.max()]
+    # calculate the depth range for the NetCDF global attributes: deployment depth and the profile min/max range
+    z = -1 * z_from_p(dosta['ctd_pressure'], lat)
+    depth_range = [depth, z.min(), z.max()]
 
     # recompute the oxygen concentration from the calibrated phase, optode thermistor temperature and the calibration
     # coefficients
     if proc_flag:
-        svu = do2_phase_to_doxy(dosta['calibrated_phase'], dosta['oxygen_thermistor_temperature'],
+        svu = do2_phase_to_doxy(dosta['calibrated_phase'], dosta['optode_thermistor'],
                                 dev.coeffs['svu_cal_coeffs'], dev.coeffs['two_point_coeffs'])
         dosta['svu_oxygen_concentration'] = svu
 
@@ -140,14 +137,18 @@ def proc_cspp_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
     # create an xarray data set from the data frame
     dosta = xr.Dataset.from_dataframe(dosta)
 
-    # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
-    dosta['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(dosta.time)).astype(str))
-    profile_id = re.sub(r'\D+', '', os.path.basename(infile))
+    # pull out the profile ID from the filename
+    _, fname = os.path.split(infile)
+    profile_id = re.sub(r'\D+', '', fname)
     profile_id = "{}.{}.{}".format(profile_id[0], profile_id[1:4], profile_id[4:])
-    dosta['profile_id'] = xr.Variable(('time',), np.repeat(profile_id, len(dosta.time)).astype(str))
 
-    attrs = dict_update(CSPP_DOSTA, CSPP)  # add the shared attributes
-    dosta = update_dataset(dosta, platform, deployment, lat, lon, depth, attrs)
+    # add the deployment and profile IDs to the dataset
+    dosta['deploy_id'] = xr.Variable('time', np.tile(deployment, len(dosta.time)).astype(str))
+    dosta['profile_id'] = xr.Variable('time', np.tile(profile_id, len(dosta.time)).astype(str))
+
+    attrs = dict_update(CSPP_DOSTA, CSPP)  # add the shared CSPP attributes
+    attrs = dict_update(attrs, SHARED)  # add the shared common attributes
+    dosta = update_dataset(dosta, platform, deployment, lat, lon, depth_range, attrs)
     if proc_flag:
         dosta.attrs['processing_level'] = 'processed'
     else:

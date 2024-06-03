@@ -18,7 +18,7 @@ DOSTA = {
     'product_number': {
         'long_name': 'Product Number',
         'comment': 'Optode product number, usually model 4831 for OOI systems.',
-        # 'units': '',    deliberately left blank, no units for this value,
+        # 'units': '',    deliberately left blank, no units for this value
     },
     'serial_number': {
         'long_name': 'Serial Number',
@@ -40,13 +40,13 @@ DOSTA = {
                     'oxygen at a particular water temperature. Computed on-board the sensor using internal calibration '
                     'coefficients.')
     },
-    'oxygen_thermistor_temperature': {
+    'optode_thermistor': {
         'long_name': 'Optode Thermistor Temperature',
         'standard_name': 'temperature_of_sensor_for_oxygen_in_sea_water',
         'units': 'degrees_Celsius',
         'comment': ('Optode internal thermistor temperature used in calculation of the absolute oxygen ' 
                     'concentration. This is not the in-situ sea water temperature, though it will be very close.'),
-        'ancillary_variables': 'raw_oxygen_thermistor'
+        'ancillary_variables': 'raw_optode_thermistor'
     },
     'calibrated_phase': {
         'long_name': 'Calibrated Phase Difference',
@@ -62,7 +62,7 @@ DOSTA = {
         'units': 'degrees',
         'comment': 'Temperature compensated (using the temperature data from an onboard thermistor) calibrated phase '
                    'difference.',
-        'ancillary_variables': 'oxygen_thermistor_temperature, calibrated_phase'
+        'ancillary_variables': 'optode_thermistor, calibrated_phase'
     },
     'blue_phase': {
         'long_name': 'Blue Phase Measurement',
@@ -88,7 +88,7 @@ DOSTA = {
         'comment': ('Amplitude measurement, with red excitation light, of the returned signal after the luminophore '
                     'quenching')
     },
-    'raw_oxygen_thermistor': {
+    'raw_optode_thermistor': {
         'long_name': 'Raw Optode Thermistor Temperature',
         'units': 'mV',
         'comment': ('The optode includes an integrated internal thermistor to measure the temperature at '
@@ -138,7 +138,7 @@ DOSTA = {
                     'but is recomputed using factory calibration coefficients, the calibrated phase values and '
                     'the optode thermistor temperature via the Stern-Volmer-Uchida equation.'),
         'data_product_identifier': 'DOCONCS_L1',
-        'ancillary_variables': 'oxygen_thermistor_temperature, calibrated_phase',
+        'ancillary_variables': 'optode_thermistor, calibrated_phase',
         '_FillValue': np.nan
     },
     'oxygen_concentration_corrected': {

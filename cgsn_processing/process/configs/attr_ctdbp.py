@@ -17,16 +17,6 @@ CTDBP = {
     },
     # attributes for all instances of the CTDBP, regardless of system used to log data or instrument(s) attached.
     # --> reported values
-    'sensor_time': {
-        'long_name': 'CTD Date and Time',
-        'standard_name': 'time',
-        'units': 'seconds since 1970-01-01T00:00:00.000Z',
-        'comment': ('Internal CTD clock date and time stamp, recorded when the instrument begins the measurement. It '
-                    'is expected that this value will drift from the true time by some amount over the course of '
-                    'a deployment. Cross-comparisons to other systems will be required to account for the offset '
-                    'and drift.'),
-        'calendar': 'gregorian'
-    },
     'conductivity': {
         'long_name': 'Sea Water Conductivity',
         'standard_name': 'sea_water_electrical_conductivity',
@@ -165,20 +155,20 @@ CTDBP = {
         'ancillary_variables': 'raw_calibrated_phase',
         '_FillValue': np.nan
     },
-    'raw_oxygen_thermistor': {
+    'raw_optode_thermistor': {
         'long_name': 'Raw Optode Thermistor',
         'units': 'V',
         'comment': ('The optode includes an integrated internal thermistor to measure the temperature at '
                     'the sensing foil. This value is recorded by the CTD as an analog voltage signal.'),
         '_FillValue': np.nan
     },
-    'oxygen_thermistor_temperature': {
+    'optode_thermistor': {
         'long_name': 'Optode Thermistor Temperature',
         'standard_name': 'temperature_of_sensor_for_oxygen_in_sea_water',
         'units': 'degrees_Celsius',
         'comment': ('Optode internal thermistor temperature used in calculation of the absolute oxygen '
                     'concentration. This is not the in situ sea water temperature, though it will be very close.'),
-        'ancillary_variables': 'raw_oxygen_thermistor',
+        'ancillary_variables': 'raw_optode_thermistor',
         '_FillValue': np.nan
     },
     'oxygen_concentration': {
@@ -196,8 +186,8 @@ CTDBP = {
         'units': 'umol L-1',
         'comment': ('Mole concentration of dissolved oxygen per unit volume, also known as Molarity, as measured by '
                     'an optode oxygen sensor. It is computed using factory calibration coefficients, the '
-                    'calibrated phase values and the optode thermistor temperature via the '
-                    'Stern-Volmer-Uchida equation.'),
+                    'calibrated phase values and the optode thermistor temperature via the Stern-Volmer-Uchida '
+                    'equation.'),
         'data_product_identifier': 'DOCONCS-L1',
         'ancillary_variables': 'calibrated_phase, oxygen_thermistor',
         '_FillValue': np.nan

@@ -16,7 +16,7 @@ from cgsn_processing.process.configs.attr_cspp import CSPP, CSPP_WINCH
 from cgsn_processing.process.configs.attr_common import SHARED
 
 
-def proc_cspp_wc_sbe(infile, platform, deployment, lat, lon, depth, **kwargs):
+def proc_cspp_wc_sbe(infile, platform, deployment, lat, lon, depth):
     """
     CSPP winch controller data from the SBE 50 pressure sensor (pressure and
     profiler speed). Loads the JSON formatted parsed data and converts data
@@ -27,9 +27,7 @@ def proc_cspp_wc_sbe(infile, platform, deployment, lat, lon, depth, **kwargs):
     :param deployment: Name of the deployment for the input data file.
     :param lat: Latitude of the mooring deployment.
     :param lon: Longitude of the mooring deployment.
-    :param depth: Depth of the platform the instrument is mounted on.
-
-    kwarg profile_id: use the profile_id to identify the source data in the output file.
+    :param depth: site depth where the CSPP is deployed
 
     :return cspp_wc_sbe: xarray dataset with the winch controller data
     """
@@ -45,9 +43,12 @@ def proc_cspp_wc_sbe(infile, platform, deployment, lat, lon, depth, **kwargs):
     # create an xarray data set from the data frame
     wc_sbe = xr.Dataset.from_dataframe(df)
 
-    # clean up the dataset and assign attributes
-    profile_id = kwargs.get('profile_id')
+    # pull out the profile ID from the filename
+    _, fname = os.path.split(infile)
+    profile_id = re.sub('\D+', '', fname)
+    profile_id = "{}.{}.{}".format(profile_id[0], profile_id[1:4], profile_id[4:])
 
+    # finalize the dataset and assign attributes
     wc_sbe['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(wc_sbe.time)).astype(str))
     wc_sbe['profile_id'] = xr.Variable(('time',), np.repeat(profile_id, len(wc_sbe.time)).astype(str))
     attrs = dict_update(CSPP_WINCH, CSPP)  # create the CSPP Winch Controller attributes
@@ -70,9 +71,7 @@ def main(argv=None):
     depth = args.depth
 
     # process the uCSPP Winch Controller pressure sensor data and save the results to disk
-    _, file_name = os.path.split(outfile)
-    profile_id = re.sub(r'\D+', '', file_name)
-    wc_sbe = proc_cspp_wc_sbe(infile, platform, deployment, lat, lon, depth, profile_id=profile_id)
+    wc_sbe = proc_cspp_wc_sbe(infile, platform, deployment, lat, lon, depth)
     if wc_sbe:
         wc_sbe.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 

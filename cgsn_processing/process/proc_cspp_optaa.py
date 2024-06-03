@@ -14,14 +14,14 @@ import xarray as xr
 
 from gsw import z_from_p
 
-from cgsn_processing.process.common import inputs, json2obj, update_dataset, ENCODING, FILL_INT
+from cgsn_processing.process.common import inputs, json2df, json2obj, update_dataset, ENCODING, FILL_INT
 from cgsn_processing.process.configs.attr_optaa import OPTAA
 from cgsn_processing.process.finding_calibrations import find_calibration
 from cgsn_processing.process.proc_optaa import Calibrations, apply_dev, apply_tscorr, apply_scatcorr, \
     calculate_ratios, estimate_chl_poc
 
 
-def proc_cspp_optaa(infile, platform, deployment, lat, lon, depth):
+def proc_cspp_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
     """
     Processing function for a CSPP-mounted OPTA. Loads the JSON formatted
     parsed data and applies appropriate calibration coefficients to convert the
@@ -31,14 +31,21 @@ def proc_cspp_optaa(infile, platform, deployment, lat, lon, depth):
     then the dataset processing level attribute is set to "processed".
 
     :param infile: JSON formatted parsed data file
-    :param platform: Name of the mooring the instrument is mounted on.
-    :param deployment: Name of the deployment for the input data file.
-    :param lat: Latitude of the mooring deployment.
-    :param lon: Longittude of the mooring deployment.
-    :param depth: Depth of the platform the instrument is mounted on.
+    :param platform: Site name where the CSPP is deployed
+    :param deployment: name of the deployment for the input data file.
+    :param lat: latitude of the CSPP deployment.
+    :param lon: longitude of the CSPP deployment.
+    :param depth: site depth where the CSPP is deployed
+    **ctd_name: Name of directory with data from a co-located CTD. This
+        data will be used to apply salinity and density corrections to the
+        data. Otherwise, the salinity corrected oxygen concentration is
+        filled with NaN's
 
-    :return optaa: An xarray dataset with the processed CSPP OPTAA data
+    :return optaa: xarray dataset with the processed CSPP OPTAA data
     """
+    # process the variable length keyword arguments
+    ctd_name = kwargs.get('ctd_name')
+
     # load the instrument calibration data
     coeff_file = os.path.join(os.path.dirname(infile), 'optaa.cal_coeffs.json')
     dev = Calibrations(coeff_file)  # initialize calibration class
@@ -78,17 +85,17 @@ def proc_cspp_optaa(infile, platform, deployment, lat, lon, depth):
     df.set_index('time', drop=True, inplace=True)
 
     # set up and load the 1D parsed data
-    empty_data = np.atleast_1d(data['serial_number']).astype(np.int32) * np.nan
+    empty_data = np.atleast_1d(data['serial_number']).astype(int) * np.nan
     # raw data parsed from the data file
-    df['serial_number'] = np.atleast_1d(data['serial_number']).astype(np.int32)
-    df['elapsed_run_time'] = np.atleast_1d(data['elapsed_run_time']).astype(np.int32)
-    df['internal_temp_raw'] = np.atleast_1d(data['internal_temp_raw']).astype(np.int32)
-    df['external_temp_raw'] = np.atleast_1d(data['external_temp_raw']).astype(np.int32)
-    df['pressure_raw'] = np.atleast_1d(data['pressure_raw']).astype(np.int32)
-    df['a_signal_dark'] = np.atleast_1d(data['a_signal_dark']).astype(np.int32)
-    df['a_reference_dark'] = np.atleast_1d(data['a_reference_dark']).astype(np.int32)
-    df['c_signal_dark'] = np.atleast_1d(data['c_signal_dark']).astype(np.int32)
-    df['c_reference_dark'] = np.atleast_1d(data['c_reference_dark']).astype(np.int32)
+    df['serial_number'] = np.atleast_1d(data['serial_number']).astype(int)
+    df['elapsed_run_time'] = np.atleast_1d(data['elapsed_run_time']).astype(int)
+    df['internal_temp_raw'] = np.atleast_1d(data['internal_temp_raw']).astype(int)
+    df['external_temp_raw'] = np.atleast_1d(data['external_temp_raw']).astype(int)
+    df['pressure_raw'] = np.atleast_1d(data['pressure_raw']).astype(int)
+    df['a_signal_dark'] = np.atleast_1d(data['a_signal_dark']).astype(int)
+    df['a_reference_dark'] = np.atleast_1d(data['a_reference_dark']).astype(int)
+    df['c_signal_dark'] = np.atleast_1d(data['c_signal_dark']).astype(int)
+    df['c_reference_dark'] = np.atleast_1d(data['c_reference_dark']).astype(int)
     # processed variables to be created if a device file is available
     df['internal_temp'] = empty_data
     df['external_temp'] = empty_data
@@ -100,10 +107,15 @@ def proc_cspp_optaa(infile, platform, deployment, lat, lon, depth):
     df['ratio_phycobilins'] = empty_data
     df['ratio_qband'] = empty_data
 
-    # check for data from the required co-located CTD for this profile
-    ctd_file = re.sub('optaa', 'ctdpf', infile)
-    ctd_file = re.sub('ACS_ACS', 'PPB_CTD', ctd_file)
-    ctd = json2obj(ctd_file)
+    # check for data from a co-located CTD and test to see if it covers our time range of interest.
+    ctd = pd.DataFrame()
+    if ctd_name:
+        ctd_file = re.sub('ACS_ACS', 'PPB_CTD', os.path.basename(infile))
+        ctd_dir = re.sub('optaa', 'ctdpf', os.path.dirname(infile))
+
+        if os.path.isfile(os.path.join(ctd_dir, ctd_file)):
+            ctd = json2df(os.path.join(ctd_dir, ctd_file))
+
     if not ctd.empty:
         # interpolate the CTD data into the profile
         pressure = np.interp(optaa_time, ctd['time'], ctd['pressure'])
@@ -122,26 +134,26 @@ def proc_cspp_optaa(infile, platform, deployment, lat, lon, depth):
 
     # create the 2D arrays from the raw a and c channel measurements using the number of wavelengths
     # padded to 100 as the dimensional array.
-    wavelength_number = np.arange(100).astype(np.int32)  # used as a dimensional variable
+    wavelength_number = np.arange(100).astype(int)  # used as a dimensional variable
     num_wavelengths = np.array(data['a_signal_raw']).shape[1]
     pad = 100 - num_wavelengths
     fill_nan = np.ones(pad) * np.nan
-    fill_int = (np.ones(pad) * FILL_INT).astype(np.int32)
+    fill_int = (np.ones(pad) * FILL_INT).astype(int)
     a_wavelengths = np.concatenate([dev.coeffs['a_wavelengths'], fill_nan])
     c_wavelengths = np.concatenate([dev.coeffs['c_wavelengths'], fill_nan])
-    empty_data = np.concatenate([np.array(data['a_signal_raw']).astype(np.int32),
+    empty_data = np.concatenate([np.array(data['a_signal_raw']).astype(int),
                                  np.tile(fill_nan, (len(optaa_time), 1))], axis=1) * np.nan
     ac = xr.Dataset({
         # raw data parsed from the data file
         'a_wavelengths': (['time', 'wavelength_number'], np.tile(a_wavelengths, (len(optaa_time), 1))),
-        'a_signal_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['a_signal_raw']).astype(np.int32),
+        'a_signal_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['a_signal_raw']).astype(int),
                          np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
-        'a_reference_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['a_reference_raw']).astype(np.int32),
+        'a_reference_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['a_reference_raw']).astype(int),
                             np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
         'c_wavelengths': (['time', 'wavelength_number'], np.tile(c_wavelengths, (len(optaa_time), 1))),
-        'c_signal_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['c_signal_raw']).astype(np.int32),
+        'c_signal_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['c_signal_raw']).astype(int),
                          np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
-        'c_reference_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['c_reference_raw']).astype(np.int32),
+        'c_reference_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['c_reference_raw']).astype(int),
                             np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
         # processed variables to be created if a device file is available
         'apd': (['time', 'wavelength_number'], empty_data),
@@ -157,17 +169,16 @@ def proc_cspp_optaa(infile, platform, deployment, lat, lon, depth):
 
     # pull out the profile ID from the filename
     _, fname = os.path.split(infile)
-    profile_id = re.sub('\D+', '', fname)
+    profile_id = re.sub(r'\D+', '', fname)
     profile_id = "{}.{}.{}".format(profile_id[0], profile_id[1:4], profile_id[4:])
 
     # add the deployment and profile IDs to the dataset
-    optaa['deploy_id'] = xr.Variable('time', np.tile(deployment, len(optaa.time)).astype(np.str))
-    optaa['profile_id'] = xr.Variable('time', np.tile(profile_id, len(optaa.time)).astype(np.str))
+    optaa['deploy_id'] = xr.Variable('time', np.tile(deployment, len(optaa.time)).astype(str))
+    optaa['profile_id'] = xr.Variable('time', np.tile(profile_id, len(optaa.time)).astype(str))
 
     # calculate the depth range for the NetCDF global attributes: deployment depth and the profile min/max range
-    zmin = z_from_p(df['ctd_pressure'].min(), lat)
-    zmax = z_from_p(df['ctd_pressure'].max(), lat)
-    depth_range = [depth, zmin, zmax]
+    z = -1 * z_from_p(df['ctd_pressure'], lat)
+    depth_range = [depth, z.min(), z.max()]
 
     # set the processed attribute to parsed
     optaa.attrs['processing_level'] = 'parsed'
@@ -183,7 +194,7 @@ def proc_cspp_optaa(infile, platform, deployment, lat, lon, depth):
         optaa = estimate_chl_poc(optaa, dev.coeffs)
 
         # calculate pigment and CDOM ratios to provide variables useful in characterizing the community structure and
-        # the status of the sensor itself (e.g. estimating biofouling).
+        # the status of the sensor itself (e.g. estimating bio-fouling).
         optaa = calculate_ratios(optaa, dev.coeffs)
 
         # set the processed attribute to processed

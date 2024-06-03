@@ -21,15 +21,6 @@ NUTNR = {
         # 'units': '',    deliberately left blank, no units for this value,
         'comment': 'Instrument serial number.'
     },
-    'sensor_time': {
-        'long_name': 'Sensor Time',
-        'standard_name': 'time',
-        'units': 'seconds since 1970-01-01T00:00:00.000Z',
-        'comment': ('Date and time from the sensor''s internal clock. It is expected that this value will drift from '
-                    'the true time by some amount over the course of a deployment. Cross-comparisons to the DCL''s '
-                    'GPS based clock will be required to account for any offset and drift in the sensor.'),
-        'calendar': 'gregorian'
-    },
     'nitrate_concentration': {
         'long_name': 'Nitrate Concentration',
         'standard_name': 'mole_concentration_of_nitrate_in_sea_water',
@@ -41,7 +32,7 @@ NUTNR = {
     },
     'channel_measurements': {
         'long_name': 'Raw Absorbance Measurements',
-        'units': 'count',
+        'units': 'counts',
         'data_product_identifier': 'NITROPT_L0',
         'comment': ('Array of 256 raw absorbance measurements in the UV portion of the spectra, used to derive the '
                     'nitrate concentration.'),
@@ -49,20 +40,20 @@ NUTNR = {
     },
     'spectral_average': {
         'long_name': 'Spectral Average',
-        'units': 'count',
+        'units': 'counts',
         'comment': 'Average value of the raw absorbance measurements.',
         '_FillValue': FILL_INT
     },
     'seawater_dark': {
         'long_name': 'Seawater Dark Measurement',
-        'units': 'count',
+        'units': 'counts',
         'comment': ('Average, raw absorbance measurement when the lamp is turned off. The value is used as the '
                     'dark reference in the calculation of the dissolved nitrate concentration.'),
         '_FillValue': FILL_INT
     },
     'rms_error': {
         'long_name': 'Root Mean Square Error',
-        'units': 'count',
+        'units': 'counts',
         'comment': ('The root mean square error parameter can be used to make an estimate of how well the nitrate '
                     'spectral fit is. This should usually be less than 1E-3. If it is higher, there is spectral shape '
                     '(likely due to CDOM) that adversely impacts the nitrate estimate.')
@@ -144,14 +135,14 @@ NUTNR = {
     },
     'average_reference': {
         'long_name': 'Reference Diode Average',
-        'units': 'count',
+        'units': 'counts',
         'comment': ('Average of the reference diode measurements (used as an indicator of lamp output) collected '
                     'during the sample time.'),
         '_FillValue': FILL_NAN
     },
     'variance_reference': {
         'long_name': 'Reference Diode Variance',
-        'units': 'count',
+        'units': 'counts',
         'comment': ('Variance of the reference diode measurements (used as an indicator of lamp output) collected '
                     'during the sample time.'),
         '_FillValue': FILL_NAN
@@ -171,12 +162,12 @@ NUTNR = {
     },
     'absorbance_254': {
         'long_name': 'Absorbance at 254 nm',
-        'units': 'count',
+        'units': 'counts',
         'comment': 'Absorbance measurement at 254 nm.',
     },
     'absorbance_350': {
         'long_name': 'Absorbance at 350 nm',
-        'units': 'count',
+        'units': 'counts',
         'comment': 'Absorbance measurement at 350 nm.',
     },
     'bromide_trace': {

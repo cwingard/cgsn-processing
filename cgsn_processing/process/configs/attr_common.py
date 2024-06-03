@@ -4,8 +4,9 @@
 @package cgsn_processing.process.configs.attr_common
 @file cgsn_processing/process/configs/attr_common.py
 @author Christopher Wingard
-@brief Common set of attributes shared by all datasets, setting global and
-    standardized variables and their attributes.
+@brief Common set of attributes shared by all (or most) datasets, setting
+    global and standardized variables and their attributes to minimize
+    code redundancy.
 """
 
 SHARED = {
@@ -26,19 +27,27 @@ SHARED = {
         'comment': ('Mooring deployment ID. Useful for differentiating data by deployment, '
                     'allowing for overlapping deployments in the data sets.')
     },
-    'station_name': {
-        'cf_role': 'timeseries_id',
-        'long_name': 'Station Name',
-    },
     'time': {
         'long_name': 'Time',
         'standard_name': 'time',
-        'units': 'seconds since 1970-01-01T00:00:00.000Z',
+        # units set via encoding in the to_netcdf method (see update_dateset in cgsn_processing/process/common.py)
         'axis': 'T',
-        'calendar': 'gregorian',
         'comment': ('Derived from either the DCL data logger GPS referenced clock, or the internal instrument clock. '
                     'For instruments attached to a DCL, the instrument''s internal clock can be cross-compared to '
                     'the GPS clock to determine the internal clock''s offset and drift.')
+    },
+    'sensor_time': {
+        'long_name': 'Sensor Time',
+        'standard_name': 'time',
+        # units set via encoding in the to_netcdf method (see update_dateset in cgsn_processing/process/common.py)
+        'comment': ('Date and time from the sensor''s internal clock. It is expected that this value will drift from '
+                    'the true time by some amount over the course of a deployment. Cross-comparisons to GPS based '
+                    'clocks will be required to account for any offset and drift in the sensor.'),
+    },
+    'station_name': {
+        'cf_role': 'timeseries_id',
+        'long_name': 'Station Name',
+        'standard_name': 'platform_name'
     },
     'lon': {
         'long_name': 'Deployment Longitude',
