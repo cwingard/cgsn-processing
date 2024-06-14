@@ -20,5 +20,5 @@ COEFF="$(dirname "$IN_FILE")/adcp.configuration.json"
 if [ -e $IN_FILE ]; then
     cd /home/ooiuser/code/cgsn-processing || exit
     python -m cgsn_processing.process.proc_imm_adcp -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH \
-      -i $IN_FILE -o $OUT_FILE -sn $NSERIAL -cf $COEFFS || echo "ERROR: Failed to process $IN_FILE"
+      -i $IN_FILE -o $OUT_FILE -sn $NSERIAL -cf $COEFF || echo "ERROR: Failed to process $IN_FILE"
 fi
