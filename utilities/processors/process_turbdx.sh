@@ -1,12 +1,12 @@
 #!/bin/bash
 #
 # Read the parsed FLORT data files from the CGSN Coastal Surface Moorings and
-# create processed datasets available in NetCDF formatted files with the vendor
-# factory calibration coefficients applied, and the temperature and salinity
-# corrected total optical backscatter calculated for further processing and review.
+# create TURBDX processed datasets available in NetCDF formatted files with the
+# vendor factory calibration coefficients applied for further processing and
+# review.
 #
-# C. Wingard 2017-01-23 -- Original script
-# C. Wingard 2024-03-22 -- Updated to use the process_options.sh script to
+# P. Whelan 2024-02-08
+# C. Wingard 2024-04-26 -- Updated to use the process_options.sh script to
 #                          parse the command line inputs
 
 # include the help function and parse the required and optional command line options
@@ -22,16 +22,17 @@ fi
 
 # check that the serial number is provided
 if [ -z "$NSERIAL" ]; then
-    echo "ERROR: The FLORT serial number must be provided with the -s option."
+    echo "ERROR: The TURBDX (aka FLORT) serial number must be provided with the -s option."
     exit
 fi
 
 # set the name of the calibration coefficients file
-COEFF="$(dirname "$IN_FILE")/flort.cal_coeffs.json"
+COEFF="$(dirname "$IN_FILE")/turbdx.cal_coeffs.json"
 
 # Process the file (if it hasn't already been done)
 if [ -e $IN_FILE ]; then
     cd /home/ooiuser/code/cgsn-processing || exit
     python -m cgsn_processing.process.proc_flort -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH \
-        -i $IN_FILE -o $OUT_FILE -sn $NSERIAL -df $COLOCATED -ba -cf $COEFF || echo "ERROR: Failed to process $IN_FILE"
+        -i $IN_FILE -o $OUT_FILE -sn $NSERIAL -df $COLOCATED -ba -cf $COEFF \
+        -s TURBDX || echo "ERROR: Failed to process $IN_FILE"
 fi

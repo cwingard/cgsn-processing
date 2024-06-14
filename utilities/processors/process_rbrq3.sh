@@ -1,10 +1,9 @@
 #!/bin/bash
 #
-# Read the parsed RDA data files from the CGSN Coastal Surface Moorings and
-# create processed datasets available in NetCDF formatted files for further
-# processing and review.
+# Read the parsed RBR/Q3 data files from the CGSN Coastal Surface Moorings and
+# create processed datasets available in NetCDF formatted files.
 #
-# C. Wingard 2017-01-24 -- Original script
+# P. Whelan 2023-12-06 -- Original script
 # C. Wingard 2024-03-22 -- Updated to use the process_options.sh script to
 #                          parse the command line inputs
 
@@ -16,6 +15,6 @@ source "$DIR/process_options.sh"
 # Process the file
 if [ -e $IN_FILE ]; then
     cd /home/ooiuser/code/cgsn-processing || exit
-    python -m cgsn_processing.process.proc_syslog_rda -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH \
-      -i $IN_FILE -o $OUT_FILE || echo "ERROR: Failed to process $IN_FILE"
+    python -m cgsn_processing.process.proc_presf -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH \
+      -i $IN_FILE -o $OUT_FILE -s rbrq3 || echo "ERROR: Failed to process $IN_FILE"
 fi

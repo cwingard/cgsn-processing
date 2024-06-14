@@ -4,7 +4,7 @@
 @package cgsn_processing.process.configs.attr_flort
 @file cgsn_processing/process/configs/attr_flort.py
 @author Christopher Wingard
-@brief Attributes for the FLORT variables
+@brief Attributes for the FLORT variables, and TURBD variables
 """
 import numpy as np
 
@@ -135,4 +135,52 @@ FLORT = {
         '_FillValue': np.nan,
         'ancillary_variables': 'beta_700 ctd_temperature ctd_salinity'
     }
+}
+
+TURBD = {
+    'global': {
+        'project': 'Ocean Observatories Initiative',
+        'institution': 'Coastal and Global Scale Nodes (CGSN)',
+        'acknowledgement': 'National Science Foundation',
+        'references': 'http://oceanobservatories.org',
+        'creator_name': 'Christopher Wingard',
+        'creator_email': 'cwingard@coas.oregonstate.edu',
+        'creator_url': 'http://oceanobservatories.org',
+    },
+    'deploy_id': {
+        'long_name': 'Deployment ID',
+        'units': '1'
+    },
+    'z': {
+        'long_name': 'Sensor Depth',
+        'standard_name': 'depth',
+        'units': 'm',
+        'comment': 'Sensor depth below sea surface',
+        'positive': 'down',
+        'axis': 'Z'
+    },
+    'dcl_date_time_string': {
+        'long_name': 'DCL Date and Time Stamp',
+        'units': '1',
+    },
+    'measurement_wavelength_beta': {
+        'long_name': 'Wavelength',
+        'standard_name': 'radiation_wavelength',
+        'units': 'nm'
+    },
+    'raw_signal_beta': {
+        'units': 'counts'
+    },
+    'turbidity': {
+        'long_name': 'Sea Water Turbidity',
+        'standard_name': 'sea_water_turbidity',
+        'units': 'NTU',
+        'comment': ('Turbidity is a dimensionless quantity which is expressed in NTU '
+                    '(Nephelometric Turbidity Units). Turbidity expressed in NTU is the proportion '
+                    'of white light scattered back to a transceiver by the particulate load in a '
+                    'body of water, represented on an arbitrary scale referenced against measurements '
+                    'made in the laboratory on aqueous suspensions of formazine beads.'),
+        'data_product_identifier': 'TURBWAT_L1',
+        '_FillValue': np.nan
+        }
 }

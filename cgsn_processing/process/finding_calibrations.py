@@ -7,28 +7,42 @@
 @brief Find the most applicable calibration file for an instrument
 """
 import datetime
+import netrc
 import pandas as pd
 import re
 import requests
+import warnings
 
 from calendar import timegm
 from pytz import timezone
 
 # set the base URL for the OOI asset management listing of calibration files and a regex for the CSV files
-GIT = 'https://github.com'
+GIT = 'https://api.github.com/repos'
 CSV = re.compile(r'.*\.csv')
 
 
+# load the GitHub API read-only access token
+headers = None  # default token
+try:
+    nrc = netrc.netrc()
+    auth = nrc.authenticators('api.github.com')
+    if auth is None:
+        warnings.warn('No entry found for the GitHub API token in the users .netrc file, consider adding to improve access to calibration coefficients')
+    else:
+        headers = {'Authentication': 'token ' + auth[2]}
+except FileNotFoundError as e:
+    warnings.warn('No .netrc file found in the users home directory. Consider creating and adding a GitHub API token to improve access to calibration coefficients')
+
+
 def list_directories(url, tag=''):
-    page = requests.get(url).json()
-    tree = page['payload']['tree']
-    urls = ['{}/{}'.format(url, item['name']) for item in tree['items'] if tag in item['name']]
+    page = requests.get(url, headers=headers).json()
+    urls = ['{}/{}'.format(url, item['name']) for item in page if tag in item['name']]
     return urls
 
 
 def find_calibration(inst_class, inst_serial, sampling_date):
     # find the links for the instrument class we are after
-    links = list_directories('{}/oceanobservatories/asset-management/tree/master/calibration/'.format(GIT), inst_class)
+    links = list_directories('{}/oceanobservatories/asset-management/contents/calibration'.format(GIT), inst_class)
     tdiff = []
     flist = []
 
@@ -70,8 +84,8 @@ def find_calibration(inst_class, inst_serial, sampling_date):
             csv = None
         else:
             # assemble the csv URL, adjusting for the fact we want the raw content
-            csv = re.sub('github.com', 'raw.githubusercontent.com', flist[tdiff.index(m)])
-            csv = re.sub('/tree', '', csv)
+            csv = re.sub('api.github.com/repos', 'raw.githubusercontent.com', flist[tdiff.index(m)])
+            csv = re.sub('contents', 'master', csv)
     else:
         csv = None
 

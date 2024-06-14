@@ -5,6 +5,13 @@
 @file cgsn_processing/process/proc_flort.py
 @author Christopher Wingard
 @brief Creates a NetCDF dataset for the FLORT from JSON formatted source data
+ppw 02082024 - updated to support turbidity calculations, as follows:
+Utilize the optional --switch parameter to support processing flort data to produce ONLY turbidity. 
+Makes use of new calibration files being pushed to asset-management, having the naming scheme 
+“CGINS-TURBDX-{s/n}__{date}.csv. These will live in a separate TURBDX subdirectory in asset 
+management, per the CGSN data team. The value of the --switch flag should be “TURBDX” to compute 
+turbidity; otherwise, standard FLORT outputs are calculated. The shell scripts for running 
+processors or both parsers and processors have been updated accordingly.
 """
 import numpy as np
 import os
@@ -50,28 +57,34 @@ class Calibrations(Coefficients):
         cal = pd.read_csv(csv_url, usecols=[0, 1, 2])
         for idx, row in cal.iterrows():
             # scale and offset correction factors
-            if row[1] == 'CC_dark_counts_cdom':
-                coeffs['dark_cdom'] = row[2]
-            if row[1] == 'CC_scale_factor_cdom':
-                coeffs['scale_cdom'] = row[2]
+            if row.iloc[1] == 'CC_dark_counts_cdom':
+                coeffs['dark_cdom'] = row.iloc[2]
+            if row.iloc[1] == 'CC_scale_factor_cdom':
+                coeffs['scale_cdom'] = row.iloc[2]
 
-            if row[1] == 'CC_dark_counts_chlorophyll_a':
-                coeffs['dark_chla'] = row[2]
-            if row[1] == 'CC_scale_factor_chlorophyll_a':
-                coeffs['scale_chla'] = row[2]
+            if row.iloc[1] == 'CC_dark_counts_chlorophyll_a':
+                coeffs['dark_chla'] = row.iloc[2]
+            if row.iloc[1] == 'CC_scale_factor_chlorophyll_a':
+                coeffs['scale_chla'] = row.iloc[2]
 
-            if row[1] == 'CC_dark_counts_volume_scatter':
-                coeffs['dark_beta'] = row[2]
-            if row[1] == 'CC_scale_factor_volume_scatter':
-                coeffs['scale_beta'] = row[2]
+            if row.iloc[1] == 'CC_dark_counts_volume_scatter':
+                coeffs['dark_beta'] = row.iloc[2]
+            if row.iloc[1] == 'CC_scale_factor_volume_scatter':
+                coeffs['scale_beta'] = row.iloc[2]
 
             # optical backscatter correction factors
-            if row[1] == 'CC_angular_resolution':
-                coeffs['chi_factor'] = row[2]
-            if row[1] == 'CC_measurement_wavelength':
-                coeffs['wavelength'] = row[2]
-            if row[1] == 'CC_scattering_angle':
-                coeffs['scatter_angle'] = row[2]
+            if row.iloc[1] == 'CC_angular_resolution':
+                coeffs['chi_factor'] = row.iloc[2]
+            if row.iloc[1] == 'CC_measurement_wavelength':
+                coeffs['wavelength'] = row.iloc[2]
+            if row.iloc[1] == 'CC_scattering_angle':
+                coeffs['scatter_angle'] = row.iloc[2]
+
+            # turbidity calculation factors
+            if row.iloc[1] == 'CC_dark_counts_turbd':
+                coeffs['dark_turbd'] = int(row.iloc[2])
+            if row.iloc[1] == 'CC_scale_factor_turbd':
+                coeffs['scale_turbd'] = float(row.iloc[2])
 
         # save the resulting dictionary
         self.coeffs = coeffs
