@@ -15,6 +15,6 @@ source "$DIR/process_options.sh"
 # Process the file
 if [ -e $IN_FILE ]; then
     cd /home/ooiuser/code/cgsn-processing || exit
-    python -m cgsn_processing.process.proc_ifcb -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH \
+    python -m cgsn_processing.process.proc_ifcb_hdr -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH \
       -i $IN_FILE -o $OUT_FILE || echo "ERROR: Failed to process $IN_FILE"
 fi
