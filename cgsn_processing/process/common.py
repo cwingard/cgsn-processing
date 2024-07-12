@@ -29,7 +29,7 @@ BUOYS = {
 }
 
 # Default NetCDF encodings for CF compliance
-ENCODINGS = {
+ENCODING = {
     'lon': {'_FillValue': None},
     'lat': {'_FillValue': None},
     'z': {'_FillValue': None}

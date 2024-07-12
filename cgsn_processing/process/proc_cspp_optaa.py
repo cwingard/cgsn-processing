@@ -127,7 +127,7 @@ def proc_cspp_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
         salinity = np.interp(optaa_time, ctd['time'], ctd['salinity'])
         df['ctd_salinity'] = salinity
     else:
-        raise Exception('Corresponding CTD data file is empty or cannot be located.')
+        raise ValueError('A source for the CTD data for {} could not be found'.format(infile))
 
     # convert the 1D data frame to an xarray dataset
     ds = xr.Dataset.from_dataframe(df)

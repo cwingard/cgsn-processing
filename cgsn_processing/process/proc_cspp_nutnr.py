@@ -13,6 +13,7 @@ import pandas as pd
 import xarray as xr
 
 from datetime import timedelta
+from gsw import z_from_p
 
 from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING, dict_update
 from cgsn_processing.process.configs.attr_cspp import CSPP, CSPP_NUTNR
@@ -120,12 +121,6 @@ def proc_cspp_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
     # default wavelength array if we are missing calibration coefficients
     wavelengths = np.linspace(start=190, stop=395, num=256)
 
-    # check for data from a co-located CTD and test to see if it covers our time range of interest.
-    df['ctd_pressure'] = empty_data
-    df['ctd_temperature'] = empty_data
-    df['ctd_salinity'] = empty_data
-    depth_range = [depth, depth, depth]
-
     ctd = pd.DataFrame()
     if ctd_name:
         ctd_file = re.sub('SNA_SNA', 'PPB_CTD', os.path.basename(infile))
@@ -144,12 +139,10 @@ def proc_cspp_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
 
         salinity = np.interp(data['time'], ctd['time'], ctd['salinity'])
         df['ctd_salinity'] = salinity
+    else:
+        raise ValueError('A source for the CTD data for {} could not be found'.format(infile))
 
-        # calculate the depth range for the NetCDF global attributes: deployment depth and the profile min/max range
-        z = -1 * z_from_p(dosta['ctd_pressure'], lat)
-        depth_range = [depth, z.min(), z.max()]
-
-    if proc_flag and not ctd.empty:
+    if proc_flag:
         # create the wavelengths array
         wavelengths = (dev.coeffs['wl']).astype(float)
 
@@ -185,6 +178,10 @@ def proc_cspp_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
     # add the deployment and profile IDs to the dataset
     nutnr['deploy_id'] = xr.Variable('time', np.tile(deployment, len(nutnr.time)).astype(str))
     nutnr['profile_id'] = xr.Variable('time', np.tile(profile_id, len(nutnr.time)).astype(str))
+
+    # calculate the depth range for the NetCDF global attributes: deployment depth and the profile min/max range
+    z = -1 * z_from_p(df['ctd_pressure'], lat)
+    depth_range = [depth, z.min(), z.max()]
 
     attrs = dict_update(CSPP_NUTNR, CSPP)  # add the shared CSPP attributes
     attrs = dict_update(attrs, SHARED)  # add the shared common attributes
