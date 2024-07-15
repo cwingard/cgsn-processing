@@ -51,7 +51,13 @@ class Blanks(object):
             'k620': self.k620
         }
 
-        # save the blanks to a JSON file
+        # save the blanks to a JSON file (remove the file, if it exists, before writing the new data)
+        try:
+            os.remove(self.blnkfile)
+        except OSError:
+            pass
+
+        # now write the blanks to the file
         with open(self.blnkfile, 'w') as f:
             jdata = json.dumps(blanks, cls=NumpyEncoder)
             f.write(jdata)
