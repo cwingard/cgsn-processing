@@ -38,14 +38,14 @@ def proc_adcp(infile, platform, deployment, lat, lon, depth, **kwargs):
     :param lon: Longitude of the mooring deployment.
     :param depth: Depth of the platform the instrument is mounted on.
 
-    :kwargs adcp_type: Type of data format recorded in the parsed record. Valid
+    **kwargs adcp_type: Type of data format recorded in the parsed record. Valid
         options are PD0 or PD8.
-    :kwargs ctd_name: Name of directory with data from a co-located CTD. This
+    **kwargs ctd_name: Name of directory with data from a co-located CTD. This
         data will be used to create a pressure record for the ADCP if it does
         not have a built-in pressure sensor.
-    :kwargs bin_size: Specify the size of the depth bins (cm). Needed only for
+    **kwargs bin_size: Specify the size of the depth bins (cm). Needed only for
         adcp data recorded in PD8 format in order to calculate bin depths.
-    :kwargs blanking_distance: Specify the blanking distance (cm). Needed only
+    **kwargs blanking_distance: Specify the blanking distance (cm). Needed only
         for adcp data recorded in PD8 format in order to calculate bin depths.
 
     :return adcp: An xarray dataset with the processed ADCP data

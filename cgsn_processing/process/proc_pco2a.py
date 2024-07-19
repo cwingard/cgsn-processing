@@ -54,7 +54,7 @@ def proc_pco2a(infile, platform, deployment, lat, lon, depth, **kwargs):
     :param lat: Latitude of the mooring deployment.
     :param lon: Longitude of the mooring deployment.
     :param depth: Depth of the platform the instrument is mounted on.
-    :kwargs metbk_name: Name of directory with data from the co-located METBK
+    **kwargs metbk_name: Name of directory with data from the co-located METBK
         sensor. The wind data will be used to calculate the pCO2 flux.
 
     :return pco2a: xarray dataset with the PCO2A data.

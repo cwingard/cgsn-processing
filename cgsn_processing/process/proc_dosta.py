@@ -81,11 +81,11 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
     :param lon: Longitude of the mooring deployment.
     :param depth: Depth of the platform the instrument is mounted on.
 
-    :kwargs ctd_name: Name of directory with data from a co-located CTD. This
+    **kwargs ctd_name: Name of directory with data from a co-located CTD. This
         data will be used to apply salinity and density corrections to the
         data. Otherwise, the salinity corrected oxygen concentration is
         filled with NaN's
-    :kwargs burst: Boolean flag to indicate whether to apply burst averaging
+    **kwargs burst: Boolean flag to indicate whether to apply burst averaging
         to the data. Default is to not apply burst averaging.
 
     :return dosta: An xarray dataset with the processed DOSTA data

@@ -32,7 +32,7 @@ def proc_sbd(infile, platform, deployment, lat, lon, depth, **kwargs):
     :param lon: Longitude of the mooring deployment.
     :param depth: Depth of the platform the instrument is mounted on.
 
-    :kwargs superv_type: Specify the source of the supervisor log file, either
+    **kwargs superv_type: Specify the source of the supervisor log file, either
         a CPM or STC.
 
     :return sbd: An xarray dataset with the processed supervisor data
