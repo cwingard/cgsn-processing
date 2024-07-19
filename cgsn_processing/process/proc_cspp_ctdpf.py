@@ -10,7 +10,6 @@
 import numpy as np
 import os
 import re
-import pandas as pd
 import xarray as xr
 
 from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING, dict_update
@@ -41,6 +40,9 @@ def proc_cspp_ctdpf(infile, platform, deployment, lat, lon, depth):
         # there was no data in this file, ending early
         return None
 
+    # clean up dataframe and rename selected variables
+    df.drop(columns=['suspect_timestamp'], inplace=True)  # not even the vendor knows what this is
+
     # re-calculate the practical salinity of the seawater from the temperature and conductivity measurements using
     # the Gibbs-SeaWater (GSW) Oceanographic Toolbox
     df['salinity'] = SP_from_C(df['conductivity'] * 10.0, df['temperature'], df['pressure'])
@@ -51,8 +53,8 @@ def proc_cspp_ctdpf(infile, platform, deployment, lat, lon, depth):
     df['density'] = rho(sa, ct, df['pressure'])                 # in-situ density
 
     # calculate the depth range for the NetCDF global attributes: deployment depth and the profile min/max range
-    z = -1 * z_from_p(df['ctd_pressure'], lat)
-    depth_range = [depth, z.min(), z.max()]
+    df['depth'] = -1 * z_from_p(df['pressure'], lat)
+    depth_range = [depth, df['depth'].min(), df['depth'].max()]
 
     # create an xarray data set from the data frame
     ctdpf = xr.Dataset.from_dataframe(df)
@@ -85,8 +87,8 @@ def main(argv=None):
     lon = args.longitude
     depth = args.depth
 
-    # process the DOSTA data and save the results to disk
-    ctdpf = proc_cspp_dosta(infile, platform, deployment, lat, lon, depth)
+    # process the CTDPF data and save the results to disk
+    ctdpf = proc_cspp_ctdpf(infile, platform, deployment, lat, lon, depth)
     if ctdpf:
         ctdpf.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 

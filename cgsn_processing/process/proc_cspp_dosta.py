@@ -50,8 +50,8 @@ def proc_cspp_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
     ctd_name = kwargs.get('ctd_name')
 
     # load the json data file as a dataframe for further processing
-    dosta = json2df(infile)
-    if dosta.empty:
+    df = json2df(infile)
+    if df.empty:
         # json data file was empty, exiting
         return None
 
@@ -67,17 +67,16 @@ def proc_cspp_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
         proc_flag = True
     else:
         # load from the CI hosted CSV files
-        sampling_time = dosta['time'][0].value / 10.0 ** 9
-        csv_url = find_calibration('DOSTA', str(dosta['serial_number'][0]), sampling_time)
+        sampling_time = df['time'][0].value / 10.0 ** 9
+        csv_url = find_calibration('DOSTA', str(df['serial_number'][0]), sampling_time)
         if csv_url:
             dev.read_csv(csv_url)
             dev.save_coeffs()
             proc_flag = True
 
     # clean up dataframe and rename selected variables
-    dosta.drop(columns=['suspect_timestamp'], inplace=True)
-    dosta.rename(columns={
-            'depth': 'ctd_pressure',
+    df.drop(columns=['suspect_timestamp'], inplace=True)
+    df.rename(columns={
             'estimated_oxygen_concentration': 'oxygen_concentration',
             'estimated_oxygen_saturation': 'oxygen_saturation',
             'optode_temperature': 'optode_thermistor',
@@ -85,22 +84,24 @@ def proc_cspp_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
         }, inplace=True)
 
     # processed variables to be created if calibration coefficients and a co-located CTD are available
-    empty_data = np.atleast_1d(dosta['serial_number']).astype(np.int32) * np.nan
-    dosta['ctd_temperature'] = empty_data
-    dosta['ctd_salinity'] = empty_data
-    dosta['svu_oxygen_concentration'] = empty_data
-    dosta['oxygen_concentration_corrected'] = empty_data
+    empty_data = np.atleast_1d(df['serial_number']).astype(np.int32) * np.nan
+    df['ctd_temperature'] = empty_data
+    df['ctd_salinity'] = empty_data
+    df['svu_oxygen_concentration'] = empty_data
+    df['oxygen_concentration_corrected'] = empty_data
 
-    # calculate the depth range for the NetCDF global attributes: deployment depth and the profile min/max range
-    z = -1 * z_from_p(dosta['ctd_pressure'], lat)
-    depth_range = [depth, z.min(), z.max()]
+    # rename the depth to ctd_pressure and then calculate the depth range for the NetCDF global attributes:
+    # deployment depth and the profile min/max range
+    df['ctd_pressure'] = df['depth']
+    df['depth'] = -1 * z_from_p(df['ctd_pressure'], lat)
+    depth_range = [depth, df['depth'].min(), df['depth'].max()]
 
     # recompute the oxygen concentration from the calibrated phase, optode thermistor temperature and the calibration
     # coefficients
     if proc_flag:
-        svu = do2_phase_to_doxy(dosta['calibrated_phase'], dosta['optode_thermistor'],
+        svu = do2_phase_to_doxy(df['calibrated_phase'], df['optode_thermistor'],
                                 dev.coeffs['svu_cal_coeffs'], dev.coeffs['two_point_coeffs'])
-        dosta['svu_oxygen_concentration'] = svu
+        df['svu_oxygen_concentration'] = svu
 
     # check for data from a co-located CTD and test to see if it covers our time range of interest.
     ctd = pd.DataFrame()
@@ -114,28 +115,28 @@ def proc_cspp_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
     if proc_flag and not ctd.empty:
         # set the CTD and DOSTA time to the same units of seconds since 1970-01-01
         ctd_time = ctd.time.values.astype(float) / 10.0 ** 9
-        do_time = dosta.time.values.astype(float) / 10.0 ** 9
+        do_time = df.time.values.astype(float) / 10.0 ** 9
 
         # test to see if the CTD covers our time of interest for this DOSTA file
         td = timedelta(minutes=5)
-        coverage = ctd['time'].min() - td <= dosta['time'].min() and ctd['time'].max() + td >= dosta['time'].max()
+        coverage = ctd['time'].min() - td <= df['time'].min() and ctd['time'].max() + td >= df['time'].max()
 
         # interpolate the CTD data if we have full coverage
         if coverage:
             temperature = np.interp(do_time, ctd_time, ctd.temperature)
-            dosta['ctd_temperature'] = temperature
+            df['ctd_temperature'] = temperature
 
             salinity = np.interp(do_time, ctd_time, ctd.salinity)
-            dosta['ctd_salinity'] = salinity
+            df['ctd_salinity'] = salinity
 
             # calculate the pressure and salinity corrected oxygen concentration
-            dosta['oxygen_concentration_corrected'] = do2_salinity_correction(dosta['svu_oxygen_concentration'].values,
-                                                                              dosta['ctd_pressure'].values,
-                                                                              dosta['ctd_temperature'].values,
-                                                                              dosta['ctd_salinity'].values, lat, lon)
+            df['oxygen_concentration_corrected'] = do2_salinity_correction(df['svu_oxygen_concentration'].values,
+                                                                           df['ctd_pressure'].values,
+                                                                           df['ctd_temperature'].values,
+                                                                           df['ctd_salinity'].values, lat, lon)
 
     # create an xarray data set from the data frame
-    dosta = xr.Dataset.from_dataframe(dosta)
+    dosta = xr.Dataset.from_dataframe(df)
 
     # pull out the profile ID from the filename
     _, fname = os.path.split(infile)

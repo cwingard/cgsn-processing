@@ -14,11 +14,14 @@ import xarray as xr
 
 from gsw import z_from_p
 
-from cgsn_processing.process.common import inputs, json2df, json2obj, update_dataset, ENCODING, FILL_INT
-from cgsn_processing.process.configs.attr_optaa import OPTAA
+from cgsn_processing.process.common import inputs, json2df, json2obj, update_dataset, ENCODING, FILL_INT, dict_update
+from cgsn_processing.process.configs.attr_cspp import CSPP, CSPP_OPTAA
+from cgsn_processing.process.configs.attr_common import SHARED
 from cgsn_processing.process.finding_calibrations import find_calibration
 from cgsn_processing.process.proc_optaa import Calibrations, apply_dev, apply_tscorr, apply_scatcorr, \
     calculate_ratios, estimate_chl_poc
+
+from pyseas.data.opt_functions import opt_internal_temp, opt_external_temp
 
 
 def proc_cspp_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
@@ -91,21 +94,26 @@ def proc_cspp_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
     df['elapsed_run_time'] = np.atleast_1d(data['elapsed_run_time']).astype(int)
     df['internal_temp_raw'] = np.atleast_1d(data['internal_temp_raw']).astype(int)
     df['external_temp_raw'] = np.atleast_1d(data['external_temp_raw']).astype(int)
-    df['pressure_raw'] = np.atleast_1d(data['pressure_raw']).astype(int)
     df['a_signal_dark'] = np.atleast_1d(data['a_signal_dark']).astype(int)
     df['a_reference_dark'] = np.atleast_1d(data['a_reference_dark']).astype(int)
     df['c_signal_dark'] = np.atleast_1d(data['c_signal_dark']).astype(int)
     df['c_reference_dark'] = np.atleast_1d(data['c_reference_dark']).astype(int)
     # processed variables to be created if a device file is available
-    df['internal_temp'] = empty_data
-    df['external_temp'] = empty_data
-    df['pressure'] = empty_data
     df['estimated_chlorophyll'] = empty_data
     df['estimated_poc'] = empty_data
     df['ratio_cdom'] = empty_data
     df['ratio_carotenoids'] = empty_data
     df['ratio_phycobilins'] = empty_data
     df['ratio_qband'] = empty_data
+    # co-located CTD data to be interpolated into the profile
+    df['depth'] = empty_data
+    df['ctd_pressure'] = empty_data
+    df['ctd_temperature'] = empty_data
+    df['ctd_salinity'] = empty_data
+
+    # calculate the internal and external temperature in degrees Celsius from the raw data
+    df['internal_temp'] = opt_internal_temp(df['internal_temp_raw'])
+    df['external_temp'] = opt_external_temp(df['external_temp_raw'])
 
     # check for data from a co-located CTD and test to see if it covers our time range of interest.
     ctd = pd.DataFrame()
@@ -126,8 +134,6 @@ def proc_cspp_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
 
         salinity = np.interp(optaa_time, ctd['time'], ctd['salinity'])
         df['ctd_salinity'] = salinity
-    else:
-        raise ValueError('A source for the CTD data for {} could not be found'.format(infile))
 
     # convert the 1D data frame to an xarray dataset
     ds = xr.Dataset.from_dataframe(df)
@@ -148,13 +154,16 @@ def proc_cspp_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
         'a_wavelengths': (['time', 'wavelength_number'], np.tile(a_wavelengths, (len(optaa_time), 1))),
         'a_signal_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['a_signal_raw']).astype(int),
                          np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
-        'a_reference_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['a_reference_raw']).astype(int),
-                            np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
+        'a_reference_raw': (['time', 'wavelength_number'],
+                            np.concatenate([np.array(data['a_reference_raw']).astype(int),
+                                            np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
         'c_wavelengths': (['time', 'wavelength_number'], np.tile(c_wavelengths, (len(optaa_time), 1))),
         'c_signal_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['c_signal_raw']).astype(int),
-                         np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
-        'c_reference_raw': (['time', 'wavelength_number'], np.concatenate([np.array(data['c_reference_raw']).astype(int),
-                            np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
+                                                                        np.tile(fill_int, (len(optaa_time), 1))],
+                                                                       axis=1)),
+        'c_reference_raw': (['time', 'wavelength_number'],
+                            np.concatenate([np.array(data['c_reference_raw']).astype(int),
+                                            np.tile(fill_int, (len(optaa_time), 1))], axis=1)),
         # processed variables to be created if a device file is available
         'apd': (['time', 'wavelength_number'], empty_data),
         'apd_ts': (['time', 'wavelength_number'], empty_data),
@@ -167,24 +176,15 @@ def proc_cspp_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
     # combine the 1D and 2D datasets into a single xarray dataset
     optaa = xr.merge([ds, ac])
 
-    # pull out the profile ID from the filename
-    _, fname = os.path.split(infile)
-    profile_id = re.sub(r'\D+', '', fname)
-    profile_id = "{}.{}.{}".format(profile_id[0], profile_id[1:4], profile_id[4:])
-
-    # add the deployment and profile IDs to the dataset
-    optaa['deploy_id'] = xr.Variable('time', np.tile(deployment, len(optaa.time)).astype(str))
-    optaa['profile_id'] = xr.Variable('time', np.tile(profile_id, len(optaa.time)).astype(str))
-
-    # calculate the depth range for the NetCDF global attributes: deployment depth and the profile min/max range
-    z = -1 * z_from_p(df['ctd_pressure'], lat)
-    depth_range = [depth, z.min(), z.max()]
-
-    # set the processed attribute to parsed
-    optaa.attrs['processing_level'] = 'parsed'
-
     # if there is calibration data, apply it now
     if proc_flag:
+        if ctd.empty:
+            temperature = optaa.external_temp.values  # use the external temperature if no CTD data is available
+            salinity = temperature * 0 + 34.0  # use a constant salinity of 34 if no CTD data is available
+        else:
+            temperature = optaa['ctd_temperature'].values
+            salinity = optaa['ctd_salinity'].values
+
         # apply the device file and the temperature, salinity and scatter corrections
         optaa = apply_dev(optaa, dev.coeffs)
         optaa = apply_tscorr(optaa, dev.coeffs, temperature, salinity)
@@ -200,9 +200,27 @@ def proc_cspp_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
         # set the processed attribute to processed
         optaa.attrs['processing_level'] = 'processed'
 
-    # update the data set with the appropriate attributes
-    optaa = update_dataset(optaa, platform, deployment, lat, lon, depth_range, OPTAA)
+    # pull out the profile ID from the filename
+    _, fname = os.path.split(infile)
+    profile_id = re.sub(r'\D+', '', fname)
+    profile_id = "{}.{}.{}".format(profile_id[0], profile_id[1:4], profile_id[4:])
+
+    # add the deployment and profile IDs to the dataset
+    optaa['deploy_id'] = xr.Variable('time', np.tile(deployment, len(optaa.time)).astype(str))
+    optaa['profile_id'] = xr.Variable('time', np.tile(profile_id, len(optaa.time)).astype(str))
+
+    # calculate the depth range for the NetCDF global attributes: deployment depth and the profile min/max range
+    optaa['depth'] = -1 * z_from_p(optaa['ctd_pressure'], lat)
+    depth_range = [depth, optaa['depth'].min().values, optaa['depth'].max().values]
+
+    attrs = dict_update(CSPP_OPTAA, CSPP)  # add the shared CSPP attributes
+    attrs = dict_update(attrs, SHARED)  # add the shared common attributes
+    optaa = update_dataset(optaa, platform, deployment, lat, lon, depth_range, attrs)
     optaa['wavelength_number'].attrs['actual_wavelengths'] = data['num_wavelengths'][0]
+    if proc_flag:
+        optaa.attrs['processing_level'] = 'processed'
+    else:
+        optaa.attrs['processing_level'] = 'parsed'
 
     # return the final processed dataset
     return optaa

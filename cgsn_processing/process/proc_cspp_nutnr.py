@@ -12,14 +12,11 @@ import re
 import pandas as pd
 import xarray as xr
 
-from datetime import timedelta
-from gsw import z_from_p
-
-from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING, dict_update
+from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING, dict_update, dt64_epoch
 from cgsn_processing.process.configs.attr_cspp import CSPP, CSPP_NUTNR
 from cgsn_processing.process.configs.attr_common import SHARED
 from cgsn_processing.process.finding_calibrations import find_calibration
-from cgsn_processing.process.proc_dosta import Calibrations
+from cgsn_processing.process.proc_nutnr import Calibrations
 
 from pyseas.data.nit_functions import ts_corrected_nitrate
 from gsw import z_from_p
@@ -89,8 +86,7 @@ def proc_cspp_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
     data = data[data['measurement_type'] == 'SLB']
 
     # remove the variables we will no longer use and rename select remaining variables for consistency
-    data.drop(columns=['year', 'day_of_year', 'decimal_hours'], inplace=True)
-
+    data.drop(columns=['suspect_timestamp', 'year', 'day_of_year', 'decimal_hours'], inplace=True)
     data.rename(columns={'fit_rmse': 'rms_error',
                          'dark_value': 'seawater_dark'}, inplace=True)
     if 'absorbance_250' in data.columns:
@@ -115,6 +111,10 @@ def proc_cspp_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
     empty_data = np.atleast_1d(data['serial_number']).astype(int) * np.nan
 
     # processed 1D variables to be created if a device file is available
+    df['depth'] = empty_data
+    df['ctd_pressure'] = empty_data
+    df['ctd_temperature'] = empty_data
+    df['ctd_salinity'] = empty_data
     df['corrected_nitrate'] = empty_data
     df['corrected_nitrogen_in_nitrate'] = empty_data
 
@@ -139,10 +139,8 @@ def proc_cspp_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
 
         salinity = np.interp(data['time'], ctd['time'], ctd['salinity'])
         df['ctd_salinity'] = salinity
-    else:
-        raise ValueError('A source for the CTD data for {} could not be found'.format(infile))
 
-    if proc_flag:
+    if proc_flag and not ctd.empty:
         # create the wavelengths array
         wavelengths = (dev.coeffs['wl']).astype(float)
 
@@ -180,8 +178,8 @@ def proc_cspp_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
     nutnr['profile_id'] = xr.Variable('time', np.tile(profile_id, len(nutnr.time)).astype(str))
 
     # calculate the depth range for the NetCDF global attributes: deployment depth and the profile min/max range
-    z = -1 * z_from_p(df['ctd_pressure'], lat)
-    depth_range = [depth, z.min(), z.max()]
+    nutnr['depth'] = -1 * z_from_p(nutnr['ctd_pressure'], lat)
+    depth_range = [depth, nutnr['depth'].min().values, df['depth'].max().values]
 
     attrs = dict_update(CSPP_NUTNR, CSPP)  # add the shared CSPP attributes
     attrs = dict_update(attrs, SHARED)  # add the shared common attributes
@@ -189,7 +187,7 @@ def proc_cspp_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
     if proc_flag:
         nutnr.attrs['processing_level'] = 'processed'
     else:
-        nutnr.attrs['processing_level'] = 'partial'
+        nutnr.attrs['processing_level'] = 'parsed'
 
     return nutnr
 
@@ -207,7 +205,7 @@ def main(argv=None):
     serial = args.serial  # serial number of the SUNA instrument
     ctd_name = args.devfile  # name of co-located CTD
 
-    # process the DOSTA data and save the results to disk
+    # process the NUTNR data and save the results to disk
     nutnr = proc_cspp_nutnr(infile, platform, deployment, lat, lon, depth, suna_serial=serial, ctd_name=ctd_name)
     if nutnr:
         nutnr.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)

@@ -112,6 +112,30 @@ velpt = {
         'title': 'uCSPP Point Velocity Data Records',
         'summary': ('Records a profile of relative (seawater + profiler) point velocity data from the sensor mounted '
                     'on the uncabled Coastal Surface Piercing Profilers (uCSPP).')
+    },
+    'velocity_east': {
+        'long_name': 'Estimated Eastward Seawater Velocity',
+        'units': 'm s-1',
+        'comment': ('This is the eastward seawater velocity component uncorrected for magnetic declination as '
+                    'reported by the instrument in m/s.'),
+        'data_product_identifier': 'VELPTMN-VLE_L0',
+        'ancillary_variables': 'error_code status_code'
+    },
+    'velocity_north': {
+        'long_name': 'Estimated Northward Seawater Velocity',
+        'units': 'm s-1',
+        'comment': ('This is the northward seawater velocity component uncorrected for magnetic declination as '
+                    'reported by the instrument in m/s.'),
+        'data_product_identifier': 'VELPTMN-VLN_L0',
+        'ancillary_variables': 'error_code status_code'
+    },
+    'velocity_vertical': {
+        'long_name': 'Vertical Seawater Velocity',
+        'standard_name': 'upward_sea_water_velocity',
+        'units': 'm s-1',
+        'comment': 'The vertical seawater velocity component as reported by the instrument in m/s.',
+        'data_product_identifier': 'VELPTMN-VLU_L0',
+        'ancillary_variables': 'error_code status_code'
     }
 }
 CSPP_VELPT = dict_update(VELPT, velpt)
