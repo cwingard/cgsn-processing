@@ -151,10 +151,6 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
         ctd = colocated_ctd(infile, ctd_name)
 
     if proc_flag and not ctd.empty:
-        # set the CTD and DOSTA time to the same units of seconds since 1970-01-01
-        ctd_time = ctd.time.values.astype(float) / 10.0 ** 9
-        do_time = dosta.time.values.astype(float) / 10.0 ** 9
-
         # test to see if the CTD covers our time of interest for this DOSTA file
         td = timedelta(hours=1)
         coverage = ctd['time'].min() <= dosta['time'].min() and ctd['time'].max() + td >= dosta['time'].max()
