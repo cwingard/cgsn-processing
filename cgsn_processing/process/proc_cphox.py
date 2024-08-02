@@ -41,10 +41,10 @@ def ph_total(vrs_ext, degc, psu, dbar, k0, k2, f):
     bar = dbar * 0.10  # convert pressure from dbar to bar
 
     # Nernstian response of the pH electrode (slope of the response)
-    R = 8.3144621      # J/(mol K) universal gas constant
-    T = degc + 273.15  # temperature in Kelvin
-    F = 9.6485365e4    # C/mol Faraday constant
-    snerst = R * T * np.log(10) / F
+    r = 8.3144621      # J/(mol K) universal gas constant
+    t = degc + 273.15  # temperature in Kelvin
+    f = 9.6485365e4    # C/mol Faraday constant
+    snerst = r * t * np.log(10) / f
 
     # total chloride in seawater
     cl_total = (0.99889 / 35.453) * (psu / 1.80655) * (1000 / (1000 - 1.005 * psu))
@@ -53,41 +53,41 @@ def ph_total(vrs_ext, degc, psu, dbar, k0, k2, f):
     vhcl = 17.85 + 0.1044 * degc - 0.0001316 * degc**2
 
     # Sample ionic strength (calculated as Dickson et al. 2007)
-    I = (19.924 * psu) / (1000 - 1.005 * psu)
+    i = (19.924 * psu) / (1000 - 1.005 * psu)
 
     # Debye-Huckel constant for activity of HCl (calculated as Khoo et al. 1977)
-    Adh = 0.0000034286 * degc**2 + 0.00067503 * degc + 0.49172143
+    adh = 0.0000034286 * degc**2 + 0.00067503 * degc + 0.49172143
 
     # log of the activity coefficient of HCl as a function of temperature (calculated as Khoo et al. 1977)
-    loghclt = ((-Adh * np.sqrt(I)) / (1 + 1.394 * np.sqrt(I))) + (0.08885 - 0.000111 * degc) * I
+    loghclt = ((-adh * np.sqrt(i)) / (1 + 1.394 * np.sqrt(i))) + (0.08885 - 0.000111 * degc) * i
 
     # log10 of the activity coefficient of HCl as a function of temperature and pressure (calculated as Johnson et
     # al. 2017)
-    loghcltp = loghclt + (((vhcl * bar) / (np.log(10) * R * T * 10)) / 2)
+    loghcltp = loghclt + (((vhcl * bar) / (np.log(10) * r * t * 10)) / 2)
 
     # total sulfate in seawater (calculated as Dickson et al. 2007)
     so4_total = (0.1400 / 96.062) * (psu / 1.80655)
 
     # acid disassociation constant of HSO4- (calculated as Dickson et al. 2007)
-    Ks = (1 - 0.001005 * psu) * np.exp((-4276.1 / T) + 141.328 - 23.093 * np.log(T) + ((-13856 / T) + 324.57 - 47.986 *
-                                       np.log(T)) * np.sqrt(I) + ((35474 / T) - 771.54 + 114.723 * np.log(T)) *
-                                       I - (2698 / T) * I**1.5 + (1776 / T) * I**2)
+    ks = (1 - 0.001005 * psu) * np.exp((-4276.1 / t) + 141.328 - 23.093 * np.log(t) + ((-13856 / t) + 324.57 - 47.986 *
+                                       np.log(t)) * np.sqrt(i) + ((35474 / t) - 771.54 + 114.723 * np.log(t)) *
+                                       i - (2698 / t) * i**1.5 + (1776 / t) * i**2)
 
     # partial Molal volume of HSO4- (calculated as Millero 1983)
-    vHSO4 = -18.03 + 0.0466 * degc + 0.000316 * degc**2
+    v_hso4 = -18.03 + 0.0466 * degc + 0.000316 * degc**2
 
     # compressibility of sulfate (calculated as Millero 1983)
-    KbarS = (-4.53 + 0.09 * degc) / 1000
+    kbar_s = (-4.53 + 0.09 * degc) / 1000
 
     # acid disassociation constant of HSO4- as function of salinity, temperature, and pressure (calculated as Millero
     # 1982)
-    Kstp = Ks * np.exp((-vHSO4 * bar + 0.5 * KbarS * bar**2) / (R * T * 10))
+    kstp = ks * np.exp((-v_hso4 * bar + 0.5 * kbar_s * bar**2) / (r * t * 10))
 
     # calculate the pH total, adjusted for pressure, temperature and salinity
-    pH = (((vrs_ext - k0 - k2 * degc - fp) / snerst) + np.log10(cl_total) + 2 * loghcltp -
-          np.log10(1 + (so4_total / Kstp)) - np.log10((1000 - 1.005 * psu) / 1000))
+    p_h = (((vrs_ext - k0 - k2 * degc - fp) / snerst) + np.log10(cl_total) + 2 * loghcltp -
+           np.log10(1 + (so4_total / kstp)) - np.log10((1000 - 1.005 * psu) / 1000))
 
-    return pH
+    return p_h
 
 
 def proc_cphox(infile, platform, deployment, lat, lon, depth, **kwargs):
@@ -120,7 +120,7 @@ def proc_cphox(infile, platform, deployment, lat, lon, depth, **kwargs):
     epts = [timegm(t.timetuple()) for t in utc]  # calculate the epoch time as seconds since 1970-01-01 in UTC
     cphox['sensor_time'] = epts
 
-    # drop unnecessary time columns. Note: IMM resident cphox will not have DCL timestamp
+    # drop unnecessary time columns. Note: IMM-queried cphox will not have DCL timestamp
     if 'dcl_date_time_string' in cphox:
         cphox = cphox.drop(columns=['dcl_date_time_string', 'sphox_date_time_string'])
     else:
@@ -131,10 +131,10 @@ def proc_cphox(infile, platform, deployment, lat, lon, depth, **kwargs):
     cphox['serial_number'] = cphox['serial_number'].astype(int)
 
     # convert the oxygen concentration from ml/l to umol/L and then to umol/kg per the SBE63 manual
-    SA = SA_from_SP(cphox['salinity'].values, cphox['pressure'].values, lon, lat)
-    pt0 = pt0_from_t(SA, cphox['temperature'].values, cphox['pressure'].values)
-    CT = CT_from_pt(SA, pt0)
-    sigma = sigma0(SA, CT)
+    sa = SA_from_SP(cphox['salinity'].values, cphox['pressure'].values, lon, lat)
+    pt0 = pt0_from_t(sa, cphox['temperature'].values, cphox['pressure'].values)
+    ct = CT_from_pt(sa, pt0)
+    sigma = sigma0(sa, ct)
     cphox['oxygen_molar_concentration'] = cphox['oxygen_concentration'] * 44661.5 / 1000.  # umol/L
     cphox['oxygen_concentration_per_kg'] = cphox['oxygen_concentration'] * 44661.5 / (sigma + 1000.)  # umol/kg
 
@@ -142,24 +142,28 @@ def proc_cphox(infile, platform, deployment, lat, lon, depth, **kwargs):
     z = z_from_p(cphox['pressure'], lat)  # calculate the depth from the pressure
     darray = [depth, z.min(), z.max()]
 
-    if estimated:  # calculate the estimated pH and alkalinity (applicable only to the Endurance Array at this time)
-        # Use the Lee et al. (2006) model to estimate the total alkalinity from the salinity and temperature (zone 4)
+    if estimated:
+        # Use the Lee et al. (2006) model to estimate the total alkalinity from the salinity and temperature
         # https://doi.org/10.1029/2006GL027207
-        cphox['estimated_alkalinity'] = (2305 + 53.23 * (cphox['salinity'] - 35) + 1.85 * (cphox['salinity'] - 35)**2 -
-                                         14.72 * (cphox['temperature'] - 20) - 0.158 * (cphox['temperature'] - 20)**2 +
-                                         0.062 * (cphox['temperature'] - 20) * lon)
-
-        # Use Juranek et al. (2011) to estimate the pH from the oxygen concentration and temperature
-        # https://doi.org/10.1029/2011GL048580
-        cphox['estimated_ph'] = (7.866 + 1.759e-3 * (cphox['oxygen_concentration_per_kg'] - 191.6) +
-                                 1.813e-2 * (cphox['temperature'] - 6.7))
+        if 'CE' in site:
+            # for the Coastal Endurance array, use zone 4 (North Pacific) coefficients
+            cphox['estimated_alkalinity'] = (2305 + 53.23 * (cphox['salinity'] - 35) + 1.85 *
+                                             (cphox['salinity'] - 35)**2 - 14.72 * (cphox['temperature'] - 20) -
+                                             0.158 * (cphox['temperature'] - 20)**2 + 0.062 *
+                                             (cphox['temperature'] - 20) * lon)
+        else:
+            # for the Coastal Pioneer and Global Irminger arrays, use zone 3 (North Atlantic) coefficients
+            cphox['estimated_alkalinity'] = (2305 + 53.97 * (cphox['salinity'] - 35) + 2.74 *
+                                             (cphox['salinity'] - 35)**2 - 1.16 * (cphox['temperature'] - 20) -
+                                             0.040 * (cphox['temperature'] - 20)**2)
 
     # create an xarray data set from the data frame
     cphox = xr.Dataset.from_dataframe(cphox)
 
     # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
     cphox['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(cphox.time)).astype(str))
-    cphox = update_dataset(cphox, platform, deployment, lat, lon, darray, CPHOX)
+    attrs = dict_update(CPHOX, SHARED)  # add the shared the attributes
+    cphox = update_dataset(cphox, platform, deployment, lat, lon, darray, attrs)
     return cphox
 
 

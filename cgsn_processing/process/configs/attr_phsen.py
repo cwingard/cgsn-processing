@@ -20,9 +20,9 @@ PHSEN = {
     },
     'unique_id': {
         'long_name': 'Instrument Unique ID',
-        'comment': ('One byte checksum summary of the instrument serial number, name, calibration date and firmware ' +
-                    'version serving as a proxy for a unique ID. While identified as the instrument unique ID, it is ' +
-                    'possible for more than one instrument to have the same checksum summary. Thus, the uniqueness ' +
+        'comment': ('One byte checksum summary of the instrument serial number, name, calibration date and firmware '
+                    'version serving as a proxy for a unique ID. While identified as the instrument unique ID, it is '
+                    'possible for more than one instrument to have the same checksum summary. Thus, the uniqueness '
                     'of this value should be considered with a certain degree of caution.'),
         # 'units': '',    deliberately left blank, no units for this value
     },
@@ -33,55 +33,55 @@ PHSEN = {
     },
     'blank_refrnc_434': {
         'long_name': 'DI Blank Reference Intensity at 434 nm',
-        'comment': ('Optical absorbance reference intensity at 434 nm. Measured with deionized water. Reference and ' +
-                    'signal intensities range between 0 and 4096. Values should be greater than ~1500. Lower ' +
+        'comment': ('Optical absorbance reference intensity at 434 nm. Measured with deionized water. Reference and '
+                    'signal intensities range between 0 and 4096. Values should be greater than ~1500. Lower '
                     'intensities will result in higher noise in the absorbance and pH measurements.'),
         'units': 'count',
         '_FillValue': -9999999,
     },
     'blank_signal_434': {
         'long_name': 'DI Blank Signal Intensity at 434 nm',
-        'comment': ('Optical absorbance signal intensity at 434 nm. Measured with deionized water. Reference and ' +
-                    'signal intensities range between 0 and 4096. Values should be greater than ~1500. Lower ' +
+        'comment': ('Optical absorbance signal intensity at 434 nm. Measured with deionized water. Reference and '
+                    'signal intensities range between 0 and 4096. Values should be greater than ~1500. Lower '
                     'intensities will result in higher noise in the absorbance and pH measurements.'),
         'units': 'count',
         '_FillValue': -9999999,
     },
     'blank_refrnc_578': {
         'long_name': 'DI Blank Reference Intensity at 578 nm',
-        'comment': ('Optical absorbance reference intensity at 578 nm. Measured with deionized water. Reference and ' +
-                    'signal intensities range between 0 and 4096. Values should be greater than ~1500. Lower ' +
+        'comment': ('Optical absorbance reference intensity at 578 nm. Measured with deionized water. Reference and '
+                    'signal intensities range between 0 and 4096. Values should be greater than ~1500. Lower '
                     'intensities will result in higher noise in the absorbance and pH measurements.'),
         'units': 'count',
         '_FillValue': -9999999,
     },
     'blank_signal_578': {
         'long_name': 'DI Blank Signal Intensity at 578 nm',
-        'comment': ('Optical absorbance signal intensity at 578 nm. Measured with deionized water. Reference and ' +
-                    'signal intensities range between 0 and 4096. Values should be greater than ~1500. Lower ' +
+        'comment': ('Optical absorbance signal intensity at 578 nm. Measured with deionized water. Reference and '
+                    'signal intensities range between 0 and 4096. Values should be greater than ~1500. Lower '
                     'intensities will result in higher noise in the absorbance and pH measurements.'),
         'units': 'count',
         '_FillValue': -9999999,
     },
     'reference_434': {
         'long_name': 'Reference Intensity at 434 nm',
-        'comment': ('Optical absorbance reference intensity at 434 nm. Reference and signal intensities range ' +
-                    'between 0 and 4096. Values should be greater than ~1500. Lower intensities will result in ' +
+        'comment': ('Optical absorbance reference intensity at 434 nm. Reference and signal intensities range '
+                    'between 0 and 4096. Values should be greater than ~1500. Lower intensities will result in '
                     'higher noise in the absorbance and pH measurements.'),
         'units': 'count'
     },
     'signal_434': {
         'long_name': 'Signal Intensity at 434 nm',
-        'comment': ('Optical absorbance signal intensity at 434 nm. Reference and signal intensities range between 0 ' +
-                    'and 4096. Values should be greater than ~1500. Lower intensities will result in higher noise in ' +
+        'comment': ('Optical absorbance signal intensity at 434 nm. Reference and signal intensities range between 0 '
+                    'and 4096. Values should be greater than ~1500. Lower intensities will result in higher noise in '
                     'the absorbance and pH measurements.'),
         'data_product_identifier': 'PH434SI_L0',
         'units': 'count'
     },
     'reference_578': {
         'long_name': 'Reference Intensity at 578 nm',
-        'comment': ('Optical absorbance reference intensity at 578 nm. Reference and signal intensities range ' +
-                    'between 0 and 4096. Values should be greater than ~1500. Lower intensities will result in ' +
+        'comment': ('Optical absorbance reference intensity at 578 nm. Reference and signal intensities range '
+                    'between 0 and 4096. Values should be greater than ~1500. Lower intensities will result in '
                     'higher noise in the absorbance and pH measurements.'),
         'units': 'count'
     },
