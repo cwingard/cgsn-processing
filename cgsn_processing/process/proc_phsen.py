@@ -169,9 +169,11 @@ def proc_phsen(infile, platform, deployment, lat, lon, depth, **kwargs):
     # create an average temperature value to be used in calculating the pH
     therm = data[['thermistor_temperature_start', 'thermistor_temperature_end']].astype(float).mean(axis=1).values
 
-    # setup default salinity values to use if no co-located CTD is available
+    # setup default values to use if no co-located CTD is available
     nrec = len(data['time'])
-    salinity = np.ones(nrec) * 34.0
+    data['ctd_pressure'] = empty_data
+    data['ctd_temperature'] = empty_data
+    data['ctd_salinity'] = np.ones(nrec) * 34.0
 
     # check for data from a co-located CTD and test to see if it covers our time range of interest. will use the
     # salinity data from the CTD in the pH calculation, if available.
@@ -190,17 +192,18 @@ def proc_phsen(infile, platform, deployment, lat, lon, depth, **kwargs):
 
         # reset initial estimate of in-situ salinity if we have full coverage
         if coverage:
+            data['ctd_pressure'] = np.interp(data['time'], ctd['time'], ctd.pressure)
+            data['ctd_temperature'] = np.interp(data['time'], ctd['time'], ctd.temperature)
             salinity = SP_from_C(ctd.conductivity.values * 10.0, ctd.temperature.values, ctd.pressure.values)
-            salinity = np.interp(ph_time, ctd_time, salinity)
+            data['ctd_salinity'] = np.interp(data['time'], ctd['time'], salinity)
 
     # add the salinity to the data set and calculate the pH
-    data['salinity'] = salinity
     if proc_flag:
-        data['pH'] = ph_calc_phwater(refnc, light, therm, salinity, cal.coeffs['ea434'], cal.coeffs['eb434'],
+        data['pH'] = ph_calc_phwater(refnc, light, therm, data['ctd_salinity'], cal.coeffs['ea434'], cal.coeffs['eb434'],
                                      cal.coeffs['ea578'], cal.coeffs['eb578'], cal.coeffs['ind_slp'],
                                      cal.coeffs['ind_off'])
     else:
-        data['pH'] = salinity * np.nan
+        data['pH'] = np.ones(nrec) * np.nan
 
     # now we need to reset the light and reference arrays to named variables that will be more meaningful and useful in
     # the final data files

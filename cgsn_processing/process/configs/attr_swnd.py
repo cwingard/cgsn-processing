@@ -13,57 +13,6 @@ SWND = {
         'summary': ('Standalone wind data from the ASIMET Sonic Wind (SWND) module recorded separately from the '
                     'METBK logger in order to determine potential sources of error in the eastward and northward '
                     'wind components reported by the METBK.'),
-        'project': 'Ocean Observatories Initiative',
-        'institution': 'Coastal and Global Scale Nodes (CGSN)',
-        'acknowledgement': 'National Science Foundation',
-        'references': 'http://oceanobservatories.org',
-        'creator_name': 'Ocean Observatories Initiative',
-        'creator_email': 'helpdesk@oceanobservatories.org',
-        'creator_url': 'http://oceanobservatories.org',
-        'featureType': 'timeSeries',
-        'cdm_data_type': 'Station',
-        'Conventions': 'CF-1.6'
-    },
-    'deploy_id': {
-        'long_name': 'Deployment ID',
-        'comment': ('Mooring deployment ID. Useful for differentiating data by deployment, '
-                    'allowing for overlapping deployments in the data sets.')
-    },
-    'station': {
-        'cf_role': 'timeseries_id',
-        'long_name': 'Station Identifier'
-    },
-    'time': {
-        'long_name': 'Time',
-        'standard_name': 'time',
-        'units': 'seconds since 1970-01-01 00:00:00.00',
-        'axis': 'T',
-        'calendar': 'gregorian',
-        'comment': 'Derived from the GPS referenced clock used by DCL data logger'
-    },
-    'lon': {
-        'long_name': 'Longitude',
-        'standard_name': 'longitude',
-        'units': 'degrees_east',
-        'axis': 'X',
-        'comment': ('Mooring deployment location, surveyed after deployment to determine the anchor location and '
-                    'the center of the watch circle.')
-    },
-    'lat': {
-        'long_name': 'Latitude',
-        'standard_name': 'latitude',
-        'units': 'degrees_north',
-        'axis': 'Y',
-        'comment': ('Mooring deployment location, surveyed after deployment to determine the anchor location and '
-                    'the center of the watch circle.')
-    },
-    'z': {
-        'long_name': 'Depth',
-        'standard_name': 'depth',
-        'units': 'm',
-        'comment': 'Instrument deployment depth',
-        'positive': 'down',
-        'axis': 'Z'
     },
     # variable attributes
     'eastward_wind_relative': {
@@ -181,7 +130,7 @@ SWND = {
                     'derived from the vector averaged eastward and northward wind components following the protocol '
                     'outlined by NDBC.'),
         'units': 'm s-1',
-        'ancillary_variables': 'eastward_wind_asimet northward_wind_asimet wind_direction wind_speed'
+        'ancillary_variables': 'wind_direction wind_speed'
     },
     'northward_wind_ndbc': {
         'long_name': 'Northward Wind Velocity (NDBC)',
@@ -190,6 +139,6 @@ SWND = {
                     'north. Calculated from the scalar averaged wind speed and the wind direction derived from the '
                     'vector averaged eastward and northward wind components following the protocol outlined by NDBC.'),
         'units': 'm s-1',
-        'ancillary_variables': 'eastward_wind_asimet northward_wind_asimet wind_direction wind_speed'
+        'ancillary_variables': 'wind_direction wind_speed'
     }
 }

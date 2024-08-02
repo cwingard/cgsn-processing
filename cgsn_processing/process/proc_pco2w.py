@@ -123,7 +123,7 @@ def proc_pco2w(infile, platform, deployment, lat, lon, depth, **kwargs):
     :param lat: Latitude of the mooring deployment.
     :param lon: Longitude of the mooring deployment.
     :param depth: Depth of the platform the instrument is mounted on.
-    :kwargs serial_number: The serial number of the SAMI-pCO2
+    **kwargs serial_number: The serial number of the SAMI-pCO2
     :return pco2w: An xarray dataset with the processed PHSEN data
     """
     # process the variable length keyword arguments

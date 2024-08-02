@@ -11,16 +11,6 @@ WAVSS = {
         'title': 'Summary Wave Statistics',
         'summary': 'Records the hourly summarized wave statistics from the Axys Technologies, TriAxys Wave Sensor.',
     },
-    'date_string': {
-        'long_name': 'Date of Measurement',
-        # 'units': '',    deliberately left blank, no units for this value
-        'comment': 'Date of Measurement (UTC), recorded as a string by the instrument''s internal clock.'
-    },
-    'time_string': {
-        'long_name': 'Time of Measurement',
-        # 'units': '',    deliberately left blank, no units for this value
-        'comment': 'Time of measurement (UTC), recorded as a string by the instrument''s internal clock.'
-    },
     'serial_number': {
         'long_name': 'Serial Number',
         # 'units': '',    deliberately left blank, no units for this value

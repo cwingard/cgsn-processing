@@ -9,7 +9,6 @@
 import numpy as np
 
 SPKIR = {
-    # global attributes
     'global': {
         'title': 'Downwelling Spectral Irradiance',
         'summary': ('Downwelling spectral irradiance measured at 7 discrete wavelengths with the Sea-Bird Electronics '
@@ -38,49 +37,49 @@ SPKIR = {
     'raw_irradiance_412': {
         'long_name': 'Raw Downwelling Irradiance 412 nm',
         'comment': ('Raw downwelling spectral irradiance at 412 nm measured by the Sea-Bird Electronics (formerly '
-                   'Satlantic) OCR-507 sensor.'),
+                    'Satlantic) OCR-507 sensor.'),
         'units': 'count',
         'data_product_identifier': 'SPECTIR_L0-412',
     },
     'raw_irradiance_444': {
         'long_name': 'Raw Downwelling Irradiance 444 nm',
         'comment': ('Raw downwelling spectral irradiance at 444 nm measured by the Sea-Bird Electronics (formerly '
-                   'Satlantic) OCR-507 sensor.'),
+                    'Satlantic) OCR-507 sensor.'),
         'units': 'count',
         'data_product_identifier': 'SPECTIR_L0-444',
     },
     'raw_irradiance_490': {
         'long_name': 'Raw Downwelling Irradiance 490 nm',
         'comment': ('Raw downwelling spectral irradiance at 490 nm measured by the Sea-Bird Electronics (formerly '
-                   'Satlantic) OCR-507 sensor.'),
+                    'Satlantic) OCR-507 sensor.'),
         'units': 'count',
         'data_product_identifier': 'SPECTIR_L0-490',
     },
     'raw_irradiance_510': {
         'long_name': 'Raw Downwelling Irradiance 510 nm',
         'comment': ('Raw downwelling spectral irradiance at 510 nm measured by the Sea-Bird Electronics (formerly '
-                   'Satlantic) OCR-507 sensor.'),
+                    'Satlantic) OCR-507 sensor.'),
         'units': 'count',
         'data_product_identifier': 'SPECTIR_L0-510',
     },
     'raw_irradiance_555': {
         'long_name': 'Raw Downwelling Irradiance 555 nm',
         'comment': ('Raw downwelling spectral irradiance at 555 nm measured by the Sea-Bird Electronics (formerly '
-                   'Satlantic) OCR-507 sensor.'),
+                    'Satlantic) OCR-507 sensor.'),
         'units': 'count',
         'data_product_identifier': 'SPECTIR_L0-555',
     },
     'raw_irradiance_620': {
         'long_name': 'Raw Downwelling Irradiance 620 nm',
         'comment': ('Raw downwelling spectral irradiance at 620 nm measured by the Sea-Bird Electronics (formerly '
-                   'Satlantic) OCR-507 sensor.'),
+                    'Satlantic) OCR-507 sensor.'),
         'units': 'count',
         'data_product_identifier': 'SPECTIR_L0-620',
     },
     'raw_irradiance_683': {
         'long_name': 'Raw Downwelling Irradiance 683 nm',
         'comment': ('Raw downwelling spectral irradiance at 683 nm measured by the Sea-Bird Electronics (formerly '
-                   'Satlantic) OCR-507 sensor.'),
+                    'Satlantic) OCR-507 sensor.'),
         'units': 'count',
         'data_product_identifier': 'SPECTIR_L0-683',
     },
@@ -196,5 +195,5 @@ SPKIR = {
         'radiation_wavelength': 683,
         '_FillValue': np.nan,
         'ancillary_variables': 'raw_irradiance_683'
-    },
+    }
 }

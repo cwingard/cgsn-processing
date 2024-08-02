@@ -37,6 +37,7 @@ class Calibrations(Coefficients):
         # assign the inputs
         Coefficients.__init__(self, coeff_file)
         self.csv_url = csv_url
+        self.coeffs = {}
 
     def read_csv(self, csv_url):
         """
@@ -92,11 +93,11 @@ def proc_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
     :param lon: Longitude of the mooring deployment.
     :param depth: Depth of the platform the instrument is mounted on.
 
-    :kwargs ctd_name: Name of directory with data from a co-located CTD. This
+    **kwargs ctd_name: Name of directory with data from a co-located CTD. This
             data will be used to calculate the optical backscatter, which
             requires the temperature and salinity data from the CTD. Otherwise,
             the calculated nitrate concentration is filled with NaN's
-    :kwargs burst: Boolean flag to indicate whether to apply burst averaging
+    **kwargs burst: Boolean flag to indicate whether to apply burst averaging
             to the data. Default is to not apply burst averaging.
 
     :return nutnr: An xarray dataset with the processed nutnr data
@@ -275,7 +276,8 @@ def proc_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # apply a median average to the burst (if desired)
     if burst:
-        # resample to a 15 minute interval
+        # resample to a 15-minute interval
+        nutnr['time'] = nutnr.time + pd.Timedelta('450s')
         nutnr = nutnr.resample(time='900s').median(dim='time', keep_attrs=True)
 
         # resampling will fill in missing time steps with NaNs. Use the serial_number variable

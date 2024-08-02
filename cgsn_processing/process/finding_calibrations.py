@@ -27,11 +27,13 @@ try:
     nrc = netrc.netrc()
     auth = nrc.authenticators('api.github.com')
     if auth is None:
-        warnings.warn('No entry found for the GitHub API token in the users .netrc file, consider adding to improve access to calibration coefficients')
+        warnings.warn('No entry found for the GitHub API token in the users .netrc file, consider adding to '
+                      'improve access to calibration coefficients')
     else:
         headers = {'Authentication': 'token ' + auth[2]}
 except FileNotFoundError as e:
-    warnings.warn('No .netrc file found in the users home directory. Consider creating and adding a GitHub API token to improve access to calibration coefficients')
+    warnings.warn('No .netrc file found in the users home directory. Consider creating and adding a GitHub API '
+                  'token to improve access to calibration coefficients')
 
 
 def list_directories(url, tag=''):

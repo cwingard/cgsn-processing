@@ -81,11 +81,11 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
     :param lon: Longitude of the mooring deployment.
     :param depth: Depth of the platform the instrument is mounted on.
 
-    :kwargs ctd_name: Name of directory with data from a co-located CTD. This
+    **kwargs ctd_name: Name of directory with data from a co-located CTD. This
         data will be used to apply salinity and density corrections to the
         data. Otherwise, the salinity corrected oxygen concentration is
         filled with NaN's
-    :kwargs burst: Boolean flag to indicate whether to apply burst averaging
+    **kwargs burst: Boolean flag to indicate whether to apply burst averaging
         to the data. Default is to not apply burst averaging.
 
     :return dosta: An xarray dataset with the processed DOSTA data
@@ -124,9 +124,9 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
     empty_data = np.atleast_1d(dosta['serial_number']).astype(np.int32) * np.nan
     dosta.rename(columns={'estimated_oxygen_concentration': 'oxygen_concentration',
                           'estimated_oxygen_saturation': 'oxygen_saturation',
-                          'optode_temperature': 'oxygen_thermistor_temperature',
+                          'optode_temperature': 'optode_thermistor',
                           'temp_compensated_phase': 'compensated_phase',
-                          'raw_temperature': 'raw_oxygen_thermistor'}, inplace=True)
+                          'raw_temperature': 'raw_optode_thermistor'}, inplace=True)
 
     # processed variables to be created if a device file and a co-located CTD is available
     dosta['svu_oxygen_concentration'] = empty_data
@@ -138,7 +138,7 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
     # recompute the oxygen concentration from the calibrated phase, optode thermistor temperature and the calibration
     # coefficients
     if proc_flag:
-        svu = do2_phase_to_doxy(dosta['calibrated_phase'], dosta['oxygen_thermistor_temperature'],
+        svu = do2_phase_to_doxy(dosta['calibrated_phase'], dosta['optode_thermistor'],
                                 dev.coeffs['svu_cal_coeffs'], dev.coeffs['two_point_coeffs'])
         dosta['svu_oxygen_concentration'] = svu
 
@@ -151,10 +151,6 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
         ctd = colocated_ctd(infile, ctd_name)
 
     if proc_flag and not ctd.empty:
-        # set the CTD and DOSTA time to the same units of seconds since 1970-01-01
-        ctd_time = ctd.time.values.astype(float) / 10.0 ** 9
-        do_time = dosta.time.values.astype(float) / 10.0 ** 9
-
         # test to see if the CTD covers our time of interest for this DOSTA file
         td = timedelta(hours=1)
         coverage = ctd['time'].min() <= dosta['time'].min() and ctd['time'].max() + td >= dosta['time'].max()

@@ -24,9 +24,8 @@ from cgsn_processing.process.configs.attr_optaa import OPTAA
 from cgsn_processing.process.configs.attr_common import SHARED
 from cgsn_processing.process.finding_calibrations import find_calibration
 
-from pyseas.data.opt_functions import opt_internal_temp, opt_external_temp
-from pyseas.data.opt_functions import opt_pressure, opt_pd_calc, opt_tempsal_corr
-from gsw import SP_from_C
+from pyseas.data.opt_functions import opt_internal_temp, opt_external_temp, opt_pd_calc, opt_tempsal_corr
+from gsw import SP_from_C, z_from_p
 
 
 class Calibrations(Coefficients):
@@ -131,8 +130,6 @@ class Calibrations(Coefficients):
         coeffs['num_wavelengths'] = len(coeffs['a_wavelengths'])
         # number of internal temperature compensation bins
         coeffs['num_temp_bins'] = len(coeffs['temp_bins'])
-        # pressure coefficients, set to 0 since not included in the CI csv files
-        coeffs['pressure_coeff'] = [0, 0]
 
         # temperature compensation values as f(wavelength, temperature) for the
         # beam attenuation and absorption channels
@@ -160,19 +157,6 @@ def apply_dev(optaa, coeffs):
     factory calibration coefficents contained in the coeffs dictionary to
     convert the data into initial science units.
     """
-    # convert internal and external temperature sensors
-    optaa['internal_temp'] = opt_internal_temp(optaa['internal_temp_raw'])
-    optaa['external_temp'] = opt_external_temp(optaa['external_temp_raw'])
-
-    # calculate pressure, if sensor is equipped
-    if np.all(coeffs['pressure_coeff'] == 0):
-        # no pressure sensor, ignoring.
-        optaa['pressure'].values = np.nan * np.array(optaa.pressure_raw)
-    else:
-        offset = coeffs['pressure_coeff'][0]
-        slope = coeffs['pressure_coeff'][1]
-        optaa['pressure'] = opt_pressure(optaa['pressure_raw'], offset, slope)
-
     # set up inputs and create a mask index to select real wavelengths (not the pads)
     a_ref = optaa['a_reference_raw']
     a_sig = optaa['a_signal_raw']
@@ -365,13 +349,12 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
     :param lat: Latitude of the mooring deployment.
     :param lon: Longitude of the mooring deployment.
     :param depth: Depth of the platform the instrument is mounted on.
-
-    :kwargs ctd_name: Name of directory with data from a co-located CTD. This
-           data will be used to apply temperature and salinity corrections
-           to the data. Otherwise, defaults are used with salinity set to
-           33 psu and temperature from the OPTAAs external temperature
-           sensor.
-    :kwargs burst: Boolean flag to indicate whether to apply burst averaging
+    **kwargs ctd_name: Name of directory with data from a co-located CTD.
+        Data will be used to apply temperature and salinity corrections
+        to the data. Otherwise, defaults are used with salinity set to
+        34 psu and temperature from the OPTAAs external temperature
+        sensor.
+    **kwargs burst: Boolean flag to indicate whether to apply burst averaging
         to the data. Default is to not apply burst averaging.
 
     :return optaa: An xarray dataset with the processed OPTAA data
@@ -425,28 +408,28 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
     df['elapsed_run_time'] = np.atleast_1d(data['elapsed_run_time']).astype(int)
     df['internal_temp_raw'] = np.atleast_1d(data['internal_temp_raw']).astype(int)
     df['external_temp_raw'] = np.atleast_1d(data['external_temp_raw']).astype(int)
-    df['pressure_raw'] = np.atleast_1d(data['pressure_raw']).astype(int)
     df['a_signal_dark'] = np.atleast_1d(data['a_signal_dark']).astype(int)
     df['a_reference_dark'] = np.atleast_1d(data['a_reference_dark']).astype(int)
     df['c_signal_dark'] = np.atleast_1d(data['c_signal_dark']).astype(int)
     df['c_reference_dark'] = np.atleast_1d(data['c_reference_dark']).astype(int)
     # processed variables to be created if a device file is available
-    df['internal_temp'] = empty_data
-    df['external_temp'] = empty_data
-    df['pressure'] = empty_data
     df['estimated_chlorophyll'] = empty_data
     df['estimated_poc'] = empty_data
     df['ratio_cdom'] = empty_data
     df['ratio_carotenoids'] = empty_data
     df['ratio_phycobilins'] = empty_data
     df['ratio_qband'] = empty_data
-
-    # check for data from a co-located CTD and test to see if it covers our time range of interest.
+    # co-located CTD data to be interpolated into the profile
+    df['depth'] = empty_data
     df['ctd_pressure'] = empty_data
     df['ctd_temperature'] = empty_data
     df['ctd_salinity'] = empty_data
-    temperature = None
-    salinity = None
+
+    # calculate the internal and external temperature in degrees Celsius from the raw data
+    df['internal_temp'] = opt_internal_temp(df['internal_temp_raw'])
+    df['external_temp'] = opt_external_temp(df['external_temp_raw'])
+
+    # check for data from a co-located CTD and test to see if it covers our time range of interest.
     ctd = pd.DataFrame()
     if ctd_name:
         ctd = colocated_ctd(infile, ctd_name)
@@ -528,8 +511,22 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
     else:
         optaa['deploy_id'] = xr.Variable('time', np.tile(deployment, len(optaa.time)).astype(str))
 
+    # calculate the depth range for the NetCDF global attributes: deployment depth and the profile min/max range
+    if ctd.empty:
+        depth_range = [depth, depth, depth]
+    else:
+        z = -1 * z_from_p(optaa['ctd_pressure'], lat)
+        depth_range = [depth, z.min(), z.max()]
+
     # if there is calibration data, apply it now
     if proc_flag:
+        if ctd.empty:
+            temperature = optaa['external_temp']  # use the external temperature sensor if no CTD data
+            salinity = temperature * 0 + 34.0     # use a default salinity of 34 psu if no CTD data
+        else:
+            temperature = optaa['ctd_temperature']
+            salinity = optaa['ctd_salinity']
+
         # apply the device file and the temperature, salinity and scatter corrections
         optaa = apply_dev(optaa, dev.coeffs)
         optaa = apply_tscorr(optaa, dev.coeffs, temperature, salinity)
@@ -543,8 +540,9 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
         optaa = calculate_ratios(optaa, dev.coeffs)
 
     # update the data set with the appropriate attributes
+    optaa['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(optaa.time)).astype(str))
     attrs = dict_update(OPTAA, SHARED)  # add the shared attributes
-    optaa = update_dataset(optaa, platform, deployment, lat, lon, [depth, depth, depth], attrs)
+    optaa = update_dataset(optaa, platform, deployment, lat, lon, depth_range, attrs)
     optaa['wavelength_number'].attrs['actual_wavelengths'] = np.intc(num_wavelengths)
 
     # if we used burst averaging, reset fill values and attributes for the raw a and c signal and reference values
@@ -558,7 +556,7 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
     if proc_flag:
         optaa.attrs['processing_level'] = 'processed'
     else:
-        optaa.attrs['processing_level'] = 'partial'
+        optaa.attrs['processing_level'] = 'parsed'
 
     # return the final processed dataset
     return optaa

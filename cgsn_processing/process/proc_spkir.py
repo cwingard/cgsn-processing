@@ -75,7 +75,7 @@ def proc_spkir(infile, platform, deployment, lat, lon, depth, **kwargs):
     :param lon: Longitude of the mooring deployment.
     :param depth: Depth of the platform the instrument is mounted on.
 
-    :kwargs burst: Boolean flag to indicate whether to apply burst averaging
+    **kwargs burst: Boolean flag to indicate whether to apply burst averaging
             to the data. Default is to not apply burst averaging.
 
     :return spkir: An xarray dataset with the processed spkir data

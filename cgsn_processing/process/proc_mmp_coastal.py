@@ -3,7 +3,7 @@
 """
 @package cgsn_processing.process.proc_mmp
 @file cgsn_processing/process/proc_mmp_coastal.py
-@author Joe Futrelle
+@author Joe Futrelle and Christopher Wingard
 @brief Creates a NetCDF dataset for the MMP from JSON formatted source data
 """
 import numpy as np
@@ -16,9 +16,9 @@ from gsw import z_from_p, SP_from_C, SA_from_SP, CT_from_t, rho
 from cgsn_processing.process.common import inputs, json2obj, json_obj2df, Coefficients, update_dataset, \
     ENCODING, dict_update, FILL_INT
 from cgsn_processing.process.finding_calibrations import find_calibration
-from cgsn_processing.process.configs.attr_mmp import MMP, MMP_ADATA, MMP_CDATA, MMP_EDATA
+from cgsn_processing.process.configs.attr_mmp_coastal import MMP, MMP_ADATA, MMP_CDATA, MMP_EDATA
 from cgsn_processing.process.configs.attr_common import SHARED
-from cgsn_processing.process.proc_flort import Calibrations as FLR_Calibrations
+from cgsn_processing.process.proc_flort import Calibrations as FlrCalibrations
 
 from pyseas.data.do2_functions import do2_raw_to_doxy
 from pyseas.data.flo_functions import flo_scale_and_offset, flo_bback_total
@@ -27,7 +27,7 @@ from pyseas.data.vel_functions import vel3dk_transform
 from pyseas.data.generic_functions import magnetic_declination, magnetic_correction
 
 
-class OXY_Calibrations(Coefficients):
+class OxyCalibrations(Coefficients):
     def __init__(self, coeff_file, csv_url=None):
         """
         Loads the DOFST-K factory calibration coefficients for a unit. Values
@@ -39,6 +39,7 @@ class OXY_Calibrations(Coefficients):
         # assign the inputs
         Coefficients.__init__(self, coeff_file)
         self.csv_url = csv_url
+        self.coeffs = {}
 
     def read_csv(self, csv_url):
         """
@@ -70,7 +71,7 @@ class OXY_Calibrations(Coefficients):
         self.coeffs = coeffs
 
 
-class PAR_Calibrations(Coefficients):
+class ParCalibrations(Coefficients):
     def __init__(self, coeff_file, csv_url=None):
         """
         Loads the PARAD-K factory calibration coefficients for a unit. Values
@@ -82,6 +83,7 @@ class PAR_Calibrations(Coefficients):
         # assign the inputs
         Coefficients.__init__(self, coeff_file)
         self.csv_url = csv_url
+        self.coeffs = {}
 
     def read_csv(self, csv_url):
         """
@@ -126,9 +128,9 @@ def proc_mmp_coastal(infile, platform, deployment, lat, lon, depth, **kwargs):
     :param lon: Longitude of the mooring deployment.
     :param depth: Depth of the platform the instrument is mounted on.
 
-    :kwarg flr_serial: The serial number of the attached FLORT (optional input)
-    :kwarg oxy_serial: The serial number of the attached DOFST (optional input)
-    :kwarg par_serial: The serial number of the attached PARAD (optional input)
+    **kwargs flr_serial: The serial number of the attached FLORT (optional input)
+    **kwargs oxy_serial: The serial number of the attached DOFST (optional input)
+    **kwargs par_serial: The serial number of the attached PARAD (optional input)
 
     :return edata: An xarray dataset with the processed "E" file data, which
         includes the MMP engineering, FLORT and PARAD data
@@ -148,12 +150,12 @@ def proc_mmp_coastal(infile, platform, deployment, lat, lon, depth, **kwargs):
         # json data file was empty, exiting
         return None, None, None
 
-    # extract the profiler data from the 3 original source files
+    # extract the profiler data from the json object based on the data type
     edata = json_obj2df(data, 'edata')
     cdata = json_obj2df(data, 'cdata')
     adata = json_obj2df(data, 'adata')
 
-    # pull out some profile status information
+    # pull out some of the profile status information
     profile_id = data['profile']['profile_id']
     ramp_status = data['profile']['ramp_status']
     profile_status = data['profile']['profile_status']
@@ -162,34 +164,37 @@ def proc_mmp_coastal(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # redefine the site depth to a list including the min/max depth of the profile
     if start_depth > end_depth:
-        depth = [depth, end_depth, start_depth]
+        depth_range = [depth, end_depth, start_depth]
     else:
-        depth = [depth, start_depth, end_depth]
+        depth_range = [depth, start_depth, end_depth]
 
     # --- process the data from each source: EDATA --- #
-    # calculate the depth from the pressure record (convert 0.00 pressure fills to NaN)
-    edata['pressure'] = [m if m > 1 else np.nan for m in edata['pressure']]
-    edata['profiler_depth'] = z_from_p(edata['pressure'], lat)
-
     # drop the date_time_string
     edata.drop(columns=['date_time_string'], inplace=True)
 
     # rename some raw parameters for consistency with other datasets
-    data.rename(columns={'raw_chl': 'raw_chlorophyll', 'raw_scatter': 'raw_backscatter'}, inplace=True)
+    data.rename(columns={'raw_chl': 'raw_chlorophyll', 'raw_scatter': 'raw_backscatter'},
+                inplace=True)
+
+    # calculate the depth from the pressure record (convert 0.00 pressure fills to NaN)
+    edata['pressure'] = [m if m > 1 else np.nan for m in edata['pressure']]
+    edata['profiler_depth'] = -1 * z_from_p(edata['pressure'], lat)  # will replace with CTD depth if available
 
     # create empty variables for the processed FLORT and PAR data (will fill in with processed data if available)
     empty_data = np.atleast_1d(edata['time']).astype(np.int32) * np.nan
     edata['estimated_chlorophyll'] = empty_data
     edata['fluorometric_cdom'] = empty_data
     edata['beta_700'] = empty_data
-    edata['total_optical_backscatter'] = empty_data
     edata['irradiance'] = empty_data
+    edata['ctd_temperature'] = empty_data
+    edata['ctd_salinity'] = empty_data
+    edata['bback'] = empty_data
     proc_flort = False
     proc_parad = False
 
     # now grab the calibration coefficients for the FLORT (if they exist)
     coeff_file = os.path.join(os.path.dirname(infile), 'flort.cal_coeffs.json')
-    flr = FLR_Calibrations(coeff_file)  # initialize calibration class
+    flr = FlrCalibrations(coeff_file)  # initialize calibration class
     if os.path.isfile(coeff_file):
         # we always want to use this file if it exists
         flr.load_coeffs()
@@ -213,7 +218,7 @@ def proc_mmp_coastal(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # now grab the calibration coefficients for the PARAD (if they exist)
     coeff_file = os.path.join(os.path.dirname(infile), 'parad.cal_coeffs.json')
-    par = PAR_Calibrations(coeff_file)  # initialize calibration class
+    par = ParCalibrations(coeff_file)  # initialize calibration class
     if os.path.isfile(coeff_file):
         # we always want to use this file if it exists
         par.load_coeffs()
@@ -227,14 +232,13 @@ def proc_mmp_coastal(infile, platform, deployment, lat, lon, depth, **kwargs):
             proc_parad = True
 
     if proc_parad:
-        edata['irradiance'] = opt_par_biospherical_wfp(edata['raw_par'], par.coeffs['dark_offset'],
-                                                       par.coeffs['scale_wet'])
+        edata['par'] = opt_par_biospherical_wfp(edata['raw_par'], par.coeffs['dark_offset'], par.coeffs['scale_wet'])
 
     edata['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(edata.time)).astype(str))
     edata['profile_id'] = xr.Variable(('time',), np.repeat(profile_id, len(edata.time)).astype(str))
     attrs = dict_update(MMP, MMP_EDATA)  # combine the common and dataframe specific attributes
     attrs = dict_update(attrs, SHARED)  # add the shared the attributes
-    edata = update_dataset(edata, platform, deployment, lat, lon, depth, attrs)
+    edata = update_dataset(edata, platform, deployment, lat, lon, depth_range, attrs)
     if (proc_flort and not proc_parad) or (proc_parad and not proc_flort):
         edata.attrs['processing_level'] = 'partial'
     elif proc_flort and proc_parad:
@@ -243,9 +247,9 @@ def proc_mmp_coastal(infile, platform, deployment, lat, lon, depth, **kwargs):
         edata.attrs['processing_level'] = 'parsed'
 
     # --- process the data from each source: CDATA --- #
-    if cdata.empty is False:
-        # calculate the depth from the pressure record
-        cdata['profiler_depth'] = z_from_p(cdata['pressure'], lat)
+    if not cdata.empty:
+        # calculate the depth from the CTD pressure record (more accurate than the profiler pressure record)
+        cdata['profiler_depth'] = -1 * z_from_p(cdata['pressure'], lat)
 
         # calculate the practical salinity of the seawater from the temperature and conductivity measurements
         cdata['salinity'] = SP_from_C(cdata['conductivity'], cdata['temperature'], cdata['pressure'])
@@ -255,10 +259,12 @@ def proc_mmp_coastal(infile, platform, deployment, lat, lon, depth, **kwargs):
         ct = CT_from_t(sa, cdata['temperature'].values, cdata['pressure'].values)  # conservative temperature
         cdata['density'] = rho(sa, ct, cdata['pressure'])  # density
 
-        # interpolate the temperature and salinity records into the edata and then calculate the total optical
-        # backscatter coefficient
+        # add the CTD data to the edata record and then calculate the total optical backscatter coefficient
+        edata['profiler_depth'] = np.interp(edata['time'], cdata['time'], cdata['profiler_depth'])
         degc = np.interp(edata['time'], cdata['time'], cdata['temperature'])
+        edata['ctd_temperature'] = degc
         psu = np.interp(edata['time'], cdata['time'], cdata['salinity'])
+        edata['ctd_salinity'] = psu
         edata['total_optical_backscatter'] = flo_bback_total(edata['beta_700'], degc, psu, flr.coeffs['scatter_angle'],
                                                              flr.coeffs['wavelength'], flr.coeffs['chi_factor'])
 
@@ -270,7 +276,7 @@ def proc_mmp_coastal(infile, platform, deployment, lat, lon, depth, **kwargs):
 
         # now grab the calibration coefficients for the DOFST (if they exist)
         coeff_file = os.path.join(os.path.dirname(infile), 'dofst.cal_coeffs.json')
-        oxy = PAR_Calibrations(coeff_file)  # initialize calibration class
+        oxy = OxyCalibrations(coeff_file)  # initialize calibration class
         if os.path.isfile(coeff_file):
             # we always want to use this file if it exists
             oxy.load_coeffs()
@@ -294,7 +300,7 @@ def proc_mmp_coastal(infile, platform, deployment, lat, lon, depth, **kwargs):
         cdata['profile_id'] = xr.Variable(('time',), np.repeat(profile_id, len(cdata.time)).astype(str))
         attrs = dict_update(MMP, MMP_CDATA)  # combine the common and dataframe specific attributes
         attrs = dict_update(attrs, SHARED)  # add the shared the attributes
-        cdata = update_dataset(cdata, platform, deployment, lat, lon, depth, attrs)
+        cdata = update_dataset(cdata, platform, deployment, lat, lon, depth_range, attrs)
         if proc_dofst:
             cdata.attrs['processing_level'] = 'processed'
         else:
@@ -303,7 +309,7 @@ def proc_mmp_coastal(infile, platform, deployment, lat, lon, depth, **kwargs):
         cdata = None
 
     # --- process the data from each source: ADATA --- #
-    if adata.empty is False:
+    if not adata.empty:
         # create a depth record from the CTD data
         adata['profiler_depth'] = np.interp(adata['time'], cdata['time'], cdata['profiler_depth'])
 
@@ -315,14 +321,14 @@ def proc_mmp_coastal(infile, platform, deployment, lat, lon, depth, **kwargs):
         beams = np.atleast_2d(adata['beams'])
         beams = np.insert(np.delete(beams, 0, 1), 4, FILL_INT, 1)
 
-        # convert the raw, beam velocity measurements to ENU velocities, corrected for magnetic declination, in m/s
-        ENU = vel3dk_transform(adata['beam_0_velocity'], adata['beam_1_velocity'], adata['beam_2_velocity'],
+        # convert the raw, beam velocity measurements to enu velocities, corrected for magnetic declination, in m/s
+        enu = vel3dk_transform(adata['beam_0_velocity'], adata['beam_1_velocity'], adata['beam_2_velocity'],
                                adata['heading'], adata['pitch'], adata['roll'], beams)
 
         # separate out the components from the Earth coordinate transformed data matrix.
-        u = np.array(ENU[0, :])[0]
-        v = np.array(ENU[1, :])[0]
-        adata['vertical_relative_velocity'] = np.array(ENU[2, :])[0]
+        u = np.array(enu[0, :])[0]
+        v = np.array(enu[1, :])[0]
+        adata['vertical_relative_velocity'] = np.array(enu[2, :])[0]
 
         # correct for magnetic declination
         theta = magnetic_declination(lat, lon, adata['time'], adata['profiler_depth'])
@@ -336,7 +342,7 @@ def proc_mmp_coastal(infile, platform, deployment, lat, lon, depth, **kwargs):
         adata['profile_id'] = xr.Variable(('time',), np.repeat(profile_id, len(adata.time)).astype(str))
         attrs = dict_update(MMP, MMP_ADATA)  # combine the common and dataframe specific attributes
         attrs = dict_update(attrs, SHARED)  # add the shared the attributes
-        adata = update_dataset(adata, platform, deployment, lat, lon, depth, attrs)
+        adata = update_dataset(adata, platform, deployment, lat, lon, depth_range, attrs)
         adata.attrs['processing_level'] = 'processed'
     else:
         adata = None
@@ -356,9 +362,9 @@ def main(argv=None):
     depth = args.depth
 
     # instrument serial numbers
-    flr_serial = args.devfile
-    par_serial = args.devfile
-    oxy_serial = args.devfile
+    flr_serial = args.flr_serial
+    par_serial = args.par_serial
+    oxy_serial = args.oxy_serial
 
     # process the CTDBP data and save the results to disk
     edata, cdata, adata = proc_mmp_coastal(infile, platform, deployment, lat, lon, depth,
@@ -366,16 +372,20 @@ def main(argv=None):
 
     base = os.path.splitext(outfile)[0]
     if edata:
-        efile = os.rename(outfile, base + '_edata.nc')
+        efile = outfile
+        os.rename(efile, base + '_edata.nc')
         edata.to_netcdf(efile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
     if cdata:
-        cfile = os.rename(outfile, base + '_cdata.nc')
+        cfile = outfile
+        os.rename(cfile, base + '_edata.nc')
         cdata.to_netcdf(cfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
     if adata:
-        afile = os.rename(outfile, base + '_adata.nc')
+        afile = outfile
+        os.rename(afile, base + '_edata.nc')
         adata.to_netcdf(afile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
+
 
 if __name__ == '__main__':
     main()

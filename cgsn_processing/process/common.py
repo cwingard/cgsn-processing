@@ -28,14 +28,11 @@ BUOYS = {
     'ce09ospm': {'name': 'Coastal Endurance Washington Offshore Profiler Mooring'}
 }
 
-# Create a dictionary to correct some inconsistencies between an xarray dataset and a CF compliant NetCDF file
+# Default NetCDF encodings for CF compliance
 ENCODING = {
-    'time': {'_FillValue': None},
-    'lat': {'_FillValue': None},
     'lon': {'_FillValue': None},
-    'z': {'_FillValue': None},
-    'station_name': {'dtype': str},
-    'deploy_id': {'dtype': str}
+    'lat': {'_FillValue': None},
+    'z': {'_FillValue': None}
 }
 
 # Create global default fill values
@@ -127,8 +124,9 @@ def hex2int(hstr):
 
 def join_df(df1, df2):
     """
-    Join two data frames, padding missing values with the appropriate fill value. Recasting data types in the joined
-    data frames back to their original settings from prior to the join.
+    Join two data frames, padding missing values with the appropriate fill
+    value. Recasting data types in the joined data frames back to their
+    original settings from prior to the join.
 
     :param df1: primary dataframe to merge the secondary dataframe into
     :param df2: secondary dataframe
@@ -340,10 +338,30 @@ def update_dataset(ds, platform, deployment, lat, lon, depth, attrs):
         else:
             ds[v].attrs = attrs[v]
 
+    # set the encoding for the time and sensor time (if available) variables to ensure proper CF compliance
+    # and representation of the times in the NetCDF file (otherwise, xarray will chose its own defaults)
+    ds['time'].encoding = dict({
+        '_FillValue': None,
+        'units': 'seconds since 1970-01-01T00:00:00.000Z',
+        'calendar': 'standard',
+        'dtype': 'float64'
+    })
+
+    if 'sensor_time' in ds.variables:
+        ds['sensor_time'].encoding = dict({
+            'units': 'seconds since 1970-01-01T00:00:00.000Z',
+            'calendar': 'standard',
+            'dtype': 'float64'
+        })
+
+    # convert all float64 values to float32 (except for the timestamps), helps minimize file size
     # reset all integers set as long, or int64, as an int32. ERDDAP doesn't like longs
     for v in ds.variables:
-        if ds[v].dtype == np.int64:
-            ds[v] = ds[v].astype(np.int32)
+        if v not in ['time', 'sensor_time']:
+            if ds[v].dtype == np.int64:
+                ds[v] = ds[v].astype(np.int32)
+            if ds[v].dtype is np.dtype('float64'):
+                ds[v] = ds[v].astype('float32')
 
     # return the data set for further work
     return ds
@@ -367,30 +385,6 @@ def json_sub2df(infile, sub):
                 df[col] = df[col].astype(np.int32)
 
         return df
-
-
-def df2omtdf(df, lat=0., lon=0., depth=0., time_var='time'):
-    """
-    Modifies a dataframe to be suitable for use with the from_dataframe
-    method of pocean's OrthogonalMultidimensionalTimeseries
-    """
-    # rename time var to "t"
-    df['t'] = df.pop(time_var)
-
-    # fill lat/lon/depth values
-    df['y'] = lat
-    df['x'] = lon
-    df['z'] = depth
-
-    # just one station
-    df['station'] = 0
-
-    # convert all int64s to int32s
-    for col in df.columns:
-        if df[col].dtype == np.int64:
-            df[col] = df[col].astype(np.int32)
-
-    return df
 
 
 def reset_long(df):

@@ -31,7 +31,7 @@ def proc_pwrsys(infile, platform, deployment, lat, lon, depth, **kwargs):
     :param lon: Longitude of the mooring deployment.
     :param depth: Depth of the platform the instrument is mounted on.
 
-    :kwargs pwrsys_type: Name of the power system type, either psc or mpea.
+    **kwargs pwrsys_type: Name of the power system type, either psc or mpea.
 
     :return psc: An xarray dataset with the mooring power system data
     """
