@@ -7,16 +7,13 @@
 @brief Attributes for the METBK variables
 """
 import numpy as np
+from cgsn_processing.process.common import dict_update
+from cgsn_processing.process.configs.attr_common import CO_LOCATED
 
 PHSEN = {
     'global': {
         'title': 'Seawater pH',
         'summary': 'Measurements of the seawater pH using the Sunburst Sensors SAMI2-pH Instrument.',
-    },
-    'dcl_date_time_string': {
-        'long_name': 'DCL Date and Time Stamp',
-        'comment': 'Data logger time stamp, recorded when instrument begins measurement cycle.',
-        # 'units': '',    deliberately left blank, no units for this value
     },
     'unique_id': {
         'long_name': 'Instrument Unique ID',
@@ -165,17 +162,6 @@ PHSEN = {
         'units': 'seconds',
         'ancillary_variables': 'record_time, time'
     },
-    'salinity': {
-        'long_name': 'Practical Salinity',
-        'standard_name': 'sea_water_practical_salinity',
-        'units': '1',
-        'comment': ('Salinity is generally defined as the concentration of dissolved salt in a parcel of seawater. ' +
-                    'Practical Salinity is a more specific unitless quantity calculated from the conductivity of ' +
-                    'seawater and adjusted for temperature and pressure. It is approximately equivalent to Absolute ' +
-                    'Salinity (the mass fraction of dissolved salt in seawater) but they are not interchangeable. ' +
-                    'Data from a co-located CTD, if available. Otherwise, uses a default value of 34 psu.'),
-        'data_product_identifier': 'PRACSAL_L2'
-    },
     'pH': {
         'long_name': 'Seawater pH',
         'comment': ('pH is a measurement of the concentration of hydrogen ions in a solution. pH ranges from acidic ' +
@@ -189,3 +175,6 @@ PHSEN = {
                                 'thermistor_temperature_end, salinity')
     }
 }
+
+# add the co-located CTD attributes to the PHSEN attributes
+PHSEN = dict_update(PHSEN, CO_LOCATED)

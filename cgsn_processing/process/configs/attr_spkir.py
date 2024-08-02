@@ -9,7 +9,6 @@
 import numpy as np
 
 SPKIR = {
-    # global attributes
     'global': {
         'title': 'Downwelling Spectral Irradiance',
         'summary': ('Downwelling spectral irradiance measured at 7 discrete wavelengths with the Sea-Bird Electronics '
@@ -196,5 +195,5 @@ SPKIR = {
         'radiation_wavelength': 683,
         '_FillValue': np.nan,
         'ancillary_variables': 'raw_irradiance_683'
-    },
+    }
 }

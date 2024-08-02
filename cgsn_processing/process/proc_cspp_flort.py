@@ -58,6 +58,9 @@ def proc_cspp_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # remove the FLORT date/time string from the dataset
     df.drop(columns=['suspect_timestamp', 'flort_date_time_string'], inplace=True)
+    df = df.rename(columns={'raw_signal_beta': 'raw_backscatter',
+                            'raw_signal_cdom': 'raw_cdom',
+                            'raw_signal_chl': 'raw_chlorophyll'})
 
     # set up the instrument calibration data object
     coeff_file = os.path.join(os.path.dirname(infile), 'flort.cal_coeffs.json')
@@ -88,11 +91,11 @@ def proc_cspp_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     if proc_flag:
         # Apply the scale and offset correction factors from the factory calibration coefficients
-        df['estimated_chlorophyll'] = flo_scale_and_offset(df['raw_signal_chl'], dev.coeffs['dark_chla'],
+        df['estimated_chlorophyll'] = flo_scale_and_offset(df['raw_chlorophyll'], dev.coeffs['dark_chla'],
                                                            dev.coeffs['scale_chla'])
-        df['fluorometric_cdom'] = flo_scale_and_offset(df['raw_signal_cdom'], dev.coeffs['dark_cdom'],
+        df['fluorometric_cdom'] = flo_scale_and_offset(df['raw_cdom'], dev.coeffs['dark_cdom'],
                                                        dev.coeffs['scale_cdom'])
-        df['beta_700'] = flo_scale_and_offset(df['raw_signal_beta'], dev.coeffs['dark_beta'],
+        df['beta_700'] = flo_scale_and_offset(df['raw_backscatter'], dev.coeffs['dark_beta'],
                                               dev.coeffs['scale_beta'])
 
     # check for data from a co-located CTD and test to see if it covers our time range of interest.

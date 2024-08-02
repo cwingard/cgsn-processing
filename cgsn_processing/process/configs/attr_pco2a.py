@@ -74,7 +74,7 @@ PCO2A = {
         'comment': ''
     },
     # ---- derived values ----
-    'co2_ppressure': {
+    'pCO2': {
         'long_name': 'Partial Pressure of CO2',
         'units': 'uatm',
         'comment': ('The partial pressure of CO2 in air or seawater refers to the pressure that would be exerted by '
@@ -84,7 +84,7 @@ PCO2A = {
                     'indicates whether the value is an air or water measurement.'),
         'ancillary_variables': 'co2_source co2_mole_fraction gas_stream_pressure'
     },
-    'atmospheric_co2_ppressure': {
+    'pCO2_atmospheric': {
         'long_name': 'Partial Pressure of CO2 in Air',
         'standard_name': 'partial_pressure_of_carbon_dioxide_in_air',
         'units': 'uatm',
@@ -93,7 +93,7 @@ PCO2A = {
                     'calculated from the CO2 mole fraction (ppm), the gas stream pressure (mbar) and standard '
                     'atmospheric pressure set to a default of 1013.25 mbar/atm. The CO2 Measurement Source variable ')
     },
-    'seawater_co2_ppressure': {
+    'pCO2_seawater': {
         'long_name': 'Partial Pressure of CO2 in Seawater',
         'standard_name': 'partial_pressure_of_carbon_dioxide_in_sea_water',
         'units': 'uatm',
@@ -107,7 +107,7 @@ PCO2A = {
         'standard_name': 'wind_speed',
         'units': 'm s-1',
         'comment': ('The 10-meter wind speed is the wind speed measured at a height of 10 meters above the sea '
-                    'surface. The 10-meter wind speed is calculated from the 3D wind vector using the method '
+                    'surface. The 10-meter wind speed is calculated from the 2D wind vector using the method '
                     'described in the WMO Guide to Meteorological Instruments and Methods of Observation, '
                     'Chapter 7, section 7.2.1. The 10-meter wind speed is used to calculate the gas transfer '
                     'velocity of CO2 across the air-sea interface.')

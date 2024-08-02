@@ -37,6 +37,7 @@ class Calibrations(Coefficients):
         # assign the inputs
         Coefficients.__init__(self, coeff_file)
         self.csv_url = csv_url
+        self.coeffs = {}
 
     def read_csv(self, csv_url):
         """
@@ -275,7 +276,8 @@ def proc_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # apply a median average to the burst (if desired)
     if burst:
-        # resample to a 15 minute interval
+        # resample to a 15-minute interval
+        nutnr['time'] = nutnr.time + pd.Timedelta('450s')
         nutnr = nutnr.resample(time='900s').median(dim='time', keep_attrs=True)
 
         # resampling will fill in missing time steps with NaNs. Use the serial_number variable

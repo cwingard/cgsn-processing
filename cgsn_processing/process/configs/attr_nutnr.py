@@ -7,6 +7,8 @@
 @brief Attributes for the ISUS and SUNA nitrate sensors
 """
 from cgsn_processing.process.common import FILL_INT, FILL_NAN
+from cgsn_processing.process.common import dict_update
+from cgsn_processing.process.configs.attr_common import CO_LOCATED
 
 NUTNR = {
     # global attributes and metadata variables and attributes
@@ -207,40 +209,6 @@ NUTNR = {
         # 'units': ''    # deliberately left blank, units for this value are unknown,
         'comment': 'Vendor documentation does not provide enough information to define this variable.'
     },
-    # dataset attributes --> co-located CTD data
-    'ctd_pressure': {
-        'long_name': 'Sea Water Pressure',
-        'standard_name': 'sea_water_pressure_due_to_sea_water',
-        'units': 'dbar',
-        'comment': ('Sea Water Pressure refers to the pressure exerted on a sensor in situ by the weight of the '
-                    'column of seawater above it. It is calculated by subtracting one standard atmosphere from the '
-                    'absolute pressure at the sensor to remove the weight of the atmosphere on top of the water '
-                    'column. The pressure at a sensor in situ provides a metric of the depth of that sensor. '
-                    'Measurements are from a co-located CTD.'),
-        'data_product_identifier': 'PRESWAT_L1',
-        '_FillValue': FILL_NAN
-    },
-    'ctd_temperature': {
-        'long_name': 'Sea Water Temperature',
-        'standard_name': 'sea_water_temperature',
-        'units': 'degrees_Celsius',
-        'comment': ('Sea water temperature is the in situ temperature of the sea water. Measurements are from a '
-                    'co-located CTD'),
-        'data_product_identifier': 'TEMPWAT_L1',
-        '_FillValue': FILL_NAN
-    },
-    'ctd_salinity': {
-        'long_name': 'Sea Water Practical Salinity',
-        'standard_name': 'sea_water_practical_salinity',
-        'units': '1',
-        'comment': ('Salinity is generally defined as the concentration of dissolved salt in a parcel of sea water. '
-                    'Practical Salinity is a more specific unitless quantity calculated from the conductivity of '
-                    'sea water and adjusted for temperature and pressure. It is approximately equivalent to Absolute '
-                    'Salinity (the mass fraction of dissolved salt in sea water), but they are not interchangeable. '
-                    'Measurements are from a co-located CTD.'),
-        'data_product_identifier': 'PRACSAL_L2',
-        '_FillValue': FILL_NAN
-    },
     # dataset attributes --> derived values
     'corrected_nitrate': {
         'long_name': 'Corrected Nitrate Concentration',
@@ -266,3 +234,6 @@ NUTNR = {
         '_FillValue': FILL_NAN
     }
 }
+
+# add the co-located CTD attributes to the NUTNR attributes
+NUTNR = dict_update(NUTNR, CO_LOCATED)

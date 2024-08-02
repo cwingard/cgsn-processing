@@ -8,7 +8,6 @@
 """
 import numpy as np
 import os
-
 import pandas as pd
 import xarray as xr
 
@@ -78,30 +77,30 @@ def proc_pco2a(infile, platform, deployment, lat, lon, depth, **kwargs):
     df.rename(columns={'measured_water_co2': 'co2_mole_fraction'}, inplace=True)
 
     # calculate the partial pressure of CO2 in the air and water samples
-    df['co2_ppressure'] = co2_ppressure(df['co2_mole_fraction'], df['gas_stream_pressure'])
+    df['pCO2'] = co2_ppressure(df['co2_mole_fraction'], df['gas_stream_pressure'])
 
     # create an xarray data set from the data frame
     pco2a = xr.Dataset.from_dataframe(df)
 
-    # split out the air and water samples for further processing
-    air = pco2a['co2_ppressure'].where(pco2a['co2_source'] == 'A', drop=True)
-    air = air.rename('atmospheric_co2_ppressure')
-    water = pco2a['co2_ppressure'].where(pco2a['co2_source'] == 'W', drop=True)
-    water = water.rename('seawater_co2_ppressure')
+    # split out the air and water samples for further processing below
+    air = pco2a['pCO2'].where(pco2a['co2_source'] == 'A', drop=True)
+    air = air.rename('pCO2_atmospheric')
+    water = pco2a['pCO2'].where(pco2a['co2_source'] == 'W', drop=True)
+    water = water.rename('pCO2_seawater')
 
-    # clean up the pco2a dataset and assign attributes
+    # clean up the PCO2A dataset and assign attributes
     pco2a['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(pco2a.time)).astype(str))
     attrs = dict_update(PCO2A, SHARED)  # add the shared attributes
     pco2a = update_dataset(pco2a, platform, deployment, lat, lon, [depth, depth, depth], attrs)
     pco2a.attrs['processing_level'] = 'processed'
 
     # resample the air and water datasets to hourly averages
-    air['time'] = air.time.dt.round('1H')
+    air['time'] = air.time.dt.round('1H')  # round the time to the nearest hour
     air = air.resample(time='1H').median(dim='time', keep_attrs=True)
     air = air.interpolate_na(dim='time', max_gap='3Hour')  # interpolate any gaps less than 3 hours in the data
     air = air.where(~np.isnan(air), drop=True)  # drop any remaining NaNs
 
-    water['time'] = water.time.dt.round('1H')
+    water['time'] = water.time.dt.round('1H')  # round the time to the nearest hour
     water = water.resample(time='1H').median(dim='time', keep_attrs=True)
     water = water.interpolate_na(dim='time', max_gap='3Hour')  # interpolate any gaps less than 3 hours in the data
     water = water.where(~np.isnan(water), drop=True)  # drop any remaining NaNs
@@ -125,12 +124,14 @@ def proc_pco2a(infile, platform, deployment, lat, lon, depth, **kwargs):
     if not metbk.empty:
         metbk = xr.Dataset.from_dataframe(metbk)
 
-        # test to see if the metbk covers our time of interest for this pco2a file
-        coverage = metbk['time'].min() <= flux['time'].min() and metbk['time'].max() + pd.Timedelta('30Min') >= flux['time'].max()
+        # test to see if the metbk covers our time of interest for this PCO2A file
+        td = timedelta(hours=1)
+        coverage = (metbk['time'].min() <= flux['time'].min() and metbk['time'].max() + td >= flux['time'].max())
 
         # interpolate the CTD data if we have full coverage
         if coverage:
-            # resample the metbk data to 10 minute median averages and calculate the 10 m wind speed and sea surface salinity
+            # resample the metbk data to 10 minute median averages and calculate the 10 m wind speed and
+            # sea surface salinity
             metbk = metbk.resample(time='10Min').median(dim='time', keep_attrs=True)
             u10 = wind_10m(metbk['northward_wind_velocity'], metbk['eastward_wind_velocity'])
             psu = SP_from_C(metbk['sea_surface_conductivity'] * 10, metbk['sea_surface_temperature'], 0)
@@ -148,7 +149,8 @@ def proc_pco2a(infile, platform, deployment, lat, lon, depth, **kwargs):
             flux['air_temperature'] = xr.DataArray(air_temp, coords=[flux.time], dims=['time'])
 
             # calculate the pCO2 flux (in umol/m^2/s) using the 10 m wind speed, sea surface temperature, and salinity
-            flux['co2_flux'] = co2_co2flux(flux['seawater_co2_ppressure'], flux['atmospheric_co2_ppressure'], u10, sst, psu) * 1e6
+            flux['co2_flux'] = co2_co2flux(flux['seawater_co2_ppressure'], flux['atmospheric_co2_ppressure'], u10,
+                                           sst, psu) * 1e6
 
     # add the attributes to the flux dataset
     flux['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(flux.time)).astype(str))
@@ -176,6 +178,7 @@ def main(argv=None):
         flux_file = outfile.replace('_pco2a_', '_pco2_flux_')
         pco2a.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
         flux.to_netcdf(flux_file, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
+
 
 if __name__ == '__main__':
     main()

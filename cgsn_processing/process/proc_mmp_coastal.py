@@ -173,7 +173,7 @@ def proc_mmp_coastal(infile, platform, deployment, lat, lon, depth, **kwargs):
     edata.drop(columns=['date_time_string'], inplace=True)
 
     # rename some raw parameters for consistency with other datasets
-    data.rename(columns={'raw_cdom': 'raw_signal_cdom', 'raw_chl': 'raw_signal_chl', 'raw_scatter': 'raw_signal_beta'},
+    data.rename(columns={'raw_chl': 'raw_chlorophyll', 'raw_scatter': 'raw_backscatter'},
                 inplace=True)
 
     # calculate the depth from the pressure record (convert 0.00 pressure fills to NaN)
@@ -209,11 +209,11 @@ def proc_mmp_coastal(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # if calibration coefficients are available, process the FLORT data (scale and offset)
     if proc_flort:
-        edata['estimated_chlorophyll'] = flo_scale_and_offset(edata['raw_signal_chl'], flr.coeffs['dark_chla'],
+        edata['estimated_chlorophyll'] = flo_scale_and_offset(edata['raw_chlorophyll'], flr.coeffs['dark_chla'],
                                                               flr.coeffs['scale_chla'])
-        edata['fluorometric_cdom'] = flo_scale_and_offset(edata['raw_signal_cdom'], flr.coeffs['dark_cdom'],
-                                                         flr.coeffs['scale_cdom'])
-        edata['beta_700'] = flo_scale_and_offset(edata['raw_signal_beta'], flr.coeffs['dark_beta'],
+        edata['fluorometric_cdom'] = flo_scale_and_offset(edata['raw_cdom'], flr.coeffs['dark_cdom'],
+                                                          flr.coeffs['scale_cdom'])
+        edata['beta_700'] = flo_scale_and_offset(edata['raw_backscatter'], flr.coeffs['dark_beta'],
                                                  flr.coeffs['scale_beta'])
 
     # now grab the calibration coefficients for the PARAD (if they exist)

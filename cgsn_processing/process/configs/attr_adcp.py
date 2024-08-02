@@ -940,5 +940,5 @@ DERIVED = {
         'ancillary_variables': 'eastward_seawater_velocity_est, northward_seawater_velocity_est, time, lat, lon, z',
         'units': 'm s-1',
         '_FillValue': np.nan
-    },
+    }
 }

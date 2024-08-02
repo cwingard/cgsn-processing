@@ -9,11 +9,9 @@
 import numpy as np
 import os
 import pandas as pd
-import re
 import xarray as xr
 
-from datetime import timedelta
-from gsw import SP_from_C, p_from_z, z_from_p
+from gsw import SP_from_C, z_from_p
 
 from cgsn_processing.process.common import Coefficients, inputs, json2df, colocated_ctd, update_dataset, \
     ENCODING, dict_update
@@ -36,6 +34,7 @@ class Calibrations(Coefficients):
         # assign the inputs
         Coefficients.__init__(self, coeff_file)
         self.csv_url = csv_url
+        self.coeffs = {}
 
     def read_csv(self, csv_url):
         """
@@ -143,18 +142,18 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
     # set up the instrument calibration data objects and flags
     coeff_flort = os.path.join(os.path.dirname(infile), 'flort.cal_coeffs.json')
     dev_flort = Calibrations(coeff_flort)  # initialize calibration class
-    proc_flort = False
+    flort_flag = False
 
     coeff_turbd = os.path.join(os.path.dirname(infile), 'turbdx.cal_coeffs.json')
     dev_turbd = Calibrations(coeff_turbd)  # initialize calibration class
-    proc_turbd = False
+    turbd_flag = False
 
     # check for the source of the FLORT calibration coefficients and load accordingly
     if serial_number:
         if os.path.isfile(coeff_flort):
             # we always want to use this file if it already exists
             dev_flort.load_coeffs()
-            proc_flort = True
+            flort_flag = True
         else:
             # load from the CI hosted CSV files
             sampling_time = df['time'][0].value / 10.0 ** 9
@@ -162,13 +161,13 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
             if csv_url:
                 dev_flort.read_csv(csv_url)
                 dev_flort.save_coeffs()
-                proc_flort = True
+                flort_flag = True
 
         if switch == 'TURBDX':  # add the TURBDX variables to the dataset
             if os.path.isfile(coeff_turbd):
                 # we always want to use this file if it already exists
                 dev_turbd.load_coeffs()
-                proc_turbd = True
+                turbd_flag = True
             else:
                 # load from the CI hosted CSV files
                 sampling_time = df['time'][0].value / 10.0 ** 9
@@ -176,10 +175,13 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
                 if csv_url:
                     dev_turbd.read_csv(csv_url)
                     dev_turbd.save_coeffs()
-                    proc_turbd = True
+                    turbd_flag = True
 
     # clean up dataframe and create an empty data variable
     df.drop(columns=['dcl_date_time_string', 'flort_date_time_string'], inplace=True)
+    df = df.rename(columns={'raw_signal_beta': 'raw_backscatter',
+                            'raw_signal_cdom': 'raw_cdom',
+                            'raw_signal_chl': 'raw_chlorophyll'})
     empty_data = np.atleast_1d(df['time']).astype(np.int32) * np.nan
 
     # processed variables to be created if a device file and a co-located CTD is available
@@ -197,12 +199,12 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
     depth_range = [depth, depth, depth]
 
     # if the calibration coefficients are available, apply them.
-    if proc_turbd:
+    if turbd_flag:
         # Apply the scale and offset correction factors from the factory calibration coefficients
         df['turbidity'] = flo_scale_and_offset(df['raw_signal_beta'], dev_turbd.coeffs['dark_turbd'],
                                                dev_turbd.coeffs['scale_turbd'])
 
-    if proc_flort:
+    if flort_flag:
         # Apply the scale and offset correction factors from the factory calibration coefficients
         df['estimated_chlorophyll'] = flo_scale_and_offset(df['raw_signal_chl'], dev_flort.coeffs['dark_chla'],
                                                            dev_flort.coeffs['scale_chla'])
@@ -218,16 +220,16 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     if not ctd.empty:
         # test to see if the CTD covers our time of interest for this DOSTA file
-        td = timedelta(hours=1)
+        td = pd.Timedelta('1H')
         coverage = ctd['time'].min() - td <= df['time'].min() and ctd['time'].max() + td >= df['time'].max()
 
         # interpolate the CTD data if we have full coverage
         if coverage:
             if ctd_name in ['metbk', 'metbk1', 'metbk2']:
-                pressure = depth
+                pressure = np.ones_like(ctd.time) * depth  # set the pressure to the depth of the FLORT
                 temperature = np.interp(df['time'], ctd['time'], ctd.sea_surface_temperature)
-                salinity = SP_from_C(ctd.sea_surface_conductivity.values * 10.0, ctd.sea_surface_temperature.values,
-                                     depth)
+                salinity = SP_from_C(ctd.sea_surface_conductivity.values * 10.0,
+                                     ctd.sea_surface_temperature.values, depth)
                 salinity = np.interp(df['time'], ctd['time'], salinity)
             else:
                 pressure = np.interp(df['time'], ctd['time'], ctd.pressure)
@@ -244,7 +246,7 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
             depth_range = [depth, z.min(), z.max()]
 
             # calculate the pressure and salinity corrected oxygen concentration
-            if proc_flort:
+            if flort_flag:
                 df['bback'] = flo_bback_total(df['beta_700'], temperature, salinity,
                                               dev_flort.coeffs['scatter_angle'], dev_flort.coeffs['wavelength'],
                                               dev_flort.coeffs['chi_factor'])
@@ -255,7 +257,7 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
     # apply burst averaging if selected
     if burst:
         # resample to a 15-minute interval and shift the clock to center the averaging window
-        flort['time'] = flort['time'] + timedelta(seconds=450)
+        flort['time'] = flort.time + pd.Timedelta('450s')
         flort = flort.resample(time='900s').median(dim='time', keep_attrs=True)
 
         # resampling will fill in missing time steps with NaNs. Use the raw_internal_temp variable
@@ -263,8 +265,8 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
         flort = flort.where(~np.isnan(flort.raw_internal_temp), drop=True)
 
         # reset original integer values
-        int_arrays = ['measurement_wavelength_beta', 'raw_signal_beta', 'measurement_wavelength_chl',
-                      'raw_signal_chl', 'measurement_wavelength_cdom', 'raw_signal_cdom', 'raw_internal_temp']
+        int_arrays = ['measurement_wavelength_beta', 'raw_backscatter', 'measurement_wavelength_chl',
+                      'raw_chlorophyll', 'measurement_wavelength_cdom', 'raw_cdom', 'raw_internal_temp']
         for k in flort.variables:
             if k in int_arrays:
                 flort[k] = flort[k].astype(np.intc)  # explicitly setting as a 32-bit integer
@@ -273,7 +275,7 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
     flort['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(flort.time)).astype(str))
     attrs = dict_update(FLORT, SHARED)
     flort = update_dataset(flort, platform, deployment, lat, lon, depth_range, attrs)
-    if proc_flort or proc_turbd:
+    if flort_flag or turbd_flag:
         flort.attrs['processing_level'] = 'processed'
     else:
         flort.attrs['processing_level'] = 'parsed'

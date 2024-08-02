@@ -11,13 +11,11 @@ import os
 import pandas as pd
 import xarray as xr
 
-from datetime import timedelta
-
 from cgsn_processing.process.common import ENCODING, inputs, dict_update, dt64_epoch, epoch_time, json2obj, \
     json_obj2df, colocated_ctd, update_dataset
 from cgsn_processing.process.configs.attr_adcp import ADCP, PD0, PD8, DERIVED
 from cgsn_processing.process.configs.attr_common import SHARED
-from gsw import z_from_p
+
 from pyseas.data.generic_functions import magnetic_declination
 from pyseas.data.adcp_functions import magnetic_correction, adcp_bin_depths
 from gsw import z_from_p
@@ -38,15 +36,17 @@ def proc_adcp(infile, platform, deployment, lat, lon, depth, **kwargs):
     :param lon: Longitude of the mooring deployment.
     :param depth: Depth of the platform the instrument is mounted on.
 
-    **kwargs adcp_type: Type of data format recorded in the parsed record. Valid
-        options are PD0 or PD8.
-    **kwargs ctd_name: Name of directory with data from a co-located CTD. This
-        data will be used to create a pressure record for the ADCP if it does
-        not have a built-in pressure sensor.
-    **kwargs bin_size: Specify the size of the depth bins (cm). Needed only for
-        adcp data recorded in PD8 format in order to calculate bin depths.
-    **kwargs blanking_distance: Specify the blanking distance (cm). Needed only
-        for adcp data recorded in PD8 format in order to calculate bin depths.
+    **kwargs adcp_type: Type of data format recorded in the parsed record.
+        Valid options are PD0 or PD8.
+    **kwargs ctd_name: Name of directory with data from a co-located CTD.
+        This data will be used to create a pressure record for the ADCP if
+        it does not have a built-in pressure sensor.
+    **kwargs bin_size: Specify the size of the depth bins (cm). Needed only
+        for ADCP data recorded in PD8 format in order to calculate bin
+        depths.
+    **kwargs blanking_distance: Specify the blanking distance (cm). Needed
+        only for adcp data recorded in PD8 format in order to calculate bin
+        depths.
 
     :return adcp: An xarray dataset with the processed ADCP data
     """
@@ -78,16 +78,13 @@ def proc_adcp(infile, platform, deployment, lat, lon, depth, **kwargs):
     # data if the ADCP does not have a pressure sensor (majority of the OOI sensors)
     ctd = colocated_ctd(infile, ctd_name)
     if not ctd.empty:
-        # set the CTD time to the same units as the ADCP time
-        ctd_time = ctd.time.values.astype(float) / 10.0 ** 9
-
         # test to see if the CTD covers our time of interest for this ADCP file
-        td = timedelta(hours=1).total_seconds()
-        coverage = ctd_time.min() <= time.min() and ctd_time.max() + td >= time.max()
+        td = pd.Timedelta('1H').total_seconds()  # 1 hour in seconds
+        coverage = ctd.time.min() <= time.min() and ctd.time.max() + td >= time.max()
 
         # reset initial estimate of deployment depth based on if we have full coverage
         if coverage:
-            dbar = np.interp(time, ctd_time, ctd.pressure.values)
+            dbar = np.interp(time, ctd.time, ctd.pressure)
             depth_m = -1 * z_from_p(dbar, lat)
             depth_flag = True   # full time-based array of depth values
 

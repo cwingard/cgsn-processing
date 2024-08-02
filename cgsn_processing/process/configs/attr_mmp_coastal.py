@@ -3,12 +3,17 @@
 """
 @package cgsn_processing.process.configs.attr_mmp
 @file cgsn_processing/process/configs/attr_mmp_coastal.py
-@author Joe Futrelle
+@author Joe Futrelle and Christopher Wingard
 @brief Attributes for the MMP variables
 """
 import numpy as np
+from cgsn_processing.process.common import dict_update
+from cgsn_processing.process.configs.attr_common import CTD
+from cgsn_processing.process.configs.attr_common import CO_LOCATED
+from cgsn_processing.process.configs.attr_flort import FLORT
 
 MMP = {
+    # standard attributes used by all MMP datasets
     'global': {
         'title': 'McLane Moored Profiler Data',
         'summary': 'Datasets from the McLane Moored Profiler (MMP).',
@@ -27,7 +32,7 @@ MMP = {
     }
 }
 
-MMP_ADATA = dict({
+MMP_ADATA = {
     'temperature': {
         'long_name': 'Sea Water Temperature',
         'standard_name': 'sea_water_temperature',
@@ -128,67 +133,17 @@ MMP_ADATA = dict({
         'units': 'm s-1',
         'ancillary_variables': 'beams beam_0_velocity beam_1_velocity beam_2_velocity heading pitch roll'
     }
-})
+}
 
 MMP_CDATA = {
-    'conductivity': {
-        'long_name': 'Sea Water Conductivity',
-        'standard_name': 'sea_water_electrical_conductivity',
-        'units': 'mS cm-1',
-        'comment': ('Sea water conductivity refers to the ability of seawater to conduct electricity. The presence '
-                    'of ions, such as salt, increases the electrical conducting ability of seawater. As such, '
-                    'conductivity can be used as a proxy for determining the quantity of salt in a sample of '
-                    'seawater.'),
-        'data_product_identifier': 'CONDWAT_L1',
-        '_FillValue': np.nan
-    },
-    'temperature': {
-        'long_name': 'Sea Water Temperature',
-        'standard_name': 'sea_water_temperature',
-        'units': 'degrees_Celsius',
-        'comment': 'Sea water temperature is the in situ temperature of the sea water.',
-        'data_product_identifier': 'TEMPWAT_L1',
-        '_FillValue': np.nan
-    },
-    'pressure': {
-        'long_name': 'Seawater Pressure',
-        'standard_name': 'sea_water_pressure_due_to_sea_water',
-        'units': 'dbar',
-        'comment': ('Seawater Pressure refers to the pressure exerted on a sensor in situ by the weight of the '
-                    'column of seawater above it. It is calculated by subtracting one standard atmosphere from the '
-                    'absolute pressure at the sensor to remove the weight of the atmosphere on top of the water '
-                    'column. The pressure at a sensor in situ provides a metric of the depth of that sensor.'),
-        'data_product_identifier': 'PRESWAT_L1',
-        '_FillValue': np.nan
-    },
+    # note, the CTD data is same as the CTD data in attr_common.py, but the oxygen data is slightly different
+    # from the DOSTA data as the oxygen sensor is different. Set the oxygen attributes here and then add the common CTD
+    # attributes to the dictionary
     'raw_oxygen': {
         'long_name': 'Raw Oxygen Concentration',
         'units': 'Hz',
         'comments': ('Raw oxygen measurement, recorded as a frequency from the SBE 43F by the SBE 52-MP used on the '
                      'McLane Moored Profilers.')
-    },
-    # --> derived values
-    'salinity': {
-        'long_name': 'Practical Salinity',
-        'standard_name': 'sea_water_practical_salinity',
-        'units': '1',
-        'comment': ('Salinity is generally defined as the concentration of dissolved salt in a parcel of sea water. '
-                    'Practical Salinity is a more specific unitless quantity calculated from the conductivity of '
-                    'sea water and adjusted for temperature and pressure. It is approximately equivalent to Absolute '
-                    'Salinity (the mass fraction of dissolved salt in sea water), but they are not interchangeable.'),
-        'data_product_identifier': 'PRACSAL_L2',
-        'ancillary_variables': 'conductivity, temperature, pressure',
-        '_FillValue': np.nan
-    },
-    'density': {
-        'long_name': 'In-Situ Sea Water Density',
-        'standard_name': 'sea_water_density',
-        'units': 'kg m-3',
-        'comment': ('Sea water Density is the in situ density and is defined as mass per unit volume. It is '
-                    'calculated from the conductivity, temperature and depth of a sea water sample.'),
-        'data_product_identifier': 'DENSITY_L2',
-        'ancillary_variables': 'lon, lat, salinity, temperature, pressure',
-        '_FillValue': np.nan
     },
     'oxygen_concentration': {
         'long_name': 'Dissolved Oxygen Concentration',
@@ -211,6 +166,7 @@ MMP_CDATA = {
         '_FillValue': np.nan
     }
 }
+MMP_CDATA = dict_update(MMP_CDATA, CTD)
 
 MMP_EDATA = {
     'motor_current': {
@@ -235,53 +191,13 @@ MMP_EDATA = {
                     'column. The pressure at a sensor in situ provides a metric of the depth of that sensor.'),
         'data_product_identifier': 'PRESWAT_L1'
     },
+    # attributes for the PAR sensor
     'raw_par': {
         'long_name': 'Raw PAR Measurement',
         'units': 'mV',
         'comment': 'Photosynthetically Active Radiation (PAR) unprocessed sensor reading.',
         'data_product_identifier': 'OPTPARW_L0'
     },
-    'raw_signal_beta': {
-        'long_name': 'Raw Optical Backscatter at 700 nm',
-        'units': 'count',
-        'comment': 'Raw optical backscatter measurements at 700 nm.',
-        'data_product_identifier': 'FLUBSCT_L0'
-    },
-    'raw_signal_chl': {
-        'long_name': 'Raw Chlorophyll Fluorescence',
-        'units': 'count',
-        'comment': 'Raw chlorophyll fluorescence (470 nm excitation/ 695 nm emission) measurements.',
-        'data_product_identifier': 'CHLAFLO_L0'
-    },
-    'raw_signal_cdom': {
-        'long_name': 'Raw DOM Fluorescence',
-        'units': 'count',
-        'comment': 'Raw DOM fluorescence (370 nm excitation/ 460 nm emission) measurements.',
-        'data_product_identifier': 'CDOMFLO_L0'
-    },
-    # dataset attributes --> co-located CTD data
-    'ctd_temperature': {
-        'long_name': 'Sea Water Temperature',
-        'standard_name': 'sea_water_temperature',
-        'units': 'degrees_Celsius',
-        'comment': ('Sea water temperature is the in situ temperature of the sea water. Measurements are from a '
-                    'co-located CTD'),
-        'data_product_identifier': 'TEMPWAT_L1',
-        '_FillValue': np.nan
-    },
-    'ctd_salinity': {
-        'long_name': 'Sea Water Practical Salinity',
-        'standard_name': 'sea_water_practical_salinity',
-        'units': '1',
-        'comment': ('Salinity is generally defined as the concentration of dissolved salt in a parcel of sea water. '
-                    'Practical Salinity is a more specific unitless quantity calculated from the conductivity of '
-                    'sea water and adjusted for temperature and pressure. It is approximately equivalent to Absolute '
-                    'Salinity (the mass fraction of dissolved salt in sea water), but they are not interchangeable. '
-                    'Measurements are from a co-located CTD.'),
-        'data_product_identifier': 'PRACSAL_L2',
-        '_FillValue': np.nan
-    },
-    # dataset attributes --> derived values
     'par': {
         'long_name': 'Photosynthetically Active Radiation',
         'standard_name': 'downwelling_photosynthetic_photon_flux_in_sea_water',
@@ -292,51 +208,8 @@ MMP_EDATA = {
         'data_product_identifier': 'OPTPARW_L1',
         '_FillValue': np.nan,
         'ancillary_variables': 'raw_par'
-    },
-    'estimated_chlorophyll': {
-        'long_name': 'Estimated Chlorophyll Concentration',
-        'standard_name': 'mass_concentration_of_chlorophyll_in_sea_water',
-        'units': 'ug L-1',
-        'comment': ('Estimated chlorophyll concentration based upon a calibration curve derived from a fluorescent '
-                    'proxy approximately equal to 25 ug/l of a Thalassiosira weissflogii phytoplankton culture. '
-                    'This measurement is considered to be an estimate only of the true chlorophyll concentration.'),
-        'data_product_identifier': 'CHLAFLO_L1',
-        '_FillValue': np.nan,
-        'ancillary_variables': 'raw_signal_chl'
-    },
-    'fluorometric_cdom': {
-        'long_name': 'Fluorometric CDOM Concentration',
-        'standard_name': ('concentration_of_colored_dissolved_organic_matter_in_sea_water_expressed_as_equivalent'
-                          '_mass_fraction_of_quinine_sulfate_dihydrate'),
-        'units': 'ppb',
-        'comment': ('More commonly referred to as Chromophoric Dissolved Organic Matter (CDOM). CDOM plays an '
-                    'important role in the carbon cycling and biogeochemistry of coastal waters. It occurs '
-                    'naturally in aquatic environments primarily as a result of tannins released from decaying '
-                    'plant and animal matter, and can enter coastal areas in river run-off containing organic '
-                    'materials leached from soils.'),
-        'data_product_identifier': 'CDOMFLO_L1',
-        '_FillValue': np.nan,
-        'ancillary_variables': 'raw_signal_cdom'
-    },
-    'beta_700': {
-        'long_name': 'Volume Scattering Function at 700 nm',
-        'standard_name': 'volume_scattering_function_of_radiative_flux_in_sea_water',
-        'units': 'm-1 sr-1',
-        'comment': ('Radiative flux is the sum of shortwave and longwave radiative fluxes. Scattering of '
-                    'radiation is its deflection from its incident path without loss of energy. The volume '
-                    'scattering function is the intensity (flux per unit solid angle) of scattered radiation per '
-                    'unit length of scattering medium, normalised by the incident radiation flux.'),
-        'data_product_identifier': 'FLUBSCT_L1',
-        '_FillValue': np.nan,
-        'ancillary_variables': 'raw_signal_beta'
-    },
-    'bback': {
-        'long_name': 'Total Optical Backscatter at 700 nm',
-        'units': 'm-1',
-        'comment': ('Total (particulate + water) optical backscatter at 700 nm, derived from the Volume '
-                    'Scattering Function and corrected for effects of temperature and salinity.'),
-        'data_product_identifier': 'FLUBSCT_L2',
-        '_FillValue': np.nan,
-        'ancillary_variables': 'beta_700 ctd_temperature ctd_salinity'
     }
+    # attributes for FLORT sensor will be added below
 }
+MMP_EDATA = dict_update(MMP_EDATA, FLORT)       # add the FLORT attributes to the MMP attributes
+MMP_EDATA = dict_update(MMP_EDATA, CO_LOCATED)  # add the co-located CTD attributes to the MMP attributes

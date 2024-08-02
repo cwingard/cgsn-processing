@@ -43,8 +43,7 @@ SUPERV = {
             'long_name': 'Internal Pressure',
             'units': 'psi',
             'comment': ('Absolute pressure inside the platcon or pressure housing. Operators will pull a vacuum to '
-                        'provide early indications of a leak prior to deployment '
-                        'at sea.')
+                        'provide early indications of a leak prior to deployment at sea.')
         },
         'leak_detect_enable': {
             'long_name': 'Leak Detects Enabled',

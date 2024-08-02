@@ -11,7 +11,7 @@ import numpy as np
 VELPT = {
     'global': {
         'title': 'Point Velocity Measurements from the Nortek Aquadopp',
-        'summary': ('The aquadopp records 3 minute ensemble averages every 15 minutes of the point velocity.'),
+        'summary': 'The aquadopp records 3 minute ensemble averages every 15 minutes of the point velocity.',
     },
     'error_code': {
         'long_name': 'Error Code',

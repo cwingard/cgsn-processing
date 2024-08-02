@@ -9,7 +9,6 @@
 import numpy as np
 
 GPS = {
-    # global attributes
     'global': {
         'title': 'Mooring GPS Data',
         'summary': 'Precise latitude and longitude data recorded from the GPS sensor mounted on the buoy.'
