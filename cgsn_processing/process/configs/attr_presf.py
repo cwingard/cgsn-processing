@@ -87,7 +87,7 @@ RBRQ3 = {
         'standard_name': 'time_ms',
         'units': '1',
     },
-    'depth': {
+    'depth_00': {
         'long_name': 'Sensor Depth',
         'standard_name': 'depth_of_sensor_below_water',
         'units': 'm',
