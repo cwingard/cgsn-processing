@@ -19,13 +19,9 @@ if [ -z "$NSERIAL" ]; then
     exit
 fi
 
-# set up the calibration and blank files
-COEFF="$(dirname "$IN_FILE")/pco2w.cal_coeffs.json"
-BLANK="$(dirname "$IN_FILE")/pco2w.in_situ_blanks.json"
-
 # Process the file
 if [ -e $IN_FILE ]; then
     cd /home/ooiuser/code/cgsn-processing || exit
     python -m cgsn_processing.process.proc_pco2w -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH \
-      -i $IN_FILE -o $OUT_FILE -cf $COEFF -df $BLANK -sn $NSERIAL || echo "ERROR: Failed to process $IN_FILE"
+      -i $IN_FILE -o $OUT_FILE -sn $NSERIAL || echo "ERROR: Failed to process $IN_FILE"
 fi

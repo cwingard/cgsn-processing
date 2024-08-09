@@ -191,7 +191,7 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
     df['ctd_pressure'] = empty_data
     df['ctd_temperature'] = empty_data
     df['ctd_salinity'] = empty_data
-    df['bback'] = empty_data
+    df['total_optical_backscatter'] = empty_data
     if switch == 'TURBDX':
         df['turbidity'] = empty_data
 

@@ -112,20 +112,6 @@ PCO2A = {
                     'Chapter 7, section 7.2.1. The 10-meter wind speed is used to calculate the gas transfer '
                     'velocity of CO2 across the air-sea interface.')
     },
-    'sea_surface_temperature': {
-        'long_name': 'Sea Surface Temperature',
-        'standard_name': 'sea_surface_temperature',
-        'units': 'degrees_Celsius',
-        'comment': ('The sea surface temperature is the temperature of the sea surface. The sea surface temperature '
-                    'is used to calculate the gas transfer velocity of CO2 across the air-sea interface.')
-    },
-    'sea_surface_salinity': {
-        'long_name': 'Sea Surface Salinity',
-        'standard_name': 'sea_surface_salinity',
-        'units': '1e-3',
-        'comment': ('The sea surface salinity is the salinity of the sea surface. The sea surface salinity is used '
-                    'to calculate the gas transfer velocity of CO2 across the air-sea interface.')
-    },
     'co2_flux': {
         'long_name': 'CO2 Flux',
         'standard_name': 'surface_upward_mole_flux_of_carbon_dioxide',

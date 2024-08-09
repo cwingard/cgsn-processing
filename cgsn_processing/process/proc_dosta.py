@@ -184,12 +184,13 @@ def proc_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # apply burst averaging if selected
     if burst:
-        # resample to a 15-minute interval and shift the clock to make sure we capture the time "correctly"
-        dosta = dosta.resample(time='900s', base=3150, loffset='450s').median(dim='time', keep_attrs=True)
-        dosta = dosta.where(~np.isnan(dosta.serial_number), drop=True)
+        # resample to a 15-minute interval and shift the clock to center the averaging window
+        dosta['time'] = dosta.time + pd.Timedelta('450s')
+        dosta = dosta.resample(time='900s').median(dim='time', keep_attrs=True)
 
-        # resample to a 15-minute interval and shift the clock to make sure we capture the time "correctly"
-        dosta = dosta.resample(time='15Min', base=55, loffset='5Min').median(dim='time', keep_attrs=True)
+        # resampling will fill in missing time steps with NaNs. Use the serial_number variable
+        # as a proxy variable to find cases where data is filled with a NaN, and delete those records.
+        dosta = dosta.where(~np.isnan(dosta.serial_number), drop=True)
 
         # reset original integer values
         int_arrays = ['product_number', 'serial_number']

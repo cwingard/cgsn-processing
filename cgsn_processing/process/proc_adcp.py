@@ -69,7 +69,7 @@ def proc_adcp(infile, platform, deployment, lat, lon, depth, **kwargs):
     # create the time coordinate array and set up a data frame with the global values used above
     time = np.array(data['time'])
     df = pd.DataFrame()
-    df['time'] = pd.to_datetime(df.time, unit='s')
+    df['time'] = pd.to_datetime(time, unit='s')
     df.index = df['time']
     glbl = xr.Dataset.from_dataframe(df)
 
@@ -315,7 +315,7 @@ def main(argv=None):
     lon = args.longitude
     depth = args.depth
     adcp_type = args.switch
-    ctd_name = args.args.devfile  # name of co-located CTD
+    ctd_name = args.devfile  # name of co-located CTD
     bin_size = args.bin_size
     blanking_distance = args.blanking_distance
 

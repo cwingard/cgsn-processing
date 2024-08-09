@@ -12,6 +12,7 @@ import pandas as pd
 import xarray as xr
 
 from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING, dict_update, colocated_ctd
+from cgsn_processing.process.configs.attr_metbk import METBK
 from cgsn_processing.process.configs.attr_pco2a import PCO2A
 from cgsn_processing.process.configs.attr_common import SHARED
 
@@ -95,14 +96,14 @@ def proc_pco2a(infile, platform, deployment, lat, lon, depth, **kwargs):
     pco2a.attrs['processing_level'] = 'processed'
 
     # resample the air and water datasets to hourly averages
-    air['time'] = air.time.dt.round('1H')  # round the time to the nearest hour
-    air = air.resample(time='1H').median(dim='time', keep_attrs=True)
-    air = air.interpolate_na(dim='time', max_gap='3Hour')  # interpolate any gaps less than 3 hours in the data
+    air['time'] = air.time.dt.round('1h')  # round the time to the nearest hour
+    air = air.resample(time='1h').median(dim='time', keep_attrs=True)
+    air = air.interpolate_na(dim='time', max_gap='3h')  # interpolate any gaps less than 3 hours in the data
     air = air.where(~np.isnan(air), drop=True)  # drop any remaining NaNs
 
-    water['time'] = water.time.dt.round('1H')  # round the time to the nearest hour
-    water = water.resample(time='1H').median(dim='time', keep_attrs=True)
-    water = water.interpolate_na(dim='time', max_gap='3Hour')  # interpolate any gaps less than 3 hours in the data
+    water['time'] = water.time.dt.round('1h')  # round the time to the nearest hour
+    water = water.resample(time='1h').median(dim='time', keep_attrs=True)
+    water = water.interpolate_na(dim='time', max_gap='3h')  # interpolate any gaps less than 3 hours in the data
     water = water.where(~np.isnan(water), drop=True)  # drop any remaining NaNs
 
     # combine the air and water datasets back into a single dataset
@@ -154,7 +155,8 @@ def proc_pco2a(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # add the attributes to the flux dataset
     flux['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(flux.time)).astype(str))
-    attrs = dict_update(PCO2A, SHARED)  # add the shared attributes
+    attrs = dict_update(PCO2A, METBK)  # add the METBK attributes
+    attrs = dict_update(attrs, SHARED)  # add the COMMON attributes
     flux = update_dataset(flux, platform, deployment, lat, lon, [depth, depth, depth], attrs)
     flux.attrs['processing_level'] = 'processed'
 

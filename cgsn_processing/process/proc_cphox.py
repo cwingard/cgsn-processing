@@ -15,7 +15,8 @@ import xarray as xr
 from calendar import timegm
 from gsw import SA_from_SP, pt0_from_t, CT_from_pt, sigma0, z_from_p
 
-from cgsn_processing.process.common import ENCODING, inputs, json2df, update_dataset
+from cgsn_processing.process.common import ENCODING, inputs, json2df, dict_update, update_dataset
+from cgsn_processing.process.configs.attr_common import SHARED
 from cgsn_processing.process.configs.attr_cphox import CPHOX
 
 
@@ -145,7 +146,7 @@ def proc_cphox(infile, platform, deployment, lat, lon, depth, **kwargs):
     if estimated:
         # Use the Lee et al. (2006) model to estimate the total alkalinity from the salinity and temperature
         # https://doi.org/10.1029/2006GL027207
-        if 'CE' in site:
+        if 'CE' in platform:
             # for the Coastal Endurance array, use zone 4 (North Pacific) coefficients
             cphox['estimated_alkalinity'] = (2305 + 53.23 * (cphox['salinity'] - 35) + 1.85 *
                                              (cphox['salinity'] - 35)**2 - 14.72 * (cphox['temperature'] - 20) -

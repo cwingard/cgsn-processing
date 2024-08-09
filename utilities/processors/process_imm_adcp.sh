@@ -13,12 +13,9 @@ DIR="${BASH_SOURCE%/*}"
 if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
 source "$DIR/process_options.sh"
 
-# set the name for the ADCP configuration file (stored comparable to other calibration files)
-COEFF="$(dirname "$IN_FILE")/adcp.configuration.json"
-
 # Process the file
 if [ -e $IN_FILE ]; then
     cd /home/ooiuser/code/cgsn-processing || exit
     python -m cgsn_processing.process.proc_imm_adcp -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH \
-      -i $IN_FILE -o $OUT_FILE -sn $NSERIAL -cf $COEFF || echo "ERROR: Failed to process $IN_FILE"
+      -i $IN_FILE -o $OUT_FILE -sn $NSERIAL || echo "ERROR: Failed to process $IN_FILE"
 fi

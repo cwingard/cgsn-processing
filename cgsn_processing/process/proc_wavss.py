@@ -8,9 +8,10 @@
 """
 import numpy as np
 import os
+import pandas as pd
 import xarray as xr
 
-from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING, dict_update
+from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING, dict_update, epoch_time
 from cgsn_processing.process.configs.attr_wavss import WAVSS
 from cgsn_processing.process.configs.attr_common import SHARED
 
@@ -37,8 +38,14 @@ def proc_wavss(infile, platform, deployment, lat, lon, depth):
         # there was no data in this file, ending early
         return None
 
+    # reformat the date and time strings from single strings to formatted strings that can be converted to datetime64
+    date_string = df['date_string'].values
+    time_string = df['time_string'].values
+    sensor_time = np.array([(pd.Timestamp(f'{d}T{t}.000Z')).value / 10.0**9 for d, t in zip(date_string, time_string)])
+    df['sensor_time'] = sensor_time
+
     # clean up some of the data
-    df.drop(columns=['dcl_date_time_string'], inplace=True)  # used to calculate time, so redundant
+    df.drop(columns=['dcl_date_time_string', 'date_string', 'time_string'], inplace=True)
 
     # create an xarray data set from the data frame
     wavss = xr.Dataset.from_dataframe(df)

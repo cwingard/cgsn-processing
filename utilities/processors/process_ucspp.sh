@@ -31,7 +31,6 @@ case $FTYPE in
     "ACS" )
         # OPTAA data files
         ODIR="$PROCESSED/optaa"
-        COEFF="$PARSED/optaa/optaa_factory_calibration.coeffs"
         if [ ! -d $ODIR ]; then
             mkdir -p $ODIR
         fi
@@ -41,7 +40,7 @@ case $FTYPE in
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
                 python -m cgsn_processing.process.proc_cspp_optaa -i $file -o "$ODIR/${out%.json}.nc" \
-                    -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -cf $COEFF
+                    -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH
             fi
         done ;;
 
@@ -78,7 +77,6 @@ case $FTYPE in
 
         # FLORT data files
         ODIR="$PROCESSED/flort"
-        COEFF="$PARSED/flort/flort_factory_calibration.coeffs"
         if [ ! -d $ODIR ]; then
             mkdir -p $ODIR
         fi
@@ -88,13 +86,12 @@ case $FTYPE in
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
                 python -m cgsn_processing.process.proc_cspp_flort -i $file -o "$ODIR/${out%.json}.nc" \
-                    -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -sn $FLORT -cf $COEFF
+                    -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -sn $FLORT
             fi
         done
 
         # PARAD data files
         ODIR="$PROCESSED/parad"
-        COEFF="$PARSED/parad/parad_factory_calibration.coeffs"
         if [ ! -d $ODIR ]; then
             mkdir -p $ODIR
         fi
@@ -104,13 +101,12 @@ case $FTYPE in
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
                 python -m cgsn_processing.process.proc_cspp_parad -i $file -o "$ODIR/${out%.json}.nc" \
-                    -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -sn $PARAD -cf $COEFF
+                    -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -sn $PARAD
             fi
         done
 
         # SPKIR data files
         ODIR="$PROCESSED/spkir"
-        COEFF="$PARSED/spkir/spkir_factory_calibration.coeffs"
         if [ ! -d $ODIR ]; then
             mkdir -p $ODIR
         fi
@@ -120,7 +116,7 @@ case $FTYPE in
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
                 python -m cgsn_processing.process.proc_cspp_spkir -i $file -o "$ODIR/${out%.json}.nc" \
-                    -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -cf $COEFF
+                    -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH
             fi
         done
 
@@ -142,7 +138,6 @@ case $FTYPE in
     "SNA" )
         # NUTNR data files
         ODIR="$PROCESSED/nutnr"
-        COEFF="$PARSED/nutnr/nutnr_inhouse_calibration.coeffs"
         if [ ! -d $ODIR ]; then
             mkdir -p $ODIR
         fi
@@ -152,7 +147,7 @@ case $FTYPE in
                 echo "Processing $file..."
                 cd /home/ooiuser/code/cgsn-processing
                 python -m cgsn_processing.process.proc_cspp_nutnr -i $file -o "$ODIR/${out%.json}.nc" \
-                    -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -sn $NUTNR -cf $COEFF
+                    -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH -sn $NUTNR
             fi
         done ;;
 
