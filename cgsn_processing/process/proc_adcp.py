@@ -69,22 +69,24 @@ def proc_adcp(infile, platform, deployment, lat, lon, depth, **kwargs):
     # create the time coordinate array and set up a data frame with the global values used above
     time = np.array(data['time'])
     df = pd.DataFrame()
-    df['time'] = pd.to_datetime(time, unit='s')
-    df.set_index('time', drop=True, inplace=True)
-    df['deploy_id'] = deployment
+    df['time'] = pd.to_datetime(df.time, unit='s')
+    df.index = df['time']
     glbl = xr.Dataset.from_dataframe(df)
 
     # check for data from a co-located CTD and test to see if it covers our time range of interest, will use this
-    # data if the ADCP does not have a pressure sensor (majority of the OOI sensors)
-    ctd = colocated_ctd(infile, ctd_name)
+    # data if the ADCP does not have a pressure sensor (majority of the OOI sensors have pressure sensors).
+    ctd = pd.DataFrame()
+    if ctd_name:
+        ctd = colocated_ctd(infile, ctd_name)
+
     if not ctd.empty:
         # test to see if the CTD covers our time of interest for this ADCP file
-        td = pd.Timedelta('1H').total_seconds()  # 1 hour in seconds
-        coverage = ctd.time.min() <= time.min() and ctd.time.max() + td >= time.max()
+        td = pd.Timedelta('1h')
+        coverage = ctd['time'].min() - td <= df['time'].min() and ctd['time'].max() + td >= df['time'].max()
 
         # reset initial estimate of deployment depth based on if we have full coverage
         if coverage:
-            dbar = np.interp(time, ctd.time, ctd.pressure)
+            dbar = np.interp(data['time'], ctd['time'], ctd.pressure)
             depth_m = -1 * z_from_p(dbar, lat)
             depth_flag = True   # full time-based array of depth values
 
@@ -103,14 +105,14 @@ def proc_adcp(infile, platform, deployment, lat, lon, depth, **kwargs):
 
         # combine the time_per_ping_seconds and the time_per_ping_minutes into a single variable, ping_period.
         fx['ping_period'] = fx['time_per_ping_seconds'] + (fx['time_per_ping_minutes'] / 60)
-        fx = fx.drop(['time_per_ping_seconds', 'time_per_ping_minutes'])    # drop the sub-components
+        fx = fx.drop_vars(['time_per_ping_seconds', 'time_per_ping_minutes'])  # drop the subcomponents
 
         # load the variable leader data packets
         df = json_obj2df(data, 'variable')
         vbl = xr.Dataset.from_dataframe(df)
 
         # drop real-time clock arrays 1 and 2, rewriting the data as an ISO 8601 combined date and time string and
-        # convert to a Unix epoch time. note, the two arrays are identical with the exception of the milliseconds field
+        # convert to a Unix epoch time. note, the two arrays are identical except for the milliseconds field
         # added to the real-time clock array 2. will use the second array to create a single real time clock variable.
         rtc = []
         for ts in vbl['real_time_clock2'].values:
@@ -120,15 +122,14 @@ def proc_adcp(infile, platform, deployment, lat, lon, depth, **kwargs):
 
         rtc = xr.Dataset({'real_time_clock': (['time'], rtc)},
                          coords={'time': (['time'], pd.to_datetime(time, unit='s'))})
-        vbl = vbl.drop(['real_time_clock1', 'real_time_clock2'])    # drop the sub-components
+        vbl = vbl.drop_vars(['real_time_clock1', 'real_time_clock2'])  # drop the subcomponents
 
         # use the ensemble number and increment variables (ensemble number rolls over at 65535) to calculate the
         # sequential ensemble number
         vbl['ensemble_number'] = vbl['ensemble_number'] + (vbl['ensemble_number_increment'] * 65535)
-        vbl = vbl.drop(['ensemble_number_increment'])   # drop the sub-components
+        vbl = vbl.drop_vars(['ensemble_number_increment'])  # drop the subcomponents
 
-        # calculate the bin_depth so we can plot our data in geo-spatial coordinates, pulling required data from the
-        # data file
+        # calculate the bin_depth, so we can plot our data in geospatial coordinates
         blanking_distance = fx.bin_1_distance.values[0]
         bin_size = fx.depth_cell_length.values[0]
         orientation = fx.sysconfig_vertical_orientation.values[0]

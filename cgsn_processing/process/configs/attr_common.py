@@ -8,6 +8,8 @@
     global and standardized variables and their attributes to minimize
     code redundancy.
 """
+import numpy as np
+
 SHARED = {
     'global': {
         'project': 'NSF Ocean Observatories Initiative',

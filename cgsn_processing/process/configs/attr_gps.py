@@ -67,25 +67,5 @@ GPS = {
         'long_name': 'Altitude',
         'units': 'm',
         'comment': 'Height of the sensor above the WGS-84 geoid.'
-    },
-    'gps_date_string': {
-        'long_name': 'GPS Date String',
-        # 'units': '',    deliberately left blank, no units for this value,
-        'comment': 'GPS date formatted as a string (YYMMDD).'
-    },
-    'gps_time_string': {
-        'long_name': 'GPS Time String',
-        # 'units': '',    deliberately left blank, no units for this value,
-        'comment': 'GPS Time formatted as a string (hhmmss).'
-    },
-    'latitude_string': {
-        'long_name': 'Latitude String',
-        # 'units': '',    deliberately left blank, no units for this value,
-        'comment': 'Latitude formatted as a string (DDMM.SSSS N/S).'
-    },
-    'longitude_string': {
-        'long_name': 'Longitude String',
-        # 'units': '',    deliberately left blank, no units for this value,
-        'comment': 'Longitude formatted as a string (DDDMM.SSSS E/W).'
     }
 }

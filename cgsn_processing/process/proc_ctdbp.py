@@ -64,9 +64,9 @@ def proc_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
     ctd.drop(columns=['ctd_date_time_string', 'dcl_date_time_string'], inplace=True)
     proc_flag = False
 
-    # reset the depth array from the pressure record
+    # reset the depth array using the deployment depth and the min and max from the pressure record
     d = z_from_p(ctd['pressure'], lat)
-    depth = [d.mean(), d.min(), d.max()]
+    depth = [depth, d.min(), d.max()]
 
     # calculate the practical salinity of the seawater from the temperature and conductivity measurements
     ctd['salinity'] = SP_from_C(ctd['conductivity'].values * 10.0, ctd['temperature'].values, ctd['pressure'].values)
