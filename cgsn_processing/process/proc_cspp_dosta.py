@@ -75,7 +75,7 @@ def proc_cspp_dosta(infile, platform, deployment, lat, lon, depth, **kwargs):
             proc_flag = True
 
     # clean up dataframe and rename selected variables
-    df.drop(columns=['suspect_timestamp'], inplace=True)
+    df.drop_vars(columns=['suspect_timestamp'], inplace=True)
     df.rename(columns={
             'estimated_oxygen_concentration': 'oxygen_concentration',
             'estimated_oxygen_saturation': 'oxygen_saturation',

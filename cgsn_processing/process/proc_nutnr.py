@@ -259,7 +259,7 @@ def proc_nutnr(infile, platform, deployment, lat, lon, depth, **kwargs):
         df['corrected_nitrogen_in_nitrate'] = df['corrected_nitrate'] / 1000 * 14.0067
 
     # now that we no longer need it, get rid of the measurement type
-    df.drop(columns=['measurement_type'], inplace=True)
+    df.drop_vars(columns=['measurement_type'], inplace=True)
 
     # convert the 1D data frame to an xarray dataset
     ds = xr.Dataset.from_dataframe(df)

@@ -42,7 +42,7 @@ def proc_cspp_velpt(infile, platform, deployment, lat, lon, depth):
         return None
 
     # clean up dataframe and rename selected variables
-    df.drop(columns=['suspect_timestamp'], inplace=True)  # not even the vendor knows what this is
+    df.drop_vars(columns=['suspect_timestamp'], inplace=True)  # not even the vendor knows what this is
 
     # rename the depth to ctd_pressure and then calculate the depth range for the NetCDF global attributes:
     # deployment depth and the profile min/max range

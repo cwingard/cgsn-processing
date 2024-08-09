@@ -38,7 +38,7 @@ def proc_cspp_wc_wm(infile, platform, deployment, lat, lon, depth):
         return None
 
     # drop the suspect timestamp column, vendor isn't even certain what it is supposed to mean
-    df.drop(columns=['suspect_timestamp'], inplace=True)
+    df.drop_vars(columns=['suspect_timestamp'], inplace=True)
 
     # create an xarray data set from the data frame
     wc_wm = xr.Dataset.from_dataframe(df)

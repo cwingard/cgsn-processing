@@ -38,7 +38,7 @@ def proc_presf(infile, platform, deployment, lat, lon, depth):
 
     # clean up the dataframe, getting rid of variables we no longer need
     df['sensor_time'] = [epoch_time(x) for x in df['presf_date_time_string']]
-    df.drop(columns=['presf_date_time_string', 'dcl_date_time_string'], inplace=True)
+    df.drop_vars(columns=['presf_date_time_string', 'dcl_date_time_string'], inplace=True)
 
     # convert the absolute seafloor pressure from psi to dbar
     df['absolute_pressure'] = df['absolute_pressure'] * 0.689476

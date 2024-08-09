@@ -178,7 +178,7 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
                     turbd_flag = True
 
     # clean up dataframe and create an empty data variable
-    df.drop(columns=['dcl_date_time_string', 'flort_date_time_string'], inplace=True)
+    df.drop_vars(columns=['dcl_date_time_string', 'flort_date_time_string'], inplace=True)
     df = df.rename(columns={'raw_signal_beta': 'raw_backscatter',
                             'raw_signal_cdom': 'raw_cdom',
                             'raw_signal_chl': 'raw_chlorophyll'})

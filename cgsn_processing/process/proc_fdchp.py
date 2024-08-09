@@ -38,7 +38,7 @@ def proc_fdchp(infile, platform, deployment, lat, lon, depth):
         return None
 
     # clean up some of the data
-    df.drop(columns=['dcl_date_time_string'], inplace=True)  # used to calculate time, so redundant
+    df.drop_vars(columns=['dcl_date_time_string'], inplace=True)  # used to calculate time, so redundant
 
     # create an xarray data set from the data frame
     fdchp = xr.Dataset.from_dataframe(df)

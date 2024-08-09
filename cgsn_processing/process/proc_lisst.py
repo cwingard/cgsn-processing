@@ -42,7 +42,7 @@ def proc_lisst(infile, platform, deployment, lat, lon, depth):
     df['clock_offset'] = (df['time'].values.astype(float) / 10 ** 9) - df['instrument_timestamp']
 
     # clean up the dataframe, getting rid of the time string variables we no longer need
-    df.drop(columns=['date_time_string'], inplace=True)
+    df.drop_vars(columns=['date_time_string'], inplace=True)
 
     # pop the 2d particle size data array out of the dataframe for manipulation
     particle_concentration = np.array(np.vstack(df.pop('lisst_volume_concentration')))

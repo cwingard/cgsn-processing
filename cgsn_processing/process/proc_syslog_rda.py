@@ -38,7 +38,7 @@ def proc_rda(infile, platform, deployment, lat, lon, depth):
         return None
 
     # clean up some data
-    df.drop(columns=['date_time_string'], inplace=True)  # used to calculate time, so redundant
+    df.drop_vars(columns=['date_time_string'], inplace=True)  # used to calculate time, so redundant
 
     # convert the error flags (converted from a hex string to an integer in the parser) into an unsigned integer
     df['error_flags'] = df['error_flags'].astype(np.uintc)
