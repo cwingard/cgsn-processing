@@ -43,7 +43,7 @@ def proc_gps(infile, platform, deployment, lat, lon, depth):
     df.rename(columns={'latitude': 'precise_lat', 'longitude': 'precise_lon'}, inplace=True)
 
     # clean up some data (remove the string versions of the date, time, latitude and longitude)
-    df.drop_vars(columns=['date_time_string', 'longitude_string', 'latitude_string',
+    df.drop(columns=['date_time_string', 'longitude_string', 'latitude_string',
                      'gps_date_string', 'gps_time_string'], inplace=True)
 
     # create an xarray data set from the data frame

@@ -40,7 +40,7 @@ def proc_metbk(infile, platform, deployment, lat, lon, depth):
         return None
 
     # clean up some of the data
-    df.drop_vars(columns=['dcl_date_time_string'], inplace=True)  # used to calculate time, so redundant
+    df.drop(columns=['dcl_date_time_string'], inplace=True)  # used to calculate time, so redundant
 
     # calculate the practical salinity of the surface seawater from the temperature and conductivity measurements
     df['sea_surface_salinity'] = SP_from_C(df['sea_surface_conductivity'].values * 10,

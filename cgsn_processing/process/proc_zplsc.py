@@ -75,7 +75,7 @@ def proc_zplsc(infile, platform, deployment, lat, lon, depth, **kwargs):
     df['sampling_offset'] = sample_drift(df)
 
     # clean up the dataframe, getting rid of the time string variables we no longer need
-    df.drop_vars(columns=['dcl_date_time_string', 'transmission_date_string', 'burst_date_string'], inplace=True)
+    df.drop(columns=['dcl_date_time_string', 'transmission_date_string', 'burst_date_string'], inplace=True)
 
     # pop the 2D data arrays out of the dataframe (will put most of them back in later)
     profiles_channel_1 = np.array(np.vstack(df.pop('profiles_freq1')))

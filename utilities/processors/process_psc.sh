@@ -17,5 +17,5 @@ source "$DIR/process_options.sh"
 if [ -e $IN_FILE ]; then
     cd /home/ooiuser/code/cgsn-processing || exit
     python -m cgsn_processing.process.proc_pwrsys -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH \
-      -s PSC -i $IN_FILE -o $OUT_FILE || echo "ERROR: Failed to process $IN_FILE"
+      -i $IN_FILE -o $OUT_FILE || echo "ERROR: Failed to process $IN_FILE"
 fi

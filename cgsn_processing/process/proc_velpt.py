@@ -40,7 +40,7 @@ def proc_velpt(infile, platform, deployment, lat, lon, depth):
         return None
 
     # clean up some the variables
-    df.drop_vars(columns='date_time_array', inplace=True)
+    df.drop(columns='date_time_array', inplace=True)
 
     # correct the eastward and northward velocity components for magnetic declination
     theta = magnetic_declination(lat, lon, df['time'].values.astype(float) / 1e9)

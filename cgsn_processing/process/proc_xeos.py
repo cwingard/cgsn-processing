@@ -41,7 +41,7 @@ def proc_xeos(infile, platform, deployment, lat, lon, depth):
         return None
 
     # drop the date/time strings and transfer status string variables
-    df.drop_vars(columns=['date_time_email', 'transfer_status', 'date_time_xeos'], inplace=True)
+    df.drop(columns=['date_time_email', 'transfer_status', 'date_time_xeos'], inplace=True)
 
     # rename the latitude and longitude variables to match the attribute file
     # convert the raw battery voltage and thermistor values from counts to V and degC, respectively

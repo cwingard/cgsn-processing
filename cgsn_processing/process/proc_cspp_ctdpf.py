@@ -41,7 +41,7 @@ def proc_cspp_ctdpf(infile, platform, deployment, lat, lon, depth):
         return None
 
     # clean up dataframe and rename selected variables
-    df.drop_vars(columns=['suspect_timestamp'], inplace=True)  # not even the vendor knows what this is
+    df.drop(columns=['suspect_timestamp'], inplace=True)  # not even the vendor knows what this is
 
     # re-calculate the practical salinity of the seawater from the temperature and conductivity measurements using
     # the Gibbs-SeaWater (GSW) Oceanographic Toolbox

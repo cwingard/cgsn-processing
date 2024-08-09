@@ -41,7 +41,7 @@ def proc_superv(infile, platform, deployment, lat, lon, depth, **kwargs):
     if superv_type and superv_type.lower() in ['cpm', 'dcl', 'stc']:
         superv_type = superv_type.lower()
     else:
-        raise IOError('The supervisor type must be a string set as either cpm, dcl, or stc (case insensitive).')
+        raise ValueError('The supervisor type must be a string set as either cpm, dcl, or stc (case insensitive).')
 
     # load the json data file and return a panda dataframe
     df = json2df(infile)
@@ -51,7 +51,7 @@ def proc_superv(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # drop the date and time string variable.
     dt_str = superv_type + '_date_time_string'
-    df.drop_vars(columns=[dt_str], inplace=True)
+    df.drop(columns=[dt_str], inplace=True)
 
     # convert the different hex strings (already converted to an integer in the parser) to unsigned integers
     for col in df.columns:

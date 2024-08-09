@@ -51,7 +51,7 @@ def proc_sbd(infile, platform, deployment, lat, lon, depth, **kwargs):
         return None
 
     # drop the email date/time string and transfer status string variables
-    df.drop_vars(columns=['date_time_email', 'transfer_status'], inplace=True)
+    df.drop(columns=['date_time_email', 'transfer_status'], inplace=True)
 
     # convert the different hex strings (already converted to an integer in the parser) to unsigned integers
     for col in df.columns:

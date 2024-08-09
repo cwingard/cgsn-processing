@@ -38,7 +38,7 @@ def proc_irid(infile, platform, deployment, lat, lon, depth):
         return None
 
     # clean up some data
-    df.drop_vars(columns=['date_time_string'], inplace=True)  # used to calculate time, so redundant
+    df.drop(columns=['date_time_string'], inplace=True)  # used to calculate time, so redundant
 
     # create an xarray data set from the data frame
     irid = xr.Dataset.from_dataframe(df)

@@ -41,10 +41,10 @@ def proc_prtsz(infile, platform, deployment, lat, lon, depth):
     df['clock_offset'] = (df['time'].values.astype(float) / 10 ** 9) - df['instrument_timestamp']
 
     # clean up the dataframe, getting rid of the time string variables we no longer need
-    df.drop_vars(columns=['date_time_string'], inplace=True)
+    df.drop(columns=['date_time_string'], inplace=True)
 
     # dropping the pressure variable, as it has no units and does not provide any useful information
-    df.drop_vars(columns=['pressure'], inplace=True)
+    df.drop(columns=['pressure'], inplace=True)
 
     # pop the 2d particle size data array out of the dataframe for manipulation
     particle_concentration = np.array(np.vstack(df.pop('volume_concentration')))

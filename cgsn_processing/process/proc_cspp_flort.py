@@ -57,7 +57,7 @@ def proc_cspp_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
         return None
 
     # remove the FLORT date/time string from the dataset
-    df.drop_vars(columns=['suspect_timestamp', 'flort_date_time_string'], inplace=True)
+    df.drop(columns=['suspect_timestamp', 'flort_date_time_string'], inplace=True)
     df = df.rename(columns={'raw_signal_beta': 'raw_backscatter',
                             'raw_signal_cdom': 'raw_cdom',
                             'raw_signal_chl': 'raw_chlorophyll'})

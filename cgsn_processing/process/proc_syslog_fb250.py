@@ -38,7 +38,7 @@ def proc_fbb(infile, platform, deployment, lat, lon, depth):
         return None
 
     # clean up some data
-    df.drop_vars(columns=['date_time_string'], inplace=True)  # used to calculate time, so redundant
+    df.drop(columns=['date_time_string'], inplace=True)  # used to calculate time, so redundant
 
     # rename the latitude and longitude columns to avoid conflicts with NetCDF coordinate variables of the
     # same name. follows the CF Metadata convention of using precise_lat/precise_lon to distinguish

@@ -18,11 +18,11 @@ from cgsn_processing.process.configs.attr_common import SHARED
 
 def proc_pwrsys(infile, platform, deployment, lat, lon, depth, **kwargs):
     """
-    Mooring power system controller (either the PSC or MPEA) processing
-    function. Loads the JSON formatted parsed data and converts data into a
-    NetCDF data file using xarray. Dataset processing level attribute is set
-    to "parsed". There is no processing of the data, just a straight
-    conversion from JSON to NetCDF.
+    Mooring power system controller (PSC) processing function. Loads
+    the JSON formatted parsed data and converts data into a NetCDF data file
+    using xarray. Dataset processing level attribute is set to "parsed". There
+    is no processing of the data, just a straight conversion from JSON to
+    NetCDF.
 
     :param infile: JSON formatted parsed data file
     :param platform: Name of the mooring the instrument is mounted on.
@@ -37,8 +37,8 @@ def proc_pwrsys(infile, platform, deployment, lat, lon, depth, **kwargs):
     """
     # process the variable length keyword arguments
     pwrsys_type = kwargs.get('pwrsys_type')
-    if pwrsys_type and pwrsys_type.lower() in ['psc', 'mpea']:
-        pwrsys_type = pwrsys_type.lower()
+    if pwrsys_type and pwrsys_type in ['psc', 'mpea']:
+        pass
     else:
         IOError('You need to specify the power system type, either psc or mpea, before the data can be processed)')
 
@@ -49,7 +49,7 @@ def proc_pwrsys(infile, platform, deployment, lat, lon, depth, **kwargs):
         return None
 
     # drop the date and time string variable.
-    df.drop_vars(columns=['dcl_date_time_string'], inplace=True)
+    df.drop(columns=['dcl_date_time_string'], inplace=True)
 
     # create dummy attrs variable
     attrs = None
@@ -59,21 +59,20 @@ def proc_pwrsys(infile, platform, deployment, lat, lon, depth, **kwargs):
         fuel_cell = ['fuel_cell1_state', 'fuel_cell1_voltage', 'fuel_cell1_current',
                      'fuel_cell2_state', 'fuel_cell2_voltage', 'fuel_cell2_current',
                      'fuel_cell_volume']
-        df.drop_vars(columns=fuel_cell, inplace=True)
+        df.drop(columns=fuel_cell, inplace=True)
 
         # set up the attributes dictionary
         attrs = dict_update(PSC, SHARED)
 
     if pwrsys_type == 'mpea':
-        # While originally intended to provide power for AUV docks, that functionality of the CVT was never fully
-        # developed or used. There are multiple channels for which we have no data, and at this time never will.
-        # Dropping them to make a cleaner data set.
-        cv_channels = ['cv3_state', 'cv3_voltage', 'cv3_current',
-                       'cv4_state', 'cv4_voltage', 'cv4_current',
-                       'cv5_state', 'cv5_voltage', 'cv5_current',
-                       'cv6_state', 'cv6_voltage', 'cv6_current',
-                       'cv7_state', 'cv7_voltage', 'cv7_current']
-        df.drop_vars(columns=cv_channels, inplace=True)
+        # While originally intended to provide power for AUV docks, that functionality of the CVT was never used. There
+        # are multiple channels for which we have no data, and at this time never will. Dropping them to make a cleaner
+        # data set.
+        df.drop(columns=['cv3_state', 'cv3_voltage', 'cv3_current',
+                         'cv4_state', 'cv4_voltage', 'cv4_current',
+                         'cv5_state', 'cv5_voltage', 'cv5_current',
+                         'cv6_state', 'cv6_voltage', 'cv6_current',
+                         'cv7_state', 'cv7_voltage', 'cv7_current'], inplace=True)
 
         # set up the attributes dictionary
         attrs = dict_update(MPEA, SHARED)
@@ -85,14 +84,14 @@ def proc_pwrsys(infile, platform, deployment, lat, lon, depth, **kwargs):
             df[col] = df[col].astype(np.uintc)
 
     # create an xarray data set from the data frame
-    pwrsys = xr.Dataset.from_dataframe(df)
+    psc = xr.Dataset.from_dataframe(df)
 
     # clean up the dataset and assign attributes
-    pwrsys['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(pwrsys.time)).astype(str))
-    pwrsys = update_dataset(pwrsys, platform, deployment, lat, lon, [depth, depth, depth], attrs)
-    pwrsys.attrs['processing_level'] = 'parsed'
+    psc['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(psc.time)).astype(str))
+    psc = update_dataset(psc, platform, deployment, lat, lon, [depth, depth, depth], attrs)
+    psc.attrs['processing_level'] = 'parsed'
 
-    return pwrsys
+    return psc
 
 
 def main(argv=None):
@@ -105,7 +104,7 @@ def main(argv=None):
     lat = args.latitude
     lon = args.longitude
     depth = args.depth
-    pwrsys_type = args.switch  # name of power system type, either psc or mpea
+    pwrsys_type = args.devfile  # name of co-located CTD
 
     # process the mooring power system data and save the results to disk
     pwrsys = proc_pwrsys(infile, platform, deployment, lat, lon, depth, pwrsys_type=pwrsys_type)

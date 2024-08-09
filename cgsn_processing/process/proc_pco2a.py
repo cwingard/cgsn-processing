@@ -70,7 +70,7 @@ def proc_pco2a(infile, platform, deployment, lat, lon, depth, **kwargs):
         return None
 
     # clean up some of the data
-    df.drop_vars(['dcl_date_time_string', 'co2_date_time_string'], axis=1, inplace=True)
+    df.drop(['dcl_date_time_string', 'co2_date_time_string'], axis=1, inplace=True)
 
     # rename the CO2 measurement variable to remove the word "water" since it can be from either air or water, and
     # use the terminology from the vendor documentation.

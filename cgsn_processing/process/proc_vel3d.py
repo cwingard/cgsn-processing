@@ -56,7 +56,7 @@ def proc_vel3d(infile, platform, deployment, lat, lon, depth):
 
     # create the velocity data set
     df = json_obj2df(data, 'velocity')
-    df.drop_vars(columns=['ensemble_counter', 'amplitudes', 'correlations'], inplace=True)
+    df.drop(columns=['ensemble_counter', 'amplitudes', 'correlations'], inplace=True)
     amplitudes = np.array(data['velocity']['amplitudes']).astype(np.int32)      # grab the amplitudes array
     correlations = np.array(data['velocity']['correlations']).astype(np.int32)  # grab the correlations array
 
