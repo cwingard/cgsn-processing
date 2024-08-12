@@ -62,7 +62,7 @@ def proc_adcp(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # load the json data file as a json formatted object for further processing
     data = json2obj(infile)
-    if not data:
+    if not data['time']:
         # json data file was empty, exiting
         return None
 
