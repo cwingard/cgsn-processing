@@ -27,11 +27,13 @@ try:
     nrc = netrc.netrc()
     auth = nrc.authenticators('api.github.com')
     if auth is None:
-        warnings.warn('No entry found for the GitHub API token in the users .netrc file, consider adding to improve access to calibration coefficients')
+        warnings.warn('No entry found for the GitHub API token in the users .netrc file, consider adding to improve '
+                      'access to calibration coefficients')
     else:
         headers = {'Authentication': 'token ' + auth[2]}
 except FileNotFoundError as e:
-    warnings.warn('No .netrc file found in the users home directory. Consider creating and adding a GitHub API token to improve access to calibration coefficients')
+    warnings.warn('No .netrc file found in the users home directory. Consider creating and adding a GitHub API '
+                  'token to improve access to calibration coefficients')
 
 
 def list_directories(url, tag=''):
@@ -49,7 +51,15 @@ def find_calibration(inst_class, inst_serial, sampling_date):
     # if successful, start to zero in on our instrument
     if links:
         for link in links:
-            instrmts = list_directories(link, '-{}__'.format(inst_serial.rjust(5, '0')))
+            # get the list of instrument cal CSVs for this instrument
+            if inst_serial.isdigit():
+                # almost all serial numbers are comprised of digits only, but there are a few exceptions
+                instrmts = list_directories(link, '-{}__'.format(inst_serial.rjust(5, '0')))
+            else:
+                # for the few exceptions, we need to look for the serial number as a string
+                instrmts = list_directories(link, '-{}__'.format(inst_serial.upper()))
+
+            # if we have found some calibration files, start to zero in on the one we want
             if instrmts:
                 for inst in instrmts:
                     # only look at .csv files
