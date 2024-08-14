@@ -51,12 +51,12 @@ def find_calibration(inst_class, inst_serial, sampling_date):
     # if successful, start to zero in on our instrument
     if links:
         for link in links:
-            # get the list of instrument cal CSVs for this instrument
+            # get the list of cal CSVs for this instrument
             if inst_serial.isdigit():
                 # almost all serial numbers are comprised of digits only, but there are a few exceptions
                 instrmts = list_directories(link, '-{}__'.format(inst_serial.rjust(5, '0')))
             else:
-                # for the few exceptions, we need to look for the serial number as a string
+                # for the few exceptions (SAMIs), we need to look for the serial number as a string
                 instrmts = list_directories(link, '-{}__'.format(inst_serial.upper()))
 
             # if we have found some calibration files, start to zero in on the one we want
