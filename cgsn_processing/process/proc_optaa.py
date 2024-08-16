@@ -509,15 +509,20 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
         optaa = estimate_chl_poc(optaa, dev.coeffs)
 
         # calculate pigment and CDOM ratios to provide variables useful in characterizing the community structure and
-        # the status of the sensor itself (biofouling tracking).
+        # the status of the sensor itself (bio-fouling tracking).
         optaa = calculate_ratios(optaa, dev.coeffs)
 
     # resample to a 15-minute interval (shifting the time to the middle of the interval)
     optaa['time'] = optaa.time + pd.Timedelta('450s')
     optaa = optaa.resample(time='900s').median(dim='time', keep_attrs=True)
 
+    # resampling will fill in missing time steps with NaNs. Use the serial_number variable
+    # as a proxy variable to find cases where data is filled with a NaN, and delete those records.
+    optaa = optaa.where(~np.isnan(optaa.serial_number), drop=True)
+
     # reset original integer arrays back to int32
-    int_arrays = ['a_signal_raw', 'a_reference_raw', 'c_signal_raw', 'c_reference_raw']
+    int_arrays = ['serial_number', 'elapsed_run_time', 'internal_temp_raw', 'external_temp_raw',
+                  'a_signal_raw', 'a_reference_raw', 'c_signal_raw', 'c_reference_raw']
     for k in optaa.variables:
         if k in int_arrays:
             optaa[k] = optaa[k].astype(np.intc)  # explicitly setting as a 32-bit integer
