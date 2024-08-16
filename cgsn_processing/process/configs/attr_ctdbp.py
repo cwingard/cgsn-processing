@@ -13,6 +13,8 @@ from cgsn_processing.process.configs.attr_common import CTD
 from cgsn_processing.process.configs.attr_dosta import DOSTA
 from cgsn_processing.process.configs.attr_flort import FLORT
 
+# Note, common CTD attributes used by all the CTD configurations are defined in attr_common.py. The attributes
+# specific to the DOSTA and FLORT sensors are defined in attr_dosta.py and attr_flort.py, respectively.
 CTDBP = {
     'global': {
         'title': 'Conductivity, Temperature and Depth (CTD) Data',

@@ -100,8 +100,8 @@ def proc_phsen(infile, platform, deployment, lat, lon, depth, **kwargs):
     serial_number = kwargs.get('serial_number')
 
     # load the json data file as a panda data frame for further processing
-    data = json2df(infile)
-    if data.empty:
+    df = json2df(infile)
+    if df.empty:
         # json data file was empty, exiting
         return None
 
@@ -117,7 +117,7 @@ def proc_phsen(infile, platform, deployment, lat, lon, depth, **kwargs):
         proc_flag = True
     else:
         # load from the CI hosted CSV files
-        csv_url = find_calibration('PHSEN', serial_number, (data.time.values.astype('int64') * 10 ** -9)[0])
+        csv_url = find_calibration('PHSEN', serial_number, (df.time.values.astype('int64') * 10 ** -9)[0])
         if csv_url:
             cal.read_csv(csv_url)
             cal.save_coeffs()
@@ -125,55 +125,51 @@ def proc_phsen(infile, platform, deployment, lat, lon, depth, **kwargs):
         else:
             warnings.warn('Required calibrations coefficients could not be found.')
 
-    # set the deployment id as a variable
-    data['deploy_id'] = deployment
+    # clean up dataframe and create an empty data variable
+    df.drop(columns=['dcl_date_time_string'], inplace=True)
+
+    # rename select columns to match the expected names in the final data set
+    df.rename(columns={'record_time': 'sensor_time',
+                       'thermistor_start': 'raw_thermistor_start',
+                       'thermistor_end': 'raw_thermistor_end',
+                       'voltage_battery': 'raw_battery_voltage'}, inplace=True)
 
     # convert the raw battery voltage and thermistor values from counts to V and degC, respectively
-    data.rename(columns={'thermistor_start': 'raw_thermistor_start',
-                         'thermistor_end': 'raw_thermistor_end',
-                         'voltage_battery': 'raw_battery_voltage'},
-                inplace=True)
     if proc_flag:
-        data['thermistor_temperature_start'] = ph_thermistor(data['raw_thermistor_start'], cal.coeffs['sami_bits'])
-        data['thermistor_temperature_end'] = ph_thermistor(data['raw_thermistor_end'], cal.coeffs['sami_bits'])
-        data['battery_voltage'] = ph_battery(data['raw_battery_voltage'], cal.coeffs['sami_bits'])
+        df['thermistor_temperature_start'] = ph_thermistor(df['raw_thermistor_start'], cal.coeffs['sami_bits'])
+        df['thermistor_temperature_end'] = ph_thermistor(df['raw_thermistor_end'], cal.coeffs['sami_bits'])
+        df['battery_voltage'] = ph_battery(df['raw_battery_voltage'], cal.coeffs['sami_bits'])
     else:
-        data['thermistor_temperature_start'] = data['raw_thermistor_start'] * np.nan
-        data['thermistor_temperature_end'] = data['raw_thermistor_end'] * np.nan
-        data['battery_voltage'] = data['raw_battery_voltage'] * np.nan
+        df['thermistor_temperature_start'] = df['raw_thermistor_start'] * np.nan
+        df['thermistor_temperature_end'] = df['raw_thermistor_end'] * np.nan
+        df['battery_voltage'] = df['raw_battery_voltage'] * np.nan
 
-    # reset the data type and units for the record time to make sure the value is correctly represented and can be
+    # reset the data type and units for the sensor time to make sure the value is correctly represented and can be
     # calculated against. the PHSEN uses the OSX date format of seconds since 1904-01-01. here we convert to seconds
-    # since 1970-01-01. also, compare the instrument clock to the GPS based DCL time stamp (if present, does not apply
-    # if this is an IMM hosted instrument).
-    rct = data['record_time'].astype(np.uint32).values * 1.0    # convert to a float
+    # since 1970-01-01.
+    rct = df['sensor_time'].astype(np.uint32).values * 1.0    # convert to a float
     mac = datetime.strptime("01-01-1904", "%m-%d-%Y")
     ept = datetime.strptime("01-01-1970", "%m-%d-%Y")
-    record_time = []
-    offset = []
-    for i in range(len(data['time'])):
+    sensor_time = []
+    for i in range(len(df['time'])):
         rec = mac + timedelta(seconds=rct[i])
         rec.replace(tzinfo=timezone('UTC'))
-        record_time.append((rec - ept).total_seconds())
-        if 'dcl_date_time_string' in data.columns:
-            offset.append((rec - data['time'][i]).total_seconds())
+        sensor_time.append((rec - ept).total_seconds())
 
-    data['record_time'] = record_time   # replace the instrument time stamp
-    if offset:
-        data['time_offset'] = offset    # add the estimated instrument clock offset
+    df['sensor_time'] = sensor_time   # replace the instrument time stamp
 
     # extract the reference and light measurement arrays from the data frame
-    refnc = np.array(np.vstack(data.pop('reference_measurements').values), dtype='int32')
-    light = np.array(np.vstack(data.pop('light_measurements').values), dtype='int32')
+    refnc = np.array(np.vstack(df.pop('reference_measurements').values), dtype='int32')
+    light = np.array(np.vstack(df.pop('light_measurements').values), dtype='int32')
 
     # create an average temperature value to be used in calculating the pH
-    therm = data[['thermistor_temperature_start', 'thermistor_temperature_end']].astype(float).mean(axis=1).values
+    therm = df[['thermistor_temperature_start', 'thermistor_temperature_end']].astype(float).mean(axis=1).values
 
     # setup default values to use if no co-located CTD is available
-    nrec = len(data['time'])
-    data['ctd_pressure'] = empty_data
-    data['ctd_temperature'] = empty_data
-    data['ctd_salinity'] = np.ones(nrec) * 34.0
+    nrec = len(df['time'])
+    df['ctd_pressure'] = np.ones(nrec) * np.nan
+    df['ctd_temperature'] = np.ones(nrec) * np.nan
+    df['ctd_salinity'] = np.ones(nrec) * 34.0
 
     # check for data from a co-located CTD and test to see if it covers our time range of interest. will use the
     # salinity data from the CTD in the pH calculation, if available.
@@ -184,7 +180,7 @@ def proc_phsen(infile, platform, deployment, lat, lon, depth, **kwargs):
     if not ctd.empty:
         # set the CTD and pH time to the same units of seconds since 1970-01-01
         ctd_time = ctd.time.values.astype(float) / 10.0 ** 9
-        ph_time = data.time.values.astype(float) / 10.0 ** 9
+        ph_time = df.time.values.astype(float) / 10.0 ** 9
 
         # test to see if the CTD covers our time of interest for this pH file
         td = timedelta(hours=1).total_seconds()
@@ -192,18 +188,18 @@ def proc_phsen(infile, platform, deployment, lat, lon, depth, **kwargs):
 
         # reset initial estimate of in-situ salinity if we have full coverage
         if coverage:
-            data['ctd_pressure'] = np.interp(data['time'], ctd['time'], ctd.pressure)
-            data['ctd_temperature'] = np.interp(data['time'], ctd['time'], ctd.temperature)
+            df['ctd_pressure'] = np.interp(df['time'], ctd['time'], ctd.pressure)
+            df['ctd_temperature'] = np.interp(df['time'], ctd['time'], ctd.temperature)
             salinity = SP_from_C(ctd.conductivity.values * 10.0, ctd.temperature.values, ctd.pressure.values)
-            data['ctd_salinity'] = np.interp(data['time'], ctd['time'], salinity)
+            df['ctd_salinity'] = np.interp(df['time'], ctd['time'], salinity)
 
     # add the salinity to the data set and calculate the pH
     if proc_flag:
-        data['pH'] = ph_calc_phwater(refnc, light, therm, data['ctd_salinity'], cal.coeffs['ea434'], cal.coeffs['eb434'],
-                                     cal.coeffs['ea578'], cal.coeffs['eb578'], cal.coeffs['ind_slp'],
-                                     cal.coeffs['ind_off'])
+        df['pH'] = ph_calc_phwater(refnc, light, therm, df['ctd_salinity'], cal.coeffs['ea434'], cal.coeffs['eb434'],
+                                   cal.coeffs['ea578'], cal.coeffs['eb578'], cal.coeffs['ind_slp'],
+                                   cal.coeffs['ind_off'])
     else:
-        data['pH'] = np.ones(nrec) * np.nan
+        df['pH'] = np.ones(nrec) * np.nan
 
     # now we need to reset the light and reference arrays to named variables that will be more meaningful and useful in
     # the final data files
@@ -232,11 +228,14 @@ def proc_phsen(infile, platform, deployment, lat, lon, depth, **kwargs):
         'signal_434': (['time', 'measurements'], signal_434.astype('int32')),
         'reference_578': (['time', 'measurements'], reference_578.astype('int32')),
         'signal_578': (['time', 'measurements'], signal_578.astype('int32'))
-    }, coords={'time': data['time'], 'measurements': np.arange(0, 23).astype('int32')})
+    }, coords={'time': df['time'], 'measurements': np.arange(0, 23).astype('int32')})
 
-    # merge the data sets together and create the final data set with full attributes
-    ds = xr.Dataset.from_dataframe(data)
+    # merge the data sets together
+    ds = xr.Dataset.from_dataframe(df)
     phsen = xr.merge([ds, raw])
+
+    # create the final data set with full attributes
+    phsen['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(phsen.time)).astype(str))
     attrs = dict_update(PHSEN, SHARED)  # merge global and PHSEN attribute dictionaries into a single dictionary
     phsen = update_dataset(phsen, platform, deployment, lat, lon, [depth, depth, depth], attrs)
     if proc_flag:

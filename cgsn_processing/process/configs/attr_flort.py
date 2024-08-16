@@ -19,7 +19,7 @@ FLORT = {
                     'the sea water turbidity (derived from the backscatter measurement) are also available.'),
     },
     'measurement_wavelength_beta': {
-        'long_name': 'Wavelength',
+        'long_name': 'Backscatter Wavelength',
         'standard_name': 'radiation_wavelength',
         'units': 'nm'
     },
@@ -30,7 +30,7 @@ FLORT = {
         'data_product_identifier': 'FLUBSCT_L0'
     },
     'measurement_wavelength_chl': {
-        'long_name': 'Wavelength',
+        'long_name': 'Chlorophyll Fluorescence Wavelength',
         'standard_name': 'radiation_wavelength',
         'units': 'nm'
     },
@@ -40,12 +40,12 @@ FLORT = {
         'comment': 'Raw chlorophyll fluorescence (470 nm excitation/ 695 nm emission) measurements.',
         'data_product_identifier': 'CHLAFLO_L0'
     },
-    'measurement_wavelength_fdom': {
-        'long_name': 'Wavelength',
+    'measurement_wavelength_cdom': {
+        'long_name': 'CDOM Fluorescence Wavelength',
         'standard_name': 'radiation_wavelength',
         'units': 'nm'
     },
-    'raw_fdom': {
+    'raw_cdom': {
         'long_name': 'Raw CDOM Fluorescence',
         'units': 'count',
         'comment': 'Raw CDOM fluorescence (370 nm excitation/ 460 nm emission) measurements.',
@@ -95,7 +95,7 @@ FLORT = {
         '_FillValue': np.nan,
         'ancillary_variables': 'raw_signal_beta'
     },
-    'bback': {
+    'total_optical_backscatter': {
         'long_name': 'Total Optical Backscatter at 700 nm',
         'units': 'm-1',
         'comment': ('Total (particulate + water) optical backscatter at 700 nm, derived from the Volume '

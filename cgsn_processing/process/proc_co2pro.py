@@ -11,7 +11,8 @@ import numpy as np
 import os
 import xarray as xr
 
-from cgsn_processing.process.common import ENCODING, inputs, json2df, update_dataset
+from cgsn_processing.process.common import ENCODING, inputs, json2df, dict_update, update_dataset
+from cgsn_processing.process.configs.attr_common import SHARED
 from cgsn_processing.process.configs.attr_co2pro import PCO2W
 
 

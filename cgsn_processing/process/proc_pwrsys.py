@@ -18,7 +18,7 @@ from cgsn_processing.process.configs.attr_common import SHARED
 
 def proc_pwrsys(infile, platform, deployment, lat, lon, depth, **kwargs):
     """
-    Mooring power system controller (PSC) processing function. Loads
+    Mooring power system controller (PSC or MPEA) processing function. Loads
     the JSON formatted parsed data and converts data into a NetCDF data file
     using xarray. Dataset processing level attribute is set to "parsed". There
     is no processing of the data, just a straight conversion from JSON to
@@ -37,8 +37,8 @@ def proc_pwrsys(infile, platform, deployment, lat, lon, depth, **kwargs):
     """
     # process the variable length keyword arguments
     pwrsys_type = kwargs.get('pwrsys_type')
-    if pwrsys_type and pwrsys_type in ['psc', 'mpea']:
-        pass
+    if pwrsys_type and pwrsys_type.lower() in ['psc', 'mpea']:
+        pwrsys_type = pwrsys_type.lower()
     else:
         IOError('You need to specify the power system type, either psc or mpea, before the data can be processed)')
 
@@ -68,11 +68,12 @@ def proc_pwrsys(infile, platform, deployment, lat, lon, depth, **kwargs):
         # While originally intended to provide power for AUV docks, that functionality of the CVT was never used. There
         # are multiple channels for which we have no data, and at this time never will. Dropping them to make a cleaner
         # data set.
-        df.drop(columns=['cv3_state', 'cv3_voltage', 'cv3_current',
-                         'cv4_state', 'cv4_voltage', 'cv4_current',
-                         'cv5_state', 'cv5_voltage', 'cv5_current',
-                         'cv6_state', 'cv6_voltage', 'cv6_current',
-                         'cv7_state', 'cv7_voltage', 'cv7_current'], inplace=True)
+        cv_channels = ['cv3_state', 'cv3_voltage', 'cv3_current',
+                       'cv4_state', 'cv4_voltage', 'cv4_current',
+                       'cv5_state', 'cv5_voltage', 'cv5_current',
+                       'cv6_state', 'cv6_voltage', 'cv6_current',
+                       'cv7_state', 'cv7_voltage', 'cv7_current']
+        df.drop(columns=cv_channels, inplace=True)
 
         # set up the attributes dictionary
         attrs = dict_update(MPEA, SHARED)
@@ -84,14 +85,14 @@ def proc_pwrsys(infile, platform, deployment, lat, lon, depth, **kwargs):
             df[col] = df[col].astype(np.uintc)
 
     # create an xarray data set from the data frame
-    psc = xr.Dataset.from_dataframe(df)
+    pwrsys = xr.Dataset.from_dataframe(df)
 
     # clean up the dataset and assign attributes
-    psc['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(psc.time)).astype(str))
-    psc = update_dataset(psc, platform, deployment, lat, lon, [depth, depth, depth], attrs)
-    psc.attrs['processing_level'] = 'parsed'
+    pwrsys['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(pwrsys.time)).astype(str))
+    pwrsys = update_dataset(pwrsys, platform, deployment, lat, lon, [depth, depth, depth], attrs)
+    pwrsys.attrs['processing_level'] = 'parsed'
 
-    return psc
+    return pwrsys
 
 
 def main(argv=None):
@@ -104,7 +105,7 @@ def main(argv=None):
     lat = args.latitude
     lon = args.longitude
     depth = args.depth
-    pwrsys_type = args.devfile  # name of co-located CTD
+    pwrsys_type = args.switch  # name of the power system type, either psc or mpea
 
     # process the mooring power system data and save the results to disk
     pwrsys = proc_pwrsys(infile, platform, deployment, lat, lon, depth, pwrsys_type=pwrsys_type)

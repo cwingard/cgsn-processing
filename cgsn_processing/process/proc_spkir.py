@@ -160,8 +160,9 @@ def proc_spkir(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # apply a median average to the burst (if desired)
     if burst:
-        # resample to a 15-minute interval
-        spkir = spkir.resample(time='900s', base=3150, loffset='450s').median(dim='time', keep_attrs=True)
+        # resample to a 15-minute interval and shift the clock to center the averaging window
+        spkir['time'] = spkir.time + pd.Timedelta('450s')
+        spkir = spkir.resample(time='900s').median(dim='time', keep_attrs=True)
 
         # resampling will fill in missing time steps with NaNs. Use the serial_number variable
         # as a proxy variable to find cases where data is filled with a NaN, and delete those records.

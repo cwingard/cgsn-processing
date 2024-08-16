@@ -191,7 +191,7 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
     df['ctd_pressure'] = empty_data
     df['ctd_temperature'] = empty_data
     df['ctd_salinity'] = empty_data
-    df['bback'] = empty_data
+    df['total_optical_backscatter'] = empty_data
     if switch == 'TURBDX':
         df['turbidity'] = empty_data
 
@@ -201,16 +201,16 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
     # if the calibration coefficients are available, apply them.
     if turbd_flag:
         # Apply the scale and offset correction factors from the factory calibration coefficients
-        df['turbidity'] = flo_scale_and_offset(df['raw_signal_beta'], dev_turbd.coeffs['dark_turbd'],
+        df['turbidity'] = flo_scale_and_offset(df['raw_backscatter'], dev_turbd.coeffs['dark_turbd'],
                                                dev_turbd.coeffs['scale_turbd'])
 
     if flort_flag:
         # Apply the scale and offset correction factors from the factory calibration coefficients
-        df['estimated_chlorophyll'] = flo_scale_and_offset(df['raw_signal_chl'], dev_flort.coeffs['dark_chla'],
+        df['estimated_chlorophyll'] = flo_scale_and_offset(df['raw_chlorophyll'], dev_flort.coeffs['dark_chla'],
                                                            dev_flort.coeffs['scale_chla'])
-        df['fluorometric_cdom'] = flo_scale_and_offset(df['raw_signal_cdom'], dev_flort.coeffs['dark_cdom'],
+        df['fluorometric_cdom'] = flo_scale_and_offset(df['raw_cdom'], dev_flort.coeffs['dark_cdom'],
                                                        dev_flort.coeffs['scale_cdom'])
-        df['beta_700'] = flo_scale_and_offset(df['raw_signal_beta'], dev_flort.coeffs['dark_beta'],
+        df['beta_700'] = flo_scale_and_offset(df['raw_backscatter'], dev_flort.coeffs['dark_beta'],
                                               dev_flort.coeffs['scale_beta'])
 
     # check for data from a co-located CTD and test to see if it covers our time range of interest.
@@ -220,7 +220,7 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     if not ctd.empty:
         # test to see if the CTD covers our time of interest for this DOSTA file
-        td = pd.Timedelta('1H')
+        td = pd.Timedelta('1h')
         coverage = ctd['time'].min() - td <= df['time'].min() and ctd['time'].max() + td >= df['time'].max()
 
         # interpolate the CTD data if we have full coverage
@@ -247,9 +247,10 @@ def proc_flort(infile, platform, deployment, lat, lon, depth, **kwargs):
 
             # calculate the pressure and salinity corrected oxygen concentration
             if flort_flag:
-                df['bback'] = flo_bback_total(df['beta_700'], temperature, salinity,
-                                              dev_flort.coeffs['scatter_angle'], dev_flort.coeffs['wavelength'],
-                                              dev_flort.coeffs['chi_factor'])
+                df['total_optical_backscatter'] = flo_bback_total(df['beta_700'], temperature, salinity,
+                                                                  dev_flort.coeffs['scatter_angle'],
+                                                                  dev_flort.coeffs['wavelength'],
+                                                                  dev_flort.coeffs['chi_factor'])
 
     # create an xarray data set from the data frame
     flort = xr.Dataset.from_dataframe(df)

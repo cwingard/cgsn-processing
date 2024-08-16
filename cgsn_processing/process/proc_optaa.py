@@ -13,15 +13,12 @@ import os
 import pandas as pd
 import re
 import requests
-import warnings
 import xarray as xr
-
-from datetime import timedelta
 
 from cgsn_processing.process.common import Coefficients, inputs, json2obj, colocated_ctd, \
     update_dataset, ENCODING, FILL_INT, dict_update
 from cgsn_processing.process.configs.attr_optaa import OPTAA
-from cgsn_processing.process.configs.attr_common import SHARED
+from cgsn_processing.process.configs.attr_common import SHARED, CO_LOCATED
 from cgsn_processing.process.finding_calibrations import find_calibration
 
 from pyseas.data.opt_functions import opt_internal_temp, opt_external_temp, opt_pd_calc, opt_tempsal_corr
@@ -43,6 +40,7 @@ class Calibrations(Coefficients):
         self.hdr_url = hdr_url
         self.tca_url = tca_url
         self.tcc_url = tcc_url
+        self.coeffs = {}
 
     def read_devfile(self, dev_file):
         """
@@ -354,14 +352,11 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
         to the data. Otherwise, defaults are used with salinity set to
         34 psu and temperature from the OPTAAs external temperature
         sensor.
-    **kwargs burst: Boolean flag to indicate whether to apply burst averaging
-        to the data. Default is to not apply burst averaging.
 
     :return optaa: An xarray dataset with the processed OPTAA data
     """
     # process the variable length keyword arguments
     ctd_name = kwargs.get('ctd_name')
-    burst = kwargs.get('burst')
 
     # load the json data file as a dictionary object for further processing
     data = json2obj(infile)
@@ -396,10 +391,10 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
         raise Exception('Number of wavelengths mismatch between ac-s data and the device file.')
 
     # create the time coordinate array and set up a base data frame
-    optaa_time = data['time']
+    optaa_time = np.array(data['time'])
     df = pd.DataFrame()
     df['time'] = pd.to_datetime(optaa_time, unit='s')
-    df.set_index('time', drop=True, inplace=True)
+    df.index = df['time']
 
     # set up and load the 1D parsed data
     empty_data = np.atleast_1d(data['serial_number']).astype(int) * np.nan
@@ -420,7 +415,6 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
     df['ratio_phycobilins'] = empty_data
     df['ratio_qband'] = empty_data
     # co-located CTD data to be interpolated into the profile
-    df['depth'] = empty_data
     df['ctd_pressure'] = empty_data
     df['ctd_temperature'] = empty_data
     df['ctd_salinity'] = empty_data
@@ -435,24 +429,16 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
         ctd = colocated_ctd(infile, ctd_name)
 
     if not ctd.empty:
-        # set the CTD and OPTAA time to the same units of seconds since 1970-01-01
-        ctd_time = ctd.time.values.astype(float) / 10.0 ** 9
-
         # test to see if the CTD covers our time of interest for this optaa file
-        td = timedelta(hours=1).total_seconds()
-        coverage = ctd_time.min() <= min(optaa_time) and ctd_time.max() + td >= max(optaa_time)
+        td = pd.Timedelta('1h')
+        coverage = ctd['time'].min() - td <= df['time'].min() and ctd['time'].max() + td >= df['time'].max()
 
         # reset initial estimates of in-situ temperature and salinity if we have full coverage
         if coverage:
-            pressure = np.mean(np.interp(optaa_time, ctd_time, ctd.pressure))
-            df['ctd_pressure'] = pressure
-
-            temperature = np.mean(np.interp(optaa_time, ctd_time, ctd.temperature))
-            df['ctd_temperature'] = temperature
-
+            df['ctd_pressure'] = np.interp(df['time'], ctd['time'], ctd.pressure)
+            df['ctd_temperature'] = np.interp(df['time'], ctd['time'], ctd.temperature)
             salinity = SP_from_C(ctd.conductivity.values * 10.0, ctd.temperature.values, ctd.pressure.values)
-            salinity = np.mean(np.interp(optaa_time, ctd_time, salinity))
-            df['ctd_salinity'] = salinity
+            df['ctd_salinity'] = np.interp(df['time'], ctd['time'], salinity)
 
     # convert the 1D data frame to an xarray dataset
     ds = xr.Dataset.from_dataframe(df)
@@ -494,29 +480,16 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
     # combine the 1D and 2D datasets into a single xarray dataset
     optaa = xr.merge([ds, ac])
 
-    # drop the first 60 seconds worth of data from the data set per vendor recommendation
-    optaa.elapsed_run_time.values = optaa.elapsed_run_time.where(optaa.elapsed_run_time / 1000 > 60)
+    # drop the first 45 seconds worth of data from the data set per vendor recommendation
+    optaa.elapsed_run_time.values = optaa.elapsed_run_time.where(optaa.elapsed_run_time / 1000 > 45)
     optaa = optaa.dropna(dim='time', subset=['elapsed_run_time'])
-
-    # apply a median average to the burst (if desired) and add the deployment ID
-    if burst:
-        # suppress warnings for now. In the first case, changes suggested cause a ValueError and the second
-        # warning is expected given we are averaging before calculating some values
-        warnings.filterwarnings(action='ignore', category=FutureWarning)
-        warnings.filterwarnings(action='ignore', message='All-NaN slice encountered')
-
-        # resample to a 15-minute interval and shift the clock to make sure we capture the time "correctly"
-        optaa = optaa.resample(time='15Min', base=55, loffset='5Min').median(dim='time', keep_attrs=True)
-        optaa['deploy_id'] = xr.Variable('time', np.atleast_1d(deployment).astype(str))
-    else:
-        optaa['deploy_id'] = xr.Variable('time', np.tile(deployment, len(optaa.time)).astype(str))
 
     # calculate the depth range for the NetCDF global attributes: deployment depth and the profile min/max range
     if ctd.empty:
         depth_range = [depth, depth, depth]
     else:
         z = -1 * z_from_p(optaa['ctd_pressure'], lat)
-        depth_range = [depth, z.min(), z.max()]
+        depth_range = [depth, z.min().values, z.max().values]
 
     # if there is calibration data, apply it now
     if proc_flag:
@@ -536,23 +509,30 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
         optaa = estimate_chl_poc(optaa, dev.coeffs)
 
         # calculate pigment and CDOM ratios to provide variables useful in characterizing the community structure and
-        # the status of the sensor itself (biofouling tracking).
+        # the status of the sensor itself (bio-fouling tracking).
         optaa = calculate_ratios(optaa, dev.coeffs)
+
+    # resample to a 15-minute interval (shifting the time to the middle of the interval)
+    optaa['time'] = optaa.time + pd.Timedelta('450s')
+    optaa = optaa.resample(time='900s').median(dim='time', keep_attrs=True)
+
+    # resampling will fill in missing time steps with NaNs. Use the serial_number variable
+    # as a proxy variable to find cases where data is filled with a NaN, and delete those records.
+    optaa = optaa.where(~np.isnan(optaa.serial_number), drop=True)
+
+    # reset original integer arrays back to int32
+    int_arrays = ['serial_number', 'elapsed_run_time', 'internal_temp_raw', 'external_temp_raw',
+                  'a_signal_raw', 'a_reference_raw', 'c_signal_raw', 'c_reference_raw']
+    for k in optaa.variables:
+        if k in int_arrays:
+            optaa[k] = optaa[k].astype(np.intc)  # explicitly setting as a 32-bit integer
 
     # update the data set with the appropriate attributes
     optaa['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(optaa.time)).astype(str))
-    attrs = dict_update(OPTAA, SHARED)  # add the shared attributes
+    attrs = dict_update(OPTAA, CO_LOCATED)  # add the co-located CTD attributes
+    attrs = dict_update(attrs, SHARED)  # add the shared attributes
     optaa = update_dataset(optaa, platform, deployment, lat, lon, depth_range, attrs)
     optaa['wavelength_number'].attrs['actual_wavelengths'] = np.intc(num_wavelengths)
-
-    # if we used burst averaging, reset fill values and attributes for the raw a and c signal and reference values
-    int_arrays = ['a_signal_raw', 'a_reference_raw', 'c_signal_raw', 'c_reference_raw']
-    if burst:
-        for k in optaa.variables:
-            if k in int_arrays:
-                optaa[k].attrs['_FillValue'] = np.nan
-                optaa[k] = optaa[k].where(optaa[k] > -1000)
-
     if proc_flag:
         optaa.attrs['processing_level'] = 'processed'
     else:

@@ -45,13 +45,6 @@ SWND = {
         'comment': 'Speed of sound measured by the sonic anemometer.',
         'units': 'm s-1'
     },
-    'relative_direction': {
-        'long_name': 'Relative Wind Direction',
-        'comment': ('Relative wind direction. The direction the wind is moving towards, following the oceanographic '
-                    'convention. Relative to the instrument coordinate frame. Calculated as the arctan of the vector '
-                    'averaged relative eastward and northward wind components.'),
-        'units': 'degrees'
-    },
     'heading': {
         'long_name': 'Compass Heading',
         'standard_name': 'heading',
@@ -94,33 +87,40 @@ SWND = {
         'units': 'm s-1',
         'ancillary_variables': 'wind_speed'
     },
+    'relative_direction': {
+        'long_name': 'Relative Wind Direction',
+        'comment': ('Relative wind direction. The direction the wind is moving towards, following the oceanographic '
+                    'convention. Relative to the instrument coordinate frame. Calculated as the arctan of the relative '
+                    'eastward and northward wind components.'),
+        'units': 'degrees',
+        'ancillary_variables': 'eastward_wind_relative northward_wind_relative'
+    },
+    'wind_direction': {
+        'long_name': 'Wind Direction',
+        'standard_name': 'wind_to_direction',
+        'comment': ('Wind direction relative to magnetic north. Calculated from the relative wind direction and the '
+                    'instrument heading, and then converted to degrees from magnetic north. Wind direction is '
+                    'the direction the wind is moving towards, following the oceanographic convention.'),
+        'units': 'degrees',
+        'ancillary_variables': 'heading relative_direction'
+    },
     'eastward_wind_asimet': {
         'long_name': 'Eastward Wind Velocity (ASIMET)',
         'standard_name': 'eastward_wind',
         'comment': ('Eastward wind velocity component in Earth coordinates. Positive values indicate wind moving from '
-                    'the west to the east. Calculated from the relative wind velocity components, the wind speed and '
-                    'the instrument heading. Uses the algorithm outlined in the ASIMET SWND v4.11 firmware.'),
+                    'the west to the east. Calculated from the wind speed and direction. Uses the algorithm outlined '
+                    'in the ASIMET SWND v4.11cf firmware.'),
         'units': 'm s-1',
-        'ancillary_variables': 'eastward_wind_relative northward_wind_relative wind_speed heading relative_direction'
+        'ancillary_variables': 'wind_speed wind_direction'
     },
     'northward_wind_asimet': {
         'long_name': 'Northward Wind Velocity (ASIMET)',
         'standard_name': 'northward_wind',
         'comment': ('Northward wind velocity component in Earth coordinates. Positive values indicate wind moving from '
-                    'the south to the north. Calculated from the relative wind velocity components the wind speed and '
-                    'the instrument heading. Uses the algorithm outlined in the ASIMET SWND v4.11 firmware.'),
+                    'the south to the north. Calculated from the wind speed and direction. Uses the algorithm outlined '
+                    'in the ASIMET SWND v4.11cf firmware.'),
         'units': 'm s-1',
-        'ancillary_variables': 'eastward_wind_relative northward_wind_relative wind_speed heading relative_direction'
-    },
-    'wind_direction': {
-        'long_name': 'Wind Direction',
-        'standard_name': 'wind_to_direction',
-        'comment': ('Wind direction relative to magnetic north. Calculated as the arctan of the vector averaged '
-                    'eastward and northward wind components, and then converted to degrees from magnetic north. Wind '
-                    'direction is calculated as the direction the wind is moving towards, following the oceanographic '
-                    'convention.'),
-        'units': 'degrees',
-        'ancillary_variables': 'eastward_wind_asimet northward_wind_asimet'
+        'ancillary_variables': 'wind_speed wind_direction'
     },
     'eastward_wind_ndbc': {
         'long_name': 'Eastward Wind Velocity (NDBC)',
@@ -130,7 +130,7 @@ SWND = {
                     'derived from the vector averaged eastward and northward wind components following the protocol '
                     'outlined by NDBC.'),
         'units': 'm s-1',
-        'ancillary_variables': 'wind_direction wind_speed'
+        'ancillary_variables': 'wind_speed wind_direction'
     },
     'northward_wind_ndbc': {
         'long_name': 'Northward Wind Velocity (NDBC)',
@@ -139,6 +139,6 @@ SWND = {
                     'north. Calculated from the scalar averaged wind speed and the wind direction derived from the '
                     'vector averaged eastward and northward wind components following the protocol outlined by NDBC.'),
         'units': 'm s-1',
-        'ancillary_variables': 'wind_direction wind_speed'
+        'ancillary_variables': 'wind_speed wind_direction'
     }
 }
