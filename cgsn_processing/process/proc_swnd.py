@@ -10,11 +10,14 @@ import numpy as np
 import os
 import xarray as xr
 
-from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING
+from cgsn_processing.process.common import inputs, json2df, update_dataset, dict_update, ENCODING
 from cgsn_processing.process.configs.attr_swnd import SWND
+from cgsn_processing.process.configs.attr_common import SHARED
 
-# constant used by the ASIMET SWND v4.11 firmware processing
-PI2 = 6.283185
+# constants used by the ASIMET SWND v4.11 firmware processing
+PI2 = 6.283185       # 2 * pi
+DEG2RAD = 0.0174533  # convert to radians (deg * (2 * pi / 360))
+RAD2DEG = 57.29578   # convert to degrees (rad * (360 / 2 * pi))
 
 
 def wind_binning(tbin):
@@ -44,8 +47,8 @@ def wind_binning(tbin):
     avg['eastward_wind_ndbc'] = avg['wind_speed'] * np.sin(wind_direction)
     avg['northward_wind_ndbc'] = avg['wind_speed'] * np.cos(wind_direction)
 
-    # replace the averaged wind direction with one derived from the vector averages (convert radians to degrees)
-    avg['wind_direction'] = wind_direction * 57.29578  # convert to degrees (rad * (360 / 2 * pi))
+    # replace the averaged wind direction with one derived from the vector averages (converting radians to degrees)
+    avg['wind_direction'] = wind_direction * RAD2DEG  # convert to degrees (rad * (360 / 2 * pi))
 
     return avg
 
@@ -59,8 +62,8 @@ def proc_swnd(infile, platform, deployment, lat, lon, depth):
     This data should provide a better estimate of the wind speed and direction
     at higher wind speeds and should allow for a determination of why the
     METBK reported values are biased low. Note, this processing follows the
-    steps outlined in the v4.11 firmware processing, but with some minor
-    modifications, while the METBK data set is using the v4.20 firmware.
+    steps outlined in the v4.11cf firmware processing, but with some minor
+    modifications, while the METBK data set is using the v4.20cf firmware.
 
     For more information on the ASIMET system and the SWND module, see the
     ASIMET website:
@@ -95,7 +98,7 @@ def proc_swnd(infile, platform, deployment, lat, lon, depth):
     swnd = swnd.drop(columns=['u_axis_wind_speed', 'v_axis_wind_speed'])
 
     # convert the compass heading to radians
-    heading = swnd['heading'] * 0.0174533  # convert to radians (deg * (2 * pi / 360))
+    heading = swnd['heading'] * DEG2RAD  # convert to radians (deg * (2 * pi / 360))
 
     # calculate the wind speed
     swnd['wind_speed'] = np.sqrt(swnd['eastward_wind_relative']**2 + swnd['northward_wind_relative']**2)
@@ -111,7 +114,7 @@ def proc_swnd(infile, platform, deployment, lat, lon, depth):
 
     # if the wind speed is less than 0.05 m/s, set the relative wind direction to a NaN and then forward
     # fill the NaNs with the last valid value (per the Gill WindMasterII manual) -- this differs from the
-    # v4.11 processing, which does not make this adjustment
+    # v4.11cf processing, which does not make this adjustment
     direction = np.where(swnd['wind_speed'] < 0.05, np.nan, direction)
 
     # calculate the wind direction relative to magnetic north (using the compass heading and relative wind direction)
@@ -123,8 +126,8 @@ def proc_swnd(infile, platform, deployment, lat, lon, depth):
     swnd['northward_wind_asimet'] = swnd['wind_speed'] * np.cos(wind_direction)
 
     # add the wind direction and relative wind direction (converted to degrees) to the data frame
-    swnd['wind_direction'] = wind_direction * 57.29578  # convert to degrees (rad * (360 / 2 * pi))
-    swnd['relative_direction'] = direction * 57.29578   # convert to degrees (rad * (360 / 2 * pi))
+    swnd['wind_direction'] = wind_direction * RAD2DEG  # convert to degrees (rad * (360 / 2 * pi))
+    swnd['relative_direction'] = direction * RAD2DEG   # convert to degrees (rad * (360 / 2 * pi))
 
     # create an xarray data set from the data frame
     swnd = xr.Dataset.from_dataframe(swnd)
@@ -137,7 +140,8 @@ def proc_swnd(infile, platform, deployment, lat, lon, depth):
 
     # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
     swnd['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(swnd.time)).astype(str))
-    swnd = update_dataset(swnd, platform, deployment, lat, lon, [depth, depth, depth], SWND)
+    attrs = dict_update(SWND, SHARED)
+    swnd = update_dataset(swnd, platform, deployment, lat, lon, [depth, depth, depth], attrs)
     return swnd
 
 
