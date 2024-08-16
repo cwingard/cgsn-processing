@@ -126,14 +126,13 @@ def proc_phsen(infile, platform, deployment, lat, lon, depth, **kwargs):
             warnings.warn('Required calibrations coefficients could not be found.')
 
     # clean up dataframe and create an empty data variable
-    df.drop_vars(columns=['dcl_date_time_string'], inplace=True)
+    df.drop(columns=['dcl_date_time_string'], inplace=True)
 
     # rename select columns to match the expected names in the final data set
     df.rename(columns={'record_time': 'sensor_time',
-                         'thermistor_start': 'raw_thermistor_start',
-                         'thermistor_end': 'raw_thermistor_end',
-                         'voltage_battery': 'raw_battery_voltage'},
-                inplace=True)
+                       'thermistor_start': 'raw_thermistor_start',
+                       'thermistor_end': 'raw_thermistor_end',
+                       'voltage_battery': 'raw_battery_voltage'}, inplace=True)
 
     # convert the raw battery voltage and thermistor values from counts to V and degC, respectively
     if proc_flag:

@@ -11,6 +11,7 @@ import numpy as np
 import os
 import pandas as pd
 import warnings
+import xarray as xr
 
 from datetime import datetime, timedelta
 from pytz import timezone
@@ -135,9 +136,6 @@ def proc_pco2w(infile, platform, deployment, lat, lon, depth, **kwargs):
         # json data file was empty, exiting
         return None
 
-    # set the deployment id as a variable
-    data['deploy_id'] = deployment
-
     # initialize the calibrations data class
     coeff_file = os.path.join(os.path.dirname(infile), 'pco2w.calibration_coeffs.json')
     cal = Calibrations(coeff_file)
@@ -238,6 +236,7 @@ def proc_pco2w(infile, platform, deployment, lat, lon, depth, **kwargs):
     pco2w = data.to_xarray()
 
     # update the metadata and set up the data for export to NetCDF
+    pco2w['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(pco2w.time)).astype(str))
     attrs = dict_update(PCO2W, SHARED)  # merge shared and PCO2W attribute dictionaries into a single dictionary
     pco2w = update_dataset(pco2w, platform, deployment, lat, lon, [depth, depth, depth], attrs)
     if proc_flag:

@@ -13,15 +13,12 @@ import os
 import pandas as pd
 import re
 import requests
-import warnings
 import xarray as xr
-
-from datetime import timedelta
 
 from cgsn_processing.process.common import Coefficients, inputs, json2obj, colocated_ctd, \
     update_dataset, ENCODING, FILL_INT, dict_update
 from cgsn_processing.process.configs.attr_optaa import OPTAA
-from cgsn_processing.process.configs.attr_common import SHARED
+from cgsn_processing.process.configs.attr_common import SHARED, CO_LOCATED
 from cgsn_processing.process.finding_calibrations import find_calibration
 
 from pyseas.data.opt_functions import opt_internal_temp, opt_external_temp, opt_pd_calc, opt_tempsal_corr
@@ -355,14 +352,11 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
         to the data. Otherwise, defaults are used with salinity set to
         34 psu and temperature from the OPTAAs external temperature
         sensor.
-    **kwargs burst: Boolean flag to indicate whether to apply burst averaging
-        to the data. Default is to not apply burst averaging.
 
     :return optaa: An xarray dataset with the processed OPTAA data
     """
     # process the variable length keyword arguments
     ctd_name = kwargs.get('ctd_name')
-    burst = kwargs.get('burst')
 
     # load the json data file as a dictionary object for further processing
     data = json2obj(infile)
@@ -522,18 +516,18 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
     optaa['time'] = optaa.time + pd.Timedelta('450s')
     optaa = optaa.resample(time='900s').median(dim='time', keep_attrs=True)
 
-    # update the data set with the appropriate attributes
-    optaa['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(optaa.time)).astype(str))
-    attrs = dict_update(OPTAA, SHARED)  # add the shared attributes
-    optaa = update_dataset(optaa, platform, deployment, lat, lon, depth_range, attrs)
-    optaa['wavelength_number'].attrs['actual_wavelengths'] = np.intc(num_wavelengths)
-
     # reset original integer arrays back to int32
     int_arrays = ['a_signal_raw', 'a_reference_raw', 'c_signal_raw', 'c_reference_raw']
     for k in optaa.variables:
         if k in int_arrays:
             optaa[k] = optaa[k].astype(np.intc)  # explicitly setting as a 32-bit integer
 
+    # update the data set with the appropriate attributes
+    optaa['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(optaa.time)).astype(str))
+    attrs = dict_update(OPTAA, CO_LOCATED)  # add the co-located CTD attributes
+    attrs = dict_update(attrs, SHARED)  # add the shared attributes
+    optaa = update_dataset(optaa, platform, deployment, lat, lon, depth_range, attrs)
+    optaa['wavelength_number'].attrs['actual_wavelengths'] = np.intc(num_wavelengths)
     if proc_flag:
         optaa.attrs['processing_level'] = 'processed'
     else:
