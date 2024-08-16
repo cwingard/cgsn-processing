@@ -391,10 +391,10 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
         raise Exception('Number of wavelengths mismatch between ac-s data and the device file.')
 
     # create the time coordinate array and set up a base data frame
-    optaa_time = data['time']
+    optaa_time = np.array(data['time'])
     df = pd.DataFrame()
     df['time'] = pd.to_datetime(optaa_time, unit='s')
-    df.set_index('time', drop=True, inplace=True)
+    df.index = df['time']
 
     # set up and load the 1D parsed data
     empty_data = np.atleast_1d(data['serial_number']).astype(int) * np.nan
@@ -489,7 +489,7 @@ def proc_optaa(infile, platform, deployment, lat, lon, depth, **kwargs):
         depth_range = [depth, depth, depth]
     else:
         z = -1 * z_from_p(optaa['ctd_pressure'], lat)
-        depth_range = [depth, z.min(), z.max()]
+        depth_range = [depth, z.min().values, z.max().values]
 
     # if there is calibration data, apply it now
     if proc_flag:
