@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-@package cgsn_processing.process.proc_ifcb_adc
-@file cgsn_processing/process/proc_ifcb_adc.py
+@package cgsn_processing.process.proc_xeos
+@file cgsn_processing/process/proc_xeos.py
 @author Paul Whelan
-@brief Creates a NetCDF dataset for IFCB ADC files from JSON formatted source data
+@brief Creates a NetCDF dataset for XEOS messages from JSON formatted source data
 """
 import os
 from pathlib import Path
@@ -17,7 +17,7 @@ from collections.abc import Mapping
 import xarray as xr
 
 from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING
-from cgsn_processing.process.configs.attr_ifcb_adc import IFCB_ADC
+from cgsn_processing.process.configs.attr_xeos import XEOS
 
 def read_json(infile):
     """
@@ -43,9 +43,9 @@ def read_json(infile):
     return json_data
 
 
-def proc_ifcb_adc(infile, platform, deployment, lat, lon, depth) :
+def proc_xeos(infile, platform, deployment, lat, lon, depth) :
     """
-    Main IFCB ADC processing function. Loads the JSON formatted parsed data. 
+    Main XEOS processing function. Loads the JSON formatted parsed data. 
     Filled variables are returned and the dataset
     processing level attribute is set to "parsed".
 
@@ -57,43 +57,33 @@ def proc_ifcb_adc(infile, platform, deployment, lat, lon, depth) :
     :param depth: Depth of the platform the instrument is mounted on.
 
 
-    :return df: An xarray dataset with the processed IFCB data
+    :return df: An xarray dataset with the processed XEOS data
     """
 
     # load the json data file and return a panda dataframe, adding a deployment depth and ID
-    adc_json = read_json(infile)
-    if adc_json is None:
-        print("Processing of IFCB ADC file {0} aborted".format(infile))
-        return None
+    df = json2df(infile)
+    #xeos_json = read_json(infile)
+    #if xeos_json is None:
+    #    print("Processing of XEOS file {0} aborted".format(infile))
+    #    return None
 
-    df = pd.DataFrame(adc_json)
-    #df = json2df(infile)
+    #df = pd.DataFrame(xeos_json)
     if df.empty:
         # there was no data in this file, ending early
         return None
 
-    df = df.apply(pd.to_numeric)
-
-    # Create time variable from file name timestamp + image offset as unixtime UTC
-    fname = os.path.basename(infile)
-    dtstring = fname[1: fname.find('_')-1]
-    dt = datetime.strptime( dtstring, '%Y%m%dT%H%M%S' )
-    startfileUTC = dt.replace( tzinfo=timezone.utc ).timestamp()
-    df.insert(0, 'time', df['ADCtime'] , True)
-    df['time'] = pd.to_numeric( df['time'] ) + startfileUTC
-    df.index = df['time']
-
-    # Remove '#' from trigger column
-    df = df.rename(columns={'trigger#': 'triggerNumber'})
+    # Try adding deploy it to df (not working in ds)
+    #df['deploy_id'] = deployment
+    #df['time'] = pd.to_datetime( df['time'] )
 
     # create an xarray data set from the data frame
-    df = xr.Dataset.from_dataframe(df)
+    ds = xr.Dataset.from_dataframe(df)
 
-    df['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(df.time)).astype(str))
-    df = update_dataset(df, platform, deployment, lat, lon, [depth, depth, depth], IFCB_ADC)
-    df.attrs['processing_level'] = 'processed'
+    ds['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(ds.time)).astype(str))
+    ds = update_dataset(ds, platform, deployment, lat, lon, [depth, depth, depth], XEOS)
+    ds.attrs['processing_level'] = 'processed'
 
-    return df
+    return ds
     
 def main(argv=None):
     
@@ -107,7 +97,7 @@ def main(argv=None):
     lon = args.longitude
     depth = args.depth
 
-    df = proc_ifcb_adc( infile, platform, deployment, lat, lon, depth )
+    df = proc_xeos( infile, platform, deployment, lat, lon, depth )
     if df:
         df.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
     
