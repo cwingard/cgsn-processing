@@ -15,7 +15,7 @@ from cgsn_processing.process.common import ENCODING, inputs, dict_update, dt64_e
     json_obj2df, colocated_ctd, update_dataset
 from cgsn_processing.process.configs.attr_adcpu import ADCPU
 
-# Note: SHARED attributes are swiped from the attr_common.py module in C. Wingar's
+# Note: SHARED attributes are swiped from the attr_common.py module in C. Wingard's
 #       upgrading branch of bitbucket. When that branch gets integrated, replace this with 
 #       the commented out include below.
 from cgsn_processing.process.configs.attr_adcpu  import SHARED
