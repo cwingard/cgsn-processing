@@ -6,6 +6,7 @@
 @author Joe Futrelle and Christopher Wingard
 @brief Attributes for the PRESF variables
        11212023 ppw added RBRQ3 variables
+       09192024 ppw moved RBRQ3 to own process due to incompatibilities
 """
 import numpy as np
 
