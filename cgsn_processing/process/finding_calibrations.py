@@ -15,6 +15,7 @@ import warnings
 
 from calendar import timegm
 from pytz import timezone
+from cgsn_processing.process.common import Coefficients
 
 # set the base URL for the OOI asset management listing of calibration files and a regex for the CSV files
 GIT = 'https://api.github.com/repos'
@@ -100,3 +101,59 @@ def find_calibration(inst_class, inst_serial, sampling_date):
         csv = None
 
     return csv
+
+class Calibrations(Coefficients):
+    def __init__(self, coeff_file, csv_url=None):
+        """
+        Loads the FLORT factory calibration coefficients for a unit. Values come from either a serialized object
+        created per instrument and deployment (calibration coefficients do not change in the middle of a deployment),
+        or from parsed CSV files maintained on GitHub by the OOI CI team.
+        """
+        # assign the inputs
+        Coefficients.__init__(self, coeff_file)
+        self.csv_url = csv_url
+
+    def read_csv(self, csv_url):
+        """
+        Reads the values from an ECO Triplet (aka FLORT) device file already parsed and stored on
+        Github as a CSV files. Note, the formatting of those files puts some constraints on this process. 
+        If someone has a cleaner method, I'm all in favor...
+        """
+        # create the device file dictionary and assign values
+        coeffs = {}
+
+        # read in the calibration data
+        cal = pd.read_csv(csv_url, usecols=[0, 1, 2])
+        for idx, row in cal.iterrows():
+            # scale and offset correction factors
+            if row.iloc[1] == 'CC_dark_counts_cdom':
+                coeffs['dark_cdom'] = row.iloc[2]
+            if row.iloc[1] == 'CC_scale_factor_cdom':
+                coeffs['scale_cdom'] = row.iloc[2]
+
+            if row.iloc[1] == 'CC_dark_counts_chlorophyll_a':
+                coeffs['dark_chla'] = row.iloc[2]
+            if row.iloc[1] == 'CC_scale_factor_chlorophyll_a':
+                coeffs['scale_chla'] = row.iloc[2]
+
+            if row.iloc[1] == 'CC_dark_counts_volume_scatter':
+                coeffs['dark_beta'] = row.iloc[2]
+            if row.iloc[1] == 'CC_scale_factor_volume_scatter':
+                coeffs['scale_beta'] = row.iloc[2]
+
+            # optical backscatter correction factors
+            if row.iloc[1] == 'CC_angular_resolution':
+                coeffs['chi_factor'] = row.iloc[2]
+            if row.iloc[1] == 'CC_measurement_wavelength':
+                coeffs['wavelength'] = row.iloc[2]
+            if row.iloc[1] == 'CC_scattering_angle':
+                coeffs['scatter_angle'] = row.iloc[2]
+
+            # turbidity calculation factors
+            if row.iloc[1] == 'CC_dark_counts_turbd':
+                coeffs['dark_turbd'] = int(row.iloc[2])
+            if row.iloc[1] == 'CC_scale_factor_turbd':
+                coeffs['scale_turbd'] = float(row.iloc[2])
+
+        # save the resulting dictionary
+        self.coeffs = coeffs
