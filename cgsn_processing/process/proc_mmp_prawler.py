@@ -18,7 +18,7 @@ from pyseas.data.flo_functions import flo_scale_and_offset, flo_bback_total
 from cgsn_processing.process.common import ENCODING, inputs, epoch_time, json2df, update_dataset
 from cgsn_processing.process.finding_calibrations import find_calibration
 from cgsn_processing.process.configs.attr_mmp_prawler import PRAWLER, PRAWLER_NO_FLORT, PRAWLER_SCI
-from cgsn_processing.process.finding_calibrations import find_calibration, Calibrations
+from cgsn_processing.process.proc_flort import Calibrations
 
 def read_json(infile):
     """
