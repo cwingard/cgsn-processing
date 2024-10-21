@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-# Read the parsed XEOS data files from the CGSN Coastal Surface Moorings and
-# create processed datasets available in NetCDF formatted files for further
+# Read the parsed XEOS data files from the CGSN and EA Coastal Surface Moorings
+# and create processed datasets available in NetCDF formatted files for further
 # processing and review.
 #
 # P. Whelan  2024-09-18    Copied from process_adcpu.sh

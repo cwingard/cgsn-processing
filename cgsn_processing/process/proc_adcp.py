@@ -11,7 +11,7 @@ import os
 import pandas as pd
 import xarray as xr
 
-from cgsn_processing.process.common import ENCODING, inputs, dict_update, dt64_epoch, epoch_time, json2obj, \
+from cgsn_processing.process.common import ENCODING, inputs, dict_update, epoch_time, json2obj, \
     json_obj2df, colocated_ctd, update_dataset
 from cgsn_processing.process.configs.attr_adcp import ADCP, PD0, PD8, DERIVED
 from cgsn_processing.process.configs.attr_common import SHARED
@@ -97,7 +97,7 @@ def proc_adcp(infile, platform, deployment, lat, lon, depth, **kwargs):
     if adcp_type.lower() == 'pd0':
 
         # create the bin number coordinate array
-        bin_number = np.arange(data['fixed']['num_cells'][0] - 1).astype(np.int32)
+        bin_number = np.arange(data['fixed']['num_cells'][0] - 1).astype(int)
 
         # load the fixed header data packets
         df = json_obj2df(data, 'fixed')
@@ -163,38 +163,38 @@ def proc_adcp(infile, platform, deployment, lat, lon, depth, **kwargs):
         # create the 2D velocity, correlation magnitude, echo intensity and percent good data sets
         vel = xr.Dataset({
             'eastward_seawater_velocity_est': (['time', 'bin_number'],
-                                               np.array(data['velocity']['eastward']).astype(np.int32)),
+                                               np.array(data['velocity']['eastward']).astype(int)),
             'eastward_seawater_velocity': (['time', 'bin_number'], u_cor / 1000.),
             'northward_seawater_velocity_est': (['time', 'bin_number'],
-                                                np.array(data['velocity']['northward']).astype(np.int32)),
+                                                np.array(data['velocity']['northward']).astype(int)),
             'northward_seawater_velocity': (['time', 'bin_number'], v_cor / 1000.),
             'vertical_seawater_velocity': (['time', 'bin_number'],
-                                           np.array(data['velocity']['vertical']).astype(np.int32)),
-            'error_velocity': (['time', 'bin_number'], np.array(data['velocity']['error']).astype(np.int32))
+                                           np.array(data['velocity']['vertical']).astype(int)),
+            'error_velocity': (['time', 'bin_number'], np.array(data['velocity']['error']).astype(int))
         }, coords={'time': (['time'], pd.to_datetime(time, unit='s')),
                    'bin_number': bin_number})
 
         cor = xr.Dataset({
             'correlation_magnitude_beam1': (['time', 'bin_number'],
-                                            np.array(data['correlation']['magnitude_beam1']).astype(np.int32)),
+                                            np.array(data['correlation']['magnitude_beam1']).astype(int)),
             'correlation_magnitude_beam2': (['time', 'bin_number'],
-                                            np.array(data['correlation']['magnitude_beam2']).astype(np.int32)),
+                                            np.array(data['correlation']['magnitude_beam2']).astype(int)),
             'correlation_magnitude_beam3': (['time', 'bin_number'],
-                                            np.array(data['correlation']['magnitude_beam3']).astype(np.int32)),
+                                            np.array(data['correlation']['magnitude_beam3']).astype(int)),
             'correlation_magnitude_beam4': (['time', 'bin_number'],
-                                            np.array(data['correlation']['magnitude_beam4']).astype(np.int32))
+                                            np.array(data['correlation']['magnitude_beam4']).astype(int))
         }, coords={'time': (['time'], pd.to_datetime(time, unit='s')),
                    'bin_number': bin_number})
 
         echo = xr.Dataset({
             'echo_intensity_beam1': (['time', 'bin_number'],
-                                     np.array(data['echo']['intensity_beam1']).astype(np.int32)),
+                                     np.array(data['echo']['intensity_beam1']).astype(int)),
             'echo_intensity_beam2': (['time', 'bin_number'],
-                                     np.array(data['echo']['intensity_beam2']).astype(np.int32)),
+                                     np.array(data['echo']['intensity_beam2']).astype(int)),
             'echo_intensity_beam3': (['time', 'bin_number'],
-                                     np.array(data['echo']['intensity_beam3']).astype(np.int32)),
+                                     np.array(data['echo']['intensity_beam3']).astype(int)),
             'echo_intensity_beam4': (['time', 'bin_number'],
-                                     np.array(data['echo']['intensity_beam4']).astype(np.int32))
+                                     np.array(data['echo']['intensity_beam4']).astype(int))
         }, coords={'time': (['time'], pd.to_datetime(time, unit='s')),
                    'bin_number': bin_number})
 
@@ -208,11 +208,11 @@ def proc_adcp(infile, platform, deployment, lat, lon, depth, **kwargs):
 
         per = xr.Dataset({
             'percent_good_3beam': (['time', 'bin_number'],
-                                   np.array(data['percent']['good_3beam']).astype(np.int32)),
+                                   np.array(data['percent']['good_3beam']).astype(int)),
             'percent_transforms_reject': (['time', 'bin_number'],
-                                          np.array(data['percent']['transforms_reject']).astype(np.int32)),
-            'percent_bad_beams': (['time', 'bin_number'], np.array(data['percent']['bad_beams']).astype(np.int32)),
-            'percent_good_4beam': (['time', 'bin_number'], np.array(data['percent']['good_4beam']).astype(np.int32))
+                                          np.array(data['percent']['transforms_reject']).astype(int)),
+            'percent_bad_beams': (['time', 'bin_number'], np.array(data['percent']['bad_beams']).astype(int)),
+            'percent_good_4beam': (['time', 'bin_number'], np.array(data['percent']['good_4beam']).astype(int))
         }, coords={'time': (['time'], pd.to_datetime(time, unit='s')),
                    'bin_number': bin_number})
 
@@ -226,7 +226,7 @@ def proc_adcp(infile, platform, deployment, lat, lon, depth, **kwargs):
         vbl = xr.Dataset.from_dataframe(df)
 
         # pull the bin number out of the velocity data set
-        bin_number = np.array(data['velocity']['bin_number'][0]).astype(np.int32)
+        bin_number = np.array(data['velocity']['bin_number'][0]).astype(int)
 
         # calculate the bin_depth
         bin_depth = adcp_bin_depths(blanking_distance, bin_size, bin_number, 1, depth_m)
@@ -247,30 +247,30 @@ def proc_adcp(infile, platform, deployment, lat, lon, depth, **kwargs):
         # create the 2D velocity and echo intensity data sets
         vel = xr.Dataset({
             'seawater_velocity_direction_est': (['time', 'bin_number'],
-                                                np.array(data['velocity']['direction']).astype(np.float)),
+                                                np.array(data['velocity']['direction']).astype(float)),
             'seawater_velocity_magnitude_est': (['time', 'bin_number'],
-                                                np.array(data['velocity']['magnitude']).astype(np.float)),
+                                                np.array(data['velocity']['magnitude']).astype(float)),
             'eastward_seawater_velocity_est': (['time', 'bin_number'],
-                                               np.array(data['velocity']['eastward']).astype(np.int32)),
+                                               np.array(data['velocity']['eastward']).astype(int)),
             'eastward_seawater_velocity': (['time', 'bin_number'], u_cor),
             'northward_seawater_velocity_est': (['time', 'bin_number'],
-                                                np.array(data['velocity']['northward']).astype(np.int32)),
+                                                np.array(data['velocity']['northward']).astype(int)),
             'northward_seawater_velocity': (['time', 'bin_number'], v_cor),
             'vertical_seawater_velocity': (['time', 'bin_number'],
-                                           np.array(data['velocity']['vertical']).astype(np.int32)),
-            'error_velocity': (['time', 'bin_number'], np.array(data['velocity']['error']).astype(np.int32))
+                                           np.array(data['velocity']['vertical']).astype(int)),
+            'error_velocity': (['time', 'bin_number'], np.array(data['velocity']['error']).astype(int))
         }, coords={'time': (['time'], pd.to_datetime(time, unit='s')),
                    'bin_number': bin_number})
 
         echo = xr.Dataset({
             'echo_intensity_beam1': (['time', 'bin_number'],
-                                     np.array(data['echo']['intensity_beam1']).astype(np.int32)),
+                                     np.array(data['echo']['intensity_beam1']).astype(int)),
             'echo_intensity_beam2': (['time', 'bin_number'],
-                                     np.array(data['echo']['intensity_beam2']).astype(np.int32)),
+                                     np.array(data['echo']['intensity_beam2']).astype(int)),
             'echo_intensity_beam3': (['time', 'bin_number'],
-                                     np.array(data['echo']['intensity_beam3']).astype(np.int32)),
+                                     np.array(data['echo']['intensity_beam3']).astype(int)),
             'echo_intensity_beam4': (['time', 'bin_number'],
-                                     np.array(data['echo']['intensity_beam4']).astype(np.int32))
+                                     np.array(data['echo']['intensity_beam4']).astype(int))
         }, coords={'time': (['time'], pd.to_datetime(time, unit='s')),
                    'bin_number': bin_number})
 

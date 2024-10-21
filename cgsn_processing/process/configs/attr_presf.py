@@ -54,35 +54,3 @@ PRESF = {
         '_FillValue': np.nan
     }
 }
-
-RBRQ3 = {
-    'global': {
-        'title': 'Seafloor Pressure',
-        'summary': 'Seafloor pressure ???',
-    },
-    'temperature_00': {
-        'long_name': 'Temperature of ???',
-        'units': 'degrees_Celsius',
-    },
-    'pressure_00': {
-        'long_name': 'Pressure of ???',
-        'units': 'degrees_Celsius',
-    },
-    'temperature_01': {
-        'long_name': 'Temperature of ???',
-        'units': 'degrees_Celsius',
-    },
-    'sea_pressure_00': {
-        'long_name': 'Sea floor pressure',
-        'standard_name': 'seafloor_pressure',
-        'units': 'dbar',
-    },
-    'period_00': {
-        'long_name': 'Period of ???',
-        'units': 'seconds???',
-    },
-    'period_01': {
-        'long_name': 'Period of ???',
-        'units': 'seconds???',
-    }
-}

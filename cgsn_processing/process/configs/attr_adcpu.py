@@ -14,60 +14,11 @@ ADCPU = {
         'title': '3D Point Velocity Measurements from the Nortek Aquadopp 2',
         'summary': ('The Nortek Aquadopp 2  ' +
                     '...'),
-        'project': 'Ocean Observatories Initiative',
-        'institution': 'Coastal Endurance Array (EA) and Coastal and Global Scale Nodes (CGSN)',
-        'acknowledgement': 'National Science Foundation',
-        'references': 'http://oceanobservatories.org',
-        'creator_name': 'Ocean Observatories Initiative',
-        'creator_email': 'helpdesk@oceanobservatories.org',
-        'creator_url': 'http://oceanobservatories.org',
-        'featureType': 'timeSeries',
-        'cdm_data_type': 'Station',
-        'Conventions': 'CF-1.6'
-    },
-    'deploy_id': {
-        'long_name': 'Deployment ID',
-        'comment': ('Mooring deployment ID. Useful for differentiating data by deployment, ' +
-                    'allowing for overlapping deployments in the data sets.')
-    },
-    'station': {
-        'cf_role': 'timeseries_id',
-        'long_name': 'Station Identifier'
-    },
-    'time': {
-        'long_name': 'Time',
-        'standard_name': 'time',
-        'units': 'seconds since 1970-01-01 00:00:00Z',
-        'axis': 'T',
-        'calendar': 'gregorian',
-        'comment': 'Instrument reported date and time'
     },
     'cell_number': {
         'long_name': 'Cell number',
         # 'units': '',    deliberately left blank, no units for this value
         'comment': 'Instrument reported cell number'
-    },
-    'lon': {
-        'long_name': 'Longitude',
-        'standard_name': 'longitude',
-        'units': 'degrees_east',
-        'axis': 'X',
-        'comment': 'Mooring deployment location, surveyed after deployment to determine center of watch circle.'
-    },
-    'lat': {
-        'long_name': 'Latitude',
-        'standard_name': 'latitude',
-        'units': 'degrees_north',
-        'axis': 'Y',
-        'comment': 'Mooring deployment location, surveyed after deployment to determine center of watch circle.'
-    },
-    'z': {
-        'long_name': 'Depth',
-        'standard_name': 'depth',
-        'units': 'm',
-        'comment': 'Instrument deployment depth',
-        'positive': 'down',
-        'axis': 'Z'
     },
     'instrument_name': {
         'long_name': 'Instrument name',
@@ -264,74 +215,5 @@ ADCPU = {
                     'correlation because it gives us confidence the system measured the two pulses it originally ' +
                     'sent out and is determining a valid phase shift.'),
         'units': 'percent'
-    }
-}
-
-# Note: SHARED is swiped from the attr_common.py module in C. Wingard's upgrading branch of bitbucket.
-#       When that branch is integrated, this should be deprecated in favor of the attr_common.py module
-SHARED = {
-    'global': {
-        'project': 'NSF Ocean Observatories Initiative',
-        'institution': 'Coastal and Global Scale Nodes (CGSN) and the Endurance Array (EA)',
-        'acknowledgement': 'National Science Foundation',
-        'references': 'https://oceanobservatories.org',
-        'creator_name': 'NSF Ocean Observatories Initiative',
-        'creator_email': 'helpdesk@oceanobservatories.org',
-        'creator_url': 'https://oceanobservatories.org',
-        'featureType': 'timeSeries',
-        'cdm_data_type': 'Station',
-        'Conventions': 'CF-1.7'
-    },
-    'deploy_id': {
-        'long_name': 'Deployment ID',
-        'comment': ('Mooring deployment ID. Useful for differentiating data by deployment, '
-                    'allowing for overlapping deployments in the data sets.')
-    },
-    'time': {
-        'long_name': 'Time',
-        'standard_name': 'time',
-        # units set via encoding in the to_netcdf method (see update_dateset in cgsn_processing/process/common.py)
-        'axis': 'T',
-        'comment': ('Derived from either the DCL data logger GPS referenced clock, or the internal instrument clock. '
-                    'For instruments attached to a DCL, the instrument''s internal clock can be cross-compared to '
-                    'the GPS clock to determine the internal clock''s offset and drift.')
-    },
-    'sensor_time': {
-        'long_name': 'Sensor Time',
-        'standard_name': 'time',
-        # units set via encoding in the to_netcdf method (see update_dateset in cgsn_processing/process/common.py)
-        'comment': ('Date and time from the sensor''s internal clock. It is expected that this value will drift from '
-                    'the true time by some amount over the course of a deployment. Cross-comparisons to GPS based '
-                    'clocks will be required to account for any offset and drift in the sensor.'),
-    },
-    'station_name': {
-        'cf_role': 'timeseries_id',
-        'long_name': 'Station Name',
-        'standard_name': 'platform_name'
-    },
-    'lon': {
-        'long_name': 'Deployment Longitude',
-        'standard_name': 'longitude',
-        'units': 'degrees_east',
-        'axis': 'X',
-        'comment': ('Mooring deployment location, surveyed after deployment to determine the anchor location and '
-                    'the center of the watch circle.')
-    },
-    'lat': {
-        'long_name': 'Deployment Latitude',
-        'standard_name': 'latitude',
-        'units': 'degrees_north',
-        'axis': 'Y',
-        'comment': ('Mooring deployment location, surveyed after deployment to determine the anchor location and '
-                    'the center of the watch circle.')
-    },
-    'z': {
-        'long_name': 'Depth',
-        'standard_name': 'depth',
-        'units': 'm',
-        'comment': ('Depth of the instrument, either from the deployment depth (e.g. 7 m for an NSIF) or the '
-                    'instrument pressure record converted to depth.'),
-        'positive': 'down',
-        'axis': 'Z'
     }
 }

@@ -70,7 +70,7 @@ def main(argv=None):
     lon = args.longitude
     depth = args.depth
 
-    # process the xeosisor data and save the results to disk
+    # process the Xeos SBD data and save the results to disk
     xeos = proc_xeos(infile, platform, deployment, lat, lon, depth)
     if xeos:
         xeos.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)

@@ -10,19 +10,15 @@ import numpy as np
 import os
 import xarray as xr
 
-from cgsn_processing.process.common import ENCODING, inputs, epoch_time, json2df, update_dataset
+from cgsn_processing.process.common import ENCODING, inputs, json2df, dict_update, update_dataset
 from cgsn_processing.process.configs.attr_rbrpresf import RBRQ3
+from cgsn_processing.process.configs.attr_common import SHARED
 
 
-def proc_rbrpresf(infile, platform, deployment, lat, lon, depth, **kwargs):
+def proc_rbrpresf(infile, platform, deployment, lat, lon, depth):
     """
-    Processing function for the RBR Presf sensor. Loads the JSON
-    formatted parsed data and applies appropriate calibration coefficients to
-    convert the raw parsed data into engineering units. If no calibration
-    coefficients are available, filled variables are returned and the dataset
-    processing level attribute is set to "parsed". If the calibration,
-    coefficients are available then the dataset processing level attribute is
-    set to "processed".
+    Processing function for the RBR PRESF sensor. Loads the JSON formatted
+    parsed data and converts the data into a NetCDF data file using xarray.
 
     :param infile: JSON formatted parsed data file
     :param platform: Name of the mooring the instrument is mounted on.
@@ -31,7 +27,7 @@ def proc_rbrpresf(infile, platform, deployment, lat, lon, depth, **kwargs):
     :param lon: Longitude of the mooring deployment.
     :param depth: Depth of the platform the instrument is mounted on.
 
-    :return rbrpxr: An xarray dataset with the processed RBRQ3 data
+    :return rbrq3: An xarray dataset with the processed RBRQ3 data
     """
     # load the json data file as a panda data frame for further processing
     rbrpf = json2df(infile)
@@ -41,21 +37,20 @@ def proc_rbrpresf(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     rbrpf.drop(columns=['unix_date_time_ms', 'date_time_string'], inplace=True)
 
-    # add the deployment id, used to subset data sets
-    rbrpf['deploy_id'] = deployment
-
     # create an xarray data set from the data frame
-    rbrpxr = xr.Dataset.from_dataframe(rbrpf)
+    rbrq3 = xr.Dataset.from_dataframe(rbrpf)
 
     # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
-    rbrpxr = update_dataset(rbrpxr, platform, deployment, lat, lon, [depth, depth, depth], RBRQ3)
-    rbrpxr.attrs['processing_level'] = 'processed'
-    return rbrpxr
+    rbrq3['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(rbrq3.time)).astype(str))
+    attrs = dict_update(RBRQ3, SHARED)  # add the shared attributes
+    rbrq3 = update_dataset(rbrq3, platform, deployment, lat, lon, [depth, depth, depth], RBRQ3)
+    rbrq3.attrs['processing_level'] = 'processed'
+    return rbrq3
 
 
 def main(argv=None):
     """
-    Command line function to process the RBR Presf data using the proc_rbrpresf
+    Command line function to process the RBR PRESF data using the proc_rbrpresf
     function. Command line arguments are parsed and passed to the function.
 
     :param argv: List of command line arguments
@@ -70,10 +65,10 @@ def main(argv=None):
     lon = args.longitude
     depth = args.depth
 
-    # process the RBR Presf data and save the results to disk
-    rbrp = proc_rbrpresf(infile, platform, deployment, lat, lon, depth)
-    if rbrp:
-        rbrp.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+    # process the RBR Q3 (PRESF) data and save the results to disk
+    rbrq3 = proc_rbrpresf(infile, platform, deployment, lat, lon, depth)
+    if rbrq3:
+        rbrq3.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
 
 
 if __name__ == '__main__':

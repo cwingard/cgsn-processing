@@ -12,11 +12,11 @@ import numpy as np
 
 SHARED = {
     'global': {
-        'project': 'NSF Ocean Observatories Initiative',
+        'project': 'U.S. National Science Foundation (NSF) Ocean Observatories Initiative (OOI)',
         'institution': 'Coastal and Global Scale Nodes (CGSN) and the Endurance Array (EA)',
-        'acknowledgement': 'National Science Foundation',
+        'acknowledgement': 'U.S. National Science Foundation (NSF)',
         'references': 'https://oceanobservatories.org',
-        'creator_name': 'NSF Ocean Observatories Initiative',
+        'creator_name': 'U.S. National Science Foundation (NSF) Ocean Observatories Initiative (OOI)',
         'creator_email': 'helpdesk@oceanobservatories.org',
         'creator_url': 'https://oceanobservatories.org',
         'featureType': 'timeSeries',

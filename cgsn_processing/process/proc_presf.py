@@ -56,7 +56,6 @@ def proc_presf(infile, platform, deployment, lat, lon, depth):
 
 
 def main(argv=None):
-
     # load the input arguments
     args = inputs(argv)
     infile = os.path.abspath(args.infile)
@@ -66,10 +65,6 @@ def main(argv=None):
     lat = args.latitude
     lon = args.longitude
     depth = args.depth
-    
-    instrument = args.switch
-    if instrument is None:
-        instrument = "presf"
 
     # process the Sea-Bird 26Plus data and save the results to disk
     presf = proc_presf(infile, platform, deployment, lat, lon, depth)
