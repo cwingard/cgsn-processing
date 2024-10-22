@@ -20,7 +20,6 @@ from pytz import timezone
 GIT = 'https://api.github.com/repos'
 CSV = re.compile(r'.*\.csv')
 
-
 # load the GitHub API read-only access token
 headers = None  # default token
 try:
@@ -37,53 +36,54 @@ except FileNotFoundError as e:
 
 
 def list_directories(url, tag=''):
-    page = requests.get(url, headers=headers).json()
-    urls = ['{}/{}'.format(url, item['name']) for item in page if tag in item['name']]
+    tree_url = 'https://api.github.com/repos/oceanobservatories/asset-management/git/trees/master?recursive=true'
+    trees = requests.get(tree_url, headers=headers).json()
+    urls = ['{}/{}'.format(url, item['path']) for item in trees['tree'] if tag in item['path']]
     return urls
 
 
 def find_calibration(inst_class, inst_serial, sampling_date):
     # find the links for the instrument class we are after
-    links = list_directories('{}/oceanobservatories/asset-management/contents/calibration'.format(GIT), inst_class)
+    links = list_directories('{}/oceanobservatories/asset-management/contents'.format(GIT), inst_class)
     tdiff = []
     flist = []
 
     # if successful, start to zero in on our instrument
     if links:
         for link in links:
+            instrmts = None  # reset the list of instruments for each class
             # get the list of cal CSVs for this instrument
-            if inst_serial.isdigit():
+            if inst_serial.isdigit() and '-{}__'.format(inst_serial.rjust(5, '0')) in link:
                 # almost all serial numbers are comprised of digits only, but there are a few exceptions
-                instrmts = list_directories(link, '-{}__'.format(inst_serial.rjust(5, '0')))
-            else:
+                instrmts = link
+            elif inst_serial.isalpha() and '-{}__'.format(inst_serial.upper()) in link:
                 # for the few exceptions (SAMIs), we need to look for the serial number as a string
-                instrmts = list_directories(link, '-{}__'.format(inst_serial.upper()))
+                instrmts = link
 
             # if we have found some calibration files, start to zero in on the one we want
             if instrmts:
-                for inst in instrmts:
-                    # only look at .csv files
-                    if not CSV.match(inst):
-                        continue
+                # only look at .csv files
+                if not CSV.match(instrmts):
+                    continue
 
-                    # we are getting close, now we need to pull out the date stamp
-                    dstr = re.sub('.csv', '', re.split('__', inst)[1])
+                # we are getting close, now we need to pull out the date stamp
+                dstr = re.sub('.csv', '', re.split('__', instrmts)[1])
 
-                    # convert the date string of the file into a datetime object
-                    dt = datetime.datetime.strptime(dstr, '%Y%m%d')
-                    utc = dt.replace(tzinfo=timezone('UTC'))
+                # convert the date string of the file into a datetime object
+                dt = datetime.datetime.strptime(dstr, '%Y%m%d')
+                utc = dt.replace(tzinfo=timezone('UTC'))
 
-                    # calculate the epoch time as seconds since 1970-01-01 in UTC
-                    epts = timegm(utc.timetuple()) + (utc.microsecond / 1e6)
+                # calculate the epoch time as seconds since 1970-01-01 in UTC
+                epts = timegm(utc.timetuple()) + (utc.microsecond / 1e6)
 
-                    # test the type of the sampling_date and convert to match epts if needed
-                    if type(sampling_date) is pd.Timestamp:
-                        # convert the sampling date to epoch time
-                        sampling_date = timegm(sampling_date.timetuple())
+                # test the type of the sampling_date and convert to match epts if needed
+                if type(sampling_date) is pd.Timestamp:
+                    # convert the sampling date to epoch time
+                    sampling_date = timegm(sampling_date.timetuple())
 
-                    # now compare that time to the sampling date from the data
-                    flist.append(inst)
-                    tdiff.append(round((sampling_date - epts) / 60 / 60 / 24))
+                # now compare that time to the sampling date from the data
+                flist.append(instrmts)
+                tdiff.append(round((sampling_date - epts) / 60 / 60 / 24))
 
     if tdiff:
         try:

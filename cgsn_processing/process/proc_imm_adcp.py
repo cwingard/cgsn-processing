@@ -43,12 +43,12 @@ class Calibrations(Coefficients):
         cal = pd.read_csv(csv_url, usecols=[0, 1, 2])
         for idx, row in cal.iterrows():
             # bin size, distance to the first bin and orientation
-            if row[1] == 'CC_bin_size':
-                coeffs['bin_size'] = row[2]
-            if row[1] == 'CC_dist_first_bin':
-                coeffs['distance_first_bin'] = row[2]
-            if row[1] == 'CC_orientation':
-                coeffs['orientation'] = row[2]
+            if row.iloc[1] == 'CC_bin_size':
+                coeffs['bin_size'] = row.iloc[2]
+            if row.iloc[1] == 'CC_dist_first_bin':
+                coeffs['distance_first_bin'] = row.iloc[2]
+            if row.iloc[1] == 'CC_orientation':
+                coeffs['orientation'] = row.iloc[2]
 
         # save the resulting dictionary
         self.coeffs = coeffs
