@@ -48,12 +48,12 @@ class Calibrations(Coefficients):
         cal = pd.read_csv(csv_url, usecols=[0, 1, 2])
         for idx, row in cal.iterrows():
             # scale and offset correction factors from a two-point calibration
-            if row[1] == 'CC_conc_coef':
-                coeffs['two_point_coeffs'] = np.array(json.loads(row[2]))
+            if row.iloc[1] == 'CC_conc_coef':
+                coeffs['two_point_coeffs'] = np.array(json.loads(row.iloc[2]))
 
             # Stern-Volmer-Uchida calibration coefficients from a multipoint factory calibration
-            if row[1] == 'CC_csv':
-                coeffs['svu_cal_coeffs'] = np.array(json.loads(row[2]))
+            if row.iloc[1] == 'CC_csv':
+                coeffs['svu_cal_coeffs'] = np.array(json.loads(row.iloc[2]))
 
         # save the resulting dictionary
         self.coeffs = coeffs
