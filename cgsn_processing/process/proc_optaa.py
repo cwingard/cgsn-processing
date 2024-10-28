@@ -102,25 +102,25 @@ class Calibrations(Coefficients):
         # create the device file dictionary and assign values
         coeffs = {}
         
-        # read in the header portion of the calibration data
+        # read in the (mostly) header portion of the calibration data
         hdr = pd.read_csv(hdr_url, usecols=[0, 1, 2])
         for idx, row in hdr.iterrows():
             # beam attenuation and absorption channel clear water offsets
-            if row[1] == 'CC_acwo':
-                coeffs['a_offsets'] = np.array(json.loads(row[2]))
-            if row[1] == 'CC_ccwo':
-                coeffs['c_offsets'] = np.array(json.loads(row[2]))
+            if row.iloc[1] == 'CC_acwo':
+                coeffs['a_offsets'] = np.array(json.loads(row.iloc[2]))
+            if row.iloc[1] == 'CC_ccwo':
+                coeffs['c_offsets'] = np.array(json.loads(row.iloc[2]))
             # beam attenuation and absorption channel wavelengths
-            if row[1] == 'CC_awlngth':
-                coeffs['a_wavelengths'] = np.array(json.loads(row[2]))
-            if row[1] == 'CC_cwlngth':
-                coeffs['c_wavelengths'] = np.array(json.loads(row[2]))
+            if row.iloc[1] == 'CC_awlngth':
+                coeffs['a_wavelengths'] = np.array(json.loads(row.iloc[2]))
+            if row.iloc[1] == 'CC_cwlngth':
+                coeffs['c_wavelengths'] = np.array(json.loads(row.iloc[2]))
             # internal temperature compensation values
-            if row[1] == 'CC_tbins':
-                coeffs['temp_bins'] = np.array(json.loads(row[2]))
+            if row.iloc[1] == 'CC_tbins':
+                coeffs['temp_bins'] = np.array(json.loads(row.iloc[2]))
             # temperature of calibration water
-            if row[1] == 'CC_tcal':
-                coeffs['temp_calibration'] = float(row[2])
+            if row.iloc[1] == 'CC_tcal':
+                coeffs['temp_calibration'] = float(row.iloc[2])
 
         # serial number, stripping off all but the numbers
         coeffs['serial_number'] = int(re.sub('[^0-9]', '',  hdr.serial[0]))

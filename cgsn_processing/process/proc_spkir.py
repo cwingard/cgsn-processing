@@ -48,12 +48,12 @@ class Calibrations(Coefficients):
         cal = pd.read_csv(csv_url, usecols=[0, 1, 2])
         for idx, row in cal.iterrows():
             # immersion, scale and offset correction factors
-            if row[1] == 'CC_immersion_factor':
-                coeffs['immersion_factor'] = np.array(json.loads(row[2]))
-            if row[1] == 'CC_offset':
-                coeffs['offset'] = np.array(json.loads(row[2]))
-            if row[1] == 'CC_scale':
-                coeffs['scale'] = np.array(json.loads(row[2]))
+            if row.iloc[1] == 'CC_immersion_factor':
+                coeffs['immersion_factor'] = np.array(json.loads(row.iloc[2]))
+            if row.iloc[1] == 'CC_offset':
+                coeffs['offset'] = np.array(json.loads(row.iloc[2]))
+            if row.iloc[1] == 'CC_scale':
+                coeffs['scale'] = np.array(json.loads(row.iloc[2]))
 
         # save the resulting dictionary
         self.coeffs = coeffs

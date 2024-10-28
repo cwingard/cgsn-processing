@@ -49,22 +49,22 @@ class Calibrations(Coefficients):
         # read in the calibration data
         data = pd.read_csv(csv_url, usecols=[0, 1, 2])
         for idx, row in data.iterrows():
-            if row[1] == 'CC_ea434':
-                coeffs['ea434'] = float(row[2])
-            if row[1] == 'CC_ea578':
-                coeffs['ea578'] = float(row[2])
-            if row[1] == 'CC_eb434':
-                coeffs['eb434'] = float(row[2])
-            if row[1] == 'CC_eb578':
-                coeffs['eb578'] = float(row[2])
-            if row[1] == 'CC_ind_off':
-                coeffs['ind_off'] = float(row[2])
-            if row[1] == 'CC_ind_slp':
-                coeffs['ind_slp'] = float(row[2])
-            if row[1] == 'CC_psal':
-                coeffs['psal'] = float(row[2])
-            if row[1] == 'CC_sami_bits':
-                coeffs['sami_bits'] = float(row[2])
+            if row.iloc[1] == 'CC_ea434':
+                coeffs['ea434'] = float(row.iloc[2])
+            if row.iloc[1] == 'CC_ea578':
+                coeffs['ea578'] = float(row.iloc[2])
+            if row.iloc[1] == 'CC_eb434':
+                coeffs['eb434'] = float(row.iloc[2])
+            if row.iloc[1] == 'CC_eb578':
+                coeffs['eb578'] = float(row.iloc[2])
+            if row.iloc[1] == 'CC_ind_off':
+                coeffs['ind_off'] = float(row.iloc[2])
+            if row.iloc[1] == 'CC_ind_slp':
+                coeffs['ind_slp'] = float(row.iloc[2])
+            if row.iloc[1] == 'CC_psal':
+                coeffs['psal'] = float(row.iloc[2])
+            if row.iloc[1] == 'CC_sami_bits':
+                coeffs['sami_bits'] = float(row.iloc[2])
 
         # serial number
         coeffs['serial_number'] = data.serial[0]

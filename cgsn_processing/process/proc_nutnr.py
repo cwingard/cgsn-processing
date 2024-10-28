@@ -52,26 +52,26 @@ class Calibrations(Coefficients):
         # read in the calibration data
         cal = pd.read_csv(csv_url, usecols=[0, 1, 2])
         for idx, row in cal.iterrows():
-            if row[1] == 'CC_cal_temp':
-                coeffs['cal_temp'] = float(row[2])
+            if row.iloc[1] == 'CC_cal_temp':
+                coeffs['cal_temp'] = float(row.iloc[2])
 
-            if row[1] == 'CC_di':
-                coeffs['di'] = np.array(json.loads(row[2]))
+            if row.iloc[1] == 'CC_di':
+                coeffs['di'] = np.array(json.loads(row.iloc[2]))
 
-            if row[1] == 'CC_eno3':
-                coeffs['eno3'] = np.array(json.loads(row[2]))
+            if row.iloc[1] == 'CC_eno3':
+                coeffs['eno3'] = np.array(json.loads(row.iloc[2]))
 
-            if row[1] == 'CC_eswa':
-                coeffs['eswa'] = np.array(json.loads(row[2]))
+            if row.iloc[1] == 'CC_eswa':
+                coeffs['eswa'] = np.array(json.loads(row.iloc[2]))
 
-            if row[1] == 'CC_lower_wavelength_limit_for_spectra_fit':
-                coeffs['wllower'] = int(row[2])
+            if row.iloc[1] == 'CC_lower_wavelength_limit_for_spectra_fit':
+                coeffs['wllower'] = int(row.iloc[2])
 
-            if row[1] == 'CC_upper_wavelength_limit_for_spectra_fit':
-                coeffs['wlupper'] = int(row[2])
+            if row.iloc[1] == 'CC_upper_wavelength_limit_for_spectra_fit':
+                coeffs['wlupper'] = int(row.iloc[2])
 
-            if row[1] == 'CC_wl':
-                coeffs['wl'] = np.array(json.loads(row[2]))
+            if row.iloc[1] == 'CC_wl':
+                coeffs['wl'] = np.array(json.loads(row.iloc[2]))
 
         # save the resulting dictionary
         self.coeffs = coeffs

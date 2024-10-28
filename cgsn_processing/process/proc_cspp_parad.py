@@ -47,12 +47,12 @@ class Calibrations(Coefficients):
         cal = pd.read_csv(csv_url, usecols=[0, 1, 2])
         for idx, row in cal.iterrows():
             # immersion, scale and offset correction factors
-            if row[1] == 'CC_a0':
-                coeffs['a0'] = row[2]
-            if row[1] == 'CC_a1':
-                coeffs['a1'] = row[2]
-            if row[1] == 'CC_Im':
-                coeffs['Im'] = row[2]
+            if row.iloc[1] == 'CC_a0':
+                coeffs['a0'] = row.iloc[2]
+            if row.iloc[1] == 'CC_a1':
+                coeffs['a1'] = row.iloc[2]
+            if row.iloc[1] == 'CC_Im':
+                coeffs['Im'] = row.iloc[2]
 
         # save the resulting dictionary
         self.coeffs = coeffs

@@ -12,11 +12,13 @@ import json
 import pandas as pd
 import xarray as xr
 from pathlib import Path
-from gsw import z_from_p
+from gsw import SP_from_C, z_from_p
+from pyseas.data.flo_functions import flo_scale_and_offset, flo_bback_total
 
 from cgsn_processing.process.common import ENCODING, inputs, epoch_time, json2df, update_dataset
 from cgsn_processing.process.finding_calibrations import find_calibration
-from cgsn_processing.process.configs.attr_mmp_prawler import PRAWLER, PRAWLER_SCI
+from cgsn_processing.process.configs.attr_mmp_prawler import PRAWLER, PRAWLER_NO_FLORT, PRAWLER_SCI
+from cgsn_processing.process.proc_flort import Calibrations
 
 def read_json(infile):
     """
@@ -42,7 +44,7 @@ def read_json(infile):
     return json_data
             
 
-def proc_mmp_prawler(infile, platform, deployment, lat, lon, depth, **kwargs):
+def proc_mmp_prawler(infile, platform, deployment, lat, lon, depth, coeff_file, serial):
     """
     Processing function for the McLane Prawler MMP sensor. Loads the JSON
     formatted parsed data and applies appropriate calibration coefficients to
@@ -83,18 +85,56 @@ def proc_mmp_prawler(infile, platform, deployment, lat, lon, depth, **kwargs):
     # add the deployment id, used to subset data sets
     prawler_df['deploy_id'] = deployment
 
+    attrs = PRAWLER
+
+    # Do not try to compute calculated fields if no fluorometer exists
+    if 'flu_chl_count' in prawler_json['scidata'].keys():
+
+        # If the prawler has a fluorometer, it should have a corresponding calibration coefficients file
+        if coeff_file is not None:
+            calib_prefix = "FLORT"
+            dev = Calibrations(coeff_file)  # initialize calibration class
+            if os.path.isfile(coeff_file):
+                # we always want to use this file if it exists
+                dev.load_coeffs()
+            else:
+            # load from the CI hosted CSV files
+                csv_url = find_calibration(calib_prefix, serial, (prawler_df.time.values.astype('int64') * 10 ** -9)[0])
+                if csv_url:
+                    dev.read_csv(csv_url)
+                    dev.save_coeffs()
+                else:
+                    print('A source for the FLORT calibration coefficients for {} could not be found'.format(infile))
+                    return None
+
+            prawler_df['estimated_chlorophyll'] = flo_scale_and_offset( 
+                prawler_df['flu_chl_count'], dev.coeffs['dark_chla'], dev.coeffs['scale_chla'])
+            
+            prawler_df['fluorometric_cdom'] = flo_scale_and_offset(
+                prawler_df['flu_cdom_count'], dev.coeffs['dark_cdom'], dev.coeffs['scale_cdom'])
+            
+            prawler_df['beta_700'] = flo_scale_and_offset(
+                prawler_df['flu_beta_count'], dev.coeffs['dark_beta'], dev.coeffs['scale_beta'])
+            
+            # calculate the practical salinity of the seawater from the temperature, conductivity and
+            # pressure measurements
+            prawler_df['salinity'] = SP_from_C( prawler_df['conductivity'].values * 10.0, 
+                                            prawler_df['temperature'].values, 
+                                            prawler_df['pressure'].values)
+
+            prawler_df['bback'] = flo_bback_total( prawler_df['beta_700'], 
+                                                prawler_df['temperature'], 
+                                                prawler_df['salinity'], 124., 700., 1.076)
+            
+    else:
+        attrs = PRAWLER_NO_FLORT
+
     # calculate depth from pressure
     prawler_df['depth'] = z_from_p( prawler_df['pressure'], lat)  # keep for compat w/ early data ingests
 
-    # add the summary data fields as singleton values in the science profile data frame
-
-    #for key in prawler_json["summarydata"]:
-    #    prawler_df[ key ] = prawler_json["summarydata"][key][0]
-
+    # Translate to xarray, add in attributes
     prawler_xr = xr.Dataset.from_dataframe( prawler_df )
-
-    prawler_xr = update_dataset(prawler_xr, platform, deployment, lat, lon, [depth, depth, depth], PRAWLER)
-
+    prawler_xr = update_dataset(prawler_xr, platform, deployment, lat, lon, [depth, depth, depth], attrs)
     prawler_xr.attrs['processing_level'] = 'processed'
 
     # add back some of the useful prawler summary data fields as attributes
@@ -120,10 +160,11 @@ def main(argv=None):
     lat = args.latitude
     lon = args.longitude
     depth = args.depth
-
+    coeff_file = args.coeff_file
+    serial = args.serial
 
     # process the science profile data and save the results to disk
-    prawler = proc_mmp_prawler(infile, platform, deployment, lat, lon, depth)
+    prawler = proc_mmp_prawler(infile, platform, deployment, lat, lon, depth, coeff_file, serial)
     if prawler:
         prawler.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
 
