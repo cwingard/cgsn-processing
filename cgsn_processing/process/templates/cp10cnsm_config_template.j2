@@ -1,5 +1,5 @@
 meta:
-    name: &mooring CP10CNSM
+    name: &mooring {{ mooring_name.upper() }}
     array: 'Coastal Pioneer MAB'
     deployment: {{ deployment }}
     deploy_name: {{ deployment_name }}
@@ -11,9 +11,9 @@ meta:
     latitude: {{ latitude }}
     longitude: {{ longitude }}
     stop_date: {{ stop_date }}
-    recover_cruise: {{ recover_cruise }}
-    watch_circle: {{ orbit }}
+    watch_circle: 100
     water_depth: &water_depth 32
+    recover_cruise: {{ recover_cruise }}
 paths:
     raw: /home/ooiuser/data/raw
     parsed: /home/ooiuser/data/parsed
@@ -21,797 +21,918 @@ paths:
 platforms:
     - platform1:
         name: &buoy BUOY
-        controlled_by: None
-        physical: *mooring
-        depth: &depth0 0
+        parent: *mooring
+        depth: &depth1 0
         controller:
             name: &cpm1 CPM1
-            refdes: CP10CNSM-SBC11-00-CPMENG000
+            refdes: {{ mooring_name.upper() }}-SBC11-00-CPMENG000
+            parent: *buoy
             controlled_by: None
             physical: *buoy
-            depth: *depth0
-            serial: {{ cpm1_serial }}
             uuid: {{ cpm1_uuid }}
-            raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/syslog/*.syslog.log"
-            parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/syslog/cpm1/*.syslog.json"
-            dataset: CP10CNSM_BUOY_001_SUPERV
+            serial: {{ cpm1_serial }}
+            raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/syslog/*.syslog.log"
+            parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/superv/cpm1/*.syslog.json"
+            dataset: {{ mooring_name.upper() }}_BUOY_001_SUPERV
         beacons:
             - beacon1:
                 name: Rover1
                 refdes: None
+                parent: *buoy
                 controlled_by: None
                 physical: *buoy
                 depth: -4
-                serial: {{ xeos_beacon1_serial }}
-                imei: {{ xeos_beacon1_imei }}
-                raw_data: "cp10cnsm/{{ deployment_name }}/xeos_sbd/{{ xeos_beacon1_imei }}.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/xeos/rover1/{{ xeos_beacon1_imei }}.json"
+                imei: {{ xeos1_imei }}
+                serial: {{ xeso1_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/xeos_sbd/{{ xeos1_imei }}.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/xeos/rover1/{{ xeos1_imei }}.json"
                 dataset: None
             - beacon2:
                 name: Rover2
                 refdes: None
+                parent: *buoy
                 controlled_by: None
                 physical: *buoy
                 depth: -4
-                serial: {{ xeos_beacon2_serial }}
-                imei: {{ xeos_beacon2_imei }}
-                raw_data: "cp10cnsm/{{ deployment_name }}/xeos_sbd/{{ xeos_beacon2_imei }}.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/xeos/rover2/{{ xeos_beacon2_imei }}.json"
+                imei: {{ xeos2_imei }}
+                serial: {{ xeso2_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/xeos_sbd/{{ xeos2_imei }}.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/xeos/rover2/{{ xeos2_imei }}.json"
                 dataset: None
             - beacon3:
                 name: Kilo_Buoy
                 refdes: None
+                parent: *buoy
                 controlled_by: None
                 physical: *buoy
-                depth: 1
-                serial: {{ xeos_beacon3_serial }}
-                imei: {{ xeos_beacon3_imei }}
-                raw_data: "cp10cnsm/{{ deployment_name }}/xeos_sbd/{{ xeos_beacon3_imei }}.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/xeos/kilo_buoy/{{ xeos_beacon3_imei }}.json"
+                depth: 1.5
+                imei: {{ xeos3_imei }}
+                serial: {{ xeso3_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/xeos_sbd/{{ xeos3_imei }}.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/xeos/kilo/{{ xeos3_imei }}.json"
                 dataset: None
         pwrsys:
             name: &psc PSC
             refdes: None
-            controlled_by: *cpm1
+            parent: *buoy
+            controlled_by: None
             physical: *buoy
-            depth: *depth0
+            depth: *depth1
             serial: {{ psc_serial }}
-            uuid: {{ psc_uuid }}
-            raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/pwrsys/*.pwrsys.log"
-            parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/pwrsys/*.pwrsys.json"
-            dataset: CP10CNSM_BUOY_001_PWRSYS
+            raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/syslog/*.syslog.log"
+            parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/pwrsys/*.syslog.json"
+            dataset: {{ mooring_name.upper() }}_BUOY_001_PWRSYS
         loggers:
             - logger1:
                 name: &dcl11 DCL11
-                refdes: CP10CNSM-SBD11-00-DCLENG000
+                refdes: {{ mooring_name.upper() }}-SBD11-00-DCLENG000
+                parent: *cpm1
                 controlled_by: *cpm1
                 physical: *buoy
-                depth: *depth0
-                serial: {{ dcl11_serial }}
-                uuid: {{ dcl11_uuid }}
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl11/syslog/*.syslog.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/syslog/dcl11/*.syslog.json"
-                dataset: CP10CNSM_BUOY_002_SUPERV
+                depth: *depth1
+                uuid: {{ dcl1_uuid }}
+                serial: {{ dcl1_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl11/syslog/*.syslog.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/superv/dcl11/*.syslog.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_002_SUPERV
             - logger2:
                 name: &dcl12 DCL12
-                refdes: CP10CNSM-SBD12-00-DCLENG000
+                refdes: {{ mooring_name.upper() }}-SBD12-00-DCLENG000
+                parent: *cpm1
                 controlled_by: *cpm1
                 physical: *buoy
-                depth: *depth0
-                serial: {{ dcl12_serial }}
-                uuid: {{ dcl11_uuid }}
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl12/syslog/*.syslog.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/syslog/dcl12/*.syslog.json"
-                dataset: CP10CNSM_BUOY_003_SUPERV
+                depth: *depth1
+                uuid: {{ dcl2_uuid }}
+                serial: {{ dcl2_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl12/syslog/*.syslog.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/superv/dcl12/*.syslog.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_003_SUPERV
         instrmts:
             ### Instruments controlled and logged by CPM1 ###
             - gps:
                 name: GPS
                 refdes: None
+                parent: *cpm1
                 controlled_by: *cpm1
                 physical: *buoy
                 depth: -4
-                serial: {{ gps_serial }}
                 uuid: {{ gps_uuid }}
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/gps/*.gps.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/gps/*.gps.json"
-                dataset: CP10CNSM_BUOY_001_GPS
+                serial: {{ gps_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/syslog/*.syslog.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/gps/*.syslog.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_001_GPS
             - iridium:
                 name: IRIDIUM
                 refdes: None
+                parent: *cpm1
                 controlled_by: *cpm1
                 physical: *buoy
                 depth: -4
-                serial: {{ irid_serial }}
                 uuid: {{ irid_uuid }}
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/irid/*.irid.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/iridium/*.irid.json"
-                dataset: CP10CNSM_BUOY_001_IRIDIUM
+                serial: {{ irid_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/syslog/*.syslog.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/iridium/*.syslog.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_001_IRIDIUM
             - sbd1:
                 name: SBD_Primary
                 refdes: None
+                parent: *cpm1
                 controlled_by: *cpm1
                 physical: *buoy
                 depth: -4
-                serial: {{ sbd1_serial }}
-                uuid: {{ sbd1_uuid }}
                 imei: {{ sbd1_imei }}
-                raw_data: "cp10cnsm/{{ deployment_name }}/irid_sbd/{{ sbd1_imei }}.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/sbd_primary/{{ sbd_imei1 }}.json"
+                serial: {{ sbd1_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/irid_sbd/{{ sbd1_imei }}.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/sbd_primary/{{ sbd1_imei }}.json"
                 dataset: None
             - sbd2:
                 name: SBD_Backup
                 refdes: None
+                parent: *cpm1
                 controlled_by: *cpm1
                 physical: *buoy
                 depth: -4
-                serial: {{ sbd2_serial }}
-                uuid: {{ sbd2_uuid }}
                 imei: {{ sbd2_imei }}
-                raw_data: "cp10cnsm/{{ deployment_name }}/irid_sbd/{{ sbd2_imei }}.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/sbd_backup/{{ sbd2_imei }}.json"
+                serial: {{ sbd2_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/irid_sbd/{{ sbd2_imei }}.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/sbd_primary/{{ sbd2_imei }}.json"
                 dataset: None
             ### Instruments controlled and logged by DCL11 ###
             - mopak:
                 name: MOPAK
-                refdes: CP10CNSM-SBD11-01-MOPAK0000
+                refdes: {{ mooring_name.upper() }}-SBD11-01-MOPAK0000
+                parent: *dcl11
                 controlled_by: *dcl11
                 physical: *buoy
-                depth: *depth0
-                serial: {{ mopak_serial }}
-                uuid: {{ mopak_uuid }}
                 port: 1
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl11/mopak/*.mopak.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/mopak/*.mopak.json"
-                dataset: CP10CNSM_BUOY_001_MOPAK
+                depth: *depth1
+                uuid: {{ mopak_uuid }}
+                serial: {{ mopak_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl11/mopak/*.mopak.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/mopak/*.mopak.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_001_MOPAK
             - hyd1:
                 name: HYDGN1
-                refdes: CP10CNSM-SBD11-02-HYDGN0000
+                refdes: {{ mooring_name.upper() }}-SBD11-02-HYDGN0000
+                parent: *dcl11
                 controlled_by: *dcl11
                 physical: *buoy
-                depth: *depth0
-                serial: {{ hyd1_serial }}
-                uuid: {{ hyd1_uuid }}
+                depth: *depth1
                 port: 2
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl11/hyd1/*.hyd1.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/dcl11/hyd1/*.hyd1.json"
-                dataset: CP10CNSM_BUOY_001_HYDGN
+                uuid: {{ hyd1_uuid }}
+                serial: {{ hyd1_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl11/hyd1/*.hyd1.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/dcl11/hyd1/*.hyd1.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_001_HYDGN
             - rte:
                 name: RTE
                 refdes: None
+                parent: *dcl11
                 controlled_by: *dcl11
                 physical: *buoy
                 depth: -4
-                serial: {{ rte_serial }}
-                uuid: {{ rte_uuid }}
                 port: 3
+                uuid: {{ rte_uuid }}
+                serial: {{ rte_serial }}
                 raw_data: None
                 parsed_data: None
                 dataset: None
             - spkir:
                 name: SPKIR
                 refdes: None
+                parent: *dcl11
                 controlled_by: *dcl11
                 physical: *buoy
                 depth: -4
-                serial: {{ spkir_serial }}
-                uuid: {{ spkir_uuid }}
                 port: 5
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl11/spkir1/*.spkir1.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/spkir/*.spkir1.json"
-                dataset: CP10CNSM_BUOY_001_SPKIR
+                uuid: {{ spkir_uuid }}
+                serial: {{ spkir_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl11/spkir1/*.spkir1.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/spkir/*.spkir1.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_001_SPKIR
             - metbk1:
-                name: &metbk1 METBK1
-                refdes: CP10CNSM-SBD11-06-METBKA000
+                name: METBK1
+                refdes: {{ mooring_name.upper() }}-SBD11-06-METBKA000
+                parent: *dcl11
                 controlled_by: *dcl11
                 physical: *buoy
-                depth: *depth0
-                serial: {{ metbk1_serial }}
+                depth: *depth1
+                port: 6
                 uuid: {{ metbk1_uuid }}
-                port: 6
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl11/metbk1/*.metbk1.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/metbk1/*.metbk1.json"
-                dataset: CP10CNSM_BUOY_001_METBK
-            - metct1:
+                serial: {{ metbk1_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl11/metbk1/*.metbk1.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/metbk1/*.metbk1.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_001_METBK
+            - metct1
                 name: METCT1
-                refdes: CP10CNSM-SBD11-06-METBKA001
-                controlled_by: *metbk1
+                refdes: {{ mooring_name.upper() }}-SBD11-06-METBKA001
+                parent: *dcl11
+                controlled_by: *dcl11
                 physical: *buoy
-                ui: False
-                depth: 1
-                serial: {{ metct1_serial }}
-                uuid: {{ metct1_uuid }}
+                depth: 1.5
                 port: 6
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl11/metbk1/*.metbk1.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/metbk1/*.metbk1.json"
-                dataset: CP10CNSM_BUOY_001_METBK
+                ui: False
+                uuid: {{ metct1_uuid }}
+                serial: {{ metct1_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl11/metbk1/*.metbk1.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/metbk1/*.metbk1.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_001_METBK
             - metbpr1:
                 name: METBPR1
-                refdes: CP10CNSM-SBD11-06-METBKA002
-                controlled_by: *metbk1
+                refdes: {{ mooring_name.upper() }}-SBD11-06-METBKA002
+                parent: *dcl11
+                controlled_by: *dcl11
                 physical: *buoy
-                ui: False
                 depth: -4
-                serial: {{ metbpr1_serial }}
-                uuid: {{ metbpr1_uuid }}
                 port: 6
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl11/metbk1/*.metbk1.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/metbk1/*.metbk1.json"
-                dataset: CP10CNSM_BUOY_001_METBK
+                ui: False
+                uuid: {{ metbpr1_uuid }}
+                serial: {{ metbpr1_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl11/metbk1/*.metbk1.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/metbk1/*.metbk1.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_001_METBK
             - methrh1:
                 name: METHRH1
-                refdes: CP10CNSM-SBD11-06-METBKA003
-                controlled_by: *metbk1
+                refdes: {{ mooring_name.upper() }}-SBD11-06-METBKA003
+                parent: *dcl11
+                controlled_by: *dcl11
                 physical: *buoy
-                ui: False
                 depth: -4
-                serial: {{ methrh1_serial }}
-                uuid: {{ methrh1_uuid }}
                 port: 6
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl11/metbk1/*.metbk1.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/metbk1/*.metbk1.json"
-                dataset: CP10CNSM_BUOY_001_METBK
+                ui: False
+                uuid: {{ methrh1_uuid }}
+                serial: {{ methrh1_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl11/metbk1/*.metbk1.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/metbk1/*.metbk1.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_001_METBK
             - metlwr1:
                 name: METLWR1
-                refdes: CP10CNSM-SBD11-06-METBKA004
-                controlled_by: *metbk1
+                refdes: {{ mooring_name.upper() }}-SBD11-06-METBKA004
+                parent: *dcl11
+                controlled_by: *dcl11
                 physical: *buoy
-                ui: False
                 depth: -4
-                serial: {{ metlwr1_serial }}
-                uuid: {{ metlwr1_uuid }}
                 port: 6
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl11/metbk1/*.metbk1.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/metbk1/*.metbk1.json"
-                dataset: CP10CNSM_BUOY_001_METBK
+                ui: False
+                uuid: {{ metlwr1_uuid }}
+                serial: {{ metlwr1_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl11/metbk1/*.metbk1.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/metbk1/*.metbk1.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_001_METBK
             - metprc1:
                 name: METPRC1
-                refdes: CP10CNSM-SBD11-06-METBKA005
-                controlled_by: *metbk1
+                refdes: {{ mooring_name.upper() }}-SBD11-06-METBKA005
+                parent: *dcl11
+                controlled_by: *dcl11
                 physical: *buoy
-                ui: False
                 depth: -4
-                serial: {{ metprc1_serial }}
-                uuid: {{ metprc1_uuid }}
                 port: 6
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl11/metbk1/*.metbk1.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/metbk1/*.metbk1.json"
-                dataset: CP10CNSM_BUOY_001_METBK
+                ui: False
+                uuid: {{ metprc1_uuid }}
+                serial: {{ metprc1_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl11/metbk1/*.metbk1.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/metbk1/*.metbk1.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_001_METBK
             - metswr1:
                 name: METSWR1
-                refdes: CP10CNSM-SBD11-06-METBKA006
-                controlled_by: *metbk1
+                refdes: {{ mooring_name.upper() }}-SBD11-06-METBKA006
+                parent: *dcl11
+                controlled_by: *dcl11
                 physical: *buoy
-                ui: False
                 depth: -4
-                serial: {{ metswr1_serial }}
-                uuid: {{ metswr1_uuid }}
                 port: 6
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl11/metbk1/*.metbk1.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/metbk1/*.metbk1.json"
-                dataset: CP10CNSM_BUOY_001_METBK
+                ui: False
+                uuid: {{ metswr1_uuid }}
+                serial: {{ metswr1_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl11/metbk1/*.metbk1.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/metbk1/*.metbk1.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_001_METBK
             - metwnd1:
                 name: METWND1
-                refdes: CP10CNSM-SBD11-06-METBKA007
-                controlled_by: *metbk1
+                refdes: {{ mooring_name.upper() }}-SBD11-06-METBKA007
+                parent: *dcl11
+                controlled_by: *dcl11
                 physical: *buoy
-                ui: False
                 depth: -4
-                serial: {{ metwnd1_serial }}
-                uuid: {{ metwnd1_uuid }}
                 port: 6
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl11/metbk1/*.metbk1.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/metbk1/*.metbk1.json"
-                dataset: CP10CNSM_BUOY_001_METBK
+                ui: False
+                uuid: {{ metwnd1_uuid }}
+                serial: {{ metwnd1_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl11/metbk1/*.metbk1.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/metbk1/*.metbk1.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_001_METBK
             - methtr1:
                 name: METHTR1
                 refdes: None
+                parent: *dcl11
                 controlled_by: *dcl11
                 physical: *buoy
-                depth: -4
-                serial: {{ methtr1_serial }}
-                uuid: {{ methtr1_uuid }}
+                depth: *depth1
                 port: 7
+                uuid: {{ methtr1_uuid }}
+                serial: {{ methtr1_serial }}
                 raw_data: None
                 parsed_data: None
                 dataset: None
             ### Instruments controlled and logged by DCL12 ###
             - hyd2:
                 name: HYDGN2
-                refdes: CP10CNSM-SBD12-03-HYDGN0000
+                refdes: {{ mooring_name.upper() }}-SBD12-03-HYDGN0000
+                parent: *dcl12
                 controlled_by: *dcl12
                 physical: *buoy
-                depth: *depth0
-                serial: {{ hyd2_serial }}
-                uuid: {{ hyd2_uuid }}
+                depth: *depth1
                 port: 3
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl12/hyd2/*.hyd2.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/hyd2/*.hyd2.json"
-                dataset: CP10CNSM_BUOY_002_HYDGN
+                uuid: {{ hyd2_uuid }}
+                serial: {{ hyd2_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl12/hyd2/*.hyd2.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/hyd2/*.hyd2.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_002_HYDGN
             - pco2a:
                 name: PCO2A
-                refdes: CP10CNSM-SBD12-04-PCO2AA000
+                refdes: {{ mooring_name.upper() }}-SBD12-04-PCO2AA000
+                parent: *dcl12
                 controlled_by: *dcl12
                 physical: *buoy
-                depth: *depth0
-                serial: {{ pco2a_serial }}
-                uuid: {{ pco2a_uuid }}
+                depth: *depth1
                 port: 4
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl12/pco2a/*.pco2a.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/pco2a/*.pco2a.json"
-                dataset: CP10CNSM_BUOY_001_PCO2A
+                uuid: {{ pco2a_uuid }}
+                serial: {{ pco2a_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl12/pco2a/*.pco2a.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/pco2a/*.pco2a.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_001_PCO2A
             - wavss:
                 name: WAVSS
-                refdes: CP10CNSM-SBD12-05-WAVSSA000
+                refdes: {{ mooring_name.upper() }}-SBD12-05-WAVSSA000
+                parent: *dcl12
                 controlled_by: *dcl12
                 physical: *buoy
-                depth: *depth0
-                serial: {{ wavss_serial }}
-                uuid: {{ wavss_uuid }}
+                depth: *depth1
                 port: 5
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl12/*.wavss.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/wavss/*.wavss.json"
-                dataset: CP10CNSM_BUOY_001_WAVSS
+                uuid: {{ wavss_uuid }}
+                serial: {{ wavss_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl12/*.wavss.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/wavss/*.wavss.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_001_WAVSS
             - metbk2:
                 name: METBK2
-                refdes: CP10CNSM-SBD12-06-METBKA000
+                refdes: {{ mooring_name.upper() }}-SBD12-06-METBKA000
+                parent: *dcl12
                 controlled_by: *dcl12
                 physical: *buoy
-                depth: *depth0
-                serial: {{ metbk2_serial }}
-                uuid: {{ metbk2_uuid }}
+                depth: *depth1
                 port: 6
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl12/metbk2/*.metbk2.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/metbk2/*.metbk2.json"
-                dataset: CP10CNSM_BUOY_002_METBK
+                uuid: {{ metbk2_uuid }}
+                serial: {{ metbk2_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl12/metbk2/*.metbk2.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/metbk2/*.metbk2.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_002_METBK
             - metct2:
                 name: METCT2
-                refdes: CP10CNSM-SBD12-06-METBKA001
-                controlled_by: *metbk2
+                refdes: {{ mooring_name.upper() }}-SBD12-06-METBKA001
+                parent: *dcl12
+                controlled_by: *dcl12
                 physical: *buoy
-                ui: False
-                depth: 1
-                serial: {{ metct2_serial }}
-                uuid: {{ metct2_uuid }}
+                depth: 1.5
                 port: 6
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl12/metbk2/*.metbk2.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/metbk2/*.metbk2.json"
-                dataset: CP10CNSM_BUOY_002_METBK
+                ui: False
+                uuid: {{ metct2_uuid }}
+                serial: {{ metct2_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl12/metbk2/*.metbk2.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/metbk2/*.metbk2.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_002_METBK
             - metbpr2:
                 name: METBPR2
-                refdes: CP10CNSM-SBD12-06-METBKA002
-                controlled_by: *metbk2
+                refdes: {{ mooring_name.upper() }}-SBD12-06-METBKA002
+                parent: *dcl12
+                controlled_by: *dcl12
                 physical: *buoy
-                ui: False
                 depth: -4
-                serial: {{ metbpr2_serial }}
-                uuid: {{ metbpr2_uuid }}
                 port: 6
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl12/metbk2/*.metbk2.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/metbk2/*.metbk2.json"
-                dataset: CP10CNSM_BUOY_002_METBK
+                ui: False
+                uuid: {{ metbpr2_uuid }}
+                serial: {{ metbpr2_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl12/metbk2/*.metbk2.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/metbk2/*.metbk2.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_002_METBK
             - methrh2:
                 name: METHRH2
-                refdes: CP10CNSM-SBD12-06-METBKA003
-                controlled_by: *metbk2
+                refdes: {{ mooring_name.upper() }}-SBD12-06-METBKA003
+                parent: *dcl12
+                controlled_by: *dcl12
                 physical: *buoy
-                ui: False
                 depth: -4
-                serial: {{ methrh2_serial }}
-                uuid: {{ methrh2_uuid }}
                 port: 6
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl12/metbk2/*.metbk2.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/metbk2/*.metbk2.json"
-                dataset: CP10CNSM_BUOY_002_METBK
+                ui: False
+                uuid: {{ methrh2_uuid }}
+                serial: {{ methrh2_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl12/metbk2/*.metbk2.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/metbk2/*.metbk2.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_002_METBK
             - metlwr2:
                 name: METLWR2
-                refdes: CP10CNSM-SBD12-06-METBKA004
-                controlled_by: *metbk2
+                refdes: {{ mooring_name.upper() }}-SBD12-06-METBKA004
+                parent: *dcl12
+                controlled_by: *dcl12
                 physical: *buoy
-                ui: False
                 depth: -4
-                serial: {{ metlwr2_serial }}
-                uuid: {{ metlwr2_uuid }}
                 port: 6
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl12/metbk2/*.metbk2.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/metbk2/*.metbk2.json"
-                dataset: CP10CNSM_BUOY_002_METBK
+                ui: False
+                uuid: {{ metlwr2_uuid }}
+                serial: {{ metlwr2_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl12/metbk2/*.metbk2.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/metbk2/*.metbk2.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_002_METBK
             - metprc2:
                 name: METPRC2
-                refdes: CP10CNSM-SBD12-06-METBKA005
-                controlled_by: *metbk2
+                refdes: {{ mooring_name.upper() }}-SBD12-06-METBKA005
+                parent: *dcl12
+                controlled_by: *dcl12
                 physical: *buoy
-                ui: False
                 depth: -4
-                serial: {{ metprc2_serial }}
-                uuid: {{ metprc2_uuid }}
                 port: 6
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl12/metbk2/*.metbk2.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/metbk2/*.metbk2.json"
-                dataset: CP10CNSM_BUOY_002_METBK
+                ui: False
+                uuid: {{ metprc2_uuid }}
+                serial: {{ metprc2_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl12/metbk2/*.metbk2.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/metbk2/*.metbk2.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_002_METBK
             - metswr2:
                 name: METSWR2
-                refdes: CP10CNSM-SBD12-06-METBKA006
-                controlled_by: *metbk2
+                refdes: {{ mooring_name.upper() }}-SBD12-06-METBKA006
+                parent: *dcl12
+                controlled_by: *dcl12
                 physical: *buoy
-                ui: False
                 depth: -4
-                serial: {{ metswr2_serial }}
-                uuid: {{ metswr2_uuid }}
                 port: 6
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl12/metbk2/*.metbk2.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/metbk2/*.metbk2.json"
-                dataset: CP10CNSM_BUOY_002_METBK
+                ui: False
+                uuid: {{ metswr2_uuid }}
+                serial: {{ metswr2_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl12/metbk2/*.metbk2.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/metbk2/*.metbk2.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_002_METBK
             - metwnd2:
                 name: METWND2
-                refdes: CP10CNSM-SBD12-06-METBKA007
-                controlled_by: *metbk2
+                refdes: {{ mooring_name.upper() }}-SBD12-06-METBKA007
+                parent: *dcl12
+                controlled_by: *dcl12
                 physical: *buoy
-                ui: False
                 depth: -4
-                serial: {{ metwnd2_serial }}
-                uuid: {{ metwnd2_uuid }}
                 port: 6
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl12/metbk2/*.metbk2.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/metbk2/*.metbk2.json"
-                dataset: CP10CNSM_BUOY_002_METBK
+                ui: False
+                uuid: {{ metwnd2_uuid }}
+                serial: {{ metwnd2_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl12/metbk2/*.metbk2.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/metbk2/*.metbk2.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_002_METBK
             - methtr2:
                 name: METHTR2
                 refdes: None
+                parent: *dcl12
                 controlled_by: *dcl12
                 physical: *buoy
-                depth: -4
-                serial: {{ methtr2_serial }}
-                uuid: {{ methtr2_uuid }}
+                depth: *depth1
                 port: 7
+                uuid: {{ methtr2_uuid }}
+                serial: {{ methtr2_serial }}
                 raw_data: None
                 parsed_data: None
                 dataset: None
             - fdchp:
                 name: FDCHP
-                refdes: CP10CNSM-SBD12-08-FDCHPA000
+                refdes: {{ mooring_name.upper() }}-SBD12-08-FDCHPA000
+                parent: *dcl12
                 controlled_by: *dcl12
                 physical: *buoy
                 depth: -4
-                serial: {{ fdchp_serial }}
-                uuid: {{ fdchp_uuid }}
                 port: 8
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl12/*.fdchp.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/buoy/fdchp/*.fdchp.json"
-                dataset: CP10CNSM_BUOY_001_FDCHP
+                uuid: {{ fdchp_uuid }}
+                serial: {{ fdchp_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl12/*.fdchp.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/fdchp/*.fdchp.json"
+                dataset: {{ mooring_name.upper() }}_BUOY_001_FDCHP
     - platform2:
         name: &nsif NSIF
-        controlled_by: None
-        physical: *mooring
-        depth: &depth7 7
+        parent: *mooring
+        depth: &depth2 7
         controller:
             name: &cpm2 CPM2
-            refdes: CP10CNSM-RIC21-00-CPMENG000
+            refdes: {{ mooring_name.upper() }}-RIC21-00-CPMENG000
+            parent: *nsif
             controlled_by: *cpm1
             physical: *nsif
-            depth: *depth7
-            serial: {{ cpm2_serial }}
+            depth: *depth2
             uuid: {{ cpm2_uuid }}
-            raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/cpm2/syslog/*.syslog.log"
-            parsed_data: "cp10cnsm/{{ deployment_name }}/nsif/syslog/cpm2/*.syslog.json"
-            dataset: CP10CNSM_NSIF_001_SUPERV
+            serial: {{ cpm2_serial }}
+            raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/cpm2/syslog/*.syslog.log"
+            parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/nsif/superv/cpm2/*.syslog.json"
+            dataset: {{ mooring_name.upper() }}_NSIF_001_SUPERV
         beacons: None
         pwrsys: None
         loggers:
             - logger1:
-                name: &dcl26 DCL26
-                refdes: CP10CNSM-RID26-00-DCLENG000
+                name: &dcl3 DCL26
+                refdes: {{ mooring_name.upper() }}-RID26-00-DCLENG000
+                parent: *cpm2
                 controlled_by: *cpm2
                 physical: *nsif
-                depth: *depth7
-                serial: {{ dcl26_serial }}
-                uuid: {{ dcl26_uuid }}
-                raw_data: "cp10cnsm/{{ deployment_name }}/dcl26/syslog/*.syslog.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/nsif/syslog/dcl36/*.syslog.json"
-                dataset: CP10CNSM_NSIF_002_SUPERV
+                depth: *depth2
+                uuid: {{ dcl6_uuid }}
+                serial: {{ dcl6_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/dcl26/syslog/*.syslog.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/nsif/superv/dcl36/*.syslog.json"
+                dataset: {{ mooring_name.upper() }}_NSIF_002_SUPERV
             - logger2:
-                name: &dcl27 DCL27
-                refdes: CP10CNSM-RID27-00-DCLENG000
+                name: &dcl4 DCL27
+                refdes: {{ mooring_name.upper() }}-RID27-00-DCLENG000
+                parent: *cpm2
                 controlled_by: *cpm2
                 physical: *nsif
-                #uuid: <API_query:uuid_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/dcl27/syslog/*.syslog.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/nsif/syslog/dcl37/*.syslog.json"
-                dataset: CP10CNSM_NSIF_003_SUPERV
+                depth: *depth2
+                uuid: {{ dcl7_uuid }}
+                serial: {{ dcl7_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/dcl27/syslog/*.syslog.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/nsif/superv/dcl37/*.syslog.json"
+                dataset: {{ mooring_name.upper() }}_NSIF_003_SUPERV
         instrmts:
             ### Instruments controlled and logged by DCL26 ###
             - prtsz:
                 name: PRTSZ
-                refdes: CP10CNSM-RID26-01-PRTSZA000
+                refdes: {{ mooring_name.upper() }}-RID26-01-PRTSZA000
+                parent: *dcl26
                 controlled_by: *dcl26
                 physical: *nsif
+                depth: *depth2
                 port: 1
-                #uuid: <API_query:uuid_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl26/prtsz1/*.prtsz1.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/nsif/prtsz/*.prtsz1.json"
-                dataset: CP10CNSM_NSIF_001_PRTSZ
+                uuid: {{ prtsz_uuid }}
+                serial: {{ prtsz_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl26/prtsz1/*.prtsz1.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/nsif/prtsz/*.prtsz1.json"
+                dataset: {{ mooring_name.upper() }}_NSIF_001_PRTSZ
             - turbd:
                 name: TURBD
-                refdes: CP10CNSM-RID26-03-TURBDA000
+                refdes: {{ mooring_name.upper() }}-RID26-03-TURBDA000
+                parent: *dcl26
                 controlled_by: *dcl26
                 physical: *nsif
+                depth: *depth2
                 port: 3
-                #uuid: <API_query:uuid_number>
+                uuid: {{ turbd_uuid }}
+                serial: {{ turbd_serial }}
                 raw_data: None
                 parsed_data: None
-                dataset: CP10CNSM_NSIF_001_TURBD
+                dataset: {{ mooring_name.upper() }}_NSIF_001_TURBD
             - velpt:
                 name: VELPT
-                refdes: CP10CNSM-RID26-04-VELPTA000
+                refdes: {{ mooring_name.upper() }}-RID26-04-VELPTA000
+                parent: *dcl26
                 controlled_by: *dcl26
                 physical: *nsif
+                depth: *depth2
                 port: 4
-                #uuid: <API_query:uuid_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl26/velpt1/*.velpt1.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/nsif/velpt/*.velpt1.json"
-                dataset: CP10CNSM_NSIF_001_VELPT
+                uuid: {{ velpt_uuid }}
+                serial: {{ velpt_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl26/velpt1/*.velpt1.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/nsif/velpt/*.velpt1.json"
+                dataset: {{ mooring_name.upper() }}_NSIF_001_VELPT
             - phsen:
                 name: PHSEN
-                refdes: CP10CNSM-RID26-06-PHSEND000
+                refdes: {{ mooring_name.upper() }}-RID26-06-PHSEND000
+                parent: *dcl26
                 controlled_by: *dcl26
                 physical: *nsif
+                depth: *depth2
                 port: 6
-                #uuid: <API_query:uuid_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl26/phsen1/*.phsen1.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/nsif/phsen/*.phsen1.json"
-                dataset: CP10CNSM_NSIF_001_PHSEN
+                uuid: {{ phsen_uuid }}
+                serial: {{ phsen_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl26/phsen1/*.phsen1.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/nsif/phsen/*.phsen1.json"
+                dataset: {{ mooring_name.upper() }}_NSIF_001_PHSEN
             - nutnr:
                 name: NUTNR
-                refdes: CP10CNSM-RID26-07-NUTNRB000
+                refdes: {{ mooring_name.upper() }}-RID26-07-NUTNRB000
+                parent: *dcl26
                 controlled_by: *dcl26
                 physical: *nsif
+                depth: *depth2
                 port: 7
-                #uuid: <API_query:uuid_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl26/nutnr/*.nutnr.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/nsif/nutnr/*.nutnr.json"
-                dataset: CP10CNSM_NSIF_002_NUTNR
+                uuid: {{ nutnr_uuid }}
+                serial: {{ nutnr_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl26/nutnr/*.nutnr.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/nsif/nutnr/*.nutnr.json"
+                dataset: {{ mooring_name.upper() }}_NSIF_002_NUTNR
             - spkir:
                 name: SPKIR
-                refdes: CP10CNSM-RID26-08-SPKIRB000
+                refdes: {{ mooring_name.upper() }}-RID26-08-SPKIRB000
+                parent: *dcl26
                 controlled_by: *dcl26
                 physical: *nsif
+                depth: *depth2
                 port: 8
-                #uuid: <API_query:uuid_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl26/spkir2/*.spkir2.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/nsif/spkir/*.spkir2.json"
-                dataset: CP10CNSM_NSIF_001_SPKIR
+                uuid: {{ spkir_uuid }}
+                serial: {{ spkir_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl26/spkir2/*.spkir2.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/nsif/spkir/*.spkir2.json"
+                dataset: {{ mooring_name.upper() }}_NSIF_001_SPKIR
             ### Instruments controlled and logged by DCL27 ###
             - optaa:
                 name: OPTAA
-                refdes: CP10CNSM-RID27-01-OPTAAD000
+                refdes: {{ mooring_name.upper() }}-RID27-01-OPTAAD000
+                parent: *dcl27
                 controlled_by: *dcl27
                 physical: *nsif
+                depth: *depth2
                 port: 1
-                #uuid: <API_query:uuid_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl27/optaa1_decimated/*.optaa1.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/nsif/optaa/*.optaa1.json"
-                dataset: CP10CNSM_NSIF_001_OPTAA
+                uuid: {{ optaa_uuid }}
+                serial: {{ optaa_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl27/optaa1_decimated/*.optaa1.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/nsif/optaa/*.optaa1.json"
+                dataset: {{ mooring_name.upper() }}_NSIF_001_OPTAA
             - flort:
                 name: FLORT
-                refdes: CP10CNSM-RID27-02-FLORTD000
+                refdes: {{ mooring_name.upper() }}-RID27-02-FLORTD000
+                parent: *dcl27
                 controlled_by: *dcl27
                 physical: *nsif
+                depth: *depth2
                 port: 2
-                #uuid: <API_query:uuid_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl27/flort/*.flort.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/nsif/flort/*.flort.json"
-                dataset: CP10CNSM_NSIF_001_FLORT
+                uuid: {{ flort_uuid }}
+                serial: {{ flort_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl27/flort/*.flort.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/nsif/flort/*.flort.json"
+                dataset: {{ mooring_name.upper() }}_NSIF_001_FLORT
             - ctdbp:
                 name: CTDBP
-                refdes: CP10CNSM-RID27-03-CTDBPC000
+                refdes: {{ mooring_name.upper() }}-RID27-03-CTDBPC000
+                parent: *dcl27
                 controlled_by: *dcl27
                 physical: *nsif
+                depth: *depth2
                 port: 3
-                #uuid: <API_query:uuid_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl27/ctdbp1/*.ctdbp1.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/nsif/ctdbp/*.ctdbp1.json"
-                dataset: CP10CNSM_NSIF_001_CTDBP
+                uuid: {{ ctdbp_uuid }}
+                serial: {{ ctdbp_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl27/ctdbp1/*.ctdbp1.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/nsif/ctdbp/*.ctdbp1.json"
+                dataset: {{ mooring_name.upper() }}_NSIF_001_CTDBP
             - dosta:
                 name: DOSTA
-                refdes: CP10CNSM-RID27-04-DOSTAD000
+                refdes: {{ mooring_name.upper() }}-RID27-04-DOSTAD000
+                parent: *dcl27
                 controlled_by: *dcl27
                 physical: *nsif
+                depth: *depth2
                 port: 4
-                #uuid: <API_query:uuid_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl27/dosta1/*.dosta1.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/nsif/dosta/*.dosta1.json"
-                dataset: CP10CNSM_NSIF_001_DOSTA
+                uuid: {{ dosta_uuid }}
+                serial: {{ dosta_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl27/dosta1/*.dosta1.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/nsif/dosta/*.dosta1.json"
+                dataset: {{ mooring_name.upper() }}_NSIF_001_DOSTA
             - uvlamp:
                 name: UVLAMP
                 refdes: None
+                parent: *dcl27
                 controlled_by: *dcl27
                 physical: *nsif
+                depth: *depth2
                 port: 5
-                #uuid: <API_query:uuid_number>
+                uuid: {{ uvlamp_uuid }}
+                serial: {{ uvlamp_serial }}
                 raw_data: None
                 parsed_data: None
                 dataset: None
             - plims:
                 name: PLIMS
-                refdes: CP10CNSM-RID27-07-PLIMSA000
+                refdes: {{ mooring_name.upper() }}-RID27-07-PLIMSA000
+                parent: *dcl27
                 controlled_by: *dcl27
                 physical: *nsif
+                depth: *depth2
                 port: 7
-                #uuid: <API_query:uuid_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl27/plims/*.adc"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/nsif/plims/*.json"
-                dataset: CP10CNSM_NSIF_001_PLIMS
+                uuid: {{ plims_uuid }}
+                serial: {{ plims_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl27/plims/*.adc"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/nsif/plims/*.json"
+                dataset: {{ mooring_name.upper() }}_NSIF_001_PLIMS
     - platform3:
         name: &mfn MFN
-        controlled_by: None
-        physical: *mooring
-        depth: *water_depth
+        parent: *mooring
+        depth: *site_depth
         pwrsys:
             name: &mpea MPEA
             refdes: None
+            parent: *mfn
             controlled_by: *psc
             physical: *mfn
-            #uuid: <API_query:uuid_number>
-            raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/cpm3/pwrsys/*.pwrsys.log"
-            parsed_data: "cp10cnsm/{{ deployment_name }}/mfn/mpea/*.pwrsys.json"
-            dataset: CP10CNSM_MFN_001_MPEA
+            depth: *depth3
+            uuid: {{ mpea_uuid }}
+            serial: {{ mpea_serial }}
+            raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/cpm3/syslog/*.syslog.log"
+            parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/mfn/mpea/*.syslog.json"
+            dataset: {{ mooring_name.upper() }}_MFN_001_MPEA
         controller:
             name: &cpm3 CPM3
-            refdes: CP10CNSM-MFC31-00-CPMENG000
+            refdes: {{ mooring_name.upper() }}-MFC31-00-CPMENG000
+            parent: *mfn
             controlled_by: *mpea
             physical: *mfn
-            #uuid: <API_query:uuid_number>
-            raw_data: "cp10cnsm/{{ deployment_name }}/cpm3/syslog/*.syslog.log"
-            parsed_data: "cp10cnsm/{{ deployment_name }}/mfn/syslog/cpm3/*.syslog.json"
-            dataset: CP10CNSM_MFN_001_SUPERV
+            depth: *depth3
+            uuid: {{ cpm3_uuid }}
+            serial: {{ cpm3_serial }}
+            raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cpm3/syslog/*.syslog.log"
+            parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/mfn/superv/cpm3/*.syslog.json"
+            dataset: {{ mooring_name.upper() }}_MFN_001_SUPERV
         beacons:
             - beacon1:
                 name: Kilo_MFN1
                 refdes: None
+                parent: *mfn
                 controlled_by: None
                 physical: *mfn
-                #imei: <API_query:imei_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/xeos_sbd/300234060015550.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/mfn/xeos/mfn1/300234060015550.json"
+                depth: *depth3
+                imei: {{ sbd1_imei }}
+                serial: {{ sbd1_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/irid_sbd/{{ sbd1_imei }}.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/sbd_primary/{{ sbd1_imei }}.json"
                 dataset: None
             - beacon2:
                 name: Kilo_MFN2
                 refdes: None
+                parent: *mfn
                 controlled_by: None
                 physical: *mfn
-                #imei: <API_query:imei_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/xeos_sbd/300234060424880.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/mfn/xeos/mfn2/300234060424880.json"
+                depth: *depth3
+                imei: {{ sbd2_imei }}
+                serial: {{ sbd2_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/irid_sbd/{{ sbd2_imei }}.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/buoy/sbd_primary/{{ sbd2_imei }}.json"
                 dataset: None
         loggers:
             - logger1:
                 name: &dcl36 DCL36
-                refdes: CP10CNSM-MFD36-00-DCLENG000
+                refdes: {{ mooring_name.upper() }}-MFD36-00-DCLENG000
+                parent: *cpm3
                 controlled_by: *cpm3
                 physical: *mfn
-                #uuid: <API_query:uuid_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/dcl36/syslog/*.syslog.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/mfn/syslog/dcl36/*.syslog.json"
-                dataset: CP10CNSM_MFN_002_SUPERV
+                depth: *depth3
+                uuid: {{ dcl6_uuid }}
+                serial: {{ dcl6_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/dcl36/syslog/*.syslog.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/mfn/superv/dcl36/*.syslog.json"
+                dataset: {{ mooring_name.upper() }}_MFN_002_SUPERV
             - logger2:
                 name: &dcl37 DCL37
-                refdes: CP10CNSM-MFD37-00-DCLENG000
+                refdes: {{ mooring_name.upper() }}-MFD37-00-DCLENG000
+                parent: *cpm3
                 controlled_by: *cpm3
                 physical: *mfn
-                #uuid: <API_query:uuid_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/dcl37/syslog/*.syslog.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/mfn/syslog/dcl37/*.syslog.json"
-                dataset: CP10CNSM_MFN_003_SUPERV
+                depth: *depth3
+                uuid: {{ dcl7_uuid }}
+                serial: {{ dcl7_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/dcl37/syslog/*.syslog.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/mfn/superv/dcl37/*.syslog.json"
+                dataset: {{ mooring_name.upper() }}_MFN_003_SUPERV
         instrmts:
             ### Instruments controlled and logged by DCL36 ###
             - prtsz:
                 name: PRTSZ
-                refdes: CP10CNSM-MFD36-01-PRTSZA000
+                refdes: {{ mooring_name.upper() }}-MFD36-01-PRTSZA000
+                parent: *dcl36
                 controlled_by: *dcl36
                 physical: *mfn
+                depth: *depth3
                 port: 1
-                #uuid: <API_query:uuid_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/cg_data/dcl36/prtsz2/*.prtsz2.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/mfn/prtsz/*.prtsz2.json"
-                dataset: CP10CNSM_MFN_001_PRTSZ
+                uuid: {{ prtsz_uuid }}
+                serial: {{ prtsz_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/cg_data/dcl36/prtsz2/*.prtsz2.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/mfn/prtsz/*.prtsz2.json"
+                dataset: {{ mooring_name.upper() }}_MFN_001_PRTSZ
             - presf:
                 name: PRESF
-                refdes: CP10CNSM-MFD36-02-PRESFB000
+                refdes: {{ mooring_name.upper() }}-MFD36-02-PRESFB000
+                parent: *dcl36
                 controlled_by: *dcl36
                 physical: *mfn
+                depth: *depth3
                 port: 2
-                #uuid: <API_query:uuid_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/dcl36/presf/*.presf.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/mfn/presf/*.presf.json"
-                dataset: CP10CNSM_MFN_001_PRESF
+                uuid: {{ presf_uuid }}
+                serial: {{ presf_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/dcl36/presf/*.presf.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/mfn/presf/*.presf.json"
+                dataset: {{ mooring_name.upper() }}_MFN_001_PRESF                    
             - turbd:
                 name: TURBD
-                refdes: CP10CNSM-MFD36-03-TURBDA000
+                refdes: {{ mooring_name.upper() }}-MFD36-03-TURBDA000
+                parent: *dcl36
                 controlled_by: *dcl36
                 physical: *mfn
+                depth: *depth3
                 port: 3
-                #uuid: <API_query:uuid_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/dcl36/turbd/*.turbd.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/mfn/turbd/*.turbd.json"
-                dataset: CP10CNSM_MFN_001_TURBD
+                uuid: {{ turbd_uuid }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/dcl36/turbd/*.turbd.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/mfn/turbd/*.turbd.json"
+                dataset: {{ mooring_name.upper() }}_MFN_001_TURBD
             - velpt:
                 name: VELPT
-                refdes: CP10CNSM-MFD36-04-VELPTA000
+                refdes: {{ mooring_name.upper() }}-MFD36-04-VELPTA000
+                parent: *dcl36
                 controlled_by: *dcl36
                 physical: *mfn
+                depth: *depth3
                 port: 4
-                #uuid: <API_query:uuid_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/dcl36/adcpt2/*.adcpt2.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/mfn/adcpt/*.adcpt2.json"
-                dataset: CP10CNSM_MFN_001_ADCPT
+                uuid: {{ velpt_uuid }}
+                serial: {{ velpt_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/dcl36/velpt2/*.velpt2.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/mfn/velpt/*.velpt2.json"
+                dataset: {{ mooring_name.upper() }}_MFN_001_VELPT
             - pco2w:
                 name: PCO2W
-                refdes: CP10CNSM-MFD36-05-PCO2WB000
+                refdes: {{ mooring_name.upper() }}-MFD36-05-PCO2WB000
+                parent: *dcl36
                 controlled_by: *dcl36
                 physical: *mfn
+                depth: *depth3
                 port: 5
-                #uuid: <API_query:uuid_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/dcl36/pco2w/*.pco2w.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/mfn/pco2w/*.pco2w.json"
-                dataset: CP10CNSM_MFN_001_PCO2W
+                uuid: {{ pco2w_uuid }}
+                serial: {{ pco2w_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/dcl36/pco2w/*.pco2w.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/mfn/pco2w/*.pco2w.json"
+                dataset: {{ mooring_name.upper() }}_MFN_001_PCO2W
             - phsen:
                 name: PHSEN
-                refdes: CP10CNSM-MFD36-06-PHSEND000
+                refdes: {{ mooring_name.upper() }}-MFD36-06-PHSEND000
+                parent: *dcl36
                 controlled_by: *dcl36
                 physical: *mfn
+                depth: *depth3
                 port: 6
-                #uuid: <API_query:uuid_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/dcl36/phsen2/*.phsen2.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/mfn/phsen/*.phsen2.json"
-                dataset: CP10CNSM_MFN_001_PHSEN
+                uuid: {{ phsen_uuid }}
+                serial: {{ phsen_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/dcl36/phsen2/*.phsen2.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/mfn/phsen/*.phsen2.json"
+                dataset: {{ mooring_name.upper() }}_MFN_001_PHSEN
             ### Instruments controlled and logged by DCL37 ###
             - optaa:
                 name: OPTAA
-                refdes: CP10CNSM-MFD37-01-OPTAAD000
+                refdes: {{ mooring_name.upper() }}-MFD37-01-OPTAAD000
+                parent: *dcl37
                 controlled_by: *dcl37
                 physical: *mfn
+                depth: *depth3
                 port: 1
-                #uuid: <API_query:uuid_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/dcl37/optaa2_decimated/*.optaa2.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/mfn/optaa/*.optaa2.json"
-                dataset: CP10CNSM_MFN_001_OPTAA
+                uuid: {{ optaa_uuid }}
+                serial: {{ optaa_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/dcl37/optaa2_decimated/*.optaa2.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/mfn/optaa/*.optaa2.json"
+                dataset: {{ mooring_name.upper() }}_MFN_001_OPTAA
             - adcpt:
                 name: ADCPT
-                refdes: CP10CNSM-MFD36-04-ADCPTQ000
+                refdes: {{ mooring_name.upper() }}-MFD37-02-ADCPTQ000
+                parent: *dcl37
                 controlled_by: *dcl37
                 physical: *mfn
+                depth: *depth3
                 port: 2
-                #uuid: <API_query:uuid_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/dcl37/adcp/*.adcp.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/mfn/adcp/*.adcp.json"
-                dataset: CP10CNSM_MFN_001_ADCPT
+                uuid: {{ adcpt_uuid }}
+                serial: {{ adcpt_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/dcl37/adcp/*.adcp.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/mfn/adcp/*.adcp.json"
+                dataset: {{ mooring_name.upper() }}_MFN_001_ADCPT
             - ctdbp:
                 name: CTDBP
-                refdes: CP10CNSM-MFD37-03-CTDBPC000
+                refdes: {{ mooring_name.upper() }}-MFD37-03-CTDBPC000
+                parent: *dcl37
                 controlled_by: *dcl37
                 physical: *mfn
+                depth: *depth3
                 port: 3
-                #uuid: <API_query:uuid_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/dcl37/ctdbp2/*.ctdbp2.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/mfn/ctdbp/*.ctdbp2.json"
-                dataset: CP10CNSM_MFN_001_CTDBP
+                uuid: {{ ctdbp_uuid }}
+                serial: {{ ctdbp_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/dcl37/ctdbp2/*.ctdbp2.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/mfn/ctdbp/*.ctdbp2.json"
+                dataset: {{ mooring_name.upper() }}_MFN_001_CTDBP
             - dosta:
                 name: DOSTA
-                refdes: CP10CNSM-MFD37-04-DOSTAD000
+                refdes: {{ mooring_name.upper() }}-MFD37-04-DOSTAD000
+                parent: *dcl37
                 controlled_by: *dcl37
                 physical: *mfn
+                depth: *depth3
                 port: 4
-                #uuid: <API_query:uuid_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/dcl37/dosta2/*.dosta2.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/mfn/dosta/*.dosta2.json"
-                dataset: CP10CNSM_MFN_001_DOSTA
-            - zplsc:
+                uuid: {{ dosta_uuid }}
+                serial: {{ dosta_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/dcl37/dosta2/*.dosta2.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/mfn/dosta/*.dosta2.json"
+                dataset: {{ mooring_name.upper() }}_MFN_001_DOSTA
+            - zplsc: 
                 name: ZPLSC
-                refdes: CP10CNSM-MFD37-07-ZPLSCC000
+                refdes: {{ mooring_name.upper() }}-MFD37-07-ZPLSCC000
+                parent: *dcl37
                 controlled_by: *dcl37
                 physical: *mfn
+                depth: *depth3
                 port: 7
-                #uuid: <API_query:uuid_number>
-                raw_data: "cp10cnsm/{{ deployment_name }}/dcl37/zplsc/*.zplsc.log"
-                parsed_data: "cp10cnsm/{{ deployment_name }}/mfn/zplsc/*.zplsc.json"
-                dataset: CP10CNSM_MFN_001_ZPLSC
+                uuid: {{ zplsc_uuid }}
+                serial: {{ zplsc_serial }}
+                raw_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/dcl37/zplsc/*.zplsc.log"
+                parsed_data: "{{ mooring_name.lower() }}/{{ deploy_name }}/mfn/zplsc/*.zplsc.json"
+                dataset: {{ mooring_name.upper() }}_MFN_001_ZPLSC                    
