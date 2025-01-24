@@ -186,8 +186,9 @@ def proc_cphox(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # convert the oxygen concentration from ml/l to umol/L and then to umol/kg per the Argo Data Management manual
     cphox['oxygen_molar_concentration'] = cphox['oxygen_concentration'] * 44.6596  # umol/L
-    cphox['oxygen_concentration_per_kg'] = dissolved_oxygen(cphox['oxygen_concentration'], cphox['temperature'],
-                                                            cphox['salinity'], cphox['pressure'], lon, lat)
+    cphox['oxygen_concentration_per_kg'] = dissolved_oxygen(cphox['oxygen_concentration'].values,
+                                                            cphox['temperature'].values, cphox['salinity'].values,
+                                                            cphox['pressure'].values, lon, lat)
 
     # replace the deployment depth with the actual depth from the pressure sensor
     z = z_from_p(cphox['pressure'], lat)  # calculate the depth from the pressure

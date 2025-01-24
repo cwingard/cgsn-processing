@@ -10,20 +10,27 @@
 # C. Wingard 2024-05-17 -- Updated to add the processing flag to indicate if
 #                          the processor should add estimated calculations of
 #                          the total alkalinity and pH to the output file.
+# C. Wingard 2025-01-24 -- Updated to use the estimated alkalinity flag to
+#                          determine if the processor should add estimated
+#                          total alkalinity values to the data set.
 
 # include the help function and parse the required and optional command line options
 DIR="${BASH_SOURCE%/*}"
 if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
 source "$DIR/process_options.sh"
 
-# check the platform name and set the processing flag to add estimations of the pH
-# and total alkalinity to the data set (currently only available for the CE02SHSM
-# platform).
-case $PLATFORM in
-    "CE02SHSM" )
-        FLAG="estimate" ;;
+# check the platform name and set the processing flag to add estimations of the
+# total alkalinity to the data set.
+case $FLAG in
+    "estimate" )
+        ;;
     * )
-        FLAG="none";;
+        echo "ERROR: Incorrect SeapHOx processing flag, $FLAG, Please use"
+        echo "'estimate' to indicate the processor should add estimated"
+        echo "alkalinity values with the -f option. Otherwise, do not use"
+        echo "this option."
+        exit
+        ;;
 esac
 
 # Process the file
