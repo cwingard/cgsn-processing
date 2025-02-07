@@ -14,7 +14,7 @@ from typing import Any, IO
 class TemplateLoader(BaseLoader):
     """
     Jinja2 template loader for loading templates, skipping the first line,
-    which uses an '!include' statement to  utilize values found in other yaml
+    which uses an '!include' statement to utilize values found in other yaml
     files. Built off the Jinja2 BaseLoader class per the Jinja2 documentation.
     """
     def __init__(self, path):
@@ -33,7 +33,7 @@ class TemplateLoader(BaseLoader):
 
 class YamlLoader(yaml.SafeLoader):
     """
-    YAML Loader with to use with the `!include` constructor defined below.
+    YAML Loader set to use the `!include` constructor defined below.
     """
     def __init__(self, stream: IO) -> None:
         try:

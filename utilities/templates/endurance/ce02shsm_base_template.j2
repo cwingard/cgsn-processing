@@ -1,0 +1,591 @@
+# baseline mooring configuration template for CE02SHSM
+meta:
+    name: {{ mooring }}
+    array: 'Coastal Endurance'
+    deployment: {{ deployment }}
+    deploy_name: {{ deployment_name }}
+    category: 'Surface Mooring'
+    subcategory: 'High Power'
+    disposition: {{ disposition|default('UNKNOWN_DISPOSITION') }}
+    start_date: {{ deployment_start|default('UNKNOWN_START_DATE') }}
+    latitude: {{ latitude|default('UNKNOWN_LATITUDE') }}
+    longitude: {{ longitude|default('UNKNOWN_LONGITUDE') }}
+    deploy_cruise: {{ deployment_cruise|default('UNKNOWN_DEPLOY_CRUISE') }}
+    recover_cruise: {{ recovery_cruise|default(None) }}
+    stop_date: {{ deployment_end|default(None) }}
+    watch_circle: 250
+    water_depth: {{ site_depth }}
+paths:
+    # absolute base paths to the raw, parsed, and processed data directories
+    raw: /home/ooiuser/data/raw
+    parsed: /home/ooiuser/data/parsed
+    processed: /home/ooiuser/data/processed
+platforms:
+    # list of the subassemblies (aka platforms) and associated controllers, GPS
+    # beacons, power systems, data loggers and instruments on the platform
+    - platform1:
+        # surface platform (BUOY)
+        name: &buoy BUOY
+        parent: {{ mooring }}
+        depth: &depth 0
+        pwrsys:
+            # Primary mooring power system controller (PSC)
+            name: &psc PSC
+            refdes: None
+            parent: *buoy
+            controlled_by: None
+            physical: *buoy
+            depth: *depth
+            uuid: {{ psc_uuid|default('UNKNOWN_UUID') }}
+            serial: {{ psc_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+            raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/syslog/*.syslog.log"
+            parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/buoy/pwrsys/*.syslog.json"
+            dataset: {{ mooring }}_BUOY_001_PWRSYS
+        controller:
+            # Primary mooring power and communications controller (CPM1)
+            {% set cpm = 'CPM1' -%}
+            name: &cpm1 {{ cpm }}
+            refdes: {{ mooring }}-SBC11-00-CPMENG000
+            parent: *buoy
+            controlled_by: *psc
+            physical: *buoy
+            depth: *depth
+            uuid: {{ buoy_cpm_uuid|default('UNKNOWN_UUID') }}
+            serial: {{ buoy_cpm_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+            raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/syslog/*.syslog.log"
+            parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/buoy/superv/{{ cpm|lower }}/*.syslog.json"
+            dataset: {{ mooring }}_BUOY_001_SUPERV
+        beacons:
+            # GPS beacons used to independently track mooring location
+            - beacon1:  #  surface beacon, watch circle enabled
+                {% set imei = xeos1_imei|default('UNKNOWN_IMEI_NUMBER') -%}
+                {% set name = 'Rover1' -%}
+                name: {{ name }}
+                refdes: None
+                parent: *buoy
+                controlled_by: None
+                physical: *buoy
+                depth: -4
+                imei: {{ imei }}
+                serial: {{ xeos1_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/xeos_sbd/{{ imei }}.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/buoy/xeos/{{ name|lower }}/{{ imei }}.json"
+                dataset: None
+            - beacon2:  #  surface beacon, watch circle enabled
+                {% set imei = xeos2_imei|default('UNKNOWN_IMEI_NUMBER') -%}
+                {% set name = 'Rover2' -%}
+                name: {{ name }}
+                refdes: None
+                parent: *buoy
+                controlled_by: None
+                physical: *buoy
+                depth: -4
+                imei: {{ xeos }}
+                serial: {{ xeos2_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/xeos_sbd/{{ imei }}.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/buoy/xeos/{{ name|lower }}/{{ imei }}.json"
+                dataset: None
+            - beacon3:  #  subsurface beacon, alarm if seen after deployment
+                {% set imei = xeos3_imei|default('UNKNOWN_IMEI_NUMBER') -%}
+                {% set name = 'Kilo' -%}
+                name: {{ name }}
+                refdes: None
+                parent: *buoy
+                controlled_by: None
+                physical: *buoy
+                depth: 1.5
+                imei: {{ xeos }}
+                serial: {{ xeos3_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/xeos_sbd/{{ imei }}.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/buoy/xeos/{{ name|lower }}/{{ imei }}.json"
+                dataset: None
+        loggers:
+            # Data loggers controlled by the buoy platform controller
+            - logger1:
+                {% set dcl1 = 'DCL11' -%}
+                name: {{ dcl1 }}
+                refdes: {{ mooring }}-SBD11-00-DCLENG000
+                parent: *cpm1
+                controlled_by: *cpm1
+                physical: *buoy
+                depth: *depth
+                uuid: {{ dcl1_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ dcl1_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/{{ dcl1|lower }}/syslog/*.syslog.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/buoy/superv/{{ dcl1|lower }}/*.syslog.json"
+                dataset: {{ mooring }}_BUOY_002_SUPERV
+            - logger2:
+                {% set dcl2 = 'DCL12' -%}
+                name: {{ dcl2 }}
+                refdes: {{ mooring }}-SBD12-00-DCLENG000
+                parent: *cpm1
+                controlled_by: *cpm1
+                physical: *buoy
+                depth: *depth
+                uuid: {{ dcl2_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ dcl2_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/{{ dcl2|lower }}/syslog/*.syslog.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/buoy/superv/{{ dcl2|lower }}/*.syslog.json"
+                dataset: {{ mooring }}_BUOY_003_SUPERV
+        instrmts:
+            # Instruments controlled and logged by the buoy CPM, independent of the other data loggers
+            - gps:
+                name: GPS
+                refdes: None
+                parent: *cpm1
+                controlled_by: *cpm1
+                physical: *buoy
+                depth: -4
+                uuid: {{ gps_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ gps_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/syslog/*.syslog.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/buoy/gps/*.syslog.json"
+                dataset: {{ mooring }}_BUOY_001_GPS
+            - iridium:
+                name: IRIDIUM
+                refdes: None
+                parent: *cpm1
+                controlled_by: *cpm1
+                physical: *buoy
+                depth: -4
+                uuid: {{ irid_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ irid_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/syslog/*.syslog.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/buoy/iridium/*.syslog.json"
+                dataset: {{ mooring }}_BUOY_001_IRIDIUM
+            - sbd1:
+                name: SBD_Primary
+                refdes: None
+                parent: *cpm1
+                controlled_by: *cpm1
+                physical: *buoy
+                depth: -4
+                imei: {{ sbd1_imei|default('UNKNOWN_IMEI_NUMBER') }}
+                serial: {{ sbd1_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/irid_sbd/{{ imei }}.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/buoy/sbd_primary/*.json"
+                dataset: None
+            - sbd2:
+                name: SBD_Backup
+                refdes: None
+                parent: *cpm1
+                controlled_by: *cpm1
+                physical: *buoy
+                depth: -4
+                imei: {{ sbd2_imei|default('UNKNOWN_IMEI_NUMBER') }}
+                serial: {{ sbd2_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/irid_sbd/{{ imei }}.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/buoy/sbd_backup/*.json"
+                dataset: None
+            # Instruments controlled and logged by the first buoy data logger
+            - mopak:
+                name: MOPAK
+                refdes: {{ mooring }}-SBD11-01-MOPAK0000
+                parent: *dcl1
+                controlled_by: *dcl1
+                physical: *buoy
+                port: 1
+                depth: *depth
+                uuid: {{ mopak_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ mopak_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/{{ dcl1|lower }}/mopak/*.mopak.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/buoy/mopak/*.mopak.json"
+                dataset: {{ mooring }}_BUOY_001_MOPAK
+            - hyd1:
+                name: HYDGN1
+                refdes: {{ mooring }}-SBD11-02-HYDGN0000
+                parent: *dcl1
+                controlled_by: *dcl1
+                physical: *buoy
+                depth: *depth
+                port: 2
+                uuid: {{ hyd1_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ hyd1_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/{{ dcl1|lower }}/hyd1/*.hyd1.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/buoy/hydgn1/*.hyd1.json"
+                dataset: {{ mooring }}_BUOY_001_HYDGN
+            - velpt:
+                name: VELPT
+                refdes: {{ mooring }}-SBD11-04-VELPTA000
+                parent: *dcl1
+                controlled_by: *dcl1
+                physical: *nsif
+                depth: *depth
+                port: 4
+                uuid: {{ buoy_velpt_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ buoy_velpt_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/{{ dcl1|lower }}/velpt1/*.velpt1.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/buoy/velpt/*.velpt1.json"
+                dataset: {{ mooring }}_BUOY_001_VELPT
+            - metbk:
+                name: &metbk METBK
+                refdes: {{ mooring }}-SBD11-06-METBKA000
+                parent: *dcl1
+                controlled_by: *dcl1
+                physical: *buoy
+                depth: *depth
+                port: 6
+                uuid: {{ metbk_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ metbk_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/{{ dcl1|lower }}/metbk/*.metbk.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/buoy/metbk/*.metbk.json"
+                dataset: {{ mooring }}_BUOY_001_METBK
+            - metct:
+                name: METCT
+                refdes: {{ mooring }}-SBD11-06-METBKA001
+                parent: *metbk
+                controlled_by: *metbk
+                physical: *buoy
+                depth: 1.5
+                port: 6
+                ui: False
+                uuid: {{ metct_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ metct_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: None
+                parsed_data: None
+                dataset: None
+            - metbpr:
+                name: METBPR
+                refdes: {{ mooring }}-SBD11-06-METBKA002
+                parent: *metbk
+                controlled_by: *metbk
+                physical: *buoy
+                depth: -4
+                port: 6
+                ui: False
+                uuid: {{ metbpr_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ metbpr_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: None
+                parsed_data: None
+                dataset: None
+            - methrh:
+                name: METHRH
+                refdes: {{ mooring }}-SBD11-06-METBKA003
+                parent: *metbk
+                controlled_by: *metbk
+                physical: *buoy
+                depth: -4
+                port: 6
+                ui: False
+                uuid: {{ methrh_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ methrh_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: None
+                parsed_data: None
+                dataset: None
+            - metlwr:
+                name: METLWR
+                refdes: {{ mooring }}-SBD11-06-METBKA004
+                parent: *metbk
+                controlled_by: *metbk
+                physical: *buoy
+                depth: -4
+                port: 6
+                ui: False
+                uuid: {{ metlwr_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ metlwr_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: None
+                parsed_data: None
+                dataset: None
+            - metprc:
+                name: METPRC
+                refdes: {{ mooring }}-SBD11-06-METBKA005
+                parent: *metbk
+                controlled_by: *metbk
+                physical: *buoy
+                depth: -4
+                port: 6
+                ui: False
+                uuid: {{ metprc_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ metprc_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: None
+                parsed_data: None
+                dataset: None
+            - metswr:
+                name: METSWR
+                refdes: {{ mooring }}-SBD11-06-METBKA006
+                parent: *metbk
+                controlled_by: *metbk
+                physical: *buoy
+                depth: -4
+                port: 6
+                ui: False
+                uuid: {{ metswr_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ metswr_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: None
+                parsed_data: None
+                dataset: None
+            - metwnd:
+                name: METWND
+                refdes: {{ mooring }}-SBD11-06-METBKA007
+                parent: *metbk
+                controlled_by: *metbk
+                physical: *buoy
+                depth: -4
+                port: 6
+                ui: False
+                uuid: {{ metwnd_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ metwnd_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: None
+                parsed_data: None
+                dataset: None
+            - methtr:
+                name: METHTR
+                refdes: None
+                parent: *dcl1
+                controlled_by: *dcl1
+                physical: *buoy
+                depth: *depth
+                port: 7
+                uuid: {{ methtr_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ methtr_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: None
+                parsed_data: None
+                dataset: None
+            # Instruments controlled and logged by the second buoy data logger
+            - hyd2:
+                name: HYDGN2
+                refdes: {{ mooring }}-SBD12-03-HYDGN0000
+                parent: *dcl2
+                controlled_by: *dcl2
+                physical: *buoy
+                depth: *depth
+                port: 3
+                uuid: {{ hyd2_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ hyd2_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/{{ dcl2|lower }}/hyd2/*.hyd2.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/buoy/hydgn2/*.hyd2.json"
+                dataset: {{ mooring }}_BUOY_002_HYDGN
+            - pco2a:
+                name: PCO2A
+                refdes: {{ mooring }}-SBD12-04-PCO2AA000
+                parent: *dcl2
+                controlled_by: *dcl2
+                physical: *buoy
+                depth: *depth
+                port: 4
+                uuid: {{ pco2a_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ pco2a_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/{{ dcl2|lower }}/pco2a/*.pco2a.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/buoy/pco2a/*.pco2a.json"
+                dataset: {{ mooring }}_BUOY_001_PCO2A
+            - wavss:
+                name: WAVSS
+                refdes: {{ mooring }}-SBD12-05-WAVSSA000
+                parent: *dcl2
+                controlled_by: *dcl2
+                physical: *buoy
+                depth: *depth
+                port: 5
+                uuid: {{ wavss_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ wavss_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/{{ dcl2|lower }}/*.wavss.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/buoy/wavss/*.wavss.json"
+                dataset: {{ mooring }}_BUOY_001_WAVSS
+            - fdchp:
+                name: FDCHP
+                refdes: {{ mooring }}-SBD12-08-FDCHPA000
+                parent: *dcl2
+                controlled_by: *dcl2
+                physical: *buoy
+                depth: -4
+                port: 8
+                uuid: {{ fdchp_uuid | default('UNKNOWN_UUID') }}
+                serial: {{ fdchp_serial | default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/{{ dcl2|lower }}/*.fdchp.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/buoy/fdchp/*.fdchp.json"
+                dataset: {{ mooring }}_BUOY_001_FDCHP
+    - platform2:
+        # midwater platform (NSIF)
+        name: &nsif NSIF
+        parent: {{ mooring }}
+        depth: &depth 7
+        pwrsys: None
+        controller:
+            # Platform controller for the NSIF
+            {% set cpm = 'CPM2' -%}
+            name: &cpm2 {{ cpm }}
+            refdes: {{ mooring }}-RIC21-00-CPMENG000
+            parent: *nsif
+            controlled_by: *cpm1
+            physical: *nsif
+            depth: *depth
+            uuid: {{ nsif_cpm_uuid|default('UNKNOWN_UUID') }}
+            serial: {{ nsif_cpm_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+            raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/{{ cpm|lower }}/syslog/*.syslog.log"
+            parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/nsif/superv/{{ cpm|lower }}/*.syslog.json"
+            dataset: {{ mooring }}_NSIF_001_SUPERV
+        beacons: None
+        loggers:
+            # Data loggers controlled by the NSIF platform controller
+            - logger1:
+                {% set dcl1 = 'DCL26' -%}
+                name: &dcl1 {{ dcl1 }}
+                refdes: {{ mooring }}-RID26-00-DCLENG000
+                parent: *cpm2
+                controlled_by: *cpm2
+                physical: *nsif
+                depth: *depth
+                uuid: {{ nsif_dcl1_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ nsif_dcl1_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/{{ dcl1|lower }}/syslog/*.syslog.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/nsif/superv/{{ dcl1|lower }}/*.syslog.json"
+                dataset: {{ mooring }}_NSIF_002_SUPERV
+            - logger2:
+                {% set dcl2 = 'DCL27' -%}
+                name: &dcl2 {{ dcl2 }}
+                refdes: {{ mooring }}-RID27-00-DCLENG000
+                parent: *cpm2
+                controlled_by: *cpm2
+                physical: *nsif
+                depth: *depth
+                uuid: {{ nsif_dcl2_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ nsif_dcl2_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/{{ dcl2|lower }}/syslog/*.syslog.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/nsif/superv/{{ dcl2|lower }}/*.syslog.json"
+                dataset: {{ mooring }}_NSIF_003_SUPERV
+        instrmts:
+            # Instruments controlled and logged by the first NSIF data logger
+            - adcpt:
+                name: ADCPT
+                refdes: {{ mooring }}-RID26-01-ADCPTA000
+                parent: *dcl1
+                controlled_by: *dcl1
+                physical: *nsif
+                depth: *depth
+                port: 1
+                uuid: {{ nsif_adcpt_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ nsif_adcpt_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/{{ dcl1|lower }}/adcpt1/*.adcpt1.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/nsif/adcpt/*.adcpt1.json"
+                dataset: {{ mooring }}_NSIF_001_ADCPT
+            - velpt:
+                name: VELPT
+                refdes: {{ mooring }}-RID26-04-VELPTA000
+                parent: *dcl1
+                controlled_by: *dcl1
+                physical: *nsif
+                depth: *depth
+                port: 4
+                uuid: {{ nsif_velpt_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ nsif_velpt_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/{{ dcl1|lower }}/velpt1/*.velpt1.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/nsif/velpt/*.velpt1.json"
+                dataset: {{ mooring }}_NSIF_001_VELPT
+            - acomm:
+                name: UCSPP
+                refdes: None
+                parent: *dcl1
+                controlled_by: *dcl1
+                physical: *nsif
+                depth: *depth
+                port: 5
+                uuid: {{ acomm_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ acomm_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/{{ dcl1|lower }}/ucspp/*.ucspp.log"
+                parsed_data: None
+                dataset: None
+            - phsen:
+                name: PHSEN
+                refdes: {{ mooring }}-RID26-06-PHSENG000
+                parent: *dcl1
+                controlled_by: *dcl1
+                physical: *nsif
+                depth: *depth
+                port: 6
+                uuid: {{ nsif_phsen_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ nsif_phsen_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/{{ dcl1|lower }}/phsen1/*.phsen1.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/nsif/phsen/*.phsen1.json"
+                dataset: {{ mooring }}_NSIF_001_PHSEN
+            - nutnr:
+                name: NUTNR
+                refdes: {{ mooring }}-RID26-07-NUTNRB000
+                parent: *dcl1
+                controlled_by: *dcl1
+                physical: *nsif
+                depth: *depth
+                port: 7
+                uuid: {{ nutnr_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ nutnr_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/{{ dcl1|lower }}/nutnr/*.nutnr.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/nsif/nutnr/*.nutnr.json"
+                dataset: {{ mooring }}_NSIF_002_NUTNR
+            - spkir:
+                name: SPKIR
+                refdes: {{ mooring }}-RID26-08-SPKIRB000
+                parent: *dcl1
+                controlled_by: *dcl1
+                physical: *nsif
+                depth: *depth
+                port: 8
+                uuid: {{ nsif_spkir_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ nsif_spkir_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/{{ dcl1|lower }}/spkir/*.spkir.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/nsif/spkir/*.spkir.json"
+                dataset: {{ mooring }}_NSIF_001_SPKIR
+            # Instruments controlled and logged by the second NSIF data logger
+            - optaa:
+                name: OPTAA
+                refdes: {{ mooring }}-RID27-01-OPTAAD000
+                parent: *dcl2
+                controlled_by: *dcl2
+                physical: *nsif
+                depth: *depth
+                port: 1
+                uuid: {{ nsif_optaa_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ nsif_optaa_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/{{ dcl2|lower }}/optaa1_decimated/*.optaa1.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/nsif/optaa/*.optaa1.json"
+                dataset: {{ mooring }}_NSIF_001_OPTAA
+            - flort:
+                name: FLORT
+                refdes: {{ mooring }}-RID27-02-FLORTD000
+                parent: *dcl2
+                controlled_by: *dcl2
+                physical: *nsif
+                depth: *depth
+                port: 2
+                uuid: {{ flort_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ flort_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/{{ dcl2|lower }}/flort/*.flort.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/nsif/flort/*.flort.json"
+                dataset: {{ mooring }}_NSIF_001_FLORT
+            - ctdbp:
+                name: CTDBP
+                refdes: {{ mooring }}-RID27-03-CTDBPC000
+                parent: *dcl2
+                controlled_by: *dcl2
+                physical: *nsif
+                depth: *depth
+                port: 3
+                uuid: {{ nsif_ctdbp_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ nsif_ctdbp_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/{{ dcl2|lower }}/ctdbp1/*.ctdbp1.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/nsif/ctdbp/*.ctdbp1.json"
+                dataset: {{ mooring }}_NSIF_001_CTDBP
+            - dosta:
+                name: DOSTA
+                refdes: {{ mooring }}-RID27-04-DOSTAD000
+                parent: *dcl2
+                controlled_by: *dcl2
+                physical: *nsif
+                depth: *depth
+                port: 4
+                uuid: {{ nsif_dosta_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ nsif_dosta_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring|lower }}/{{ deployment_name }}/cg_data/{{ dcl2|lower }}/dosta1/*.dosta1.log"
+                parsed_data: "{{ mooring|lower }}/{{ deployment_name }}/nsif/dosta/*.dosta1.json"
+                dataset: {{ mooring }}_NSIF_001_DOSTA
+            - uvlamp:
+                name: UVLAMP
+                refdes: None
+                parent: *dcl2
+                controlled_by: *dcl2
+                physical: *nsif
+                depth: *depth
+                port: 5
+                uuid: {{ uvlamp_uuid|default('UNKNOWN_UUID') }}
+                serial: {{ uvlamp_serial|default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: None
+                parsed_data: None
+                dataset: None
