@@ -48,8 +48,8 @@ class Calibrations(Coefficients):
         cal = pd.read_csv(csv_url, usecols=[0, 1, 2])
         for idx, row in cal.iterrows():
             # factory calibration values
-            if row[1] == 'CC_EL_max':
-                coeffs['EL_max'] = np.array(json.loads(row[2]))
+            if row.iloc[1] == 'CC_EL_max':
+                coeffs['EL_max'] = np.array(json.loads(row.iloc[2]))
 
         # save the resulting dictionary
         #self.coeffs = coeffs
