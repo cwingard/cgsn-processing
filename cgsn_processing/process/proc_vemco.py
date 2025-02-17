@@ -176,7 +176,7 @@ def inputs(args=None):
     subparsers = parser.add_subparsers(title="subcommands")
 
     # create a parser for the process subcommand
-    parser_process = subparsers.add_parser('proc_vemco')
+    parser_process = subparsers.add_parser('process')
     parser_process.add_argument('-i', '--infile', dest='infile', type=str, required=True)
     parser_process.add_argument('-o', '--outfile', dest='outfile', type=str, required=True)
     parser_process.add_argument('-p', '--platform', dest='platform', type=str, required=True)
@@ -187,7 +187,7 @@ def inputs(args=None):
     parser_process.set_defaults(func=proc_vemco)
 
     # create a parser for the plot subcommand
-    parser_plot = subparsers.add_parser('plot_vemco')
+    parser_plot = subparsers.add_parser('plotting')
     parser_plot.add_argument('-pd', '--site_dirs', dest='site_dirs', nargs='+', type=str, required=True,
                              help='List of directories containing the parsed data')
     parser_plot.add_argument('-rd', '--save_dirs', dest='save_dirs', nargs='+', type=str, required=True,
