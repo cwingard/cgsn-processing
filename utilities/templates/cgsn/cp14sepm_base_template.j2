@@ -1,8 +1,8 @@
-# baseline mooring configuration template for CE09OSPM
+# baseline mooring configuration template for CP14SEPM
 meta:
     # mooring deployment metadata
     name: {{ mooring }}
-    array: 'Coastal Endurance'
+    array: 'Coastal Pioneer MAB'
     deployment: {{ deployment }}
     deploy_name: {{ deployment_name }}
     category: 'Profiler Mooring'
@@ -30,7 +30,7 @@ platforms:
         parent: {{ mooring }}
         depth: &depth 0
         pwrsys: None
-        controller: 
+        controller:
             # The Simple Telemetered Controller (STC) is the primary controller for the buoy
             # and is responsible for logging the data from the instruments, telemetry systems,
             # GPS, and IMM polled sensors attached to the mooring riser EM cable.
@@ -142,6 +142,18 @@ platforms:
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/3dmgx3/*.3dmgx3.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/3dmgx3/*.3dmgx3.json"
                 dataset: {{ mooring }}_BUOY_001_MOPAK
+            - ctdmo:
+                name: CTDMO
+                refdes: {{ mooring }}-SBS01-02-CTDMOS011
+                parent: *imm
+                controlled_by: None
+                physical: *buoy
+                depth: 1
+                uuid: {{ ctdmo_uuid | default('UNKNOWN_UUID') }}
+                serial: {{ ctdmo_serial | default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/ctdmo/*.ctdmo.log"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/ctdmo/*.ctdmo.json"
+                dataset: {{ mooring }}_BUOY_001_CTDMO
     - platform2:
         # Mooring riser (including the 30 m sphere)
         {% set platform = 'RISER' -%}
@@ -167,7 +179,31 @@ platforms:
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/riser/xeos/{{ imei }}.json"
                 dataset: None
         loggers: None
-        instrmts: None
+        instrmts:
+            - adcpu:
+                name: ADCPU
+                refdes: {{ mooring }}-RII02-02-ADCPUP021
+                parent: *imm
+                controlled_by: None
+                physical: *riser
+                depth: 17
+                uuid: {{ adcpu_uuid | default('UNKNOWN_UUID') }}
+                serial: {{ adcpu_serial | default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/adcpu/*.adcpu.log"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/riser/adcpu/*.adcpu.json"
+                dataset: {{ mooring }}_RISER_001_ADCP
+            - adcps:
+                name: ADCPS
+                refdes: {{ mooring }}-RII02-02-ADCPSL010
+                parent: *imm
+                controlled_by: None
+                physical: *riser
+                depth: 286
+                uuid: {{ adcpt_uuid | default('UNKNOWN_UUID') }}
+                serial: {{ adcpt_serial | default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/adcps/*.adcps.log"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/riser/adcps/*.adcps.json"
+                dataset: {{ mooring }}_RISER_002_ADCP
     - platform3:
         # The McLane Moored Profiler (MMP) and its associated instruments
         name: "WFP"  # Wire-Following Profiler
