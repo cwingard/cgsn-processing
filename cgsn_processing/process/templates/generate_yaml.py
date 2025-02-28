@@ -2,109 +2,178 @@
 # -*- coding: utf-8 -*-
 """
 @package cgsn_processing.process.templates.generate_yaml
+@file cgsn_processing/process/templates/generate_yaml.py
+@author Christopher Wingard
+@brief Generate a YAML file from a Jinja2 template file and a set of keyword
+    arguments to populate the template with mooring and deployment specific
+    configuration information.
 """
+import argparse
+import netrc
 import os
-import json
+import requests
+import sys
 import yaml
 
-from jinja2 import Environment, BaseLoader, TemplateNotFound
-from typing import Any, IO
+from jinja2 import Environment, FileSystemLoader
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
+
+# load the access credentials from the .netrc file and set the RDB API token
+RDB_HOST = "ooi-rdb.whoi.edu"
+try:
+    nrc = netrc.netrc()
+    AUTH = nrc.authenticators(RDB_HOST)
+    if AUTH is None:
+        raise RuntimeError(f'No entry found for machine {RDB_HOST} in the .netrc file')
+except FileNotFoundError as e:
+    raise OSError(e, os.strerror(e.errno), os.path.expanduser('~'))
+API_TOKEN = f"Token {AUTH[2]}"
+
+# set up and configure the requests session object (used for all requests)
+SESSION = requests.Session()
+retry = Retry(connect=5, backoff_factor=0.5)
+adapter = HTTPAdapter(max_retries=retry)
+SESSION.mount('https://', adapter)
+SESSION.trust_env = False
 
 
-class TemplateLoader(BaseLoader):
+class YamlDumper(yaml.Dumper):
+    def increase_indent(self, flow=False, indentless=False):
+        return super(YamlDumper, self).increase_indent(flow, False)
+
+
+def request_url(url):
+    print(f'requesting {url}')
+    return SESSION.get(url, headers={"Authorization": API_TOKEN}).json()
+
+
+def request_endpoint(endpoint):
+    url = f'https://{RDB_HOST}/api/v1/{endpoint}'
+    return request_url(url)
+
+
+def inputs(args=None):
     """
-    Jinja2 template loader for loading templates, skipping the first line,
-    which uses an '!include' statement to utilize values found in other yaml
-    files. Built off the Jinja2 BaseLoader class per the Jinja2 documentation.
+    Command line argument parser for the mooring name, deployment name (e.g.
+    D00021) and template file. All three inputs are required and the deployment
+    name must be a string following the common formats used with the MIOs (e.g.
+    'D0001' or 'R00021'). The number of leading zeros does not matter.
+    Additionally, the template file (jinja2) may be provided as an absolute or
+    relative file path.
     """
-    def __init__(self, path):
-        self.path = path
+    if args is None:
+        args = sys.argv[1:]
 
-    def get_source(self, environment, template):
-        path = os.path.join(self.path, template)
-        if not os.path.exists(path):
-            raise TemplateNotFound(template)
-        with open(path) as f:
-            lines = f.readlines()
-            source = '\n'.join(lines[1:])  # Skip the first line
+    parser = argparse.ArgumentParser(description='Construct a deployment configuration record by pulling data '
+                                                 'from the OOI RDB system and populating a Jinja2 template file.')
+    parser.add_argument('mooring', '--mooring', type=str, help='The mooring name', required=True)
+    parser.add_argument('deployment', '--deploy', type=str, help='The deployment number to process', required=True)
+    parser.add_argument('template', '--template', type=str, help='The template file to use', required=True)
+    parser.add_argument('outfile', '--outfile', type=str, help='The output file to write the configuration to',
+                        required=True)
 
-        return source, path
+    # parse the input arguments and create a parser object
+    return parser.parse_args(args)
 
 
-class YamlLoader(yaml.SafeLoader):
+def build_configuration(mooring, deployment_name, template):
     """
-    YAML Loader set to use the `!include` constructor defined below.
+    Construct the deployment configuration record by pulling data from the OOI
+    RDB system and populating a Jinja2 template file.
+
+    :param mooring: str, the mooring name
+    :param deployment_name: str, the deployment number to process
+    :param template: str, the template file to use
     """
-    def __init__(self, stream: IO) -> None:
-        try:
-            self._root = os.path.split(stream.name)[0]
-        except AttributeError:
-            self._root = os.path.curdir
+    # construct the deployment number and the deployment url from the deployment name
+    deployment = int(''.join([s for s in deployment_name if s.isdigit()]))
+    deployment_number = f'{mooring.upper()}-{deployment:05d}'
+    deployment_url = request_endpoint(f'deployments/?deployment_number={deployment_number}&fields=url')[0]['url']
 
-        super().__init__(stream)
+    # download the build record for a specific site-deployment and assemble a list of the deployed inventory
+    build = request_url(deployment_url)
+    # inventory = build['inventory_deployments']
 
-    @property
-    def root(self):
-        return self._root
+    # pull out relevant deployment metadata from the build record
+    integration_start = build['deployment_start_date']
+    burn_in_start = build['deployment_burnin_date']
+    deployment_start = build['deployment_to_field_date']
+    deployment_end = build['deployment_recovery_date']
+    latitude = build['latitude']
+    longitude = build['longitude']
+    site_depth = build['depth']
 
+    # pull out the cruise numbers for the deployment and recovery cruises
+    if build['cruise_deployed']:
+        cruise = request_url(build['cruise_deployed'])
+        deployment_cruise = cruise['CUID']
+    else:
+        deployment_cruise = None
 
-def construct_include(loader: YamlLoader, node: yaml.ScalarNode) -> Any:
-    """
-    Include file referenced at node
-    """
-    filename = os.path.abspath(os.path.join(loader.root, loader.construct_scalar(node)))
-    extension = os.path.splitext(filename)[1].lstrip('.')
+    if build['cruise_recovered']:
+        cruise = request_url(build['cruise_recovered'])
+        recovery_cruise = cruise['CUID']
+    else:
+        recovery_cruise = None
 
-    with open(filename, 'r') as f:
-        if extension in ('yaml', 'yml'):
-            return yaml.load(f, YamlLoader)
-        elif extension in ('json', ):
-            return json.load(f)
-        else:
-            return ''.join(f.readlines())
+    # set the disposition of the deployment based on burn-in, deployment, and recovery dates
+    disposition = 'UNKNOWN_DISPOSITION'
+    if integration_start is not None:
+        disposition = 'burn-in'
+    if burn_in_start is not None:
+        disposition = 'burn-in'
+    if deployment_start is not None:
+        disposition = 'deployed'
+    if deployment_end is not None:
+        disposition = 'recovered'
 
+    # index through the inventory items to develop a listing of the deployed assets used in the deployment
+    # assets = [request_url(f'{url}?expand=part,assembly_parts') for url in inventory]
 
-def populate_template(template_file: str, output_file: str, **kwargs) -> None:
-    """
-    Populate a Jinja2 template with the given keyword arguments and write the
-    output to a file.
+    # TODO: for each inventory item, pull out the configuration values
+    # these will be in a list obtained by making the request for the deployment specific build
+    # for each item, 1 or more requests will be needed to get the configuration values using different urls and
+    # options. Will want to filter on part names, serial numbers, and maybe the friendly name?
 
-    Args:
-        template_file: Path to the Jinja2 template file (formatted as yaml).
-        output_file: Path to the output file.
-        **kwargs: Keyword arguments to pass to the Jinja2 template.
-    """
-    # load the yaml template file and add the config values from the included file
-    YamlLoader.add_constructor('!include', construct_include)
-    with open(template_file, 'r') as f:
-        data = yaml.load(f, YamlLoader)
+    # construct the context dictionary to pass to the template
+    context = {
+        'mooring': mooring,
+        'deployment': deployment,
+        'deployment_name': deployment_name,
+        'disposition': disposition,
+        'deployment_start': deployment_start,
+        'latitude': latitude,
+        'longitude': longitude,
+        'site_depth': site_depth,
+        'deployment_cruise': deployment_cruise,
+        'recovery_cruise': recovery_cruise,
+        'deployment_end': deployment_end,
+    }
 
     # load the template from the yaml template file (skipping the first line)
-    env = Environment(loader=TemplateLoader(os.path.dirname(template_file)), trim_blocks=True, lstrip_blocks=True)
-    template = env.get_template(os.path.basename(template_file))
-
-    # Render the template with the given keyword arguments
-    config = yaml.safe_load(template.render(**data, **kwargs))
-
-    # Write the output to a file
-    yaml.SafeDumper.ignore_aliases = lambda *args: True
-    with open(output_file, 'w') as f:
-        yaml.safe_dump(config, f, sort_keys=False, default_flow_style=False)
+    env = Environment(loader=FileSystemLoader(os.path.dirname(template)))
+    template = env.get_template(os.path.basename(template))
+    config = yaml.safe_load(template.render(**context))
+    return config
 
 
-def main():
-    YamlLoader.add_constructor('!include', construct_include)
+def main(argv=None):
+    """
+    Main function to parse the command line arguments, request the deployment
+    information from the OOI RDB system, and generate a YAML file using the
+    Jinja2 template file and the deployment information.
+    """
+    # Parse the command line arguments
+    args = inputs(argv)
+    mooring = args.mooring
+    deployment_name = args.deployment
+    template_file = os.path.abspath(args.template)
+    outfile = os.path.abspath(args.outfile)
 
-    # Load the yaml template file and add the config values from the included file
-    YAML_FILE = os.path.abspath('cgsn_processing\\process\\templates\\cp10cnsm_oms_template.yaml')
-    with open(YAML_FILE, 'r') as f:
-        data = yaml.load(f, YamlLoader)
-
-    env = Environment(loader=TemplateLoader(os.path.dirname(YAML_FILE)), trim_blocks=True, lstrip_blocks=True)
-    template = env.get_template(os.path.basename(YAML_FILE))
-
-    config = yaml.safe_load(template.render(**data))
-    print(config)
+    config = build_configuration(mooring, deployment_name, template_file)
+    with open(outfile, 'w') as f:
+        yaml.dump(config,  f, Dumper=YamlDumper, default_flow_style=False, sort_keys=False)
 
 
 if __name__ == '__main__':

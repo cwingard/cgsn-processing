@@ -8,13 +8,13 @@ meta:
     category: 'Profiler Mooring'
     subcategory: 'Coastal Surface-Piercing Profiler (CSPP)'
     disposition: {{ disposition | default('UNKNOWN_DISPOSITION') }}
-    start_date: {{ deployment_start | default('UNKNOWN_START_DATE') }}
+    start_date: !!str {{ deployment_start | default('UNKNOWN_START_DATE') }}
     latitude: {{ latitude | default('UNKNOWN_LATITUDE') }}
     longitude: {{ longitude | default('UNKNOWN_LONGITUDE') }}
     deploy_cruise: {{ deployment_cruise | default('UNKNOWN_DEPLOY_CRUISE') }}
-    stop_date: {{ deployment_end | default(None) }}
+    stop_date: !!str {{ deployment_end | default(None) }}
     recover_cruise: {{ recovery_cruise | default(None) }}
-    stop_date: {{ deployment_end | default(None) }}
+    stop_date: !!str {{ deployment_end | default(None) }}
     watch_circle: 100
     water_depth: &depth 25
 paths:

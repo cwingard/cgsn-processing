@@ -8,12 +8,12 @@ meta:
     category: 'Profiler Mooring'
     subcategory: 'Coastal McLane Moored Profiler'
     disposition: {{ disposition | default('UNKNOWN_DISPOSITION') }}
-    start_date: {{ deployment_start | default('UNKNOWN_START_DATE') }}
+    start_date: !!str {{ deployment_start | default('UNKNOWN_START_DATE') }}
     latitude: {{ latitude | default('UNKNOWN_LATITUDE') }}
     longitude: {{ longitude | default('UNKNOWN_LONGITUDE') }}
     deploy_cruise: {{ deployment_cruise | default('UNKNOWN_DEPLOY_CRUISE') }}
     recover_cruise: {{ recovery_cruise | default(None) }}
-    stop_date: {{ deployment_end | default(None) }}
+    stop_date: !!str {{ deployment_end | default(None) }}
     watch_circle: 250
     water_depth: {{ site_depth }}
 paths:
@@ -70,7 +70,7 @@ platforms:
                 controlled_by: None
                 physical: *buoy
                 depth: -1
-                imei: {{ xeos }}
+                imei: {{ imei }}
                 serial: {{ xeos2_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/xeos_sbd/{{ imei }}.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/xeos/{{ name | lower }}/{{ imei }}.json"
