@@ -40,7 +40,7 @@ platforms:
             serial: {{ psc_serial | default('UNKNOWN_SERIAL_NUMBER') }}
             raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/superv/*.superv.log"
             parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/pwrsys/*.superv.json"
-            dataset: {{ mooring }}_BUOY_001_PWRSYS
+            dataset: {{ mooring }}-BUOY-001-PWRSYS
         controller:
             # Primary mooring power and communications controller (CPM1)
             {% set cpm = 'CPM1' -%}
@@ -54,7 +54,7 @@ platforms:
             serial: {{ cpm1_serial | default('UNKNOWN_SERIAL_NUMBER') }}
             raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/superv/*.superv.log"
             parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/superv/{{ cpm | lower }}/*.superv.json"
-            dataset: {{ mooring }}_BUOY_001_SUPERV
+            dataset: {{ mooring }}-BUOY-001-SUPERV
         beacons:
             # GPS beacons used to independently track mooring location
             - beacon1:  #  surface beacon, watch circle enabled
@@ -113,7 +113,7 @@ platforms:
                 serial: {{ dcl11_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl11 | lower }}/superv/*.superv.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/superv/{{ dcl11 | lower }}/*.superv.json"
-                dataset: {{ mooring }}_BUOY_002_SUPERV
+                dataset: {{ mooring }}-BUOY-002-SUPERV
             - logger2:
                 {% set dcl12 = 'DCL12' -%}
                 name: &dcl12 {{ dcl12 }}
@@ -126,7 +126,7 @@ platforms:
                 serial: {{ dcl12_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl12 | lower }}/superv/*.superv.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/superv/{{ dcl12 | lower }}/*.superv.json"
-                dataset: {{ mooring }}_BUOY_003_SUPERV
+                dataset: {{ mooring }}-BUOY-003-SUPERV
         instrmts:
             # Instruments controlled and logged by the buoy CPM, independent of the other data loggers
             - gps:
@@ -140,7 +140,7 @@ platforms:
                 serial: {{ gps_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/superv/*.superv.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/gps/*.superv.json"
-                dataset: {{ mooring }}_BUOY_001_GPS
+                dataset: {{ mooring }}-BUOY-001-GPS
             - iridium:
                 name: IRIDIUM
                 refdes: None
@@ -152,7 +152,7 @@ platforms:
                 serial: {{ irid_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/superv/*.superv.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/iridium/*.superv.json"
-                dataset: {{ mooring }}_BUOY_001_IRIDIUM
+                dataset: {{ mooring }}-BUOY-001-IRIDIUM
             - sbd1:
                 {% set imei = sbd1_imei | default('UNKNOWN_IMEI_NUMBER') -%}
                 name: SBD_Primary
@@ -192,7 +192,7 @@ platforms:
                 serial: {{ mopak_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl11 | lower }}/mopak/*.mopak.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/mopak/*.mopak.json"
-                dataset: {{ mooring }}_BUOY_001_MOPAK
+                dataset: {{ mooring }}-BUOY-001-MOPAK
             - hyd1:
                 name: HYDGN1
                 refdes: {{ mooring }}-SBD11-02-HYDGN0000
@@ -205,7 +205,7 @@ platforms:
                 serial: {{ hyd1_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl11 | lower }}/hyd1/*.hyd1.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/hydgn1/*.hyd1.json"
-                dataset: {{ mooring }}_BUOY_001_HYDGN
+                dataset: {{ mooring }}-BUOY-001-HYDGN
             - velpt:
                 name: VELPT
                 refdes: {{ mooring }}-SBD11-04-VELPTA000
@@ -218,7 +218,7 @@ platforms:
                 serial: {{ buoy_velpt_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl11 | lower }}/velpt1/*.velpt1.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/velpt/*.velpt1.json"
-                dataset: {{ mooring }}_BUOY_001_VELPT
+                dataset: {{ mooring }}-BUOY-001-VELPT
             - metbk:
                 name: &metbk METBK
                 refdes: {{ mooring }}-SBD11-06-METBKA000
@@ -231,7 +231,7 @@ platforms:
                 serial: {{ metbk_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl11 | lower }}/metbk/*.metbk.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/metbk/*.metbk.json"
-                dataset: {{ mooring }}_BUOY_001_METBK
+                dataset: {{ mooring }}-BUOY-001-METBK
             - metct:
                 name: METCT
                 refdes: {{ mooring }}-SBD11-06-METBKA001
@@ -362,7 +362,7 @@ platforms:
                 serial: {{ hyd2_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl12 | lower }}/hyd2/*.hyd2.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/hydgn2/*.hyd2.json"
-                dataset: {{ mooring }}_BUOY_002_HYDGN
+                dataset: {{ mooring }}-BUOY-002-HYDGN
             - pco2a:
                 name: PCO2A
                 refdes: {{ mooring }}-SBD12-04-PCO2AA000
@@ -375,7 +375,7 @@ platforms:
                 serial: {{ pco2a_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl12 | lower }}/pco2a/*.pco2a.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/pco2a/*.pco2a.json"
-                dataset: {{ mooring }}_BUOY_001_PCO2A
+                dataset: {{ mooring }}-BUOY-001-PCO2A
             - wavss:
                 name: WAVSS
                 refdes: {{ mooring }}-SBD12-05-WAVSSA000
@@ -388,7 +388,7 @@ platforms:
                 serial: {{ wavss_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl12 | lower }}/*.wavss.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/wavss/*.wavss.json"
-                dataset: {{ mooring }}_BUOY_001_WAVSS
+                dataset: {{ mooring }}-BUOY-001-WAVSS
     - platform2:
         # midwater platform (NSIF)
         name: &nsif NSIF
@@ -408,7 +408,7 @@ platforms:
             serial: {{ cpm2_serial | default('UNKNOWN_SERIAL_NUMBER') }}
             raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ cpm | lower }}/superv/*.superv.log"
             parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/superv/{{ cpm | lower }}/*.superv.json"
-            dataset: {{ mooring }}_NSIF_001_SUPERV
+            dataset: {{ mooring }}-NSIF-001-SUPERV
         beacons: None
         loggers:
             # Data loggers controlled by the NSIF platform controller
@@ -424,7 +424,7 @@ platforms:
                 serial: {{ dcl26_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl26 | lower }}/superv/*.superv.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/superv/{{ dcl26 | lower }}/*.superv.json"
-                dataset: {{ mooring }}_NSIF_002_SUPERV
+                dataset: {{ mooring }}-NSIF-002-SUPERV
             - logger2:
                 {% set dcl27 = 'DCL27' -%}
                 name: &dcl27 {{ dcl27 }}
@@ -437,7 +437,7 @@ platforms:
                 serial: {{ dcl27_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl27 | lower }}/superv/*.superv.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/superv/{{ dcl27 | lower }}/*.superv.json"
-                dataset: {{ mooring }}_NSIF_003_SUPERV
+                dataset: {{ mooring }}-NSIF-003-SUPERV
         instrmts:
             # Instruments controlled and logged by the first NSIF data logger
             - adcpt:
@@ -452,7 +452,7 @@ platforms:
                 serial: {{ nsif_adcpt_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl26 | lower }}/adcpt1/*.adcpt1.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/adcpt/*.adcpt1.json"
-                dataset: {{ mooring }}_NSIF_001_ADCPT
+                dataset: {{ mooring }}-NSIF-001-ADCPT
             - velpt:
                 name: VELPT
                 refdes: {{ mooring }}-RID26-04-VELPTA000
@@ -465,7 +465,7 @@ platforms:
                 serial: {{ nsif_velpt_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl26 | lower }}/velpt1/*.velpt1.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/velpt/*.velpt1.json"
-                dataset: {{ mooring }}_NSIF_001_VELPT
+                dataset: {{ mooring }}-NSIF-001-VELPT
             - acomm:
                 name: UCSPP
                 refdes: None
@@ -491,7 +491,7 @@ platforms:
                 serial: {{ nsif_phsen_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl26 | lower }}/phsen1/*.phsen1.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/phsen/*.phsen1.json"
-                dataset: {{ mooring }}_NSIF_001_CPHOX
+                dataset: {{ mooring }}-NSIF-001-CPHOX
             - nutnr:
                 name: NUTNR
                 refdes: {{ mooring }}-RID26-07-NUTNRB000
@@ -504,7 +504,7 @@ platforms:
                 serial: {{ nutnr_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl26 | lower }}/nutnr/*.nutnr.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/nutnr/*.nutnr.json"
-                dataset: {{ mooring }}_NSIF_002_NUTNR
+                dataset: {{ mooring }}-NSIF-002-NUTNR
             - spkir:
                 name: SPKIR
                 refdes: {{ mooring }}-RID26-08-SPKIRB000
@@ -517,7 +517,7 @@ platforms:
                 serial: {{ nsif_spkir_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl26 | lower }}/spkir/*.spkir.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/spkir/*.spkir.json"
-                dataset: {{ mooring }}_NSIF_001_SPKIR
+                dataset: {{ mooring }}-NSIF-001-SPKIR
             # Instruments controlled and logged by the second NSIF data logger
             - optaa:
                 name: OPTAA
@@ -531,7 +531,7 @@ platforms:
                 serial: {{ nsif_optaa_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl27 | lower }}/optaa1_decimated/*.optaa1.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/optaa/*.optaa1.json"
-                dataset: {{ mooring }}_NSIF_001_OPTAA
+                dataset: {{ mooring }}-NSIF-001-OPTAA
             - flort:
                 name: FLORT
                 refdes: {{ mooring }}-RID27-02-FLORTD000
@@ -544,7 +544,7 @@ platforms:
                 serial: {{ flort_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl27 | lower }}/flort/*.flort.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/flort/*.flort.json"
-                dataset: {{ mooring }}_NSIF_001_FLORT
+                dataset: {{ mooring }}-NSIF-001-FLORT
             - ctdbp:
                 name: CTDBP
                 refdes: {{ mooring }}-RID27-03-CTDBPC000
@@ -557,7 +557,7 @@ platforms:
                 serial: {{ nsif_ctdbp_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl27 | lower }}/ctdbp1/*.ctdbp1.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/ctdbp/*.ctdbp1.json"
-                dataset: {{ mooring }}_NSIF_001_CTDBP
+                dataset: {{ mooring }}-NSIF-001-CTDBP
             - dosta:
                 name: DOSTA
                 refdes: {{ mooring }}-RID27-04-DOSTAD000
@@ -570,7 +570,7 @@ platforms:
                 serial: {{ nsif_dosta_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl27 | lower }}/dosta1/*.dosta1.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/dosta/*.dosta1.json"
-                dataset: {{ mooring }}_NSIF_001_DOSTA
+                dataset: {{ mooring }}-NSIF-001-DOSTA
             - uvlamp:
                 name: UVLAMP
                 refdes: None
@@ -602,7 +602,7 @@ platforms:
             serial: {{ mpea_serial | default('UNKNOWN_SERIAL_NUMBER') }}
             raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ cpm | lower }}/superv/*.superv.log"
             parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/mfn/mpea/*.superv.json"
-            dataset: {{ mooring }}_MFN_001_MPEA
+            dataset: {{ mooring }}-MFN-001-MPEA
         controller:
             # Platform controller for the MFN
             name: &cpm3 {{ cpm }}
@@ -615,7 +615,7 @@ platforms:
             serial: {{ cpm3_serial | default('UNKNOWN_SERIAL_NUMBER') }}
             raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ cpm | lower }}/superv/*.superv.log"
             parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/mfn/superv/{{ cpm | lower }}/*.superv.json"
-            dataset: {{ mooring }}_MFN_001_SUPERV
+            dataset: {{ mooring }}-MFN-001-SUPERV
         beacons: None
         loggers:
             # Data loggers controlled by the MFN platform controller
@@ -631,7 +631,7 @@ platforms:
                 serial: {{ dcl36_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl36 | lower }}/superv/*.superv.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/mfn/superv/{{ dcl36 | lower }}/*.superv.json"
-                dataset: {{ mooring }}_MFN_002_SUPERV
+                dataset: {{ mooring }}-MFN-002-SUPERV
             - logger2:
                 {% set dcl37 = 'DCL37' -%}
                 name: {{ dcl37 }}
@@ -644,7 +644,7 @@ platforms:
                 serial: {{ dcl37_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl37 | lower }}/superv/*.superv.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/mfn/superv/{{ dcl37 | lower }}/*.superv.json"
-                dataset: {{ mooring }}_MFN_003_SUPERV
+                dataset: {{ mooring }}-MFN-003-SUPERV
         instrmts:
             # Instruments controlled and logged by the first MFN data logger
             - vel3d:
@@ -671,7 +671,7 @@ platforms:
                 serial: {{ presf_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl36 | lower }}/presf/*.presf.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/mfn/presf/*.presf.json"
-                dataset: {{ mooring }}_MFN_001_PRESF
+                dataset: {{ mooring }}-MFN-001-PRESF
             - adcpt:
                 name: ADCPT
                 refdes: {{ mooring }}-MFD37-04-ADCPTC000
@@ -684,7 +684,7 @@ platforms:
                 serial: {{ adcpt_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl36 | lower }}/adcpt2/*.adcpt2.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/mfn/adcp/*.adcpt2.json"
-                dataset: {{ mooring }}_MFN_001_ADCPT
+                dataset: {{ mooring }}-MFN-001-ADCPT
             - pco2w:
                 name: PCO2W
                 refdes: {{ mooring }}-MFD35-05-PCO2WB000
@@ -697,7 +697,7 @@ platforms:
                 serial: {{ pco2w_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl36 | lower }}/pco2w/*.pco2w.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/mfn/pco2w/*.pco2w.json"
-                dataset: {{ mooring }}_MFN_001_PCO2W
+                dataset: {{ mooring }}-MFN-001-PCO2W
             - phsen:
                 name: PHSEN
                 refdes: {{ mooring }}-MFD35-06-PHSEND000
@@ -710,7 +710,7 @@ platforms:
                 serial: {{ mfn_phsen_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl36 | lower }}/phsen2/*.phsen2.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/mfn/phsen/*.phsen2.json"
-                dataset: {{ mooring }}_MFN_001_PHSEN
+                dataset: {{ mooring }}-MFN-001-PHSEN
             # Instruments controlled and logged by the second MFN data logger
             - optaa:
                 name: OPTAA
@@ -724,7 +724,7 @@ platforms:
                 serial: {{ mfn_optaa_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl37 | lower }}/optaa2_decimated/*.optaa2.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/mfn/optaa/*.optaa2.json"
-                dataset: {{ mooring }}_MFN_001_OPTAA
+                dataset: {{ mooring }}-MFN-001-OPTAA
             - ctdbp:
                 name: &ctd CTDBP
                 refdes: {{ mooring }}-MFD37-03-CTDBPC000
@@ -737,7 +737,7 @@ platforms:
                 serial: {{ mfn_ctdbp_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl37 | lower }}/ctdbp2/*.ctdbp2.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/mfn/ctdbp/*.ctdbp2.json"
-                dataset: {{ mooring }}_MFN_001_CTDBP_DOSTA
+                dataset: {{ mooring }}-MFN-001-CTDBP-DOSTA
             - dosta:
                 name: DOSTA
                 refdes: {{ mooring }}-MFD37-03-DOSTAD000
@@ -750,7 +750,7 @@ platforms:
                 serial: {{ mfn_dosta_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl37 | lower }}/ctdbp2/*.ctdbp2.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/mfn/ctdbp/*.ctdbp2.json"
-                dataset: {{ mooring }}_MFN_001_CTDBP_DOSTA
+                dataset: {{ mooring }}-MFN-001-CTDBP-DOSTA
             - camds:
                 name: CAMDS
                 refdes: {{ mooring }}-MFD37-06-CAMDSA000
@@ -776,4 +776,4 @@ platforms:
                 serial: {{ zplsc_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl37 | lower }}/zplsc/*.zplsc.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/mfn/zplsc/*.zplsc.json"
-                dataset: {{ mooring }}_MFN_001_ZPLSC
+                dataset: {{ mooring }}-MFN-001-ZPLSC

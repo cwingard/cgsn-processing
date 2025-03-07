@@ -1,4 +1,4 @@
-# baseline mooring configuration template for CP14NEPM
+# baseline mooring configuration template for CP12CNSW
 meta:
     # mooring deployment metadata
     name: {{ mooring }}
@@ -6,7 +6,7 @@ meta:
     deployment: {{ deployment }}
     deploy_name: {{ deployment_name }}
     category: 'Profiler Mooring'
-    subcategory: 'Coastal McLane Moored Profiler'
+    subcategory: 'McLane Wire-Crawling Profiler (Prawler)'
     disposition: {{ disposition | default('UNKNOWN_DISPOSITION') }}
     start_date: !!str {{ deployment_start | default('UNKNOWN_START_DATE') }}
     latitude: {{ latitude | default('UNKNOWN_LATITUDE') }}
@@ -28,7 +28,7 @@ platforms:
         # surface platform (BUOY)
         name: &buoy BUOY
         parent: {{ mooring }}
-        depth: &depth 0
+        depth: &depth1 0
         pwrsys: None
         controller:
             # The Simple Telemetered Controller (STC) is the primary controller for the buoy
@@ -39,17 +39,17 @@ platforms:
             parent: *buoy
             controlled_by: None
             physical: *buoy
-            depth: *depth
+            depth: *depth1
             uuid: {{ stc_uuid | default('UNKNOWN_UUID') }}
             serial: {{ stc_serial | default('UNKNOWN_SERIAL_NUMBER') }}
             raw_data: "{{ mooring | lower }}/{{ deployment_name }}/syslog/*.syslog.log"
             parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/superv/*.syslog.json"
-            dataset: {{ mooring }}-BUOY-CPM-01-1
+            dataset: {{ mooring }}-BUOY-001-SUPERV
         beacons:
             # GPS beacons used to independently track mooring location
             - beacon1:  #  surface beacon, watch circle enabled
                 {% set imei = xeos1_imei | default('UNKNOWN_IMEI_NUMBER') -%}
-                {% set name = 'Kilo1' -%}
+                {% set name = 'Rover1' -%}
                 name: {{ name }}
                 refdes: None
                 parent: *buoy
@@ -63,7 +63,7 @@ platforms:
                 dataset: None
             - beacon2:  #  surface beacon, watch circle enabled
                 {% set imei = xeos2_imei | default('UNKNOWN_IMEI_NUMBER') -%}
-                {% set name = 'Kilo2' -%}
+                {% set name = 'Rover2' -%}
                 name: {{ name }}
                 refdes: None
                 parent: *buoy
@@ -75,7 +75,7 @@ platforms:
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/xeos_sbd/{{ imei }}.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/xeos/{{ name | lower }}/{{ imei }}.json"
                 dataset: None
-        loggers: None  # see the buoy controller above, which fulfils this role
+        loggers: None  # see the buoy controller above, which fulfills this role
         instrmts:
             # GPS and telemetry system(s) status logged by the STC
             - gps:
@@ -142,6 +142,20 @@ platforms:
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/3dmgx3/*.3dmgx3.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/3dmgx3/*.3dmgx3.json"
                 dataset: {{ mooring }}-BUOY-MOPAK-01-1
+            -velpt:
+                name: VELPT
+                refdes: {{ mooring }}-SBS01-03-VELPTA000
+                parent: *stc
+                controlled_by: *stc
+                physical: *buoy
+                port: 3
+                depth: 1
+                uuid: {{ velpt_uuid | default('UNKNOWN_UUID') }}
+                serial: {{ velpt_serial | default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/velpt/*.velpt.log"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/velpt/*.velpt.json"
+                dataset: {{ mooring }}-BUOY-VELPT-01-1
+            # Instruments connected to the IMM
             - ctdmo:
                 name: CTDMO
                 refdes: {{ mooring }}-SBS01-02-CTDMOS011
@@ -151,137 +165,96 @@ platforms:
                 depth: 1
                 uuid: {{ ctdmo_uuid | default('UNKNOWN_UUID') }}
                 serial: {{ ctdmo_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/ctdmo/*.ctdmo.log"
-                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/ctdmo/*.ctdmo.json"
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/ctdmo1/*.ctdmo01.log"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/ctdmo1/*.ctdmo01.json"
                 dataset: {{ mooring }}-IMM-CTDMO-01-1
     - platform2:
-        # Mooring riser (including the 30 m sphere)
-        {% set platform = 'RISER' -%}
-        name: &riser {{ platform }}
-        parent: {{ mooring }}
-        depth: &depth {{ site_depth }}
-        pwrsys: None
-        controller: None
-        beacons:
-            - beacon1:
-                # 30 m subsurface beacon, alarm if seen after deployment
-                {% set imei = xeos3_imei | default('UNKNOWN_IMEI_NUMBER') -%}
-                {% set name = 'Kilo_Sphere' -%}
-                name: {{ name }}
-                refdes: None
-                parent: *riser
-                controlled_by: None
-                physical: *riser
-                depth: *depth
-                imei: {{ imei }}
-                serial: {{ xeos3_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/xeos_sbd/{{ imei }}.log"
-                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/riser/xeos/{{ imei }}.json"
-                dataset: None
-        loggers: None
-        instrmts:
-            - adcpu:
-                name: ADCPU
-                refdes: {{ mooring }}-RII02-02-ADCPUP021
-                parent: *imm
-                controlled_by: None
-                physical: *riser
-                depth: 17
-                uuid: {{ adcpu_uuid | default('UNKNOWN_UUID') }}
-                serial: {{ adcpu_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/adcpu/*.adcpu.log"
-                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/riser/adcpu/*.adcpu.json"
-                dataset: {{ mooring }}-IMM-ADCP-01-1
-            - adcps:
-                name: ADCPS
-                refdes: {{ mooring }}-RII02-02-ADCPSL010
-                parent: *imm
-                controlled_by: None
-                physical: *riser
-                depth: 283
-                uuid: {{ adcpt_uuid | default('UNKNOWN_UUID') }}
-                serial: {{ adcpt_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/adcps/*.adcps.log"
-                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/riser/adcps/*.adcps.json"
-                dataset: {{ mooring }}-IMM-ADCP-02-1
-    - platform3:
-        # The McLane Moored Profiler (MMP) and its associated instruments
+        # The McLane Wire-Crawling Profiler (Prawler) and its associated instruments
         name: "WFP"  # Wire-Following Profiler
         parent: {{ mooring }}
-        depth: &depth {{ site_depth }}
+        depth: &depth2 {{ site_depth }}
         pwrsys: None
         controller:
-            name: &mmp "MMP"  # McLane Moored Profiler
+            name: &wcp "PRAWLER"  # McLane Wire-Crawling Profiler
             refdes: {{ mooring }}-WFP01-00-WFPENG000
             parent: *imm
             controlled_by: None
             physical: *wfp
-            depth: *depth
+            depth: *depth2
             uuid: {{ mmp_uuid | default('UNKNOWN_UUID') }}
             serial: {{ mmp_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-            raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/E*.DAT"
-            parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/P*.json"
-            dataset: {{ mooring }}-IMM-WFPENG-01-1
+            raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/prkt/prkt*.DAT"
+            parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/prkt/prkt*.json"
+            dataset: {{ mooring }}-IMM-PRAWL-01-1
         beacons: None
         loggers: None
         instrmts:
             - ctdpf:
-                name: &ctd CTDPF  # CTD plus dissolved oxygen (MMP)
-                refdes: {{ mooring }}-WFP01-03-CTDPFK000
-                parent: *mmp
-                controlled_by: *mmp
+                name: CTDPF  # CTD plus dissolved oxygen (WCP)
+                refdes: {{ mooring }}-WFP01-03-CTDPFP000
+                parent: *wcp
+                controlled_by: *wcp
                 physical: *wfp
-                depth: *depth
+                depth: *depth2
                 uuid: {{ ctdpf_uuid | default('UNKNOWN_UUID') }}
                 serial: {{ ctdpf_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/C*.DAT"
-                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/P*.json"
-                dataset: {{ mooring }}-IMM-CTDPFK-01-1
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/prkt/prkt*.DAT"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/prkt/prkt*.json"
+                dataset: {{ mooring }}-IMM-PRAWL-01-1
             - dofst:
                 name: DOFST  # dissolved oxygen sensor
-                refdes: {{ mooring }}-WFP01-02-DOFSTK000
-                parent: *ctd
-                controlled_by: *ctd
+                refdes: {{ mooring }}-WFP01-02-DOFSTP000
+                parent: *wcp
+                controlled_by: *wcp
                 physical: *wfp
-                depth: *depth
+                depth: *depth2
                 uuid: {{ dofst_uuid | default('UNKNOWN_UUID') }}
                 serial: {{ dofst_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/C*.DAT"
-                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/P*.json"
-                dataset: {{ mooring }}-IMM-CTDPFK-01-1
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/prkt/prkt*.DAT"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/prkt/prkt*.json"
+                dataset: {{ mooring }}-IMM-PRAWL-01-1
             - flort:
                 name: FLORT  # ECO Triplet fluorometer
-                refdes: {{ mooring }}-WFP01-04-FLORTK000
-                parent: *mmp
-                controlled_by: *mmp
+                refdes: {{ mooring }}-WFP01-03-FLORTP000
+                parent: *wcp
+                controlled_by: *wcp
                 physical: *wfp
-                depth: *depth
+                depth: *depth2
                 uuid: {{ flort_uuid | default('UNKNOWN_UUID') }}
                 serial: {{ flort_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/E*.DAT"
-                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/{{ platform | lower }}/mmp/P*.json"
-                dataset: {{ mooring }}-IMM-WFPENG-01-1
-            - parad:
-                name: PARAD  # Biospherical PAR sensor
-                refdes: {{ mooring }}-WFP01-05-PARADK000
-                parent: *mmp
-                controlled_by: *mmp
-                physical: *wfp
-                depth: *depth
-                uuid: {{ parad_uuid | default('UNKNOWN_UUID') }}
-                serial: {{ parad_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/E*.DAT"
-                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/{{ platform | lower }}/mmp/P*.json"
-                dataset: {{ mooring }}-IMM-WFPENG-01-1
-            - vel3d:
-                name: VEL3D  # Nortek Aquadopp II single-point current meter
-                refdes: {{ mooring }}-WFP01-01-VEL3DK000
-                parent: *mmp
-                controlled_by: *mmp
-                physical: *wfp
-                depth: *depth
-                uuid: {{ vel3d_uuid | default('UNKNOWN_UUID') }}
-                serial: {{ vel3d_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/A*.DEC"
-                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/{{ platform | lower }}/mmp/P*.json"
-                dataset: {{ mooring }}-IMM-VEL3DK-01-1
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/prkt/prkt*.DAT"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/prkt/prkt*.json"
+                dataset: {{ mooring }}-IMM-PRAWL-01-1
+    - platform3:
+        name: "MFN"  # Seafloor Multi-Function Node
+        parent: {{ mooring }}
+        depth: &depth3 {{ site_depth }}
+        pwrsys: None
+        controller: None
+        beacons: None
+        loggers: None
+        instrmts:
+            - adcp:
+                name: ADCPT
+                refdes: {{ mooring }}-MFI01-02-ADCPTQ010
+                parent: *imm
+                controlled_by: None
+                physical: *mfn
+                depth: *depth3
+                uuid: {{ adcp_uuid | default('UNKNOWN_UUID') }}
+                serial: {{ adcp_serial | default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/adcp/*.adcp.log"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/adcp/*.adcp.json"
+                dataset: {{ mooring }}-IMM-ADCP-01-1
+            - ctdmo:
+                name: CTDMO
+                refdes: {{ mooring }}-MFI01-02-CTDMOS031
+                parent: *imm
+                controlled_by: None
+                physical: *mfn
+                depth: *depth3
+                uuid: {{ ctdmo_uuid | default('UNKNOWN_UUID') }}
+                serial: {{ ctdmo_serial | default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/ctdmo1/*.ctdmo02.log"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/ctdmo1/*.ctdmo02.json"
+                dataset: {{ mooring }}-IMM-CTDMO-02-1

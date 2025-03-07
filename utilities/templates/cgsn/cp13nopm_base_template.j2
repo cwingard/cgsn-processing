@@ -44,7 +44,7 @@ platforms:
             serial: {{ stc_serial | default('UNKNOWN_SERIAL_NUMBER') }}
             raw_data: "{{ mooring | lower }}/{{ deployment_name }}/syslog/*.syslog.log"
             parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/superv/*.syslog.json"
-            dataset: {{ mooring }}_BUOY_001_SUPERV
+            dataset: {{ mooring }}-BUOY-CPM-01-1
         beacons:
             # GPS beacons used to independently track mooring location
             - beacon1:  #  surface beacon, watch circle enabled
@@ -89,7 +89,7 @@ platforms:
                 serial: {{ gps_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/syslog/*.syslog.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/gps/*.syslog.json"
-                dataset: {{ mooring }}_BUOY_001_GPS
+                dataset: {{ mooring }}-BUOY-GPS-01-1
             - iridium:
                 name: IRIDIUM
                 refdes: None
@@ -101,7 +101,7 @@ platforms:
                 serial: {{ irid_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/syslog/*.syslog.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/iridium/*.syslog.json"
-                dataset: {{ mooring }}_BUOY_001_IRIDIUM
+                dataset: {{ mooring }}-BUOY-IRID-01-1
             - sbd:
                 {% set imei = sbd_imei | default('UNKNOWN_IMEI_NUMBER') -%}
                 name: SBD_Modem
@@ -131,7 +131,7 @@ platforms:
                 dataset: None
             - mopak:
                 name: MOPAK
-                refdes: {{ mooring }}-SBS01-01-MOPAK0000
+                refdes: {{ mooring }}-SBS01-05-MOPAK0000
                 parent: *stc
                 controlled_by: *stc
                 physical: *buoy
@@ -141,7 +141,7 @@ platforms:
                 serial: {{ mopak_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/3dmgx3/*.3dmgx3.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/3dmgx3/*.3dmgx3.json"
-                dataset: {{ mooring }}_BUOY_001_MOPAK
+                dataset: {{ mooring }}-BUOY-MOPAK-01-1
             - ctdmo:
                 name: CTDMO
                 refdes: {{ mooring }}-SBS01-02-CTDMOS011
@@ -153,7 +153,7 @@ platforms:
                 serial: {{ ctdmo_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/ctdmo/*.ctdmo.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/ctdmo/*.ctdmo.json"
-                dataset: {{ mooring }}_BUOY_001_CTDMO
+                dataset: {{ mooring }}-IMM-CTDMO-01-1
     - platform2:
         # Mooring riser (including the 30 m sphere)
         {% set platform = 'RISER' -%}
@@ -169,9 +169,9 @@ platforms:
                 {% set name = 'Kilo_Sphere' -%}
                 name: {{ name }}
                 refdes: None
-                parent: *sphere
+                parent: *riser
                 controlled_by: None
-                physical: *sphere
+                physical: *riser
                 depth: *depth
                 imei: {{ imei }}
                 serial: {{ xeos3_serial | default('UNKNOWN_SERIAL_NUMBER') }}
@@ -191,7 +191,7 @@ platforms:
                 serial: {{ adcpu_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/adcpu/*.adcpu.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/riser/adcpu/*.adcpu.json"
-                dataset: {{ mooring }}_RISER_001_ADCP
+                dataset: {{ mooring }}-IMM-ADCP-01-1
             - adcpt:
                 name: ADCPT
                 refdes: {{ mooring }}-RII02-02-ADCPTG010
@@ -203,7 +203,7 @@ platforms:
                 serial: {{ adcpt_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/adcpt/*.adcpt.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/riser/adcpt/*.adcpt.json"
-                dataset: {{ mooring }}_RISER_002_ADCP
+                dataset: {{ mooring }}-IMM-ADCP-02-1
     - platform3:
         # The McLane Moored Profiler (MMP) and its associated instruments
         name: "WFP"  # Wire-Following Profiler
@@ -221,7 +221,7 @@ platforms:
             serial: {{ mmp_serial | default('UNKNOWN_SERIAL_NUMBER') }}
             raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/E*.DAT"
             parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/P*.json"
-            dataset: {{ mooring }}_MMP_001_WFPENG
+            dataset: {{ mooring }}-IMM-WFPENG-01-1
         beacons: None
         loggers: None
         instrmts:
@@ -236,7 +236,7 @@ platforms:
                 serial: {{ ctdpf_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/C*.DAT"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/P*.json"
-                dataset: {{ mooring }}_MMP_001_CTDPF_DOFST
+                dataset: {{ mooring }}-IMM-CTDPFK-01-1
             - dofst:
                 name: DOFST  # dissolved oxygen sensor
                 refdes: {{ mooring }}-WFP01-02-DOFSTK000
@@ -248,7 +248,7 @@ platforms:
                 serial: {{ dofst_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/C*.DAT"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/P*.json"
-                dataset: {{ mooring }}_MMP_001_CTDPF_DOFST
+                dataset: {{ mooring }}-IMM-CTDPFK-01-1
             - flort:
                 name: FLORT  # ECO Triplet fluorometer
                 refdes: {{ mooring }}-WFP01-04-FLORTK000
@@ -260,7 +260,7 @@ platforms:
                 serial: {{ flort_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/E*.DAT"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/{{ platform | lower }}/mmp/P*.json"
-                dataset: {{ mooring }}_MMP_001_FLORT
+                dataset: {{ mooring }}-IMM-WFPENG-01-1
             - parad:
                 name: PARAD  # Biospherical PAR sensor
                 refdes: {{ mooring }}-WFP01-05-PARADK000
@@ -272,7 +272,7 @@ platforms:
                 serial: {{ parad_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/E*.DAT"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/{{ platform | lower }}/mmp/P*.json"
-                dataset: {{ mooring }}_MMP_001_PARAD
+                dataset: {{ mooring }}-IMM-WFPENG-01-1
             - vel3d:
                 name: VEL3D  # Nortek Aquadopp II single-point current meter
                 refdes: {{ mooring }}-WFP01-01-VEL3DK000
@@ -284,4 +284,4 @@ platforms:
                 serial: {{ vel3d_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/A*.DEC"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/{{ platform | lower }}/mmp/P*.json"
-                dataset: {{ mooring }}_MMP_001_VEL3D
+                dataset: {{ mooring }}-IMM-VEL3DK-01-1

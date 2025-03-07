@@ -1,7 +1,7 @@
 # baseline mooring configuration template for CE02SHSP
 meta:
     # mooring deployment metadata
-    name: &mooring CE02SHSP
+    name: {{ mooring }}
     array: 'Coastal Endurance'
     deployment: {{ deployment }}
     deploy_name: {{ deployment_name }}
@@ -16,7 +16,7 @@ meta:
     recover_cruise: {{ recovery_cruise | default(None) }}
     stop_date: !!str {{ deployment_end | default(None) }}
     watch_circle: 100
-    water_depth: &depth 80
+    water_depth: &depth {{ site_depth | default('UNKNOWN_WATER_DEPTH') }}
 paths:
     # absolute base paths to the raw, parsed, and processed data directories
     raw: /home/ooiuser/data/raw
@@ -28,12 +28,12 @@ platforms:
     - platform1:
         # surface-piercing profiler mooring (CSPP)
         name: &cspp CSPP
-        parent: $mooring
+        parent: {{ mooring }}
         depth: *depth
         pwrsys: None
         controller:
             name: &profiler {{ wlp_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-            refdes: CE02SHSP-SP001-00-SPPENG000
+            refdes: {{ mooring }}-SP001-00-SPPENG000
             parent: *cspp
             controlled_by: None
             physical: *cspp
@@ -60,33 +60,33 @@ platforms:
             ### The logger and the control can are the same unit on the CSPP ###
             - logger1:
                 name: &control "Control Can"
-                refdes: CE02SHSP-SP001-00-SPPENG000
+                refdes: {{ mooring }}-SP001-00-SPPENG000
                 parent: *profiler
                 controlled_by: None
                 physical: *cspp
                 depth: *depth
                 uuid: {{ control_uuid | default('UNKNOWN_UUID') }}
                 serial: {{ control_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "ce02shsp/{{ deployment_name }}/extract/*PDBG.txt"
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/extract/*PDBG.txt"
                 parsed_data: None
                 dataset: None
             - logger2:
                 name: &winch "Winch Controller"
-                refdes: CE02SHSP-SP001-00-SPPENG000
+                refdes: {{ mooring }}-SP001-00-SPPENG000
                 parent: *profiler
                 controlled_by: *control
                 physical: *cspp
                 depth: *depth
                 uuid: {{ winch_uuid | default('UNKNOWN_UUID') }}
                 serial: {{ winch_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: None
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/extract/*WDBG.txt"
                 parsed_data: None
                 dataset: None
         instrmts:
             ### Instruments controlled and logged by the CSPP Control Can ###
             - ctdpf:
                 name: CTDPF
-                refdes: CE02SHSP-SP001-08-CTDPFJ000
+                refdes: {{ mooring }}-SP001-08-CTDPFJ000
                 parent: *control
                 controlled_by: *control
                 physical: *cspp
@@ -94,12 +94,12 @@ platforms:
                 port: 1  # this is a fake port number, does not apply to the CSPP
                 uuid: {{ ctdpf_uuid | default('UNKNOWN_UUID') }}
                 serial: {{ ctdpf_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "ce02shsp/{{ deployment_name }}/fixed/ucspp*PPD_CTD.txt"
-                parsed_data: "ce02shsp/{{ deployment_name }}/ctdpf/ucspp*PPD_CTD.json"
-                dataset: CE02SHSP_CSPP_002_CTDPF
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/fixed/ucspp*PPD_CTD.txt"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/ctdpf/ucspp*PPD_CTD.json"
+                dataset: {{ mooring }}-CSPP-002-CTDPF
             - dosta:
                 name: DOSTA
-                refdes: CE02SHSP-SP001-01-DOSTAJ000
+                refdes: {{ mooring }}-SP001-01-DOSTAJ000
                 parent: *control
                 controlled_by: *control
                 physical: *cspp
@@ -107,12 +107,12 @@ platforms:
                 port: 2  # this is a fake port number, does not apply to the CSPP
                 uuid: {{ dosta_uuid | default('UNKNOWN_UUID') }}
                 serial: {{ dosta_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "ce02shsp/{{ deployment_name }}/fixed/ucspp*PPD_OPT.txt"
-                parsed_data: "ce02shsp/{{ deployment_name }}/dosta/ucspp*PPD_OPT.json"
-                dataset: CE02SHSP_CSPP_002_DOSTA
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/fixed/ucspp*PPD_OPT.txt"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/dosta/ucspp*PPD_OPT.json"
+                dataset: {{ mooring }}-CSPP-002-DOSTA
             - flort:
                 name: FLORT
-                refdes: CE02SHSP-SP001-07-FLORTJ000
+                refdes: {{ mooring }}-SP001-07-FLORTJ000
                 parent: *control
                 controlled_by: *control
                 physical: *cspp
@@ -120,12 +120,12 @@ platforms:
                 port: 3  # this is a fake port number, does not apply to the CSPP
                 uuid: {{ flort_uuid | default('UNKNOWN_UUID') }}
                 serial: {{ flort_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "ce02shsp/{{ deployment_name }}/fixed/ucspp*PPD_TRIP.txt"
-                parsed_data: "ce02shsp/{{ deployment_name }}/flort/ucspp*PPD_TRIP.json"
-                dataset: CE02SHSP_CSPP_002_FLORT
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/fixed/ucspp*PPD_TRIP.txt"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/flort/ucspp*PPD_TRIP.json"
+                dataset: {{ mooring }}-CSPP-002-FLORT
             - nutnr:
                 name: NUTNR
-                refdes: CE02SHSP-SP001-05-NUTNRJ000
+                refdes: {{ mooring }}-SP001-05-NUTNRJ000
                 parent: *control
                 controlled_by: *control
                 physical: *cspp
@@ -133,12 +133,12 @@ platforms:
                 port: 4  # this is a fake port number, does not apply to the CSPP
                 uuid: {{ nutnr_uuid | default('UNKNOWN_UUID') }}
                 serial: {{ nutnr_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "ce02shsp/{{ deployment_name }}/fixed/ucspp*SNA_SNA.txt"
-                parsed_data: "ce02shsp/{{ deployment_name }}/nutnr/ucspp*SNA_SNA.json"
-                dataset: CE02SHSP_CSPP_002_NUTNR
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/fixed/ucspp*SNA_SNA.txt"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nutnr/ucspp*SNA_SNA.json"
+                dataset: {{ mooring }}-CSPP-002-NUTNR
             - optaa:
                 name: OPTAA
-                refdes: CE02SHSP-SP001-04-OPTAAJ000
+                refdes: {{ mooring }}-SP001-04-OPTAAJ000
                 parent: *control
                 controlled_by: *control
                 physical: *cspp
@@ -146,12 +146,12 @@ platforms:
                 port: 5  # this is a fake port number, does not apply to the CSPP
                 uuid: {{ optaa_uuid | default('UNKNOWN_UUID') }}
                 serial: {{ optaa_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "ce02shsp/{{ deployment_name }}/fixed/ucspp*ACS_ACS.txt"
-                parsed_data: "ce02shsp/{{ deployment_name }}/optaa/ucspp*ACS_ACS.json"
-                dataset: CE02SHSP_CSPP_002_OPTAA
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/fixed/ucspp*ACS_ACS.txt"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/optaa/ucspp*ACS_ACS.json"
+                dataset: {{ mooring }}-CSPP-002-OPTAA
             - parad:
                 name: PARAD
-                refdes: CE02SHSP-SP001-09-PARADJ000
+                refdes: {{ mooring }}-SP001-10-PARADJ000
                 parent: *control
                 controlled_by: *control
                 physical: *cspp
@@ -159,12 +159,12 @@ platforms:
                 port: 6  # this is a fake port number, does not apply to the CSPP
                 uuid: {{ parad_uuid | default('UNKNOWN_UUID') }}
                 serial: {{ parad_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "ce02shsp/{{ deployment_name }}/fixed/ucspp*PPD_PARS.txt"
-                parsed_data: "ce02shsp/{{ deployment_name }}/parad/ucspp*PPD_PARS.json"
-                dataset: CE02SHSP_CSPP_002_PARAD
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/fixed/ucspp*PPD_PARS.txt"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/parad/ucspp*PPD_PARS.json"
+                dataset: {{ mooring }}-CSPP-002-PARAD
             - spkir:
                 name: SPKIR
-                refdes: CE02SHSP-SP001-06-SPKIRJ000
+                refdes: {{ mooring }}-SP001-06-SPKIRJ000
                 parent: *control
                 controlled_by: *control
                 physical: *cspp
@@ -172,12 +172,12 @@ platforms:
                 port: 7  # this is a fake port number, does not apply to the CSPP
                 uuid: {{ spkir_uuid | default('UNKNOWN_UUID') }}
                 serial: {{ spkir_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "ce02shsp/{{ deployment_name }}/fixed/ucspp*PPD_OCR.txt"
-                parsed_data: "ce02shsp/{{ deployment_name }}/spkir/ucspp*PPD_OCR.json"
-                dataset: CE02SHSP_CSPP_002_SPKIR
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/fixed/ucspp*PPD_OCR.txt"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/spkir/ucspp*PPD_OCR.json"
+                dataset: {{ mooring }}-CSPP-002-SPKIR
             - velpt:
                 name: VELPT
-                refdes: CE02SHSP-SP001-02-VELPTJ000
+                refdes: {{ mooring }}-SP001-02-VELPTJ000
                 parent: *control
                 controlled_by: *control
                 physical: *cspp
@@ -185,13 +185,13 @@ platforms:
                 port: 8  # this is a fake port number, does not apply to the CSPP
                 uuid: {{ velpt_uuid | default('UNKNOWN_UUID') }}
                 serial: {{ velpt_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "ce02shsp/{{ deployment_name }}/fixed/ucspp*PPD_ADCP.txt"
-                parsed_data: "ce02shsp/{{ deployment_name }}/velpt/ucspp*PPD_ADCP.json"
-                dataset: CE02SHSP_CSPP_002_VELPT
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/fixed/ucspp*PPD_ADCP.txt"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/velpt/ucspp*PPD_ADCP.json"
+                dataset: {{ mooring }}-CSPP-002-VELPT
             ### Instruments controlled and logged by the CSPP Winch Controller ###
             - depth:
                 name: PRESSURE
-                refdes: CE02SHSP-SP001-00-SPPENG000
+                refdes: {{ mooring }}-SP001-00-SPPENG000
                 parent: *winch
                 controlled_by: *winch
                 physical: *cspp
@@ -199,12 +199,12 @@ platforms:
                 port: 1  # this is a fake port number, does not apply to the CSPP
                 uuid: {{ winch_sbe_uuid | default('UNKNOWN_UUID') }}
                 serial: {{ winch_sbe_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "ce02shsp/{{ deployment_name }}/extract/ucspp*WC_SBE.txt"
-                parsed_data: "ce02shsp/{{ deployment_name }}/winch/ucspp*WC_SBE.json"
-                dataset: CE02SHSP_CSPP_002_WINCH_SBE
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/extract/ucspp*WC_SBE.txt"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/winch/ucspp*WC_SBE.json"
+                dataset: {{ mooring }}-CSPP-002-WINCH-SBE
             - heading:
                 name: HEADING
-                refdes: CE02SHSP-SP001-00-SPPENG000
+                refdes: {{ mooring }}-SP001-00-SPPENG000
                 parent: *winch
                 controlled_by: *winch
                 physical: *cspp
@@ -212,12 +212,12 @@ platforms:
                 port: 2  # this is a fake port number, does not apply to the CSPP
                 uuid: {{ winch_hdng_uuid | default('UNKNOWN_UUID') }}
                 serial: {{ winch_hdng_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "ce02shsp/{{ deployment_name }}/extract/ucspp*WC_HMR.txt"
-                parsed_data: "ce02shsp/{{ deployment_name }}/winch/ucspp*WC_HMR.json"
-                dataset: CE02SHSP_CSPP_002_WINCH_HMR
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/extract/ucspp*WC_HMR.txt"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/winch/ucspp*WC_HMR.json"
+                dataset: {{ mooring }}-CSPP-002-WINCH-HMR
             - spool:
                 name: SPOOL
-                refdes: CE02SHSP-SP001-00-SPPENG000
+                refdes: {{ mooring }}-SP001-00-SPPENG000
                 parent: *winch
                 controlled_by: *winch
                 physical: *cspp
@@ -225,6 +225,6 @@ platforms:
                 port: 3  # this is a fake port number, does not apply to the CSPP
                 uuid: {{ winch_spl_uuid | default('UNKNOWN_UUID') }}
                 serial: {{ winch_spl_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "ce02shsp/{{ deployment_name }}/extract/ucspp*WC_WM.txt"
-                parsed_data: "ce02shsp/{{ deployment_name }}/winch/ucspp*WC_WM.json"
-                dataset: CE02SHSP_CSPP_002_WINCH_WM
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/extract/ucspp*WC_WM.txt"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/winch/ucspp*WC_WM.json"
+                dataset: {{ mooring }}-CSPP-002-WINCH-WM
