@@ -191,7 +191,7 @@ platforms:
                 serial: {{ adcpu_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/adcpu/*.adcpu.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/riser/adcpu/*.adcpu.json"
-                dataset: {{ mooring }}-IMM-ADCP-01-1
+                dataset: {{ mooring }}-IMM-ADCP-02-1
             - adcpt:
                 name: ADCPT
                 refdes: {{ mooring }}-RII02-02-ADCPTG010
@@ -203,7 +203,7 @@ platforms:
                 serial: {{ adcpt_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/adcpt/*.adcpt.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/riser/adcpt/*.adcpt.json"
-                dataset: {{ mooring }}-IMM-ADCP-02-1
+                dataset: {{ mooring }}-IMM-ADCP-01-1
     - platform3:
         # The McLane Moored Profiler (MMP) and its associated instruments
         name: "WFP"  # Wire-Following Profiler

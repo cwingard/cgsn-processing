@@ -595,7 +595,7 @@ platforms:
                 serial: {{ nsif_prtsz_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl26 | lower }}/prtsz1/*.prtsz1.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/prtsz/*.prtsz1.json"
-                dataset: {{ mooring }}-NSIF-PRTSZ-01-1-01-1
+                dataset: {{ mooring }}-NSIF-PRTSZ-01-1
             - turbd:
                 name: TURBD
                 refdes: {{ mooring }}-RID26-03-TURBDA000
@@ -647,7 +647,7 @@ platforms:
                 serial: {{ nutnr_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl26 | lower }}/nutnr/*.nutnr.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/nutnr/*.nutnr.json"
-                dataset: {{ mooring }}-NSIF-NUTNR-02-1
+                dataset: {{ mooring }}-NSIF-NUTNR-01-1
             - spkir:
                 name: SPKIR
                 refdes: {{ mooring }}-RID26-08-SPKIRB000
@@ -815,7 +815,7 @@ platforms:
                 serial: {{ mfn_prtsz_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl36 | lower }}/prtsz2/*.prtsz2.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/mfn/prtsz/*.prtsz2.json"
-                dataset: {{ mooring }}-MFN-PRTSZ-01-1-01-1
+                dataset: {{ mooring }}-MFN-PRTSZ-01-1
             - presf:
                 name: PRESF
                 refdes: {{ mooring }}-MFD36-02-PRESFD000
@@ -907,7 +907,7 @@ platforms:
                 serial: {{ adcpt_serial | default('UNKNOWN_SERIAL_NUMBER') }}
                 raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl37 | lower }}/adcp/*.adcp.log"
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/mfn/adcp/*.adcp.json"
-                dataset: {{ mooring }}-MFN-ADCPT
+                dataset: {{ mooring }}-MFN-ADCPT-01-1
             - ctdbp:
                 name: CTDBP
                 refdes: {{ mooring }}-MFD37-03-CTDBPC000

@@ -608,7 +608,7 @@ platforms:
             serial: {{ mpea_serial | default('UNKNOWN_SERIAL_NUMBER') }}
             raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ cpm | lower }}/syslog/*.syslog.log"
             parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/mfn/mpea/*.syslog.json"
-            dataset: {{ mooring }}-MFN-MPEA
+            dataset: {{ mooring }}-MFN-PWRSYS-01-1
         controller:
             # Platform controller for the MFN
             name: &cpm3 {{ cpm }}
