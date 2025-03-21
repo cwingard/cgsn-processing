@@ -48,13 +48,15 @@ CPHOX = {
         'comment': ('pH of the sea water, reported on the total scale. The pH is a measure of the acidity or '
                     'basicity of the sea water, where a pH of 7 is neutral, a pH less than 7 is acidic, and a pH '
                     'greater than 7 is basic.'),
-        'data_product_identifier': 'PHWATER_L2'
+        'data_product_identifier': 'PHWATER_L2',
+        'ancillary_variables': 'temperature, pressure, salinity, external_reference'
     },
     'external_reference': {
         'long_name': 'External Reference Voltage',
         'units': 'V',
         'comment': ('External reference voltage from the SeapHOx instrument. This value is used to calculate the '
-                    'pH of the sea water.')
+                    'pH of the sea water.'),
+        'data_product_identifier': 'PHWATER_L0'
     },
     'oxygen_concentration': {
         'long_name': 'Dissolved Oxygen Concentration',
@@ -80,7 +82,8 @@ CPHOX = {
         'units': 'umol L-1',
         'comment': ('Mole concentration of dissolved oxygen per unit volume, also known as Molarity, as measured by '
                     'an optode oxygen sensor. Computed on-board the sensor using internal calibration coefficients.'),
-        'data_product_identifier': 'DOCONCS_L1'
+        'data_product_identifier': 'DOCONCS_L1',
+        'ancillary_variables': 'oxygen_concentration'
     },
     'oxygen_concentration_per_kg': {
         'long_name': 'Dissolved Oxygen per Unit Mass',
@@ -88,15 +91,20 @@ CPHOX = {
         'units': 'umol kg-1',
         'comment': ('Concentration of dissolved oxygen per unit mass in the sea water, adjusted to the potential '
                     'density per directions outlined in the Sea-Bird Electronics SBE63 Manual.'),
-        'data_product_identifier': 'DOXYGEN_L2'
+        'data_product_identifier': 'DOXYGEN_L2',
+        'ancillary_variables': 'oxygen_concentration, temperature, salinity, pressure, latitude, longitude'
     },
     'estimated_alkalinity': {
         'long_name': 'Estimated Alkalinity',
+        'standard_name': 'sea_water_alkalinity_per_unit_mass_expressed_as_mole_equivalent',
         'units': 'umol kg-1',
         'comment': ('Estimated alkalinity of the sea water, reported in umol/kg. The alkalinity is estimated using '
-                    'the SeapHOx temperature and salinity data and an equation from Lee et al. (2006, '
-                    'doi:10.1029/2006GL027207.')
-    }
+                    'the SeapHOx temperature and salinity data and equations from Lee et al. (2006, '
+                    'doi:10.1029/2006GL027207). The estimated alkalinity is a proxy for the total alkalinity of the '
+                    'sea water and is provided here to assist in general assessments of the carbonate system '
+                    'parameters measured by other co-located sensors.'),
+        'ancillary_variables': 'temperature, salinity'
+    },
 }
 
 # add the standard CTD attributes to the CPHOX attributes

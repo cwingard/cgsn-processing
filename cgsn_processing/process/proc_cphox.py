@@ -20,6 +20,60 @@ from cgsn_processing.process.configs.attr_common import SHARED
 from cgsn_processing.process.configs.attr_cphox import CPHOX
 
 
+def dissolved_oxygen(mlpl_doxy, degc, psu, dbar, lon, lat):
+    """
+    Calculate the dissolved oxygen concentration in umol/kg from the oxygen
+    concentration in ml/l, temperature in degrees Celsius, salinity in
+    practical salinity units, and pressure in decibars. The conversion is
+    based on the Argo Data Management manual (Processing Argo OXYGEN
+    data at the DAC level, 2022, v2.3.3 https://dx.doi.org/10.13155/39795).
+
+    :param mlpl_doxy: oxygen concentration in ml/l as reported by the sensor
+    :param degc: temperature in degrees Celsius recorded by the CTD sensor
+    :param psu: salinity in practical salinity units recorded by the CTD sensor
+    :param dbar: pressure in decibars recorded by the CTD sensor
+    :param lon: longitude of the deployed sensor
+    :param lat: latitude of the deployed sensor
+    :return: dissolved oxygen concentration in umol/kg corrected for salinity,
+        temperature, and pressure
+    """
+    # constants used in the calculations (see https://doi.org/10.13155/45915)
+    b = [-6.24523e-3, -7.37614e-3, -1.03410e-2, -8.17083e-3]
+    c = [-4.88682e-7]
+    d = [24.4543, -67.4509, -4.8489, -5.44e-4]
+    sref = 0.  # reference salinity (default value preset by the vendor)
+    pref = 0.  # reference pressure (default value preset by the vendor)
+    # Pcoef = [0.115, 0.00022, 0.0419]  # pressure correction coefficient (assumes correction applied)
+    Pcoef = [0, 0.00016, 0.0307]  # pressure correction coefficient (assumes no correction applied)
+
+    # convert the oxygen concentration from ml/l to umol/L
+    molar_doxy = mlpl_doxy * 44.6596  # umol/L
+
+    # salinity compensation of the oxygen concentration
+    t_scaled = np.log((9298.15 - degc) / (273.15 + degc))
+    t_abs = degc + 273.15
+    pH20_tr = 1013.25 * np.exp(d[0] + d[1] * (100 / t_abs) + d[2] * np.log(t_abs / 100) + d[3] * sref)
+    pH20_ts = 1013.25 * np.exp(d[0] + d[1] * (100 / t_abs) + d[2] * np.log(t_abs / 100) + d[3] * psu)
+    a_tss = (1013.25 - pH20_tr) / (1013.25 - pH20_ts)
+    scorr = a_tss ** np.exp((psu - sref) * (b[0] + b[1] * t_scaled + b[2] * t_scaled**2 + b[3] * t_scaled**3) +
+                            c[0] * (psu**2 - sref**2))
+    do_psal = molar_doxy * scorr
+
+    # correction for pressure effects on quenching
+    pcorr_sbe63 = np.exp(0.011 * pref / t_abs)
+    do_psal_p = do_psal * (1 + (((Pcoef[1] * degc + Pcoef[2]) * dbar) / 1000)) / pcorr_sbe63
+
+    # calculate the potential density from the CTD measurements
+    SA = SA_from_SP(psu, dbar, lon, lat)
+    pt0 = pt0_from_t(SA, degc, pref)
+    CT = CT_from_pt(SA, pt0)
+    sigma = (sigma0(SA, CT) + 1000) / 1000
+
+    # convert the dissolved oxygen concentration to umol/kg
+    doxy = do_psal_p / sigma
+    return doxy
+
+
 def ph_total(vrs_ext, degc, psu, dbar, k0, k2, f):
     """
     Calculate the total pH from the SeapHOx sensor. The total pH is calculated
@@ -131,32 +185,38 @@ def proc_cphox(infile, platform, deployment, lat, lon, depth, **kwargs):
     cphox['error_flag'] = cphox['error_flag'].astype(int)
     cphox['serial_number'] = cphox['serial_number'].astype(int)
 
-    # convert the oxygen concentration from ml/l to umol/L and then to umol/kg per the SBE63 manual
-    sa = SA_from_SP(cphox['salinity'].values, cphox['pressure'].values, lon, lat)
-    pt0 = pt0_from_t(sa, cphox['temperature'].values, cphox['pressure'].values)
-    ct = CT_from_pt(sa, pt0)
-    sigma = sigma0(sa, ct)
-    cphox['oxygen_molar_concentration'] = cphox['oxygen_concentration'] * 44661.5 / 1000.  # umol/L
-    cphox['oxygen_concentration_per_kg'] = cphox['oxygen_concentration'] * 44661.5 / (sigma + 1000.)  # umol/kg
+    # convert the oxygen concentration from ml/l to umol/L and then to umol/kg per the Argo Data Management manual
+    cphox['oxygen_molar_concentration'] = cphox['oxygen_concentration'] * 44.6596  # umol/L
+    cphox['oxygen_concentration_per_kg'] = dissolved_oxygen(cphox['oxygen_concentration'].values,
+                                                            cphox['temperature'].values, cphox['salinity'].values,
+                                                            cphox['pressure'].values, lon, lat)
 
     # replace the deployment depth with the actual depth from the pressure sensor
     z = z_from_p(cphox['pressure'], lat)  # calculate the depth from the pressure
     darray = [depth, z.min(), z.max()]
 
-    if estimated:
-        # Use the Lee et al. (2006) model to estimate the total alkalinity from the salinity and temperature
-        # https://doi.org/10.1029/2006GL027207
-        if 'CE' in platform:
-            # for the Coastal Endurance array, use zone 4 (North Pacific) coefficients
+    if estimated:  # calculate the estimated alkalinity
+        # Use the Lee et al. (2006) models to estimate the total alkalinity from the salinity and temperature
+        # (https://doi.org/10.1029/2006GL027207). More appropriate models may be available for the specific
+        # deployment locations (especially in cases of freshwater intrusion). These estimates are intended to be
+        # used by operators of the moorings in general assessments of the carbonate system as measured by other
+        # co-located instruments.
+        if 'CE' in platform:  # Coastal Endurance (Zone 4)
             cphox['estimated_alkalinity'] = (2305 + 53.23 * (cphox['salinity'] - 35) + 1.85 *
                                              (cphox['salinity'] - 35)**2 - 14.72 * (cphox['temperature'] - 20) -
                                              0.158 * (cphox['temperature'] - 20)**2 + 0.062 *
                                              (cphox['temperature'] - 20) * lon)
-        else:
-            # for the Coastal Pioneer and Global Irminger arrays, use zone 3 (North Atlantic) coefficients
+        else:  # Coastal Pioneer and Global Irminger (Zone 3)
+            # North Atlantic (Pioneer and Irminger) model
             cphox['estimated_alkalinity'] = (2305 + 53.97 * (cphox['salinity'] - 35) + 2.74 *
                                              (cphox['salinity'] - 35)**2 - 1.16 * (cphox['temperature'] - 20) -
                                              0.040 * (cphox['temperature'] - 20)**2)
+
+        # If the temperature is greater than 20 degrees Celsius, use the Subtropics model (Zone 1)
+        zone1 = (2305 + 58.66 * (cphox['salinity'] - 35) + 2.32 * (cphox['salinity'] - 35)**2 -
+                 1.41 * (cphox['temperature'] - 20) - 0.040 * (cphox['temperature'] - 20)**2)
+        m = cphox['temperature'] > 20
+        cphox['estimated_alkalinity'][m] = zone1[m]
 
     # create an xarray data set from the data frame
     cphox = xr.Dataset.from_dataframe(cphox)
