@@ -1,0 +1,287 @@
+# baseline mooring configuration template for CP13NOPM
+meta:
+    # mooring deployment metadata
+    name: {{ mooring }}
+    array: 'Coastal Pioneer MAB'
+    deployment: {{ deployment }}
+    deploy_name: {{ deployment_name }}
+    category: 'Profiler Mooring'
+    subcategory: 'Coastal McLane Moored Profiler'
+    disposition: {{ disposition | default('UNKNOWN_DISPOSITION') }}
+    start_date: !!str {{ deployment_start | default('UNKNOWN_START_DATE') }}
+    latitude: {{ latitude | default('UNKNOWN_LATITUDE') }}
+    longitude: {{ longitude | default('UNKNOWN_LONGITUDE') }}
+    deploy_cruise: {{ deployment_cruise | default('UNKNOWN_DEPLOY_CRUISE') }}
+    recover_cruise: {{ recovery_cruise | default(None) }}
+    stop_date: !!str {{ deployment_end | default(None) }}
+    watch_circle: 250
+    water_depth: {{ site_depth }}
+paths:
+    # absolute base paths to the raw, parsed, and processed data directories
+    raw: /home/ooiuser/data/raw
+    parsed: /home/ooiuser/data/parsed
+    processed: /home/ooiuser/data/processed
+platforms:
+    # list of the subassemblies (aka platforms) and associated controllers, GPS
+    # beacons, power systems, data loggers and instruments on the platform
+    - platform1:
+        # surface platform (BUOY)
+        name: &buoy BUOY
+        parent: {{ mooring }}
+        depth: &depth 0
+        pwrsys: None
+        controller:
+            # The Simple Telemetered Controller (STC) is the primary controller for the buoy
+            # and is responsible for logging the data from the instruments, telemetry systems,
+            # GPS, and IMM polled sensors attached to the mooring riser EM cable.
+            name: &stc STC1
+            refdes: {{ mooring }}-SBS01-00-STCENG000
+            parent: *buoy
+            controlled_by: None
+            physical: *buoy
+            depth: *depth
+            uuid: {{ stc_uuid | default('UNKNOWN_UUID') }}
+            serial: {{ stc_serial | default('UNKNOWN_SERIAL_NUMBER') }}
+            raw_data: "{{ mooring | lower }}/{{ deployment_name }}/syslog/*.syslog.log"
+            parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/superv/*.syslog.json"
+            dataset: {{ mooring }}-BUOY-CPM-01-1
+        beacons:
+            # GPS beacons used to independently track mooring location
+            - beacon1:  #  surface beacon, watch circle enabled
+                {% set imei = xeos1_imei | default('UNKNOWN_IMEI_NUMBER') -%}
+                {% set name = 'Kilo1' -%}
+                name: {{ name }}
+                refdes: None
+                parent: *buoy
+                controlled_by: None
+                physical: *buoy
+                depth: -1
+                imei: {{ imei }}
+                serial: {{ xeos1_serial | default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/xeos_sbd/{{ imei }}.log"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/xeos/{{ name | lower }}/{{ imei }}.json"
+                dataset: None
+            - beacon2:  #  surface beacon, watch circle enabled
+                {% set imei = xeos2_imei | default('UNKNOWN_IMEI_NUMBER') -%}
+                {% set name = 'Kilo2' -%}
+                name: {{ name }}
+                refdes: None
+                parent: *buoy
+                controlled_by: None
+                physical: *buoy
+                depth: -1
+                imei: {{ imei }}
+                serial: {{ xeos2_serial | default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/xeos_sbd/{{ imei }}.log"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/xeos/{{ name | lower }}/{{ imei }}.json"
+                dataset: None
+        loggers: None  # see the buoy controller above, which fulfils this role
+        instrmts:
+            # GPS and telemetry system(s) status logged by the STC
+            - gps:
+                name: GPS
+                refdes: None
+                parent: *stc
+                controlled_by: *stc
+                physical: *buoy
+                depth: -1
+                uuid: {{ gps_uuid | default('UNKNOWN_UUID') }}
+                serial: {{ gps_serial | default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/syslog/*.syslog.log"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/gps/*.syslog.json"
+                dataset: {{ mooring }}-BUOY-GPS-01-1
+            - iridium:
+                name: IRIDIUM
+                refdes: None
+                parent: *stc
+                controlled_by: *stc
+                physical: *buoy
+                depth: -1
+                uuid: {{ irid_uuid | default('UNKNOWN_UUID') }}
+                serial: {{ irid_serial | default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/syslog/*.syslog.log"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/iridium/*.syslog.json"
+                dataset: {{ mooring }}-BUOY-IRID-01-1
+            - sbd:
+                {% set imei = sbd_imei | default('UNKNOWN_IMEI_NUMBER') -%}
+                name: SBD_Modem
+                refdes: None
+                parent: *stc
+                controlled_by: *stc
+                physical: *buoy
+                depth: -1
+                imei: {{ imei }}
+                serial: {{ sbd_serial | default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/irid_sbd/{{ imei }}.log"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/sbd_modem/*.json"
+                dataset: None
+            # Instruments directly connected to the STC logger
+            - imm:
+                name: &imm IMM  # more a communications device than an instrument
+                refdes: None
+                parent: *stc
+                controlled_by: *stc
+                physical: *buoy
+                port: 2
+                depth: 0
+                uuid: {{ imm_uuid | default('UNKNOWN_UUID') }}
+                serial: {{ imm_serial | default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/imm_log/*.imm.log"
+                parsed_data: None
+                dataset: None
+            - mopak:
+                name: MOPAK
+                refdes: {{ mooring }}-SBS01-05-MOPAK0000
+                parent: *stc
+                controlled_by: *stc
+                physical: *buoy
+                port: 5
+                depth: 0
+                uuid: {{ mopak_uuid | default('UNKNOWN_UUID') }}
+                serial: {{ mopak_serial | default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/3dmgx3/*.3dmgx3.log"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/3dmgx3/*.3dmgx3.json"
+                dataset: {{ mooring }}-BUOY-MOPAK-01-1
+            - ctdmo:
+                name: CTDMO
+                refdes: {{ mooring }}-SBS01-02-CTDMOS011
+                parent: *imm
+                controlled_by: None
+                physical: *buoy
+                depth: 1
+                uuid: {{ ctdmo_uuid | default('UNKNOWN_UUID') }}
+                serial: {{ ctdmo_serial | default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/ctdmo/*.ctdmo.log"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/buoy/ctdmo/*.ctdmo.json"
+                dataset: {{ mooring }}-IMM-CTDMO-01-1
+    - platform2:
+        # Mooring riser (including the 30 m sphere)
+        {% set platform = 'RISER' -%}
+        name: &riser {{ platform }}
+        parent: {{ mooring }}
+        depth: &depth {{ site_depth }}
+        pwrsys: None
+        controller: None
+        beacons:
+            - beacon1:
+                # 30 m subsurface beacon, alarm if seen after deployment
+                {% set imei = xeos3_imei | default('UNKNOWN_IMEI_NUMBER') -%}
+                {% set name = 'Kilo_Sphere' -%}
+                name: {{ name }}
+                refdes: None
+                parent: *riser
+                controlled_by: None
+                physical: *riser
+                depth: *depth
+                imei: {{ imei }}
+                serial: {{ xeos3_serial | default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/xeos_sbd/{{ imei }}.log"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/riser/xeos/{{ imei }}.json"
+                dataset: None
+        loggers: None
+        instrmts:
+            - adcpu:
+                name: ADCPU
+                refdes: {{ mooring }}-RII02-02-ADCPUP021
+                parent: *imm
+                controlled_by: None
+                physical: *riser
+                depth: 17
+                uuid: {{ adcpu_uuid | default('UNKNOWN_UUID') }}
+                serial: {{ adcpu_serial | default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/adcpu/*.adcpu.log"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/riser/adcpu/*.adcpu.json"
+                dataset: {{ mooring }}-IMM-ADCP-02-1
+            - adcpt:
+                name: ADCPT
+                refdes: {{ mooring }}-RII02-02-ADCPTG010
+                parent: *imm
+                controlled_by: None
+                physical: *riser
+                depth: 83
+                uuid: {{ adcpt_uuid | default('UNKNOWN_UUID') }}
+                serial: {{ adcpt_serial | default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/adcpt/*.adcpt.log"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/riser/adcpt/*.adcpt.json"
+                dataset: {{ mooring }}-IMM-ADCP-01-1
+    - platform3:
+        # The McLane Moored Profiler (MMP) and its associated instruments
+        name: "WFP"  # Wire-Following Profiler
+        parent: {{ mooring }}
+        depth: &depth {{ site_depth }}
+        pwrsys: None
+        controller:
+            name: &mmp "MMP"  # McLane Moored Profiler
+            refdes: {{ mooring }}-WFP01-00-WFPENG000
+            parent: *imm
+            controlled_by: None
+            physical: *wfp
+            depth: *depth
+            uuid: {{ mmp_uuid | default('UNKNOWN_UUID') }}
+            serial: {{ mmp_serial | default('UNKNOWN_SERIAL_NUMBER') }}
+            raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/E*.DAT"
+            parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/P*.json"
+            dataset: {{ mooring }}-IMM-WFPENG-01-1
+        beacons: None
+        loggers: None
+        instrmts:
+            - ctdpf:
+                name: &ctd CTDPF  # CTD plus dissolved oxygen (MMP)
+                refdes: {{ mooring }}-WFP01-03-CTDPFK000
+                parent: *mmp
+                controlled_by: *mmp
+                physical: *wfp
+                depth: *depth
+                uuid: {{ ctdpf_uuid | default('UNKNOWN_UUID') }}
+                serial: {{ ctdpf_serial | default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/C*.DAT"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/P*.json"
+                dataset: {{ mooring }}-IMM-CTDPFK-01-1
+            - dofst:
+                name: DOFST  # dissolved oxygen sensor
+                refdes: {{ mooring }}-WFP01-02-DOFSTK000
+                parent: *ctd
+                controlled_by: *ctd
+                physical: *wfp
+                depth: *depth
+                uuid: {{ dofst_uuid | default('UNKNOWN_UUID') }}
+                serial: {{ dofst_serial | default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/C*.DAT"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/P*.json"
+                dataset: {{ mooring }}-IMM-CTDPFK-01-1
+            - flort:
+                name: FLORT  # ECO Triplet fluorometer
+                refdes: {{ mooring }}-WFP01-04-FLORTK000
+                parent: *mmp
+                controlled_by: *mmp
+                physical: *wfp
+                depth: *depth
+                uuid: {{ flort_uuid | default('UNKNOWN_UUID') }}
+                serial: {{ flort_serial | default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/E*.DAT"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/{{ platform | lower }}/mmp/P*.json"
+                dataset: {{ mooring }}-IMM-WFPENG-01-1
+            - parad:
+                name: PARAD  # Biospherical PAR sensor
+                refdes: {{ mooring }}-WFP01-05-PARADK000
+                parent: *mmp
+                controlled_by: *mmp
+                physical: *wfp
+                depth: *depth
+                uuid: {{ parad_uuid | default('UNKNOWN_UUID') }}
+                serial: {{ parad_serial | default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/E*.DAT"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/{{ platform | lower }}/mmp/P*.json"
+                dataset: {{ mooring }}-IMM-WFPENG-01-1
+            - vel3d:
+                name: VEL3D  # Nortek Aquadopp II single-point current meter
+                refdes: {{ mooring }}-WFP01-01-VEL3DK000
+                parent: *mmp
+                controlled_by: *mmp
+                physical: *wfp
+                depth: *depth
+                uuid: {{ vel3d_uuid | default('UNKNOWN_UUID') }}
+                serial: {{ vel3d_serial | default('UNKNOWN_SERIAL_NUMBER') }}
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/imm/mmp/A*.DEC"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/{{ platform | lower }}/mmp/P*.json"
+                dataset: {{ mooring }}-IMM-VEL3DK-01-1
