@@ -169,7 +169,7 @@ platforms:
                 parsed_data: None
                 dataset: None
             - ctdbp:
-                name: &ctd CTDBP
+                name: &ctd1 CTDBP
                 refdes: {{ mooring }}-SBD17-06-CTDBPC000
                 parent: *dcl17
                 controlled_by: *dcl17
@@ -184,8 +184,8 @@ platforms:
             - flort:
                 name: FLORT
                 refdes: {{ mooring }}-RID16-03-FLORTD000
-                parent: *ctd
-                controlled_by: *ctd
+                parent: *ctd1
+                controlled_by: *ctd1
                 physical: *buoy
                 depth: 1.5
                 ui: False
@@ -246,7 +246,7 @@ platforms:
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/flort/*.flort.json"
                 dataset: {{ mooring }}-NSIF-001-FLORT
             - ctdbp:
-                name: &ctd CTDBP
+                name: &ctd2 CTDBP
                 refdes: {{ mooring }}-RID16-03-CTDBPC000
                 parent: *dcl16
                 controlled_by: *dcl16
@@ -261,8 +261,8 @@ platforms:
             - dosta:
                 name: DOSTA
                 refdes: {{ mooring }}-RID16-03-DOSTAD000
-                parent: *ctd
-                controlled_by: *ctd
+                parent: *ctd2
+                controlled_by: *ctd2
                 physical: *nsif
                 depth: *depth2
                 ui: False
@@ -281,8 +281,8 @@ platforms:
                 port: 4
                 uuid: {{ nsif_velpt_uuid | default('UNKNOWN_UUID') }}
                 serial: {{ nsif_velpt_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl16 | lower }}/velpt1/*.velpt1.log"
-                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/velpt/*.velpt1.json"
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl16 | lower }}/velpt2/*.velpt2.log"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/velpt/*.velpt2.json"
                 dataset: {{ mooring }}-NSIF-001-VELPT
             - phsen:
                 name: PHSEN
@@ -348,7 +348,7 @@ platforms:
             # Data loggers controlled by the MFN platform controller
             - logger1:
                 {% set dcl36 = 'DCL36' -%}
-                name: {{ dcl36 }}
+                name: &dcl36 {{ dcl36 }}
                 refdes: {{ mooring }}-MFD35-00-DCLENG000
                 parent: *cpm3
                 controlled_by: *cpm3
@@ -361,7 +361,7 @@ platforms:
                 dataset: {{ mooring }}-MFN-002-SUPERV
             - logger2:
                 {% set dcl37 = 'DCL37' -%}
-                name: {{ dcl37 }}
+                name: &dcl37 {{ dcl37 }}
                 refdes: {{ mooring }}-MFD37-00-DCLENG000
                 parent: *cpm3
                 controlled_by: *cpm3
@@ -454,7 +454,7 @@ platforms:
                 parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/mfn/optaa/*.optaa2.json"
                 dataset: {{ mooring }}-MFN-001-OPTAA
             - ctdbp:
-                name: &ctd CTDBP
+                name: &ctd3 CTDBP
                 refdes: {{ mooring }}-MFD37-03-CTDBPC000
                 parent: *dcl37
                 controlled_by: *dcl37
@@ -469,8 +469,8 @@ platforms:
             - dosta:
                 name: DOSTA
                 refdes: {{ mooring }}-MFD37-03-DOSTAD000
-                parent: *ctd
-                controlled_by: *ctd
+                parent: *ctd3
+                controlled_by: *ctd3
                 physical: *mfn
                 depth: *depth3
                 ui: False
