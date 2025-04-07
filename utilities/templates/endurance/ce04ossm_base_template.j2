@@ -211,7 +211,7 @@ platforms:
                 refdes: {{ mooring }}-SBD11-04-VELPTA000
                 parent: *dcl11
                 controlled_by: *dcl11
-                physical: *nsif
+                physical: *buoy
                 depth: *depth1
                 port: 4
                 uuid: {{ buoy_velpt_uuid | default('UNKNOWN_UUID') }}
@@ -450,8 +450,8 @@ platforms:
                 port: 4
                 uuid: {{ nsif_velpt_uuid | default('UNKNOWN_UUID') }}
                 serial: {{ nsif_velpt_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl26 | lower }}/velpt1/*.velpt1.log"
-                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/velpt/*.velpt1.json"
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl26 | lower }}/velpt2/*.velpt2.log"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/velpt/*.velpt2.json"
                 dataset: {{ mooring }}-NSIF-001-VELPT
             - phsen:
                 name: PHSEN
@@ -463,8 +463,8 @@ platforms:
                 port: 6
                 uuid: {{ nsif_phsen_uuid | default('UNKNOWN_UUID') }}
                 serial: {{ nsif_phsen_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl26 | lower }}/phsen1/*.phsen1.log"
-                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/phsen/*.phsen1.json"
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl26 | lower }}/phsen/*.phsen.log"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/phsen/*.phsen.json"
                 dataset: {{ mooring }}-NSIF-001-PHSEN
             - nutnr:
                 name: NUTNR
@@ -503,8 +503,8 @@ platforms:
                 port: 1
                 uuid: {{ nsif_optaa_uuid | default('UNKNOWN_UUID') }}
                 serial: {{ nsif_optaa_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl27 | lower }}/optaa1_decimated/*.optaa1.log"
-                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/optaa/*.optaa1.json"
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl27 | lower }}/optaa_decimated/*.optaa.log"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/optaa/*.optaa.json"
                 dataset: {{ mooring }}-NSIF-001-OPTAA
             - flort:
                 name: FLORT
@@ -529,8 +529,8 @@ platforms:
                 port: 3
                 uuid: {{ nsif_ctdbp_uuid | default('UNKNOWN_UUID') }}
                 serial: {{ nsif_ctdbp_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl27 | lower }}/ctdbp1/*.ctdbp1.log"
-                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/ctdbp/*.ctdbp1.json"
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl27 | lower }}/ctdbp/*.ctdbp.log"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/ctdbp/*.ctdbp.json"
                 dataset: {{ mooring }}-NSIF-001-CTDBP
             - dosta:
                 name: DOSTA
@@ -542,8 +542,8 @@ platforms:
                 port: 4
                 uuid: {{ nsif_dosta_uuid | default('UNKNOWN_UUID') }}
                 serial: {{ nsif_dosta_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl27 | lower }}/dosta1/*.dosta1.log"
-                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/dosta/*.dosta1.json"
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl27 | lower }}/dosta/*.dosta.log"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/dosta/*.dosta.json"
                 dataset: {{ mooring }}-NSIF-001-DOSTA
             - uvlamp:
                 name: UVLAMP

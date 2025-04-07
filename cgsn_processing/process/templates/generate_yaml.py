@@ -67,11 +67,12 @@ def inputs(args=None):
 
     parser = argparse.ArgumentParser(description='Construct a deployment configuration record by pulling data '
                                                  'from the OOI RDB system and populating a Jinja2 template file.')
-    parser.add_argument('mooring', '--mooring', type=str, help='The mooring name', required=True)
-    parser.add_argument('deployment', '--deploy', type=str, help='The deployment number to process', required=True)
-    parser.add_argument('template', '--template', type=str, help='The template file to use', required=True)
-    parser.add_argument('outfile', '--outfile', type=str, help='The output file to write the configuration to',
+    parser.add_argument('-m', '--mooring', dest='mooring', type=str, help='The mooring name', required=True)
+    parser.add_argument('-d', '--deploy', dest='deployment', type=str, help='The deployment number to process',
                         required=True)
+    parser.add_argument('-t', '--template', dest='template', type=str, help='The template file to use', required=True)
+    parser.add_argument('-o', '--outfile', dest='outfile', type=str, help=('The output file to write the '
+                                                                           'configuration to'), required=True)
 
     # parse the input arguments and create a parser object
     return parser.parse_args(args)
@@ -138,7 +139,7 @@ def build_configuration(mooring, deployment_name, template):
 
     # construct the context dictionary to pass to the template
     context = {
-        'mooring': mooring,
+        'mooring': mooring.upper(),
         'deployment': deployment,
         'deployment_name': deployment_name,
         'disposition': disposition,
