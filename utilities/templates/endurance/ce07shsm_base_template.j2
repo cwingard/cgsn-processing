@@ -211,7 +211,7 @@ platforms:
                 refdes: {{ mooring }}-SBD11-04-VELPTA000
                 parent: *dcl11
                 controlled_by: *dcl11
-                physical: *nsif
+                physical: *buoy
                 depth: *depth1
                 port: 4
                 uuid: {{ buoy_velpt_uuid | default('UNKNOWN_UUID') }}
@@ -463,8 +463,8 @@ platforms:
                 port: 4
                 uuid: {{ nsif_velpt_uuid | default('UNKNOWN_UUID') }}
                 serial: {{ nsif_velpt_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl26 | lower }}/velpt1/*.velpt1.log"
-                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/velpt/*.velpt1.json"
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl26 | lower }}/velpt2/*.velpt2.log"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/velpt/*.velpt2.json"
                 dataset: {{ mooring }}-NSIF-001-VELPT
             - acomm:
                 name: UCSPP
@@ -621,7 +621,7 @@ platforms:
             # Data loggers controlled by the MFN platform controller
             - logger1:
                 {% set dcl36 = 'DCL36' -%}
-                name: {{ dcl36 }}
+                name: &dcl36 {{ dcl36 }}
                 refdes: {{ mooring }}-MFD35-00-DCLENG000
                 parent: *cpm3
                 controlled_by: *cpm3
@@ -634,7 +634,7 @@ platforms:
                 dataset: {{ mooring }}-MFN-002-SUPERV
             - logger2:
                 {% set dcl37 = 'DCL37' -%}
-                name: {{ dcl37 }}
+                name: &dcl37 {{ dcl37 }}
                 refdes: {{ mooring }}-MFD37-00-DCLENG000
                 parent: *cpm3
                 controlled_by: *cpm3

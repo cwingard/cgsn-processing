@@ -15,7 +15,7 @@ meta:
     recover_cruise: {{ recovery_cruise | default(None) }}
     stop_date: !!str {{ deployment_end | default(None) }}
     watch_circle: 100
-    water_depth: {{ site_depth | default('UNKNOWN_WATER_DEPTH') }}
+    water_depth: {{ site_depth }}
 paths:
     # absolute base paths to the raw, parsed, and processed data directories
     raw: /home/ooiuser/data/raw
@@ -281,8 +281,8 @@ platforms:
                 port: 4
                 uuid: {{ nsif_velpt_uuid | default('UNKNOWN_UUID') }}
                 serial: {{ nsif_velpt_serial | default('UNKNOWN_SERIAL_NUMBER') }}
-                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl16 | lower }}/velpt1/*.velpt1.log"
-                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/velpt/*.velpt1.json"
+                raw_data: "{{ mooring | lower }}/{{ deployment_name }}/cg_data/{{ dcl16 | lower }}/velpt2/*.velpt2.log"
+                parsed_data: "{{ mooring | lower }}/{{ deployment_name }}/nsif/velpt/*.velpt2.json"
                 dataset: {{ mooring }}-NSIF-001-VELPT
             - phsen:
                 name: PHSEN
