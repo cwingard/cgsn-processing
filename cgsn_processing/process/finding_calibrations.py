@@ -56,7 +56,7 @@ def find_calibration(inst_class, inst_serial, sampling_date):
             if inst_serial.isdigit() and '-{}__'.format(inst_serial.rjust(5, '0')) in link:
                 # almost all serial numbers are comprised of digits only, but there are a few exceptions
                 instrmts = link
-            elif inst_serial.isalpha() and '-{}__'.format(inst_serial.upper()) in link:
+            elif inst_serial.isalnum() and '-{}__'.format(inst_serial.upper()) in link:
                 # for the few exceptions (SAMIs), we need to look for the serial number as a string
                 instrmts = link
 
