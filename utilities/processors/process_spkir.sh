@@ -13,12 +13,9 @@ DIR="${BASH_SOURCE%/*}"
 if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
 source "$DIR/process_options.sh"
 
-# set the name of the calibration coefficients file
-COEFF="$(dirname "$IN_FILE")/spkir.cal_coeffs.json"
-
 # Process the file (if it hasn't already been done)
 if [ -e $IN_FILE ]; then
     cd /home/ooiuser/code/cgsn-processing || exit
     python -m cgsn_processing.process.proc_spkir -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH \
-      -i $IN_FILE -o $OUT_FILE -cf $COEFF || echo "ERROR: Failed to process $IN_FILE"
+      -i $IN_FILE -o $OUT_FILE -ba || echo "ERROR: Failed to process $IN_FILE"
 fi

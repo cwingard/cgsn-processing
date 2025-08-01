@@ -11,11 +11,12 @@ import numpy as np
 import os
 import xarray as xr
 
-from cgsn_processing.process.common import ENCODING, inputs, json2df, update_dataset
+from cgsn_processing.process.common import ENCODING, inputs, json2df, dict_update, update_dataset
+from cgsn_processing.process.configs.attr_common import SHARED
 from cgsn_processing.process.configs.attr_co2pro import PCO2W
 
 
-def proc_co2pro(infile, platform, deployment, lat, lon, depth, **kwargs):
+def proc_co2pro(infile, platform, deployment, lat, lon, depth):
     """
     Processing function for the Pro-Oceanus pCO2-Pro CV. Loads the JSON
     formatted parsed data and calculates the partial pressure of CO2 in the
@@ -46,7 +47,8 @@ def proc_co2pro(infile, platform, deployment, lat, lon, depth, **kwargs):
 
     # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
     co2['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(co2.time)).astype(str))
-    co2 = update_dataset(co2, platform, deployment, lat, lon, [depth, depth, depth], PCO2W)
+    attrs = dict_update(PCO2W, SHARED)  # add the shared the attributes
+    co2 = update_dataset(co2, platform, deployment, lat, lon, [depth, depth, depth], attrs)
     return co2
 
 
@@ -66,8 +68,6 @@ def main(argv=None):
     lat = args.latitude
     lon = args.longitude
     depth = args.depth
-    ctd_type = args.switch
-    flort_serial = args.serial  # serial number of the FLORT
 
     # process the CTDBP data and save the results to disk
     co2 = proc_co2pro(infile, platform, deployment, lat, lon, depth)

@@ -11,13 +11,15 @@ import numpy as np
 import os
 import pandas as pd
 import warnings
+import xarray as xr
 
 from datetime import datetime, timedelta
 from pytz import timezone
 
 from cgsn_processing.process.common import Coefficients, NumpyEncoder, ENCODING, inputs, dict_update, json2df, \
     update_dataset
-from cgsn_processing.process.configs.attr_pco2w import GLOBAL, PCO2W
+from cgsn_processing.process.configs.attr_pco2w import PCO2W
+from cgsn_processing.process.configs.attr_common import SHARED
 from cgsn_processing.process.finding_calibrations import find_calibration
 
 from pyseas.data.co2_functions import co2_blank, co2_thermistor, co2_pco2wat
@@ -122,7 +124,7 @@ def proc_pco2w(infile, platform, deployment, lat, lon, depth, **kwargs):
     :param lat: Latitude of the mooring deployment.
     :param lon: Longitude of the mooring deployment.
     :param depth: Depth of the platform the instrument is mounted on.
-    :kwargs serial_number: The serial number of the SAMI-pCO2
+    **kwargs serial_number: The serial number of the SAMI-pCO2
     :return pco2w: An xarray dataset with the processed PHSEN data
     """
     # process the variable length keyword arguments
@@ -133,9 +135,6 @@ def proc_pco2w(infile, platform, deployment, lat, lon, depth, **kwargs):
     if data.empty:
         # json data file was empty, exiting
         return None
-
-    # set the deployment id as a variable
-    data['deploy_id'] = deployment
 
     # initialize the calibrations data class
     coeff_file = os.path.join(os.path.dirname(infile), 'pco2w.calibration_coeffs.json')
@@ -237,12 +236,13 @@ def proc_pco2w(infile, platform, deployment, lat, lon, depth, **kwargs):
     pco2w = data.to_xarray()
 
     # update the metadata and set up the data for export to NetCDF
-    attrs = dict_update(GLOBAL, PCO2W)  # merge global and PCO2W attribute dictionaries into a single dictionary
+    pco2w['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(pco2w.time)).astype(str))
+    attrs = dict_update(PCO2W, SHARED)  # merge shared and PCO2W attribute dictionaries into a single dictionary
+    pco2w = update_dataset(pco2w, platform, deployment, lat, lon, [depth, depth, depth], attrs)
     if proc_flag:
         pco2w.attrs['processing_level'] = 'processed'
     else:
         pco2w.attrs['processing_level'] = 'parsed'
-    pco2w = update_dataset(pco2w, platform, deployment, lat, lon, [depth, depth, depth], attrs)
 
     return pco2w
 

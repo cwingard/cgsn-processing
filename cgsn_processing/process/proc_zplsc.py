@@ -6,54 +6,135 @@
 @author Christopher Wingard
 @brief Creates a NetCDF dataset for the ZPLSC data from JSON formatted source data
 """
-import json
 import numpy as np
 import os
 import pandas as pd
-import re
+import xarray as xr
 
-from datetime import datetime
-from netCDF4 import Dataset
-from pocean.dsg.timeseriesProfile.om import OrthogonalMultidimensionalTimeseriesProfile as OMTp
-from pocean.utils import dict_update
-from pytz import timezone
-
-from cgsn_processing.process.common import Coefficients, inputs, json2df, df2omtdf
-# from cgsn_processing.process.finding_calibrations import find_calibration
+from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING, dict_update, epoch_time, \
+    FILL_INT
 from cgsn_processing.process.configs.attr_zplsc import ZPLSC
+from cgsn_processing.process.configs.attr_common import SHARED
 
 
-class Calibrations(Coefficients):
-    def __init__(self, coeff_file, csv_url=None):
-        """
-        Loads the ZPLSC factory calibration coefficients for a unit. Values come from either a serialized object
-        created per instrument and deployment (calibration coefficients do not change in the middle of a deployment),
-        or from parsed CSV files maintained on GitHub by the OOI CI team.
-        """
-        # assign the inputs
-        Coefficients.__init__(self, coeff_file)
-        self.csv_url = csv_url
+def sample_drift(df):
+    """
+    Calculate an estimate of the sample drift (difference between when the unit
+    should sample versus when it actually did) over the course of a deployment
+    by comparing the burst time to a preset array of sample times (minutes of
+    the hour)
 
-    def read_csv(self, csv_url):
-        """
-        Reads the values from a SPKIR calibration file already parsed and stored on Github as a CSV files. Note,
-        the formatting of those files puts some constraints on this process. If someone has a cleaner method,
-        I'm all in favor...
-        """
-        # TODO: This is a temporary placeholder while we figure out the needed data and structure required
-        # create the device file dictionary and assign values
-        coeffs = {}
+    :param df: dataframe with the burst time calculated from the burst
+        date/time string
+    :return: estimated sample drift in seconds relative to when the instrument
+        should have sampled
+    """
+    schedule = np.array([5, 20, 35, 50])
+    minutes = np.atleast_2d([x.minute for x in df['time']]).T
+    offsets = np.abs(minutes - schedule)
+    idx = np.argmin(offsets, 1)
+    drift = []
+    for i, t in enumerate(df['time']):
+        scheduled = pd.Timestamp(t.year, t.month, t.day, t.hour, schedule[idx[i]], 0)
+        drift.append(scheduled.to_datetime64().astype(float) / 10 ** 9 - df['burst_time'][i])
 
-        # read in the calibration data
-        cal = pd.read_csv(csv_url, usecols=[0, 1, 2])
-        for idx, row in cal.iterrows():
-            # factory calibration values
-            if row.iloc[1] == 'CC_EL_max':
-                coeffs['EL_max'] = np.array(json.loads(row.iloc[2]))
+    return drift
 
-        # save the resulting dictionary
-        #self.coeffs = coeffs
-        self.coeffs = {}
+
+def proc_zplsc(infile, platform, deployment, lat, lon, depth, **kwargs):
+    """
+    ASL AZFP bioacoustic sensor raw condensed pings processing function. Loads
+    the JSON formatted parsed data and converts data into a NetCDF data file
+    using xarray.
+
+    :param infile: JSON formatted parsed data file
+    :param platform: Name of the mooring the instrument is mounted on.
+    :param deployment: Name of the deployment for the input data file.
+    :param lat: Latitude of the mooring deployment.
+    :param lon: Longitude of the mooring deployment.
+    :param depth: Depth of the platform the instrument is mounted on.
+
+    :return zplsc: xarray dataset with the raw condensed pings data
+    """
+    # process the variable length keyword arguments
+    bin_size = kwargs.get('bin_size')
+
+    # load the json data file and return a panda dataframe
+    df = json2df(infile)
+    if df.empty:
+        # there was no data in this file, ending early
+        return None
+
+    # compare the instrument clock (from the transmission_date_string) to the GPS based DCL time stamp
+    df['transmission_time'] = [epoch_time(x) for x in df['transmission_date_string']]
+    df['clock_offset'] = (df['time'].values.astype(float) / 10 ** 9) - df['transmission_time']
+
+    # determine the offset and drift in the sampling time (should run at 5, 20, 35 and 50 minutes each hour)
+    df['burst_time'] = [(pd.to_datetime(x, format='%y%m%d%H%M%S%f')).to_datetime64().astype(float) / 10 ** 9
+                        for x in df['burst_date_string']]
+    df['sampling_offset'] = sample_drift(df)
+
+    # clean up the dataframe, getting rid of the time string variables we no longer need
+    df.drop(columns=['dcl_date_time_string', 'transmission_date_string', 'burst_date_string'], inplace=True)
+
+    # pop the 2D data arrays out of the dataframe (will put most of them back in later)
+    profiles_channel_1 = np.array(np.vstack(df.pop('profiles_freq1')))
+    profiles_channel_2 = np.array(np.vstack(df.pop('profiles_freq2')))
+    profiles_channel_3 = np.array(np.vstack(df.pop('profiles_freq3')))
+    profiles_channel_4 = np.array(np.vstack(df.pop('profiles_freq4')))
+    minimum_values = np.array(np.vstack(df.pop('minimum_values')))
+    number_bins = np.array(np.vstack(df.pop('number_bins')))
+    frequencies = np.array(np.vstack(df.pop('frequencies')))
+    _ = df.pop('phase')  # discard phase number, we only use the one.
+    _ = df.pop('tilts')  # discard tilts array as unit is at 90 degrees and the sensor can only measure to +-45 degrees
+
+    # break the frequencies array apart
+    df['channel_1_freq'] = frequencies[:, 0]
+    df['channel_2_freq'] = frequencies[:, 1]
+    df['channel_3_freq'] = frequencies[:, 2]
+    df['channel_4_freq'] = frequencies[:, 3]
+
+    # convert the 1D variables to a xarray data set
+    ds = xr.Dataset.from_dataframe(df)
+
+    # add the minimum values back into the raw echo intensities
+    profiles_channel_1 = profiles_channel_1 + np.atleast_2d(minimum_values[:, 0]).T
+    profiles_channel_2 = profiles_channel_2 + np.atleast_2d(minimum_values[:, 1]).T
+    profiles_channel_3 = profiles_channel_3 + np.atleast_2d(minimum_values[:, 2]).T
+    profiles_channel_4 = profiles_channel_4 + np.atleast_2d(minimum_values[:, 3]).T
+
+    # create an approximate depth axis for the dataset based on the bin size, the maximum number of bins, and the
+    # mounting angle of the transducers.
+    nbins = max(number_bins[0, :])
+    bins = np.arange(nbins)
+    bin_depth = depth - 1.0 - ((bins * bin_size) * np.cos(np.radians(15.0)) + (bin_size / 2.0))
+
+    # pad the profiles with a fill value, if needed, so we can use a common bin_depth axis
+    pad = nbins - number_bins[0, 0]
+    if pad > 0:
+        fill_int = (np.ones(pad) * FILL_INT).astype(int)
+        profiles_channel_1 = np.concatenate([profiles_channel_1, np.tile(fill_int, (len(df.time), 1))], axis=1)
+        profiles_channel_2 = np.concatenate([profiles_channel_2, np.tile(fill_int, (len(df.time), 1))], axis=1)
+        profiles_channel_3 = np.concatenate([profiles_channel_3, np.tile(fill_int, (len(df.time), 1))], axis=1)
+        profiles_channel_4 = np.concatenate([profiles_channel_4, np.tile(fill_int, (len(df.time), 1))], axis=1)
+
+    bursts = xr.Dataset({
+        'profiles_channel_1': (['time', 'bin_depth'], profiles_channel_1),
+        'profiles_channel_2': (['time', 'bin_depth'], profiles_channel_2),
+        'profiles_channel_3': (['time', 'bin_depth'], profiles_channel_3),
+        'profiles_channel_4': (['time', 'bin_depth'], profiles_channel_4),
+    }, coords={'time': (['time'], pd.to_datetime(df.time, unit='s')), 'bin_depth': bin_depth})
+
+    # create a xarray data set from the 1D and 2D data
+    zplsc = xr.merge([ds, bursts])
+
+    # clean up the dataset and assign attributes
+    zplsc['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(zplsc.time)).astype(str))
+    attrs = dict_update(ZPLSC, SHARED)  # add the shared attributes
+    zplsc = update_dataset(zplsc, platform, deployment, lat, lon, [depth, bin_depth.min(), bin_depth.max()], attrs)
+    zplsc.attrs['processing_level'] = 'parsed'
+
+    return zplsc
 
 
 def main(argv=None):
@@ -68,131 +149,11 @@ def main(argv=None):
     depth = args.depth
     bin_size = args.bin_size
 
-    # load the json data file and return a panda dataframe
-    df = json2df(infile)
-    if df.empty:
-        # there was no data in this file, ending early
-        return None
+    # process the ASL AZFP data and save the results to disk
+    zplsc = proc_zplsc(infile, platform, deployment, lat, lon, depth, bin_size=bin_size)
+    if zplsc:
+        zplsc.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
-    # TODO: Need to determine the appropriate structure and content of the calibration data. Skip this section for now.
-    #coeff_file = os.path.abspath(args.coeff_file)
-    #dev = Calibrations(coeff_file)  # initialize calibration class
-    #
-    ## check for the source of calibration coeffs and load accordingly
-    #if os.path.isfile(coeff_file):
-    #    # we always want to use this file if it exists
-    #    dev.load_coeffs()
-    #else:
-    #    # load from the CI hosted CSV files
-    #    csv_url = find_calibration('SPKIR', str(df.serial_number[0]), (df.time.values.astype('int64') * 10**-9)[0])
-    #    if csv_url:
-    #        dev.read_csv(csv_url)
-    #        dev.save_coeffs()
-    #    else:
-    #        raise Exception('A source for the SPKIR calibration coefficients could not be found')
-
-    # TODO: Once we have a structure for calibration coefficients, process the data from raw echo intensity to Sv
-
-    # compare the instrument clock (from the transmission_date_string) to the GPS based DCL time stamp
-    offset = []
-    for i in range(len(df['time'])):
-        zplsc = datetime.strptime(df['transmission_date_string'][i], "%Y%m%d%H%M%S")
-        zplsc.replace(tzinfo=timezone('UTC'))
-        offset.append((zplsc - df['time'][i]).total_seconds())
-
-    df['time_offset'] = offset
-
-    # pop the data arrays out of the dataframe (will put most of them back in later)
-    profiles_channel_1 = np.array(np.vstack(df.pop('profiles_freq1')))
-    profiles_channel_2 = np.array(np.vstack(df.pop('profiles_freq2')))
-    profiles_channel_3 = np.array(np.vstack(df.pop('profiles_freq3')))
-    profiles_channel_4 = np.array(np.vstack(df.pop('profiles_freq4')))
-    minimum_values = np.array(np.vstack(df.pop('minimum_values')))
-    number_bins = np.array(np.vstack(df.pop('number_bins')))
-    frequencies = np.array(np.vstack(df.pop('frequencies')))
-    _ = df.pop('phase')  # discard phase number, we only use the one.
-    _ = df.pop('tilts')  # discard tilts array as unit is at 90 degrees and unusable
-
-    # add the minimum values back into the raw echo intensities
-    profiles_channel_1 = profiles_channel_1 + np.atleast_2d(minimum_values[:, 0]).T
-    profiles_channel_2 = profiles_channel_2 + np.atleast_2d(minimum_values[:, 1]).T
-    profiles_channel_3 = profiles_channel_3 + np.atleast_2d(minimum_values[:, 2]).T
-    profiles_channel_4 = profiles_channel_4 + np.atleast_2d(minimum_values[:, 3]).T
-
-    # create an approximate depth axis for the dataset based on the bin size, the maximum number of bins, and the
-    # mounting angle of the transducers.
-    bins = (np.arange(max(number_bins[0, :])) * bin_size) * np.cos(np.radians(15.0))
-    bin_depth = depth - 1.0 - (bins + (bin_size / 2.0))
-
-    # pad the profiles with -999999999, if needed, so we can use a common bin_depth axis
-    pad = max(number_bins[0, :]) - number_bins[0, 0]
-    if pad > 0:
-        fill = np.ones(pad) * -999999999
-        profiles_channel_1 = np.concatenate((profiles_channel_1, np.tile(fill, (len(df.time), 1))), axis=1)
-
-    pad = max(number_bins[0, :]) - number_bins[0, 1]
-    if pad > 0:
-        fill = np.ones(pad) * -999999999
-        profiles_channel_2 = np.concatenate((profiles_channel_2, np.tile(fill, (len(df.time), 1))), axis=1)
-
-    pad = max(number_bins[0, :]) - number_bins[0, 2]
-    if pad > 0:
-        fill = np.ones(pad) * -999999999
-        profiles_channel_3 = np.concatenate((profiles_channel_3, np.tile(fill, (len(df.time), 1))), axis=1)
-
-    pad = max(number_bins[0, :]) - number_bins[0, 3]
-    if pad > 0:
-        fill = np.ones(pad) * -999999999
-        profiles_channel_4 = np.concatenate((profiles_channel_4, np.tile(fill, (len(df.time), 1))), axis=1)
-
-    # break the frequencies array apart
-    df['channel_1_freq'] = frequencies[:, 0]
-    df['channel_2_freq'] = frequencies[:, 1]
-    df['channel_3_freq'] = frequencies[:, 2]
-    df['channel_4_freq'] = frequencies[:, 3]
-
-    # convert the dataframe to a format suitable for the pocean OMTs
-    df['deploy_id'] = deployment
-    df = df2omtdf(df, lat, lon, depth)
-
-    # Setup and update the attributes for the resulting NetCDF file
-    attr = ZPLSC
-    attr['global'] = dict_update(attr['global'], {
-        'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
-    })
-
-    nc = OMTp.from_dataframe(df, outfile, attributes=attr)
-    nc.close()
-
-    # Now reopen the NetCDF file and add the additional multi-dimensioned data
-    nc = Dataset(outfile, 'a')
-
-    # Create the bin_depth dimension ...
-    nc.createDimension('bin_depth', len(bin_depth))
-    d = nc.createVariable('bin_depth', 'f', ('bin_depth',))
-    d.setncatts(attr['bin_depth'])
-    d[:] = bin_depth
-
-    # ... and add the profiles
-    d = nc.createVariable('profiles_channel_1', 'i', ('t', 'z', 'station', 'bin_depth',), fill_value=-999999999)
-    d.setncatts(attr['profiles_channel_1'])
-    d[:] = profiles_channel_1
-
-    d = nc.createVariable('profiles_channel_2', 'i', ('t', 'z', 'station', 'bin_depth',), fill_value=-999999999)
-    d.setncatts(attr['profiles_channel_2'])
-    d[:] = profiles_channel_2
-
-    d = nc.createVariable('profiles_channel_3', 'i', ('t', 'z', 'station', 'bin_depth',), fill_value=-999999999)
-    d.setncatts(attr['profiles_channel_3'])
-    d[:] = profiles_channel_3
-
-    d = nc.createVariable('profiles_channel_4', 'i', ('t', 'z', 'station', 'bin_depth',), fill_value=-999999999)
-    d.setncatts(attr['profiles_channel_4'])
-    d[:] = profiles_channel_4
-
-    # sync it up and close
-    nc.sync()
-    nc.close()
 
 if __name__ == '__main__':
     main()

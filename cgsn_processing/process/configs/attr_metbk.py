@@ -6,188 +6,128 @@
 @author Christopher Wingard
 @brief Attributes for the METBK variables
 """
+import numpy as np
 
 METBK = {
-    'deploy_id': {
-        'long_name': 'Deployment ID',
-        'standard_name': 'deployment_id',
-        'units': '1',
-        'coordinates': 'time z longitude latitude',
-        'grid_mapping': 'crs',
-        'platform': 'platform',
-        'ancillary_variables': 'platform',
-        'coverage_content_type': 'physicalMeasurement'
-    },
-    'dcl_date_time_string': {
-        'long_name': 'DCL Date and Time Stamp',
-        'standard_name': 'dcl_date_time_string',
-        'units': '1',
-        'coordinates': 'time z longitude latitude',
-        'grid_mapping': 'crs',
-        'platform': 'platform',
-        'ancillary_variables': 'platform',
-        'coverage_content_type': 'physicalMeasurement'
+    'global': {
+        'title': 'Bulk Meteorological (METBK) Measurements',
+        'summary': ('Measures surface meteorology and provides the data required to compute '
+                    'air-sea fluxes of heat, freshwater, and momentum.')
     },
     'barometric_pressure': {
         'long_name': 'Barometric Pressure',
-        'standard_name': 'barometric_pressure',
+        'standard_name': 'air_pressure',
         'units': 'mbar',
-        'coordinates': 'time z_bpr longitude latitude',
-        'sensor_mount': 'mounted on mooring tower',
-        'valid_min': '0',
-        'valid_max': '2000'
+        'comment': ('Barometric Pressure is a measure of the weight of the column of air above the sensor. It is '
+                    'also commonly referred to as atmospheric pressure.'),
+        'data_product_identifier': 'BARPRES_L0',
+        '_FillValue': np.nan
     },
     'relative_humidity': {
         'long_name': 'Relative Humidity',
         'standard_name': 'relative_humidity',
         'units': 'percent',
-        'coordinates': 'time z_rh longitude latitude',
-        'sensor_mount': 'mounted on mooring tower',
-        'valid_min': '0',
-        'valid_max': '100'
+        'comment': ('Relative humidity is the ratio of the current absolute humidity to the highest possible '
+                    'absolute humidity, which depends on the current air temperature.'),
+        'data_product_identifier': 'RELHUMI_L1',
+        '_FillValue': np.nan
     },
     'air_temperature': {
         'long_name': 'Air Temperature',
         'standard_name': 'air_temperature',
         'units': 'degrees_Celsius',
-        'coordinates': 'time z_rh longitude latitude',
-        'sensor_mount': 'mounted on mooring tower',
-        'valid_min': '-5',
-        'valid_max': '30'
+        'comment': ('Air temperature refers to the temperature of the air surrounding the sensor; this is also '
+                    'referred to as bulk temperature.'),
+        'data_product_identifier': 'TEMPAIR_L1',
+        '_FillValue': np.nan
     },
     'longwave_irradiance': {
-        'long_name': 'Longwave Irradiance',
-        'standard_name': 'longwave_irradiance',
+        'long_name': 'Downwelling Longwave Irradiance',
+        'standard_name': 'downwelling_longwave_flux_in_air',
         'units': 'W m-2',
-        'coordinates': 'time z_irr longitude latitude',
-        'sensor_mount': 'mounted on mooring tower',
-        'valid_min': '0',
-        'valid_max': '1000'
+        'comment': ('Downwelling longwave radiation flux at the surface. Significant sources of longwave radiation in '
+                    'hydrologic applications include the atmosphere itself, and any clouds that may be present '
+                    'locally in the atmosphere. Clouds usually have a higher heat content and higher temperature '
+                    'than clear atmosphere, and therefore there is increased downwelling longwave radiation on '
+                    'cloudy days'),
+        'data_product_identifier': 'LONGIRR_L1',
+        '_FillValue': np.nan
     },
     'precipitation_level': {
         'long_name': 'Precipitation Level',
-        'standard_name': 'precipitation_level',
+        'standard_name': 'lwe_thickness_of_precipitation_amount',
         'units': 'mm',
-        'coordinates': 'time z_prc longitude latitude',
-        'sensor_mount': 'mounted on mooring tower',
-        'valid_min': '0',
-        'valid_max': '100'
+        'comment': ('Rain gauge measurement. Values cycle from 0 to 50 mm as the water level rises and '
+                    'then is siphoned off. To convert to rain rate, only positive increases greater than 0.25 mm '
+                    'should be used.'),
+        'data_product_identifier': 'PRECIPM_L1',
+        '_FillValue': np.nan
     },
     'sea_surface_temperature': {
         'long_name': 'Sea Surface Temperature',
         'standard_name': 'sea_surface_temperature',
         'units': 'degrees_Celsius',
-        'coordinates': 'time z_ct longitude latitude',
-        'sensor_mount': 'mounted on mooring subsurface bridle',
-        'valid_min': '0',
-        'valid_max': '30'
+        'comment': 'Sea surface temperature is the in-situ temperature of the seawater near the ocean surface.',
+        'data_product_identifier': 'TEMPSRF_L1',
+        '_FillValue': np.nan
     },
     'sea_surface_conductivity': {
         'long_name': 'Sea Surface Conductivity',
         'standard_name': 'sea_surface_conductivity',
         'units': 'S m-1',
-        'coordinates': 'time z_ct longitude latitude',
-        'sensor_mount': 'mounted on mooring subsurface bridle',
-        'valid_min': '0',
-        'valid_max': '5'
+        'comment': ('Sea surface conductivity refers to the ability of seawater to conduct electricity. The presence '
+                    'of ions, such as salt, increases the electrical conducting ability of seawater. As such, '
+                    'conductivity can be used as a proxy for determining the quantity of salt in a sample of '
+                    'seawater measured near the sea surface.'),
+        'data_product_identifier': 'CONDSRF_L1',
+        '_FillValue': np.nan
     },
     'shortwave_irradiance': {
-        'long_name': 'Shortwave Irradiance',
-        'standard_name': 'shortwave_irradiance',
+        'long_name': 'Downwelling Shortwave Irradiance',
+        'standard_name': 'downwelling_shortwave_flux_in_air',
         'units': 'W m-2',
-        'coordinates': 'time z_irr longitude latitude',
-        'sensor_mount': 'mounted on mooring tower',
-        'valid_min': '0',
-        'valid_max': '1000'
+        'comment': ('Downwelling short-wave radiation at the surface has a component due to the direct solar beam, '
+                    'and a diffuse component scattered from atmospheric constituents and reflected from clouds.'),
+        'data_product_identifier': 'SHRTIRR_L1',
+        '_FillValue': np.nan
     },
     'eastward_wind_velocity': {
         'long_name': 'Eastward Wind Velocity',
-        'standard_name': 'eastward_wind_velocity',
+        'standard_name': 'eastward_wind',
         'units': 'm s-1',
-        'coordinates': 'time z_wnd longitude latitude',
-        'sensor_mount': 'mounted on mooring tower',
-        'valid_min': '-100',
-        'valid_max': '100'
+        'comment': 'Eastward wind velocity relative to magnetic North.',
+        'data_product_identifier': 'WINDAVG-VLE_L0',
+        '_FillValue': np.nan
     },
     'northward_wind_velocity': {
         'long_name': 'Northward Wind Velocity',
-        'standard_name': 'northward_wind_velocity',
+        'standard_name': 'northward_wind',
         'units': 'm s-1',
-        'coordinates': 'time z_wnd longitude latitude',
-        'sensor_mount': 'mounted on mooring tower',
-        'valid_min': '-100',
-        'valid_max': '100'
+        'comment': 'Northward wind velocity relative to magnetic North.',
+        'data_product_identifier': '"WINDAVG-VLN_L0',
+        '_FillValue': np.nan
     },
-    'psu': {
-        'long_name': 'Practical Salinity',
-        'standard_name': 'sea_water_practical_salinity',
+    # ---- derived values ----
+    'sea_surface_salinity': {
+        'long_name': 'Sea Surface Practical Salinity',
+        'standard_name': 'sea_surface_practical_salinity',
         'units': '1',
-        'coordinates': 'time z_ct longitude latitude',
-        'sensor_mount': 'mounted on mooring subsurface bridle',
-        'valid_min': '0',
-        'valid_max': '40'
+        'comment': ('Salinity is generally defined as the concentration of dissolved salt in a parcel of sea water. '
+                    'Practical Salinity is a more specific unitless quantity calculated from the conductivity of '
+                    'sea water and adjusted for temperature and pressure. It is approximately equivalent to Absolute '
+                    'Salinity (the mass fraction of dissolved salt in sea water), but they are not interchangeable.'),
+        'data_product_identifier': 'SALSURF_L2',
+        'ancillary_variables': 'sea_surface_conductivity, sea_surface_temperature',
+        '_FillValue': np.nan
     },
-    'rho': {
-        'long_name': 'In-Situ Seawater Density',
-        'standard_name': 'sea_water_density',
+    'sea_surface_density': {
+        'long_name': 'Sea Surface In Situ Density',
+        'standard_name': 'sea_surface_density',
         'units': 'kg m-3',
-        'coordinates': 'time z_ct longitude latitude',
-        'sensor_mount': 'mounted on mooring subsurface bridle',
-        'valid_min': '0',
-        'valid_max': '30'
-    },
-    'z_ct': {
-        'long_name': 'Sensor Depth',
-        'standard_name': 'depth_of_sensor_below_water',
-        'units': 'm',
-        'coordinates': '',
-        'axis': 'Z',
-        'valid_min': '-10000',
-        'valid_max': '1000'
-    },
-    'z_bpr': {
-        'long_name': 'Sensor Height',
-        'standard_name': 'altitude_of_sensor_above_water',
-        'units': 'm',
-        'coordinates': '',
-        'axis': 'Z',
-        'valid_min': '-10000',
-        'valid_max': '1000'
-    },
-    'z_irr': {
-        'long_name': 'Sensor Height',
-        'standard_name': 'altitude_of_sensor_above_water',
-        'units': 'm',
-        'coordinates': '',
-        'axis': 'Z',
-        'valid_min': '-10000',
-        'valid_max': '1000'
-    },
-    'z_prc': {
-        'long_name': 'Sensor Height',
-        'standard_name': 'altitude_of_sensor_above_water',
-        'coordinates': '',
-        'units': 'm',
-        'axis': 'Z',
-        'valid_min': '-10000',
-        'valid_max': '1000'
-    },
-    'z_rh': {
-        'long_name': 'Sensor Height',
-        'standard_name': 'altitude_of_sensor_above_water',
-        'units': 'm',
-        'coordinates': '',
-        'positive': 'down',
-        'valid_min': '-10000',
-        'valid_max': '1000'
-    },
-    'z_wnd': {
-        'long_name': 'Sensor Height',
-        'standard_name': 'altitude_of_sensor_above_water',
-        'units': 'm',
-        'coordinates': '',
-        'axis': 'Z',
-        'valid_min': '-10000',
-        'valid_max': '1000'
+        'comment': ('Sea water density is the in situ density and is defined as mass per unit volume. It is '
+                    'calculated from the conductivity, temperature and depth of a sea water sample.'),
+        'data_product_identifier': 'DENSITY_L2',
+        'ancillary_variables': 'lon, lat, sea_surface_salinity, sea_surface_temperature',
+        '_FillValue': np.nan
     }
 }

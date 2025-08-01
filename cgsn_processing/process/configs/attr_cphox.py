@@ -6,65 +6,16 @@
 @author Christopher Wingard
 @brief Attributes for the Pro-Oceanus pCO2-Pro CV variables
 """
+from cgsn_processing.process.common import dict_update
+from cgsn_processing.process.configs.attr_common import CTD
+
 CPHOX = {
-    # global attributes
     'global': {
         'title': 'Sea-Bird Electronics Deep SeapHOx V2 Data',
         'summary': ('In-situ pH data from the Sea-Bird Electronics Deep SeapHOx V2 instrument. The SeapHOx is a '
-                    'combined CTD, dissolved oxygen and pH sensor.'),
-        'project': 'Ocean Observatories Initiative',
-        'institution': 'OOI Endurance Array',
-        'acknowledgement': 'National Science Foundation',
-        'references': 'http://oceanobservatories.org',
-        'creator_name': 'Ocean Observatories Initiative',
-        'creator_email': 'helpdesk@oceanobservatories.org',
-        'creator_url': 'http://oceanobservatories.org',
-        'featureType': 'timeSeries',
-        'cdm_data_type': 'Station',
-        'Conventions': 'CF-1.6'
+                    'combined CTD, dissolved oxygen and pH sensor.')
     },
-    'deploy_id': {
-        'long_name': 'Deployment ID',
-        'comment': ('Mooring deployment ID. Useful for differentiating data by deployment, '
-                    'allowing for overlapping deployments in the data sets.')
-    },
-    'station': {
-        'cf_role': 'timeseries_id',
-        'long_name': 'Station Identifier'
-    },
-    'time': {
-        'long_name': 'Time',
-        'standard_name': 'time',
-        'units': 'seconds since 1970-01-01T00:00:00.000Z',
-        'axis': 'T',
-        'calendar': 'gregorian',
-        'comment': 'Derived from the GPS referenced clock used by DCL data logger'
-    },
-    'lon': {
-        'long_name': 'Longitude',
-        'standard_name': 'longitude',
-        'units': 'degrees_east',
-        'axis': 'X',
-        'comment': ('Mooring deployment location, surveyed after deployment to determine the anchor location and '
-                    'the center of the watch circle.')
-    },
-    'lat': {
-        'long_name': 'Latitude',
-        'standard_name': 'latitude',
-        'units': 'degrees_north',
-        'axis': 'Y',
-        'comment': ('Mooring deployment location, surveyed after deployment to determine the anchor location and '
-                    'the center of the watch circle.')
-    },
-    'z': {
-        'long_name': 'Depth',
-        'standard_name': 'depth',
-        'units': 'm',
-        'comment': 'Instrument deployment depth',
-        'positive': 'down',
-        'axis': 'Z'
-    },
-    # variable attributes -- reported
+    # dataset attributes --> parsed data
     'serial_number': {
         'long_name': 'Serial Number',
         # 'units': '',    # deliberately left blank, no units for this value,
@@ -90,13 +41,6 @@ CPHOX = {
         'comment': ('Error flag from the SeapHOx instrument. A value of 0 indicates no error. At this time, the '
                     'meaning of other values is not known.'),
     },
-    'temperature': {
-        'long_name': 'Sea Water Temperature',
-        'standard_name': 'sea_water_temperature',
-        'units': 'degrees_Celsius',
-        'comment': 'Sea water temperature is the in situ temperature of the sea water.',
-        'data_product_identifier': 'TEMPWAT_L1',
-    },
     'seawater_ph': {
         'long_name': 'Sea Water pH, Total Scale',
         'standard_name': 'sea_water_ph_reported_on_total_scale',
@@ -113,37 +57,6 @@ CPHOX = {
         'comment': ('External reference voltage from the SeapHOx instrument. This value is used to calculate the '
                     'pH of the sea water.'),
         'data_product_identifier': 'PHWATER_L0'
-    },
-    'pressure': {
-        'long_name': 'Sea Water Pressure',
-        'standard_name': 'sea_water_pressure_due_to_sea_water',
-        'units': 'dbar',
-        'comment': ('Seawater Pressure refers to the pressure exerted on a sensor in situ by the weight of the '
-                    'column of seawater above it. It is calculated by subtracting one standard atmosphere from the '
-                    'absolute pressure at the sensor to remove the weight of the atmosphere on top of the water '
-                    'column. The pressure at a sensor in situ provides a metric of the depth of that sensor.'),
-        'data_product_identifier': 'PRESWAT_L1'
-    },
-    'salinity': {
-        'long_name': 'Practical Salinity',
-        'standard_name': 'sea_water_practical_salinity',
-        'units': '1',
-        'comment': ('Salinity is generally defined as the concentration of dissolved salt in a parcel of sea water. '
-                    'Practical Salinity is a more specific unitless quantity calculated from the conductivity of '
-                    'sea water and adjusted for temperature and pressure. It is approximately equivalent to Absolute '
-                    'Salinity (the mass fraction of dissolved salt in sea water), but they are not interchangeable.'),
-        'data_product_identifier': 'PRACSAL_L2',
-        'ancillary_variables': 'conductivity, temperature, pressure'
-    },
-    'conductivity': {
-        'long_name': 'Sea Water Conductivity',
-        'standard_name': 'sea_water_electrical_conductivity',
-        'units': 'mS cm-1',
-        'comment': ('Sea water conductivity refers to the ability of seawater to conduct electricity. The presence '
-                    'of ions, such as salt, increases the electrical conducting ability of seawater. As such, '
-                    'conductivity can be used as a proxy for determining the quantity of salt in a sample of '
-                    'seawater.'),
-        'data_product_identifier': 'CONDWAT_L1'
     },
     'oxygen_concentration': {
         'long_name': 'Dissolved Oxygen Concentration',
@@ -162,7 +75,7 @@ CPHOX = {
         'units': 'degree_Celsius',
         'comment': 'Internal temperature of the SeapHOx instrument.'
     },
-    # variable attributes -- derived values
+    # dataset attributes --> derived data
     'oxygen_molar_concentration': {
         'long_name': 'Dissolved Oxygen Molar Concentration',
         'standard_name': 'mole_concentration_of_dissolved_molecular_oxygen_in_sea_water',
@@ -193,3 +106,6 @@ CPHOX = {
         'ancillary_variables': 'temperature, salinity'
     },
 }
+
+# add the standard CTD attributes to the CPHOX attributes
+CPHOX = dict_update(CPHOX, CTD)

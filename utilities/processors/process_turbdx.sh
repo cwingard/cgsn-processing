@@ -26,13 +26,9 @@ if [ -z "$NSERIAL" ]; then
     exit
 fi
 
-# set the name of the calibration coefficients file
-COEFF="$(dirname "$IN_FILE")/turbdx.cal_coeffs.json"
-
 # Process the file (if it hasn't already been done)
-if [ -e $IN_FILE ]; then
+if [ -e "$IN_FILE" ]; then
     cd /home/ooiuser/code/cgsn-processing || exit
     python -m cgsn_processing.process.proc_flort -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH \
-        -i $IN_FILE -o $OUT_FILE -sn $NSERIAL -df $COLOCATED -ba -cf $COEFF \
-        -s TURBDX || echo "ERROR: Failed to process $IN_FILE"
+        -i "$IN_FILE" -o "$OUT_FILE" -sn $NSERIAL -df $COLOCATED -s TURBDX || echo "ERROR: Failed to process $IN_FILE"
 fi

@@ -13,21 +13,28 @@ import xarray as xr
 from gsw import z_from_p
 from pyseas.data.generic_functions import magnetic_declination, magnetic_correction
 
-from cgsn_processing.process.common import ENCODING, FILL_INT, inputs, json2obj, json_obj2df, dt64_epoch, update_dataset
+from cgsn_processing.process.common import ENCODING, FILL_INT, inputs, json2obj, json_obj2df, dt64_epoch, \
+    update_dataset, dict_update
 from cgsn_processing.process.configs.attr_vel3d import VEL3D
+from cgsn_processing.process.configs.attr_common import SHARED
 
 
-def main(argv=None):
-    # load the input arguments
-    args = inputs(argv)
-    infile = os.path.abspath(args.infile)
-    outfile = os.path.abspath(args.outfile)
-    platform = args.platform
-    deployment = args.deployment
-    lat = args.latitude
-    lon = args.longitude
-    depth = args.depth
+def proc_vel3d(infile, platform, deployment, lat, lon, depth):
+    """
+    Main VEL3D processing function. Loads the JSON formatted parsed data and
+    converts data into a NetCDF data file using xarray. Dataset processing
+    level attribute is set to "processed" with the velocities corrected for
+    magnetic declination.
 
+    :param infile: JSON formatted parsed data file
+    :param platform: Name of the mooring the instrument is mounted on.
+    :param deployment: Name of the deployment for the input data file.
+    :param lat: Latitude of the mooring deployment.
+    :param lon: Longitude of the mooring deployment.
+    :param depth: Depth of the platform the instrument is mounted on.
+
+    :return vel3d: An xarray dataset with the VEL3D data
+    """
     # load the json data file as a json formatted object for further processing
     data = json2obj(infile)
     if not data:
@@ -39,15 +46,15 @@ def main(argv=None):
         noise_amplitudes = np.array(data['header']['noise_amplitudes']).astype(np.int32)
         noise_correlations = np.array(data['header']['noise_correlations']).astype(np.int32)
     else:
-        noise_amplitudes = np.ones * FILL_INT
-        noise_correlations = np.ones * FILL_INT
+        noise_amplitudes = np.ones([1, 3]) * FILL_INT
+        noise_correlations = np.ones([1, 3]) * FILL_INT
 
     # create the system data set
     df = json_obj2df(data, 'system')
     system = xr.Dataset.from_dataframe(df)
     system = system.drop_vars(['date_time_array'])
 
-    # create the velocity
+    # create the velocity data set
     df = json_obj2df(data, 'velocity')
     df.drop(columns=['ensemble_counter', 'amplitudes', 'correlations'], inplace=True)
     amplitudes = np.array(data['velocity']['amplitudes']).astype(np.int32)      # grab the amplitudes array
@@ -81,31 +88,59 @@ def main(argv=None):
     system = system.reindex_like(velocity, method='nearest')
     vel3d = velocity.merge(system)
 
+    # use bit 1 in the status code to determine the scaling factor for the velocity data
+    status_code = vel3d.status_code.values
+    scaling = np.array([[n >> i & 1 for i in range(0, int(n).bit_length())] for n in status_code])[:, 1]
+    scaling = np.where(scaling == 1, 0.1, 1)
+
+    # adjust the velocity data based on the scaling factor
+    vel3d['velocity_east'] = vel3d.velocity_east * scaling
+    vel3d['velocity_north'] = vel3d.velocity_north * scaling
+    vel3d['velocity_vertical'] = vel3d.velocity_vertical * scaling
+
     # convert the error and status code variable data types
     vel3d['error_code'] = (vel3d['error_code']).astype(np.uint8)
     vel3d['status_code'] = (vel3d['status_code']).astype(np.uint8)
 
     # convert the pressure record to depth and calculate mean, min and max depths
-    z = z_from_p(vel3d.pressure.values, lat)
-    zmin = np.min(z)
-    zmax = np.max(z)
-    z = np.mean(z)
+    d = z_from_p(vel3d.pressure.values, lat) * -1
+    depth_array = [d.mean(), d.min(), d.max()]
 
     # apply magnetic declination correction to the eastward and northward velocity
     # components and scale from mm/s to m/s
-    theta = magnetic_declination(lat, lon, dt64_epoch(vel3d['time']), z)
-    magvar = np.vectorize(magnetic_correction)
-    east, north = magvar(theta, vel3d.velocity_east / 1000., vel3d.velocity_north / 1000.)
+    theta = magnetic_declination(lat, lon, dt64_epoch(vel3d['time']), d.mean())
+    magnetic = np.vectorize(magnetic_correction)
+    east, north = magnetic(theta, vel3d.velocity_east / 1000., vel3d.velocity_north / 1000.)
 
     # add the corrected data back into the data set
     vel3d['velocity_east_corrected'] = (['time'], east)
     vel3d['velocity_north_corrected'] = (['time'], north)
 
     # update the data set with appropriate metadata
-    vel3d = update_dataset(vel3d, platform, deployment, lat, lon, [z, zmin, zmax], VEL3D)
+    vel3d['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(vel3d.time)).astype(str))
+    attrs = dict_update(VEL3D, SHARED)  # add the shared attributes
+    vel3d = update_dataset(vel3d, platform, deployment, lat, lon, depth_array, attrs)
+    vel3d.attrs['processing_level'] = 'processed'
 
-    # save the file
-    vel3d.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+    return vel3d
+
+
+def main(argv=None):
+    # load the input arguments
+    args = inputs(argv)
+    infile = os.path.abspath(args.infile)
+    outfile = os.path.abspath(args.outfile)
+    platform = args.platform
+    deployment = args.deployment
+    lat = args.latitude
+    lon = args.longitude
+    depth = args.depth
+
+    # process the VEL3D data and save the results to disk
+    vel3d = proc_vel3d(infile, platform, deployment, lat, lon, depth)
+    if vel3d:
+        vel3d.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
+
 
 if __name__ == '__main__':
     main()

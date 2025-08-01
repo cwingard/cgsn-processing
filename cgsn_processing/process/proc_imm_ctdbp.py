@@ -17,6 +17,7 @@ from cgsn_processing.process.common import ENCODING, inputs, dict_update, epoch_
     json2obj, json_obj2df, update_dataset
 from cgsn_processing.process.finding_calibrations import find_calibration
 from cgsn_processing.process.configs.attr_ctdbp import CTDBP
+from cgsn_processing.process.configs.attr_common import SHARED
 
 from cgsn_processing.process.proc_dosta import Calibrations as DOSTA_Calibrations
 from cgsn_processing.process.proc_flort import Calibrations as FLORD_Calibrations
@@ -46,14 +47,14 @@ def proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
     :param lon: Longitude of the mooring deployment.
     :param depth: Depth of the platform the instrument is mounted on.
 
-    :kwarg dosta_serial: The serial number of the attached DOSTA (optional input)
-    :kwarg flord_serial: The serial number of the attached FLORD (optional input)
+    :kwarg oxy_serial: The serial number of the attached DOSTA (optional input)
+    :kwarg flr_serial: The serial number of the attached FLORD (optional input)
 
     :return ctd: An xarray dataset with the processed CTDBP data
     """
     # process the variable length keyword arguments
-    dosta_serial = kwargs.get('dosta_serial')
-    flord_serial = kwargs.get('flord_serial')
+    oxy_serial = kwargs.get('oxy_serial')
+    flr_serial = kwargs.get('flr_serial')
 
     # load the json data file as a json formatted object for further processing
     data = json2obj(infile)
@@ -91,7 +92,7 @@ def proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
     ctd['sensor_time'] = sensor_time
     ctd.drop(columns={'serial_number', 'date_time_string'}, inplace=True)
     ctd.rename(columns={'raw_oxy_calphase': 'raw_calibrated_phase',
-                        'raw_oxy_temp': 'raw_oxygen_thermistor'},
+                        'raw_oxy_temp': 'raw_optode_thermistor'},
                inplace=True)
 
     # join the status and ctd data together into a single data frame, keeping track of data types and fill values
@@ -112,7 +113,7 @@ def proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
     # create filled variables to be updated if calibration coefficients are available
     empty_data = ctd['sensor_time'] * np.nan
     ctd['calibrated_phase'] = empty_data
-    ctd['oxygen_thermistor_temperature'] = empty_data
+    ctd['optode_thermistor'] = empty_data
     ctd['svu_oxygen_concentration'] = empty_data
     ctd['oxygen_concentration_corrected'] = empty_data
     ctd['estimated_chlorophyll'] = empty_data
@@ -129,7 +130,7 @@ def proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
         proc_dosta = True
     else:
         # load from the CI hosted CSV files
-        csv_url = find_calibration('DOSTA', dosta_serial, (ctd.time.values.astype('int64') * 10 ** -9)[0])
+        csv_url = find_calibration('DOSTA', oxy_serial, (ctd.time.values.astype('int64') * 10 ** -9)[0])
         if csv_url:
             opt.read_csv(csv_url)
             opt.save_coeffs()
@@ -145,7 +146,7 @@ def proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
         proc_flord = True
     else:
         # load from the CI hosted CSV files
-        csv_url = find_calibration('FLORD', flord_serial, (ctd.time.values.astype('int64') * 10 ** -9)[0])
+        csv_url = find_calibration('FLORD', flr_serial, (ctd.time.values.astype('int64') * 10 ** -9)[0])
         if csv_url:
             flr.read_csv(csv_url)
             flr.save_coeffs()
@@ -156,9 +157,9 @@ def proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
         # calculate the oxygen concentration from the calibrated phase and thermistor temperature using the
         # Stern-Volmer-Uchida (SVU) equations
         ctd['calibrated_phase'] = do2_phase_volt_to_degree(ctd['raw_calibrated_phase'])
-        ctd['oxygen_thermistor_temperature'] = do2_therm_volt_to_degc(ctd['raw_oxygen_thermistor'])
+        ctd['optode_thermistor'] = do2_therm_volt_to_degc(ctd['raw_optode_thermistor'])
         ctd['svu_oxygen_concentration'] = do2_phase_to_doxy(ctd['calibrated_phase'],
-                                                            ctd['oxygen_thermistor_temperature'],
+                                                            ctd['optode_thermistor'],
                                                             opt.coeffs['svu_cal_coeffs'],
                                                             opt.coeffs['two_point_coeffs'])
 
@@ -190,7 +191,8 @@ def proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth, **kwargs):
         ctd.attrs['processing_level'] = 'parsed'
 
     # assign/create needed dimensions, geo coordinates and update the metadata attributes for the data set
-    ctd = update_dataset(ctd, platform, deployment, lat, lon, [depth, depth, depth], CTDBP)
+    attrs = dict_update(CTDBP, SHARED)  # add the shared attributes
+    ctd = update_dataset(ctd, platform, deployment, lat, lon, [depth, depth, depth], attrs)
 
     return ctd
 
@@ -205,15 +207,15 @@ def main(argv=None):
     lat = args.latitude
     lon = args.longitude
     depth = args.depth
-    flord_serial = args.flord_serial
-    dosta_serial = args.dosta_serial
+    flr_serial = args.flr_serial
+    oxy_serial = args.oxy_serial
 
     # process the CTDBP data and save the results to disk
     ctdbp = proc_imm_ctdbp(infile, platform, deployment, lat, lon, depth,
-                           dosta_serial=dosta_serial, flord_serial=flord_serial)
+                           oxy_serial=oxy_serial, flr_serial=flr_serial)
 
     if ctdbp:
-        ctdbp.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
+        ctdbp.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
 
 if __name__ == '__main__':

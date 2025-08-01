@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Read the parsed DCL SUPERV data files from the CGSN Coastal Surface Moorings and
+# Read the parsed PSC data files from the CGSN Coastal Surface Moorings and
 # create processed datasets available in NetCDF formatted files for further
 # processing and review.
 #
@@ -16,6 +16,6 @@ source "$DIR/process_options.sh"
 # Process the file
 if [ -e $IN_FILE ]; then
     cd /home/ooiuser/code/cgsn-processing || exit
-    python -m cgsn_processing.process.proc_superv_stc -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH \
-      -i $IN_FILE -o $OUT_FILE || echo "ERROR: Failed to process $IN_FILE"
+    python -m cgsn_processing.process.proc_pwrsys -p $PLATFORM -d $DEPLOY -lt $LAT -lg $LON -dp $DEPTH \
+      -s PSC -i $IN_FILE -o $OUT_FILE || echo "ERROR: Failed to process $IN_FILE"
 fi

@@ -3,51 +3,27 @@
 """
 @package cgsn_processing.process.proc_xeos
 @file cgsn_processing/process/proc_xeos.py
-@author Paul Whelan
-@brief Creates a NetCDF dataset for XEOS messages from JSON formatted source data
+@author Christopher Wingard
+@brief Creates a NetCDF dataset for Xeos Technologies GPS beacon data
+    sent via Iridium SBD messaging from the JSON formatted source data
 """
-import os
-from pathlib import Path
-import json
-import re
 import numpy as np
-from datetime import datetime, timezone
-import pandas as pd
-from collections.abc import Mapping
+import os
 import xarray as xr
 
-from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING
-from cgsn_processing.process.configs.attr_xeos import XEOS
+from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING, dict_update
+from cgsn_processing.process.configs.attr_sbd import XEOS
+from cgsn_processing.process.configs.attr_common import SHARED
 
-def read_json(infile):
+
+def proc_xeos(infile, platform, deployment, lat, lon, depth):
     """
-    Reads a json file into a dictionary, which gets returned.
-    If file nonexistent or empty, return NONE.
-    """
-    
-    jf = Path(infile)
-    if not jf.is_file():
-        # if not, return an empty data frame
-        print("JSON data file {0} was not found, returning empty data frame".format(infile))
-        return None
-    
-    else:
-        # otherwise, read in the data file
-        with open(infile) as jf:
-            try:
-                json_data = json.load(jf)
-            except JSONDecodeError:
-                print("Invalid JSON syntax in {0} found".format(infile))
-                return None
-
-    return json_data
-
-
-def proc_xeos(infile, platform, deployment, lat, lon, depth) :
-    """
-    Main XEOS processing function. Loads the JSON formatted parsed data. 
-    Filled variables are returned and the dataset
-    processing level attribute is set to "parsed".
+    Main processing function for Xeos beacon logs sent via the Iridium
+    SBD messaging system. Loads the JSON formatted parsed data and
+    creates a NetCDF file for use in monitoring the system health.
+    Dataset processing level attribute is set to "parsed"; there is
+    no processing of the data, just a straight conversion from JSON
+    to NetCDF.
 
     :param infile: JSON formatted parsed data file
     :param platform: Name of the mooring the instrument is mounted on.
@@ -56,37 +32,34 @@ def proc_xeos(infile, platform, deployment, lat, lon, depth) :
     :param lon: Longitude of the mooring deployment.
     :param depth: Depth of the platform the instrument is mounted on.
 
-
-    :return df: An xarray dataset with the processed XEOS data
+    :return xeos: An xarray dataset with the processed xeosisor data
     """
-
-    # load the json data file and return a panda dataframe, adding a deployment depth and ID
+    # load the json data file and return a panda dataframe
     df = json2df(infile)
-    #xeos_json = read_json(infile)
-    #if xeos_json is None:
-    #    print("Processing of XEOS file {0} aborted".format(infile))
-    #    return None
-
-    #df = pd.DataFrame(xeos_json)
     if df.empty:
         # there was no data in this file, ending early
         return None
 
-    # Try adding deploy it to df (not working in ds)
-    #df['deploy_id'] = deployment
-    #df['time'] = pd.to_datetime( df['time'] )
+    # drop the date/time strings and transfer status string variables
+    df.drop(columns=['date_time_email', 'transfer_status', 'date_time_xeos'], inplace=True)
+
+    # rename the latitude and longitude variables to match the attribute file
+    # convert the raw battery voltage and thermistor values from counts to V and degC, respectively
+    df.rename(columns={'latitude': 'precise_latitude', 'longitude': 'precise_longitude',}, inplace=True)
 
     # create an xarray data set from the data frame
-    ds = xr.Dataset.from_dataframe(df)
+    xeos = xr.Dataset.from_dataframe(df)
 
-    ds['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(ds.time)).astype(str))
-    ds = update_dataset(ds, platform, deployment, lat, lon, [depth, depth, depth], XEOS)
-    ds.attrs['processing_level'] = 'processed'
+    # clean up the dataset and assign attributes
+    xeos['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(xeos.time)).astype(str))
+    attrs = dict_update(XEOS, SHARED)
+    xeos = update_dataset(xeos, platform, deployment, lat, lon, [depth, depth, depth], attrs)
+    xeos.attrs['processing_level'] = 'parsed'
 
-    return ds
-    
+    return xeos
+
+
 def main(argv=None):
-    
     # load the input arguments
     args = inputs(argv)
     infile = os.path.abspath(args.infile)
@@ -97,9 +70,11 @@ def main(argv=None):
     lon = args.longitude
     depth = args.depth
 
-    df = proc_xeos( infile, platform, deployment, lat, lon, depth )
-    if df:
-        df.to_netcdf(outfile, mode='w', format='NETCDF4', engine='netcdf4', encoding=ENCODING)
-    
+    # process the Xeos SBD data and save the results to disk
+    xeos = proc_xeos(infile, platform, deployment, lat, lon, depth)
+    if xeos:
+        xeos.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
+
+
 if __name__ == '__main__':
     main()

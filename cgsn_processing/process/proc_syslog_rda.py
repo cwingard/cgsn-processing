@@ -6,15 +6,53 @@
 @author Christopher Wingard
 @brief Creates a NetCDF dataset for the RDA data from JSON formatted source data
 """
+import numpy as np
 import os
-import re
+import xarray as xr
 
-from pocean.utils import dict_update
-from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMTs
-
-from cgsn_processing.process.common import inputs, json2df, df2omtdf
-# from cgsn_processing.process.error_flags import RDAErrorFlags, derive_multi_flags
+from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING, dict_update
 from cgsn_processing.process.configs.attr_syslog_rda import RDA
+from cgsn_processing.process.configs.attr_common import SHARED
+
+
+def proc_rda(infile, platform, deployment, lat, lon, depth):
+    """
+    Main Iridium processing function. Loads the JSON formatted parsed data and
+    converts the data into a NetCDF file using xarray. Dataset processing level
+    attribute is set to "parsed". There is no processing of the data, just a
+    straight conversion from JSON to NetCDF.
+
+    :param infile: JSON formatted parsed data file
+    :param platform: Name of the mooring the instrument is mounted on.
+    :param deployment: Name of the deployment for the input data file.
+    :param lat: Latitude of the mooring deployment.
+    :param lon: Longitude of the mooring deployment.
+    :param depth: Depth of the platform the instrument is mounted on.
+
+    :return: A xarray dataset with the Iridium connection statistics data
+    """
+    # load the json data file and return a panda dataframe, adding a default depth and the deployment ID
+    df = json2df(infile)
+    if df.empty:
+        # there was no data in this file, ending early
+        return None
+
+    # clean up some data
+    df.drop(columns=['date_time_string'], inplace=True)  # used to calculate time, so redundant
+
+    # convert the error flags (converted from a hex string to an integer in the parser) into an unsigned integer
+    df['error_flags'] = df['error_flags'].astype(np.uintc)
+
+    # create an xarray data set from the data frame
+    rda = xr.Dataset.from_dataframe(df)
+
+    # clean up the dataset and assign attributes
+    rda['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(rda.time)).astype(str))
+    attrs = dict_update(RDA, SHARED)
+    rda = update_dataset(rda, platform, deployment, lat, lon, [depth, depth, depth], attrs)
+    rda.attrs['processing_level'] = 'parsed'
+
+    return rda
 
 
 def main(argv=None):
@@ -26,30 +64,13 @@ def main(argv=None):
     deployment = args.deployment
     lat = args.latitude
     lon = args.longitude
-    depth = 0.0
+    depth = args.depth
 
-    # load the json data file and return a panda dataframe, adding a default depth and the deployment ID
-    df = json2df(infile)
-    if df.empty:
-        # there was no data in this file, ending early
-        return None
+    # process the FB250 data and save the results to disk
+    rda = proc_rda(infile, platform, deployment, lat, lon, depth)
+    if rda:
+        rda.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
-    df['deploy_id'] = deployment
-
-    # convert the error flags strings to named variables
-    # df = derive_multi_flags(RDAErrorFlags, 'error_flags', df)
-
-    # convert the dataframe to a format suitable for the pocean OMTs
-    df = df2omtdf(df, lat, lon, depth)
-
-    # add to the global attributes for the RDA
-    attrs = RDA
-    attrs['global'] = dict_update(attrs['global'], {
-        'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
-    })
-
-    nc = OMTs.from_dataframe(df, outfile, attributes=attrs)
-    nc.close()
 
 if __name__ == '__main__':
     main()

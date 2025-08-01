@@ -50,6 +50,7 @@ class SupervErrorFlagCPM(IntEnum):
     efc_mpic_brown_out_reset = 0x80000000
 
 
+# Set up the error flag enumeration class for the DCL Supervisor
 class SupervErrorFlagDCL(IntEnum):
     efd_no_errors = 0x00000000
     efd_vmain_out_of_normal_range = 0x00000001
@@ -242,8 +243,9 @@ class MPEAErrorFlag2(IntEnum):
 
 def derive_multi_flags(flag_class, flag_name, df):
     """
-    Uses the enumeration flag classes from above to quickly set values for the flag values
-    in the DataFrame. Returns the DataFrame with the newly created variables. 
+    Uses the enumeration flag classes from above to quickly set values for the
+    flag values in the DataFrame. Returns the DataFrame with the newly created
+    variables.
     """
     df = df.copy()  # make a copy of the DataFrame to avoid modifying the original
     for name, member in flag_class.__members__.items():
@@ -270,8 +272,9 @@ def derive_multi_flags(flag_class, flag_name, df):
 
 def derive_single_flags(flag_class, flag_name, df):
     """
-    Uses the enumeration flag class from above to quickly set values for the flag values in the DataFrame. Returns 
-    the DataFrame with the newly created variables. 
+    Uses the enumeration flag class from above to quickly set values for the
+    flag values in the DataFrame. Returns the DataFrame with the newly created
+    variables.
     """
     df = df.copy()  # make a copy of the DataFrame to avoid modifying the original
     for name, member in flag_class.__members__.items():

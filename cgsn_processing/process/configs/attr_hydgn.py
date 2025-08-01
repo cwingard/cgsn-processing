@@ -7,29 +7,16 @@
 @brief Attributes for the hydrogen gas variables
 """
 HYDGN = {
-    'deploy_id': {
-        'long_name': 'Deployment ID',
-        'standard_name': 'deployment_id',
-        'units': '1',
-        'coordinates': 'time z longitude latitude',
-        'grid_mapping': 'crs',
-        'platform': 'platform',
-        'ancillary_variables': 'platform',
-        'coverage_content_type': 'physicalMeasurement'
-    },
-    'dcl_date_time_string': {
-        'long_name': 'DCL Date and Time Stamp',
-        'standard_name': 'dcl_date_time_string',
-        'units': '1',
-        'coordinates': 'time z longitude latitude',
-        'grid_mapping': 'crs',
-        'platform': 'platform',
-        'ancillary_variables': 'platform',
-        'coverage_content_type': 'physicalMeasurement'
+    'global': {
+        'title': 'Mooring Hydrogen Gas Lower Explosive Limit Concentration Data',
+        'summary': ('Records the internal buoy well hydrogen gas concentration as a percentage of '
+                    'the Lower Explosive Limit')
     },
     'hydrogen_concentration': {
-        'long_name': 'Hydrogen LEL Concentration',
-        'standard_name': 'hydrogen_concentration',
-        'units': '%',
+        'long_name': 'LEL Hydrogen Concentration',
+        'units': 'percent',
+        'comment': ('Hydrogen concentration expressed as a percentage of the lower explosive limit (LEL), which '
+                    'is 2% hydrogen gas concentration in air. LEL hydrogen concentrations less than 10% (or 0.2% '
+                    'absolute) are considered acceptable for operations.')
     }
 }

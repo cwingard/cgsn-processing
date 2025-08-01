@@ -6,19 +6,56 @@
 @author Joe Futrelle
 @brief Creates a NetCDF dataset for PRESF from JSON formatted source data
 """
+import numpy as np
 import os
-import re
+import xarray as xr
 
-from pocean.utils import dict_update
-from pocean.dsg.timeseries.om import OrthogonalMultidimensionalTimeseries as OMTs
-
-from cgsn_processing.process.common import inputs, json2df, df2omtdf
+from cgsn_processing.process.common import inputs, json2df, update_dataset, ENCODING, dict_update, epoch_time
 from cgsn_processing.process.configs.attr_presf import PRESF
-#from pyseas.data.sfl_functions import sfl_sflpres_rtime
+from cgsn_processing.process.configs.attr_common import SHARED
+
+
+def proc_presf(infile, platform, deployment, lat, lon, depth):
+    """
+    Sea-Bird 26Plus Seafloor Pressure sensor processing function. Loads the
+    JSON formatted parsed data and converts data into a NetCDF data file using
+    xarray.
+
+    :param infile: JSON formatted parsed data file
+    :param platform: Name of the mooring the instrument is mounted on.
+    :param deployment: Name of the deployment for the input data file.
+    :param lat: Latitude of the mooring deployment.
+    :param lon: Longitude of the mooring deployment.
+    :param depth: Depth of the platform the instrument is mounted on.
+
+    :return presf: An xarray dataset with the seafloor pressure data
+    """
+    # load the json data file and return a panda dataframe
+    df = json2df(infile)
+    if df.empty:
+        # there was no data in this file, ending early
+        return None
+
+    # clean up the dataframe, getting rid of variables we no longer need
+    df['sensor_time'] = [epoch_time(x) for x in df['presf_date_time_string']]
+    df.drop(columns=['presf_date_time_string', 'dcl_date_time_string'], inplace=True)
+
+    # convert the absolute seafloor pressure from psi to dbar
+    df['absolute_pressure'] = df['absolute_pressure'] * 0.689476
+
+    # create an xarray data set from the data frame
+    presf = xr.Dataset.from_dataframe(df)
+
+    # clean up the dataset and assign attributes
+    presf['deploy_id'] = xr.Variable(('time',), np.repeat(deployment, len(presf.time)).astype(str))
+    attrs = dict_update(PRESF, SHARED)  # add the shared attributes
+    presf = update_dataset(presf, platform, deployment, lat, lon, [depth, depth, depth], attrs)
+    presf.attrs['processing_level'] = 'parsed'
+
+    return presf
 
 
 def main(argv=None):
-
     # load the input arguments
     args = inputs(argv)
     infile = os.path.abspath(args.infile)
@@ -28,32 +65,12 @@ def main(argv=None):
     lat = args.latitude
     lon = args.longitude
     depth = args.depth
-    
-    # load the json data file and return a panda dataframe, adding a deployment depth and ID
-    df = json2df(infile)
-    if df.empty:
-        # there was no data in this file, ending early
-        return None
 
-    df['depth'] = depth
-    df['deploy_id'] = deployment
+    # process the Sea-Bird 26Plus data and save the results to disk
+    presf = proc_presf(infile, platform, deployment, lat, lon, depth)
+    if presf:
+        presf.to_netcdf(outfile, mode='w', format='NETCDF4', engine='h5netcdf', encoding=ENCODING)
 
-    # convert the dataframe to a format suitable for the pocean OMTs
-    df = df2omtdf(df, lat, lon, depth)
 
-    # TODO: Will require a fix to the WMM code before this can be implemented
-    # convert the absolute (hydrostatic + atmospheric) pressure measurement from psi to dbar
-    # df['seafloor_pressure'] = sfl_sflpres_rtime(df['absolute_pressure'])
-
-    # add to the global attributes for the PRESF
-    attrs = PRESF
-
-    attrs['global'] = dict_update(attrs['global'], {
-        'comment': 'Mooring ID: {}-{}'.format(platform.upper(), re.sub('\D', '', deployment))
-       })
-        
-    nc = OMTs.from_dataframe(df, outfile, attributes=attrs)
-    nc.close()
-    
 if __name__ == '__main__':
     main()

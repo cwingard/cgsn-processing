@@ -28,14 +28,11 @@ BUOYS = {
     'ce09ospm': {'name': 'Coastal Endurance Washington Offshore Profiler Mooring'}
 }
 
-# Create a dictionary to correct some inconsistencies between an xarray dataset and a CF compliant NetCDF file
+# Default NetCDF encodings for CF compliance
 ENCODING = {
-    'time': {'_FillValue': None},
-    'lat': {'_FillValue': None},
     'lon': {'_FillValue': None},
-    'z': {'_FillValue': None},
-    'station': {'dtype': str},
-    'deploy_id': {'dtype': str}
+    'lat': {'_FillValue': None},
+    'z': {'_FillValue': None}
 }
 
 # Create global default fill values
@@ -127,8 +124,9 @@ def hex2int(hstr):
 
 def join_df(df1, df2):
     """
-    Join two data frames, padding missing values with the appropriate fill value. Recasting data types in the joined
-    data frames back to their original settings from prior to the join.
+    Join two data frames, padding missing values with the appropriate fill
+    value. Recasting data types in the joined data frames back to their
+    original settings from prior to the join.
 
     :param df1: primary dataframe to merge the secondary dataframe into
     :param df2: secondary dataframe
@@ -194,7 +192,7 @@ def json2df(infile):
             print("JSON data file {0} was empty, returning empty data frame".format(infile))
             return df
 
-        # setup time and the index
+        # set up time and the index
         df['time'] = pd.to_datetime(df.time, unit='s')
         df.index = df['time']
 
@@ -278,32 +276,42 @@ def colocated_ctd(infile, ctd_name):
 
 def update_dataset(ds, platform, deployment, lat, lon, depth, attrs):
     """
-    Updates a data set with global and variable level metadata attributes and sets appropriate dimensions and
-    coordinate axes.
+    Updates a data set with global and variable level metadata attributes and
+    sets appropriate dimensions and coordinate axes based on the CF Metadata
+    Standard, version 1.7, for a single time series at a nominal fixed spatial
+    location.
 
     :param ds: Data set to update
     :param platform: Platform name
     :param deployment: Deployment name
     :param lat: Deployment latitude in decimal degrees North
     :param lon: Deployment longitude in decimal degrees East
-    :param depth: Array indicating deployment depth and the vertical minimum and maximum extent of the depth range for
-                  the instrument in this data set
+    :param depth: Array indicating the deployment depth, and the vertical
+        minimum and maximum extent of the depth range for the instrument in
+        this data set
     :param attrs: Global and variable level attributes for the data set
     :return ds: The updated data set
     """
-    # add a default station identifier as a coordinate variable to the data set
-    ds.coords['station'] = platform.upper()
+    # convert the depth array to named variables
+    deploy_depth = depth[0]     # instrument deployment depth
+    min_depth = depth[1]        # minimum vertical extent of the instrument depth
+    max_depth = depth[2]        # maximum vertical extent of the instrument depth
+    # note, the minimum and maximum depths will vary if the instrument includes a
+    # pressure sensor, otherwise they will be set to the deployment depth
+
+    # add a station dimension to the data set
     ds = ds.expand_dims('station', axis=None)
 
-    # add the geospatial coordinates using the station identifier from above as the dimension
+    # add the geospatial coordinates using the station dimension from above
     geo_coords = xr.Dataset({
+        'station_name': ('station', [platform.upper()]),
         'lat': ('station', [lat]),
         'lon': ('station', [lon]),
-        'z': ('station', [depth[0]])
-    }, coords={'station': [platform.upper()]})
+        'z': ('station', [deploy_depth])
+    })
 
     # merge the geospatial coordinates into the data set
-    ds = xr.merge([ds, geo_coords])
+    ds = ds.merge(geo_coords)
 
     # Convert time from nanoseconds to seconds since 1970
     ds['time'] = dt64_epoch(ds.time)
@@ -316,8 +324,8 @@ def update_dataset(ds, platform, deployment, lat, lon, depth, attrs):
         'geospatial_lat_min': lat,
         'geospatial_lon_max': lon,
         'geospatial_lon_min': lon,
-        'geospatial_vertical_max': depth[2],
-        'geospatial_vertical_min': depth[1],
+        'geospatial_vertical_max': max_depth,
+        'geospatial_vertical_min': min_depth,
         'geospatial_vertical_positive': 'down',
         'geospatial_vertical_units': 'm'
     })
@@ -325,15 +333,35 @@ def update_dataset(ds, platform, deployment, lat, lon, depth, attrs):
     # assign the updated attributes to the global metadata and the individual variables
     ds.attrs = attrs['global']
     for v in ds.variables:
-        if v not in ['time', 'lat', 'lon', 'z', 'station']:
-            ds[v].attrs = dict_update(attrs[v], {'coordinates': 'time lat lon z'})
+        if v not in ['time', 'lat', 'lon', 'z', 'station_name', 'wavelength_number', 'wavelengths']:
+            ds[v].attrs = dict_update(attrs[v], {'coordinates': 'time lon lat z'})
         else:
             ds[v].attrs = attrs[v]
 
+    # set the encoding for the time and sensor time (if available) variables to ensure proper CF compliance
+    # and representation of the times in the NetCDF file (otherwise, xarray will chose its own defaults)
+    ds['time'].encoding = dict({
+        '_FillValue': None,
+        'units': 'seconds since 1970-01-01T00:00:00.000Z',
+        'calendar': 'standard',
+        'dtype': 'float64'
+    })
+
+    if 'sensor_time' in ds.variables:
+        ds['sensor_time'].encoding = dict({
+            'units': 'seconds since 1970-01-01T00:00:00.000Z',
+            'calendar': 'standard',
+            'dtype': 'float64'
+        })
+
+    # convert all float64 values to float32 (except for the timestamps), helps minimize file size
     # reset all integers set as long, or int64, as an int32. ERDDAP doesn't like longs
     for v in ds.variables:
-        if ds[v].dtype == np.int64:
-            ds[v] = ds[v].astype(np.int32)
+        if v not in ['time', 'sensor_time']:
+            if ds[v].dtype == np.int64:
+                ds[v] = ds[v].astype(np.int32)
+            if ds[v].dtype is np.dtype('float64'):
+                ds[v] = ds[v].astype('float32')
 
     # return the data set for further work
     return ds
@@ -357,30 +385,6 @@ def json_sub2df(infile, sub):
                 df[col] = df[col].astype(np.int32)
 
         return df
-
-
-def df2omtdf(df, lat=0., lon=0., depth=0., time_var='time'):
-    """
-    Modifies a dataframe to be suitable for use with the from_dataframe
-    method of pocean's OrthogonalMultidimensionalTimeseries
-    """
-    # rename time var to "t"
-    df['t'] = df.pop(time_var)
-
-    # fill lat/lon/depth values
-    df['y'] = lat
-    df['x'] = lon
-    df['z'] = depth
-
-    # just one station
-    df['station'] = 0
-
-    # convert all int64s to int32s
-    for col in df.columns:
-        if df[col].dtype == np.int64:
-            df[col] = df[col].astype(np.int32)
-
-    return df
 
 
 def reset_long(df):
@@ -490,8 +494,12 @@ def inputs(args=None):
     parser.add_argument("-bd", "--blanking_distance", dest="blanking_distance", type=float, required=False)
     parser.add_argument("-cf", "--coeff_file", dest="coeff_file", type=str, required=False)
     parser.add_argument("-sn", "--serial_number", dest="serial", type=str, required=False)
-    parser.add_argument("-dsn", "--dosta_serial_number", dest="dosta_serial", type=str, required=False)
-    parser.add_argument("-fsn", "--flord_serial_number", dest="flord_serial", type=str, required=False)
+    parser.add_argument("-fsn", "--flr_serial_number", dest="flr_serial", type=str, required=False,
+                        help="Serial number of the fluorometer (FLORT or FLORD)")
+    parser.add_argument("-dsn", "--oxy_serial_number", dest="oxy_serial", type=str, required=False,
+                        help="Serial number of the oxygen sensor (DOFST or DOSTA)")
+    parser.add_argument("-psn", "--par_serial_number", dest="par_serial", type=str, required=False,
+                        help="Serial number of the PAR sensor (PARAD)")
     parser.add_argument("-df", "--devfile", dest="devfile", type=str, required=False)
     parser.add_argument("-u", "--csvurl", dest="csvurl", type=str, required=False)
     parser.add_argument("-s", "--switch", dest="switch", type=str, required=False)
