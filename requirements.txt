@@ -1,12 +1,12 @@
-numpy >= 1.9.2
-scipy >= 0.15.1
-munch >= 2.1.0
-gsw >= 3.0.3
+numpy
+scipy
+munch
+gsw
 beautifulsoup4
 pandas
+ppigrf
 netCDF4
 jinja2
-pyseas
 pytz
 requests
 xarray
