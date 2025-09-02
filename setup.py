@@ -5,9 +5,15 @@ def readme():
     with open('README.md') as f:
         return f.read()
 
+
+def version():
+    with open('VERSION.txt') as f:
+        return f.read().strip()
+
+
 setup(
     name='cgsn_processing',
-    version='0.1.1',
+    version=version(),
     description=(
         'Collection of processing modules for converting JSON data '
         'from the OOI Endurance, Global and Pioneer moorings to NetCDF.'
@@ -16,26 +22,26 @@ setup(
     classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.12',
         'Topic :: Data Processing :: NetCDF :: ERDDAP :: Scientific :: OOI',
     ],
     keywords='OOI Endurance Global Pioneer moorings data processing',
     url='http://bitbucket.com/ooicgsn/cgsn-processing',
     author='Christopher Wingard',
-    author_email='cwingard@coas.oregonstate.edu',
+    author_email='chris.wingard@oregonstate.edu',
     license='MIT',
     packages=find_packages(),
     install_requires=[
-        'numpy >= 1.9.2',
-        'scipy >= 0.15.1',
-        'munch >= 2.1.0',
-        'gsw >= 3.0.3',
+        'beautifulsoup4',
+        'numpy',
+        'scipy',
+        'munch',
+        'gsw',
         'pandas',
+        'ppigrf',
         'netCDF4',
         'jinja2',
-        'pyseas',
         'pytz',
-        'pyaxiom',
         'requests',
         'xarray'
     ],
