@@ -3,49 +3,41 @@
   "access_right": "open",
   "license": "MIT",
   "title": "bitbucket.org/ooicgsn/cgsn-processing",
-  "description": "Python modules and shell scripts used to process parsed data from the Coastal and Global Scale Nodes (CGSN) and Endurance Array (EA) moorings of the Ocean Observatories Initiative (OOI) for operational monitoring and management.",
+  "description": "<h1>NSF Ocean Observatories Initiative (OOI) Parsed Mooring Data Processing</h1>\n<p>Python modules and shell scripts used to process parsed data from the Coastal and Global Scale Nodes (CGSN) and Endurance Array (EA) moorings of the <a href=\"https://oceanobservatories.org\">OOI</a> for operational monitoring and management. Takes the parsed, JSON-formatted data files created by the <a href=\"https://bitbucket.org/ooicgsn/cgsn-parsers\">cgsn-parsers</a> code and further processes it into NetCDF files. The processed data (calibration coefficients downloaded and applied, derived variables calculated, metadata added, etc.) is uploaded into an ERDDAP data server used internally by the operations teams at <a href=\"https://ceoas.oregonstate.edu/ocean-observatories-initiative-ooi\">Oregon State University</a> (managing the uncabled elements of the Coastal Endurance Array) and <a href=\"https://www.whoi.edu/\">Woods Hole Oceanographic Institution</a> (managing the Coastal Pioneer and Global Irminger and Station Papa arrays) to monitor the system health of the moorings and current environmental conditions.</p>\n<p>This code is provided \"as-is\" for other users who may wish to process the data they have collected and parsed from the OOI moorings and load it into their own ERDDAP data server or other data visualization system.</p>\n<p><em>The source for this code is maintained separately on Bitbucket and is mirrored on GitHub solely for integration with Zenodo. The URL for the source repository is </em><a href=\"https://bitbucket.org/ooicgsn/cgsn-processing\"><em>https://bitbucket.org/ooicgsn/cgsn-processing</em></a></p>",
   "creators": [
     {
       "name": " Wingard, Christopher",
       "affiliation": "Oregon State University",
       "orcid": "0000-0003-4732-8460"
-    }
-  ],
-  "contributors": [
+    },
     {
       "name": "Whelan, Paul",
-      "affiliation": "Woods Hole Oceanographic Institution"
+      "affiliation": "Woods Hole Oceanographic Institution",
+      "type": "ProjectMember"
     },
     {
       "name": "Dahlberg, Samuel",
-      "affiliation": "Woods Hole Oceanographic Institution"
+      "affiliation": "Woods Hole Oceanographic Institution",
+      "type": "ProjectMember"
     },
     {
       "name": "Carloni, Mario",
-      "affiliation": "Woods Hole Oceanographic Institution"
+      "affiliation": "Woods Hole Oceanographic Institution",
+      "type": "ProjectMember"
     },
     {
       "name": "Futrelle, Joe",
       "affiliation": "Woods Hole Oceanographic Institution",
-      "orcid": "0000-0003-4537-5853"
+      "orcid": "0000-0003-4537-5853",
+      "type": "ProjectMember"
     }
   ],
   "grants": [{"id": "10.13039/100000001::2244833"}],
-  "custom_fields": {
-    "code:codeRepository": "https://bitbucket.org/ooicgsn/cgsn-processing",
-    "code:developmentStatus": {
-      "id": "active",
-      "title": {
-        "en": "Active"
-      }
-    },
-    "code:programmingLanguage": [
-      {
-        "id": "python",
-        "title": {
-          "en": "Python"
-        }
-      }
-    ]
-  }
+  "related_identifiers": [
+    {
+      "relation": "isSupplementTo",
+      "identifier": "10.5281/zenodo.15659313",
+      "resource_type": "software"
+    }
+  ]
 }

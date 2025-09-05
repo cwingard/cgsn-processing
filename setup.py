@@ -40,6 +40,7 @@ setup(
         'pandas',
         'ppigrf',
         'netCDF4',
+        'h5netcdf',
         'jinja2',
         'pytz',
         'requests',
